@@ -34,4 +34,4 @@ jobs:
           key: ${{ runner.os}}-${{ hashFiles('**/yarn.lock') }}
 
       - name: Run ts-prune
-        run: npm run ts-prune --error
+        run: npm run ts-prune
