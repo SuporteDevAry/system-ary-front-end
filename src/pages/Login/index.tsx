@@ -12,9 +12,10 @@ import {
   PasswordInput,
   BoxInputPassword,
   BoxInputUser,
+  LogoImage,
 } from "./styles";
-//import logoAry from "../../assets/img/logo_ary.png";
-import logoAry from "../../assets/img/logo-ary-lelis.jpeg";
+
+import { logoAryLogin } from "../../assets";
 
 // ícones
 import { FaUserCircle } from "react-icons/fa";
@@ -92,7 +93,7 @@ export function Login() {
 
       <Container>
         <LoginContainer>
-          <img src={logoAry} alt="logo da empresa" width={480} height={80} />
+          <LogoImage src={logoAryLogin} alt="logo da empresa" />
 
           <form onSubmit={handleSubmit} action="">
             <FormContainer>

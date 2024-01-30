@@ -1,6 +1,21 @@
 import styled from "styled-components";
 import bgImage from "../../assets/img/bg-soja.jpeg";
 
+export const LogoImage = styled.img`
+  max-width: 100%;
+  height: auto;
+
+  @media (max-width: 767px), handheld and (orientation: landscape) {
+    max-width: 380px;
+    height: 100px;
+  }
+
+  @media (max-width: 420px), handheld and (orientation: landscape) {
+    max-width: 280px;
+    height: 100px;
+  }
+`;
+
 export const Container = styled.div`
   height: 100vh;
   display: flex;
@@ -8,7 +23,7 @@ export const Container = styled.div`
 `;
 
 export const LoginContainer = styled.div`
-  width: 100%; ///40%
+  width: 100%;
   padding: 32px;
   background: ${(props) => props.theme["gray-300"]};
   display: flex;
@@ -16,7 +31,7 @@ export const LoginContainer = styled.div`
   justify-content: center;
   flex-direction: column;
 
-  @media (min-width: 768px) {
+  @media (min-width: 767px), handheld and (orientation: landscape) {
     width: 40%;
   }
 `;
@@ -97,7 +112,6 @@ export const UserInput = styled(BaseInput)``;
 export const PasswordInput = styled(BaseInput)``;
 
 export const ContainerImage = styled.div`
-  //width: 60%;
   padding: 32px;
   background: url(${bgImage}) no-repeat;
   background-size: cover;
@@ -105,9 +119,9 @@ export const ContainerImage = styled.div`
 
   display: none;
 
-  @media (min-width: 768px) {
+  @media (min-width: 767px), handheld and (orientation: landscape) {
     width: 60%;
-    display: block; /* Exibir em telas maiores que 768px */
+    display: block;
   }
 `;
 
