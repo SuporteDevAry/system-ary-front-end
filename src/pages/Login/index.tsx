@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import {
   Container,
@@ -23,6 +23,7 @@ import { FaEye, FaLock } from "react-icons/fa";
 import { RiEyeCloseLine } from "react-icons/ri";
 
 import { useAuth } from "../../contexts/AuthProvider/useAuth";
+import { isEmailValid } from "../../helpers/utils";
 
 export function Login() {
   const auth = useAuth();
@@ -47,11 +48,6 @@ export function Login() {
     }));
 
     setIsButtonDisabled(!(formData.email && formData.password));
-  };
-
-  const isEmailValid = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -89,8 +85,6 @@ export function Login() {
 
   return (
     <>
-      <ToastContainer autoClose={5000} />
-
       <Container>
         <LoginContainer>
           <LogoImage src={logoAryLogin} alt="logo da empresa" />

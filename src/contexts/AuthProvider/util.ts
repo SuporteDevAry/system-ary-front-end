@@ -1,9 +1,5 @@
 import { Api } from "../../services/api";
-import { IUser } from "./types";
-
-interface Token {
-  permissions: string[];
-}
+import { IUser, Token } from "./types";
 
 export function setUserLocalStorage(user: IUser | null) {
   localStorage.setItem("#u", JSON.stringify(user));

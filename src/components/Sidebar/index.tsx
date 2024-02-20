@@ -26,7 +26,7 @@ import { iconAry } from "../../assets";
 import { getPermissionsFromToken } from "../../contexts/AuthProvider/util";
 
 export function Sidebar() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const { pathname } = useLocation();
 
   const [menuItems, setMenuItens] = useState<string[] | null>([]);

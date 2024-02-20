@@ -6,10 +6,9 @@ import { BoxContainer, ButtonCreate } from "./styles";
 import CardContent from "@mui/material/CardContent";
 
 export function Users() {
-  const [isNewUserModalOpen, setNewUserModalOpen] = useState(false);
+  const [isNewUserModalOpen, setNewUserModalOpen] = useState<boolean>(false);
 
-  const handleCreateNewUser = () => {
-    console.log("abriu");
+  const handleCreateNewUser = async () => {
     setNewUserModalOpen(true);
   };
 
