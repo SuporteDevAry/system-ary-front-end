@@ -3,9 +3,9 @@ import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
-import Button from "@mui/material/Button";
 import React from "react";
-// import Typography from '@mui/material/Typography';
+import CustomButton from "../CustomButton";
+import { ButtonVariant } from "../CustomButton/styles";
 
 interface IModalProps {
   titleText: string;
@@ -15,6 +15,8 @@ interface IModalProps {
   open: boolean;
   onClose: () => void;
   onHandleCreate: () => void;
+  variantCancel: ButtonVariant;
+  variantConfirm: ButtonVariant;
 }
 
 export function Modal({
@@ -23,6 +25,8 @@ export function Modal({
   children,
   cancelButton,
   confirmButton,
+  variantCancel,
+  variantConfirm,
   onHandleCreate,
   onClose,
 }: IModalProps) {
@@ -38,14 +42,22 @@ export function Modal({
       </DialogContent>
       <DialogActions>
         {cancelButton && (
-          <Button autoFocus onClick={handleClose}>
+          <CustomButton
+            variant={variantCancel}
+            width="80px"
+            onClick={handleClose}
+          >
             {cancelButton}
-          </Button>
+          </CustomButton>
         )}
         {confirmButton && (
-          <Button onClick={onHandleCreate} autoFocus>
+          <CustomButton
+            variant={variantConfirm}
+            width="80px"
+            onClick={onHandleCreate}
+          >
             {confirmButton}
-          </Button>
+          </CustomButton>
         )}
       </DialogActions>
     </Dialog>

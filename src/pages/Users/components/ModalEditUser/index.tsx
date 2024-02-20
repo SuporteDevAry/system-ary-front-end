@@ -1,30 +1,38 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Modal } from "../../../../components/Modal";
 import { UserContext } from "../../../../contexts/UserContext";
 import { toast } from "react-toastify";
 import { isEmailValid } from "../../../../helpers/utils";
+import { IListUser } from "../../../../contexts/UserContext/types";
 import {
-  SFormContainer,
   SNameInput,
-  SConfirmPasswordInput,
   SEmailInput,
   SPasswordInput,
+  SFormContainer,
 } from "./styles";
 
-interface ModalCreateNewUserProps {
+interface ModalEditUserProps {
   open: boolean;
   onClose: () => void;
+  user: IListUser;
 }
 
-export function ModalCreateNewUser({ open, onClose }: ModalCreateNewUserProps) {
+export function ModalEditUser({ open, onClose, user }: ModalEditUserProps) {
   const userContext = UserContext();
 
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
+    name: user.name,
+    email: user.email,
+    password: user.password,
   });
+
+  useEffect(() => {
+    setFormData({
+      name: user.name ?? "",
+      email: user.email ?? "",
+      password: user.password ?? "",
+    });
+  }, [user]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -36,61 +44,35 @@ export function ModalCreateNewUser({ open, onClose }: ModalCreateNewUserProps) {
 
   const handleClose = () => {
     onClose();
-    setFormData({
-      name: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-    });
   };
 
-  const handleCreate = async () => {
+  const handleUpdate = async () => {
     if (!isEmailValid(formData.email)) {
-      toast.error(
-        "Formato de e-mail inválido, verifique se seu e-mail está correto."
-      );
-      return;
-    }
-    if (
-      !formData.name ||
-      !formData.email ||
-      !formData.password ||
-      !formData.confirmPassword
-    ) {
-      toast.error("Por favor, preencha todos os campos.");
-      return;
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      toast.error(
-        "As senhas nao coincidem, digite a senha de forma identica nos dois campos."
-      );
+      toast.error("Formato de e-mail inválido.");
       return;
     }
 
     try {
-      const newUser = await userContext.createUser({
+      await userContext.updateUsers(user.id, {
         name: formData.name,
         email: formData.email,
         password: formData.password,
       });
-
-      toast.success(`Usuario ${formData.name}, foi criado com sucesso!`);
+      toast.success("Usuário atualizado com sucesso!");
       handleClose();
-      return newUser;
     } catch (error) {
-      toast.error(`Erro ao tentar criar usuario novo, ${error}`);
+      toast.error("Erro ao atualizar usuário.");
     }
   };
 
   return (
     <Modal
-      titleText={"Criar novo usuário"}
+      titleText={"Editar usuário"}
       open={open}
-      confirmButton="Criar"
-      cancelButton="Fechar"
+      confirmButton="Atualizar"
+      cancelButton="Cancelar"
       onClose={handleClose}
-      onHandleCreate={handleCreate}
+      onHandleCreate={handleUpdate}
       variantCancel={"primary"}
       variantConfirm={"success"}
     >
@@ -116,24 +98,12 @@ export function ModalCreateNewUser({ open, onClose }: ModalCreateNewUserProps) {
             required
           />
         </div>
-
         <div>
           <label>Senha:</label>
           <SPasswordInput
             type="password"
             name="password"
             value={formData.password}
-            onChange={handleChange}
-            required
-          />
-        </div>
-
-        <div>
-          <label>Confirme a Senha:</label>
-          <SConfirmPasswordInput
-            type="password"
-            name="confirmPassword"
-            value={formData.confirmPassword}
             onChange={handleChange}
             required
           />
