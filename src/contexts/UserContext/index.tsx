@@ -1,24 +1,11 @@
 import { createContext, useContext } from "react";
-import { IUserProvider } from "./types";
+import {
+  ICreateUserData,
+  IUpdateUserData,
+  IUserContext,
+  IUserProvider,
+} from "./types";
 import { Api } from "../../services/api";
-
-interface IUserContext {
-  listUsers: () => Promise<any>;
-  createUser: (userData: ICreateUserData) => Promise<any>;
-  updateUsers: (userId: string, updateUserData: any) => void;
-  deleteUser: (userId: string) => void;
-}
-
-interface ICreateUserData {
-  name: string;
-  email: string;
-  password: string;
-}
-
-interface IUpdateUserData {
-  name: string;
-  email: string;
-}
 
 const newContext = createContext<IUserContext>({
   listUsers: () => Promise.resolve([]),

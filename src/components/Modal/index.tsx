@@ -3,21 +3,9 @@ import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
-import React from "react";
-import CustomButton from "../CustomButton";
-import { ButtonVariant } from "../CustomButton/styles";
 
-interface IModalProps {
-  titleText: string;
-  children: React.ReactNode;
-  cancelButton?: string;
-  confirmButton?: string;
-  open: boolean;
-  onClose: () => void;
-  onHandleCreate: () => void;
-  variantCancel: ButtonVariant;
-  variantConfirm: ButtonVariant;
-}
+import CustomButton from "../CustomButton";
+import { IModalProps } from "./types";
 
 export function Modal({
   open,

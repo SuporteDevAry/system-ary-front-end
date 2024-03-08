@@ -1,4 +1,5 @@
-import { CustomButtonProps, SButton } from "./styles";
+import { SButton } from "./styles";
+import { CustomButtonProps } from "./types";
 
 const CustomButton: React.FC<CustomButtonProps> = ({
   variant,
@@ -8,7 +9,6 @@ const CustomButton: React.FC<CustomButtonProps> = ({
   onClick,
   children,
 }) => {
-  console.log(variant, width, height);
   return (
     <SButton
       variant={variant}

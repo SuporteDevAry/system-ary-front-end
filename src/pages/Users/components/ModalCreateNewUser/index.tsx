@@ -10,11 +10,7 @@ import {
   SEmailInput,
   SPasswordInput,
 } from "./styles";
-
-interface ModalCreateNewUserProps {
-  open: boolean;
-  onClose: () => void;
-}
+import { ModalCreateNewUserProps } from "./types";
 
 export function ModalCreateNewUser({ open, onClose }: ModalCreateNewUserProps) {
   const userContext = UserContext();
@@ -63,7 +59,7 @@ export function ModalCreateNewUser({ open, onClose }: ModalCreateNewUserProps) {
 
     if (formData.password !== formData.confirmPassword) {
       toast.error(
-        "As senhas nao coincidem, digite a senha de forma identica nos dois campos."
+        "As senhas não coincidem, digite a senha de forma idêntica nos campos solicitados."
       );
       return;
     }
@@ -79,7 +75,9 @@ export function ModalCreateNewUser({ open, onClose }: ModalCreateNewUserProps) {
       handleClose();
       return newUser;
     } catch (error) {
-      toast.error(`Erro ao tentar criar usuario novo, ${error}`);
+      toast.error(
+        `Erro ao tentar criar usuário novo, contacte o administrador do sistema ${error}`
+      );
     }
   };
 

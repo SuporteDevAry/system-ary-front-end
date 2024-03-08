@@ -6,56 +6,23 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 
-import {
-  SButtonContainer,
-  SButtonDelete,
-  SButtonEdit,
-  STableHeaderCell,
-  STableRow,
-} from "./styles";
-import { UserContext } from "../../../../contexts/UserContext";
-import { useEffect, useState } from "react";
+import { SButtonContainer, STableHeaderCell, STableRow } from "./styles";
 import { IListUser } from "../../../../contexts/UserContext/types";
-import { ModalEditUser } from "../ModalEditUser";
+import CustomButton from "../../../../components/CustomButton";
 
-export function TableUsers() {
-  const userContext = UserContext();
-  const [users, setUsers] = useState<IListUser[]>([]);
-  const [isEditUserModalOpen, setEditUserModalOpen] = useState<boolean>(false);
-  const [userForUpdate, setUserForUpdate] = useState<IListUser>(
-    {} as IListUser
-  );
+export interface ITableUsersProps {
+  users: IListUser[];
+  onHandleUpdateUser: (user: IListUser) => void;
+  onHandleDeleteUser: (user: string) => void;
+  isLoading: boolean;
+}
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await userContext.listUsers();
-        setUsers(response.data);
-      } catch (error) {
-        console.error("Error fetching users:", error);
-      }
-    };
-
-    fetchData();
-  }, [users]);
-
-  const handleCloseEditUserModal = () => {
-    setEditUserModalOpen(false);
-  };
-
-  const handleUpdateUser = async (user: IListUser) => {
-    setEditUserModalOpen(true);
-    setUserForUpdate(user);
-  };
-
-  const handleDeleteUser = (userId: string) => {
-    try {
-      userContext.deleteUser(userId);
-    } catch (error) {
-      console.error("Error deleting user:", error);
-    }
-  };
-
+export function TableUsers({
+  users,
+  isLoading,
+  onHandleUpdateUser,
+  onHandleDeleteUser,
+}: ITableUsersProps) {
   return (
     <>
       <TableContainer component={Paper}>
@@ -69,37 +36,43 @@ export function TableUsers() {
             </STableRow>
           </TableHead>
           <TableBody>
-            {users.map((user) => (
-              <TableRow
-                key={user.id}
-                sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-              >
-                <TableCell component="th" scope="row">
-                  {user.name}
-                </TableCell>
-                <TableCell align="left">{user.email}</TableCell>
-                <TableCell align="left">{user.created_at}</TableCell>
-                <TableCell>
-                  <SButtonContainer>
-                    <SButtonEdit onClick={() => handleUpdateUser(user)}>
-                      Editar
-                    </SButtonEdit>
-                    <SButtonDelete onClick={() => handleDeleteUser(user.id)}>
-                      Deletar
-                    </SButtonDelete>
-                  </SButtonContainer>
-                </TableCell>
-              </TableRow>
-            ))}
+            {isLoading ? (
+              <p> Loading ...</p> // criar um gif animado para por aqui
+            ) : (
+              users?.map((user) => (
+                <TableRow
+                  key={user.id}
+                  sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                >
+                  <TableCell component="th" scope="row">
+                    {user.name}
+                  </TableCell>
+                  <TableCell align="left">{user.email}</TableCell>
+                  <TableCell align="left">{user.created_at}</TableCell>
+                  <TableCell>
+                    <SButtonContainer>
+                      <CustomButton
+                        variant={"primary"}
+                        width="80px"
+                        onClick={() => onHandleUpdateUser(user)}
+                      >
+                        Editar
+                      </CustomButton>
+                      <CustomButton
+                        variant={"danger"}
+                        width="80px"
+                        onClick={() => onHandleDeleteUser(user.id)}
+                      >
+                        Deletar
+                      </CustomButton>
+                    </SButtonContainer>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </TableContainer>
-
-      <ModalEditUser
-        open={isEditUserModalOpen}
-        onClose={handleCloseEditUserModal}
-        user={userForUpdate}
-      />
     </>
   );
 }
