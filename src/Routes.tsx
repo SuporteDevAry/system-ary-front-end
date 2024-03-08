@@ -5,6 +5,7 @@ import { ProtectedLayout } from "./components/ProtectedLayout";
 import { Layout } from "./components/Layout";
 import { Users } from "./pages/Users";
 import { Logout } from "./pages/Logout";
+import { Clientes } from "./pages/Clientes";
 
 export function RoutesForPages() {
   return (
@@ -17,9 +18,18 @@ export function RoutesForPages() {
           </Layout>
         }
       />
-
       <Route
-        path="/back-office"
+        path="/clientes"
+        element={
+          <ProtectedLayout>
+            <Layout>
+              <Clientes />
+            </Layout>
+          </ProtectedLayout>
+        }
+      />
+      <Route
+        path="/usuarios"
         element={
           <ProtectedLayout>
             <Layout>

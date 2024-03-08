@@ -45,33 +45,33 @@ export function Sidebar() {
       notification: 0,
     },
     {
-      id: "FINANCEIRO",
-      label: "Financeiro",
+      id: "CLIENTES",
+      label: "Clientes",
       icon: <MdOutlineAnalytics />,
-      to: "/financeiro",
+      to: "/clientes",
       notification: 0,
     },
     {
-      id: "BACKOFFICE",
-      label: "BackOffice",
+      id: "CONTATOS",
+      label: "Contatos",
       icon: <BsPeople />,
-      to: "/back-office",
+      to: "/contatos",
       notification: 0,
     },
     {
-      id: "OPERACAO",
-      label: "Operações",
+      id: "CORRETORES",
+      label: "Corretores",
       icon: <AiOutlineApartment />,
-      to: "/diagrams",
+      to: "/corretores",
       notification: 0,
     },
   ];
 
   const secondaryLinksArray = [
     {
-      label: "Admin",
+      label: "Usuários",
       icon: <AiOutlineSetting />,
-      to: "/admin",
+      to: "/Usuarios",
     },
     {
       label: "Logout",
