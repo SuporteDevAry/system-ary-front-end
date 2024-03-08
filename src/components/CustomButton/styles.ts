@@ -1,27 +1,17 @@
-import { ReactNode } from "react";
 import styled, { DefaultTheme } from "styled-components";
-
-export type ButtonVariant = "primary" | "secondary" | "danger" | "success";
-
-export interface CustomButtonProps {
-  variant: ButtonVariant;
-  width?: string;
-  height?: string;
-  disabled?: boolean;
-  onClick?: () => void;
-  children: ReactNode;
-}
+import { ButtonVariant, CustomButtonProps } from "./types";
 
 const getColor = (theme: DefaultTheme, type: ButtonVariant) =>
   ({
     primary: theme["gray-300"],
     secondary: theme["gray-100"],
     success: theme["yellow-600"],
-    danger: theme["red"],
+    danger: theme["red-500"],
   }[type]);
 
 export const SButton = styled.button<CustomButtonProps>`
-  color: ${({ theme }) => theme["black"]};
+  color: ${({ theme, variant }) =>
+    variant === "danger" ? theme["white"] : theme["black"]};
   width: ${(props) => props.width || "260px"};
   height: ${(props) => props.height || "38px"};
   border-radius: 8px;
@@ -38,10 +28,15 @@ export const SButton = styled.button<CustomButtonProps>`
 
   &:hover {
     color: ${({ theme, variant, disabled }) =>
-      disabled ? getColor(theme, variant) : theme["white"]};
+      disabled
+        ? theme["gray-100"]
+        : variant === "danger"
+        ? theme["white"]
+        : theme["black"]};
     background-color: ${({ theme, variant, disabled }) =>
       disabled ? theme["yellow-600"] : getColor(theme, variant)};
-    border: none;
-    outline: none;
+
+    outline: 0;
+    box-shadow: 0 0 0 2px ${({ theme }) => theme["black-200"]};
   }
 `;

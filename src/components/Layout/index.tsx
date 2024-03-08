@@ -1,11 +1,9 @@
-import React from "react";
 import { SLayout } from "./styles";
 import { Sidebar } from "../Sidebar";
 import { SCardContainer } from "../CardContainer";
+import { LayoutProps } from "./types";
 
-type LayoutProps = {
-  children: React.ReactNode;
-};
+
 
 export function Layout({ children }: LayoutProps) {
   return (
