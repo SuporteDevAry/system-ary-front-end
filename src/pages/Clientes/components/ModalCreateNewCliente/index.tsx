@@ -21,7 +21,7 @@ import {
   SemailInput,
   STelefoneInput,
   SCelularInput,
-  SSituacaoInput
+  SSituacaoInput,
 } from "./styles";
 
 interface ModalCreateNewClienteProps {
@@ -134,12 +134,12 @@ export function ModalCreateNewCliente({ open, onClose }: ModalCreateNewClientePr
         email:       formData.email, 
         telefone:    formData.telefone,
         celular:     formData.celular,
-        situacao:    formData.situacao,
-
+        situacao:    formData.situacao
       });
 
       toast.success(`Cliente ${formData.cli_codigo}, foi criado com sucesso!`);
       handleClose();
+
       return newCliente;
     } catch (error) {
       toast.error(`Erro ao tentar criar o Cliente, ${error}`);
@@ -162,7 +162,7 @@ export function ModalCreateNewCliente({ open, onClose }: ModalCreateNewClientePr
           <label>Código:</label>
           <SCli_codigoInput
             type="text"
-            name="name"
+            name="cli_codigo"
             value={formData.cli_codigo}
             onChange={handleChange}
             required
@@ -172,55 +172,51 @@ export function ModalCreateNewCliente({ open, onClose }: ModalCreateNewClientePr
           <label>Nome:</label>
           <SNomeInput
             type="text"
-            name="name"
+            name="nome"
             value={formData.nome}
             onChange={handleChange}
             required
           />
         </div>
         <div>
-          <label>Endereço:</label>
-          <SEnderecoInput
-            type="text"
-            name="name"
-            value={formData.endereco}
-            onChange={handleChange}
-            required
-          />
-          <label>Nro:</label>
-          <SNumeroInput
-            type="text"
-            name="name"
-            value={formData.numero}
-            onChange={handleChange}
-            required
-          />
+            <label>Endereço:</label>
+            <SEnderecoInput
+              type="text"
+              name="endereco"
+              value={formData.endereco}
+              onChange={handleChange}
+              required
+            />
         </div>
         <div>
+            <label>Nro:</label>
+            <SNumeroInput
+              type="text"
+              name="numero"
+              value={formData.numero}
+              onChange={handleChange}
+              required
+            />
           <label>Complemento:</label>
           <SComplementoInput
             type="text"
-            name="name"
+            name="complemento"
             value={formData.complemento}
             onChange={handleChange}
-            required
           />
-        </div>
-        <div>
           <label>Bairro:</label>
           <SBairroInput
             type="text"
-            name="name"
+            name="bairro"
             value={formData.bairro}
             onChange={handleChange}
-            required
           />
         </div>
         <div>
           <label>Cidade:</label>
           <SCidadeInput
             type="text"
-            name="name"
+            name="cidade"
             value={formData.cidade}
             onChange={handleChange}
             required
@@ -228,7 +224,7 @@ export function ModalCreateNewCliente({ open, onClose }: ModalCreateNewClientePr
           <label>UF:</label>
           <SUfInput
             type="text"
-            name="name"
+            name="uf"
             value={formData.uf}
             onChange={handleChange}
             required
@@ -236,7 +232,7 @@ export function ModalCreateNewCliente({ open, onClose }: ModalCreateNewClientePr
           <label>CEP:</label>
           <SCepInput
             type="text"
-            name="name"
+            name="cep"
             value={formData.cep}
             onChange={handleChange}
             required
@@ -246,7 +242,7 @@ export function ModalCreateNewCliente({ open, onClose }: ModalCreateNewClientePr
           <label>Natureza:</label>
           <SNaturezaInput
             type="text"
-            name="name"
+            name="natureza"
             value={formData.natureza}
             onChange={handleChange}
             required
@@ -256,7 +252,7 @@ export function ModalCreateNewCliente({ open, onClose }: ModalCreateNewClientePr
           <label>CNPJ:</label>
           <SCnpjInput
             type="text"
-            name="name"
+            name="cnpj"
             value={formData.cnpj}
             onChange={handleChange}
             required
@@ -266,27 +262,25 @@ export function ModalCreateNewCliente({ open, onClose }: ModalCreateNewClientePr
           <label>Ins.Estadual:</label>
           <SIns_estInput
             type="text"
-            name="name"
+            name="ins_est"
             value={formData.ins_est}
             onChange={handleChange}
-            required
           />
         </div> 
         <div>
           <label>Ins.Municipal:</label>
           <SIns_munInput
             type="text"
-            name="name"
+            name="ins_mun"
             value={formData.ins_mun}
             onChange={handleChange}
-            required
           />
         </div> 
         <div>
           <label>e-Mail:</label>
           <SemailInput
             type="text"
-            name="name"
+            name="email"
             value={formData.email}
             onChange={handleChange}
             required
@@ -296,25 +290,23 @@ export function ModalCreateNewCliente({ open, onClose }: ModalCreateNewClientePr
           <label>Telefone:</label>
           <STelefoneInput
             type="text"
-            name="name"
+            name="telefone"
             value={formData.telefone}
             onChange={handleChange}
-            required
           />
           <label>Celular:</label>
           <SCelularInput
             type="text"
-            name="name"
+            name="celular"
             value={formData.celular}
             onChange={handleChange}
-            required
           />
         </div>
         <div>
           <label>Situação:</label>
           <SSituacaoInput
             type="text"
-            name="name"
+            name="situacao"
             value={formData.situacao}
             onChange={handleChange}
             required

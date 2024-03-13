@@ -1,36 +1,28 @@
-import { useState } from "react";
-import { ModalCreateNewCliente } from "./components/ModalCreateNewCliente";
+import { useNavigate } from "react-router-dom";
 import { TableClientes } from "./components/TableClientes";
 import { BoxContainer, ButtonCreate } from "./styles";
 
 import CardContent from "@mui/material/CardContent";
 
 export function Clientes() {
-  const [isNewClienteModalOpen, setNewClienteModalOpen] = useState(false);
+  const navigate = useNavigate();
+ 
 
-  const handleCreateNewCliente = () => {
-    setNewClienteModalOpen(true);
-  };
-
-  const handleCloseNewClienteModal = () => {
-    setNewClienteModalOpen(false);
+  const handleCreateCliente = async () => {
+   navigate("/cliente-cadastrar")
   };
 
   return (
     <>
       <h2>Clientes</h2>
       <BoxContainer>
-        <ButtonCreate onClick={handleCreateNewCliente}> Criar Novo</ButtonCreate>
+        <ButtonCreate onClick={handleCreateCliente}> Criar Novo</ButtonCreate>
       </BoxContainer>
 
       <CardContent>
         <TableClientes />
       </CardContent>
 
-      <ModalCreateNewCliente
-        open={isNewClienteModalOpen}
-        onClose={handleCloseNewClienteModal}
-      />
     </>
   );
 }

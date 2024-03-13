@@ -1,28 +1,14 @@
-import { Api } from "../../services/api";
-import { ICreateClienteData } from "./types";
+/*
 
-interface IUpdateClienteData {
-    nome: string;
-    endereco: string;
-    numero: string;
-    complemento: string;
-    bairro: string;
-    cidade: string;
-    uf: string;
-    cep: string;
-    natureza: string;
-    cnpj: string;
-    ins_est: string;
-    ins_mun: string;
-    email: string;
-    telefone: string;
-    celular: string;
-    situacao: string;
-}
+import { Api } from "../../services/api";
+import { ICreateClienteData, IUpdateClienteData } from "./types";
+
 
 export const addCliente = async (clienteData: ICreateClienteData) => {
     try {
         const response = await Api.post("/api/cliente", clienteData);
+        console.log("util.ts");
+        console.log(response);
         return response;
     } catch (error) {
         console.error("Erro incluindo Cliente:", error);
@@ -40,3 +26,4 @@ export const updateCliente = async (
         console.error("Erro alterando dados do Cliente:", error);
     }
 };
+*/

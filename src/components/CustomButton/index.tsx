@@ -8,7 +8,7 @@ const CustomButton: React.FC<CustomButtonProps> = ({
   onClick,
   children,
 }) => {
-  console.log(variant, width, height);
+  //console.log(variant, width, height);
   return (
     <SButton
       variant={variant}

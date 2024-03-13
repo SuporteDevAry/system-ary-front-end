@@ -13,14 +13,18 @@ import {
 } from "./styles";
 
 import {
-  AiOutlineApartment,
+ // AiOutlineApartment,
+  AiOutlineIdcard ,
+  AiOutlineUser,
+  AiOutlineTeam ,
+  AiOutlineCheckSquare,
   AiOutlineHome,
   AiOutlineLeft,
   AiOutlineRight,
-  AiOutlineSetting,
+  AiOutlineSolution,
+  //AiOutlineSetting,
 } from "react-icons/ai";
-import { MdLogout, MdOutlineAnalytics } from "react-icons/md";
-import { BsPeople } from "react-icons/bs";
+import { MdLogout } from "react-icons/md";
 
 import { iconAry } from "../../assets";
 import { getPermissionsFromToken } from "../../contexts/AuthProvider/util";
@@ -47,21 +51,21 @@ export function Sidebar() {
     {
       id: "CLIENTES",
       label: "Clientes",
-      icon: <MdOutlineAnalytics />,
+      icon: <AiOutlineTeam  />,
       to: "/clientes",
       notification: 0,
     },
     {
       id: "CONTATOS",
       label: "Contatos",
-      icon: <BsPeople />,
+      icon: <AiOutlineIdcard />,
       to: "/contatos",
       notification: 0,
     },
     {
       id: "CORRETORES",
       label: "Corretores",
-      icon: <AiOutlineApartment />,
+      icon: <AiOutlineSolution />,
       to: "/corretores",
       notification: 0,
     },
@@ -70,8 +74,13 @@ export function Sidebar() {
   const secondaryLinksArray = [
     {
       label: "Usuários",
-      icon: <AiOutlineSetting />,
+      icon: <AiOutlineUser  />,
       to: "/Usuarios",
+    },
+    {
+      label: "Permissões",
+      icon: <AiOutlineCheckSquare />,
+      to: "/Permissoes",
     },
     {
       label: "Logout",

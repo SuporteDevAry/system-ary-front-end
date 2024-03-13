@@ -1,70 +1,26 @@
 import { createContext, useContext } from "react";
-import { IClienteProvider, ICreateClienteData } from "./types";
-import { Api } from "../../services/api";
+import { IClientesProvider, ICreateClientesData, IUpdateClientesData } from "./types";
+import { Api } from "../../services/api"; 
 
 interface IClienteContext {
   listClientes: () => Promise<any>;
-  createCliente: (clienteData: ICreateClienteData) => Promise<any>;
+  createCliente: (clienteData: ICreateClientesData) => Promise<any>;
   updateCliente: (clienteCli_codigo: string, updateClienteData: any) => void;
   deleteCliente: (clienteCli_codigo: string) => void;
 }
 
-/*
-export interface ICreateClienteData {
-  cli_codigo: string;
-  nome: string;
-  endereco: string;
-  numero: string;
-  complemento: string;
-  bairro: string;
-  cidade: string;
-  uf: string;
-  cep: string;
-  natureza: string;
-  cnpj: string;
-  ins_est: string;
-  ins_mun: string;
-  email: string;
-  telefone: string;
-  celular: string;
-  situacao: string;
-}
-*/
-
-interface IUpdateClienteData {
-  nome: string;
-  endereco: string;
-  numero: string;
-  complemento: string;
-  bairro: string;
-  cidade: string;
-  uf: string;
-  cep: string;
-  natureza: string;
-  cnpj: string;
-  ins_est: string;
-  ins_mun: string;
-  email: string;
-  telefone: string;
-  celular: string;
-  situacao: string;
-}
-
 const newContext = createContext<IClienteContext>({
-  listClientes: () => Promise.resolve([]),
+  listClientes: () => Promise.resolve(),
   createCliente: () => Promise.resolve(),
   updateCliente: () => {},
   deleteCliente: () => {},
 });
 
-export const ClienteProvider = ({ children }: IClienteProvider) => {
+export const ClientesProvider = ({ children }: IClientesProvider) => {
+
   async function listClientes(): Promise<any> {
     try {
       const response = await Api.get("/clientes");
-
-      console.log("front 2");
-      console.table(response);
-
       return response;
     } catch (error) {
       console.error("Erro incluindo Cliente:", error);
@@ -72,7 +28,7 @@ export const ClienteProvider = ({ children }: IClienteProvider) => {
     }
   }
 
-  async function createCliente(clienteData: ICreateClienteData): Promise<any> {
+  async function createCliente(clienteData: ICreateClientesData): Promise<any> {
     try {
       const response = await Api.post("/cliente", clienteData);
 
@@ -82,7 +38,7 @@ export const ClienteProvider = ({ children }: IClienteProvider) => {
     }
   }
 
-  async function updateCliente(clienteCli_codigo: string, updateClienteData: IUpdateClienteData) {
+  async function updateCliente(clienteCli_codigo: string, updateClienteData: IUpdateClientesData) {
     try {
       const response = await Api.patch(`/cliente/${clienteCli_codigo}`, updateClienteData);
       return response;
