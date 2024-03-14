@@ -12,6 +12,8 @@ import {
   SSidebarButton,
 } from "./styles";
 
+import { FiUser } from "react-icons/fi";
+
 import {
   AiOutlineApartment,
   AiOutlineHome,
@@ -72,6 +74,11 @@ export function Sidebar() {
       label: "Admin",
       icon: <AiOutlineSetting />,
       to: "/admin",
+    },
+    {
+      label: "Minha Conta",
+      icon: <FiUser />,
+      to: "/myaccount",
     },
     {
       label: "Logout",

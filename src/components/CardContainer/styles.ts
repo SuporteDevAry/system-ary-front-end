@@ -4,5 +4,5 @@ import { V } from "../../styles/variables";
 
 export const CardContainer = styled(Card)`
   padding: ${V.mdSpacing};
-  margin: ${V.xxlSpacing} auto;
+  margin: ${V.xxlSpacing} ${V.xlSpacing};
 `;

@@ -7,15 +7,8 @@ import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 
 import { SButtonContainer, STableHeaderCell, STableRow } from "./styles";
-import { IListUser } from "../../../../contexts/UserContext/types";
 import CustomButton from "../../../../components/CustomButton";
-
-export interface ITableUsersProps {
-  users: IListUser[];
-  onHandleUpdateUser: (user: IListUser) => void;
-  onHandleDeleteUser: (user: string) => void;
-  isLoading: boolean;
-}
+import { ITableUsersProps } from "./types";
 
 export function TableUsers({
   users,
