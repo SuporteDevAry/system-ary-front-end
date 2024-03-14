@@ -1,5 +1,5 @@
 
-interface IFormData {
+export interface IFormData {
     cli_codigo: string;
     nome: string;
     endereco: string;

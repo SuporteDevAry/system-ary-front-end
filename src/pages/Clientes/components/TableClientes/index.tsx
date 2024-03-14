@@ -16,17 +16,14 @@ import {
 import { ClienteContext } from "../../../../contexts/ClienteContext";
 import { useEffect, useState } from "react";
 import { IListCliente } from "../../../../contexts/ClienteContext/types";
-import { ModalEditCliente } from "../ModalEditCliente";
 import { useNavigate } from "react-router-dom";
+import { insertMaskInCpf } from "../../../../components/insertMaskInCpf";
+import { insertMaskInCnpj } from "../../../../components/insertMaskInCnpj";
 
 export function TableClientes() {
   const clienteContext = ClienteContext();
   const navigate = useNavigate();
   const [clientes, setClientes] = useState<IListCliente[]>([]);
-  const [isEditClienteModalOpen, setEditClienteModalOpen] = useState<boolean>(false); 
-  const [clienteForUpdate, setClienteForUpdate] = useState<IListCliente>(
-    {} as IListCliente
-  );
 
   const fetchData = async () => {
     try {
@@ -40,17 +37,11 @@ export function TableClientes() {
   useEffect(() => {
     fetchData();
   }, []);
-
-  const handleCloseEditClienteModal = () => {
-    setEditClienteModalOpen(true);
-  };
-
+  
   const handleUpdateCliente = async (clientes: IListCliente) => {
 
-    setClienteForUpdate(clientes);
-
-    navigate("/cliente-editar")
-
+    navigate("/cliente-editar", {state: {clienteForUpdate: clientes}})
+    
   };
 
   const handleDeleteCliente = (clienteCli_codigo: string) => {
@@ -73,7 +64,7 @@ export function TableClientes() {
             <STableRow>
               <STableHeaderCell>Código</STableHeaderCell>
               <STableHeaderCell>Nome</STableHeaderCell>
-              <STableHeaderCell>CNPJ</STableHeaderCell>
+              <STableHeaderCell>CNPJ/CPF</STableHeaderCell>
               <STableHeaderCell>Cidade</STableHeaderCell>
               <STableHeaderCell>UF</STableHeaderCell>
               <STableHeaderCell align="left"></STableHeaderCell>
@@ -89,7 +80,7 @@ export function TableClientes() {
                   {clientes.cli_codigo}
                 </TableCell>
                 <TableCell align="left">{clientes.nome}</TableCell>
-                <TableCell align="left">{clientes.cnpj}</TableCell>
+                <TableCell align="left">{clientes.natureza == "F" ? insertMaskInCpf(clientes.cnpj) : insertMaskInCnpj(clientes.cnpj)}</TableCell>
                 <TableCell align="left">{clientes.cidade}</TableCell>
                 <TableCell align="left">{clientes.uf}</TableCell>
                 <TableCell>
@@ -107,12 +98,6 @@ export function TableClientes() {
           </TableBody>
         </Table>
       </TableContainer>
-
-      <ModalEditCliente
-        open={isEditClienteModalOpen}
-        onClose={handleCloseEditClienteModal}
-        cliente={clienteForUpdate}
-      />
     </>
   );
 }

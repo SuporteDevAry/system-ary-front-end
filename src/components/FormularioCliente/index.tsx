@@ -10,8 +10,31 @@ import { useNavigate } from "react-router-dom";
 
 export function FormularioCliente({titleText, data, onChange, onHandleCreate, onCheckCEP}:IFormularioClienteProps) {
 
-  
      const navigate = useNavigate();
+
+     /*
+     const defaultData: IFormData = {
+      cli_codigo: "",
+      nome: "",
+      cep: "",
+      endereco: "",
+      numero: "",
+      complemento: "",
+      bairro: "",
+      cidade: "",
+      uf: "",
+      natureza: "",
+      cnpj: "",
+      ins_est: "",
+      ins_mun: "",
+      email: "",
+      telefone: "",
+      celular: "",
+      situacao: ""
+    };
+    */
+  
+    const formData = data;
 
     return(
         <>
@@ -22,7 +45,7 @@ export function FormularioCliente({titleText, data, onChange, onHandleCreate, on
             <SCli_codigoInput
               type="text"
               name="cli_codigo"
-              value={data.cli_codigo}
+              value={formData.cli_codigo}
               onChange={onChange}
               required
             />
@@ -32,7 +55,7 @@ export function FormularioCliente({titleText, data, onChange, onHandleCreate, on
             <SNomeInput
               type="text"
               name="nome"
-              value={data.nome}
+              value={formData.nome}
               onChange={onChange}
               required
             />
@@ -43,7 +66,7 @@ export function FormularioCliente({titleText, data, onChange, onHandleCreate, on
               type="text"
               name="cep"
               maxLength={9}
-              value={insertMaskInCEP(data.cep)}
+              value={insertMaskInCEP(formData.cep)}
               onChange={onChange}
               onBlur={onCheckCEP}
               required
@@ -54,7 +77,7 @@ export function FormularioCliente({titleText, data, onChange, onHandleCreate, on
               <SEnderecoInput
                 type="text"
                 name="endereco"
-                value={data.endereco}
+                value={formData.endereco}
                 onChange={onChange}
                 required
               />
@@ -64,7 +87,7 @@ export function FormularioCliente({titleText, data, onChange, onHandleCreate, on
                 <SNumeroInput
                   type="text"
                   name="numero"
-                  value={data.numero}
+                  value={formData.numero}
                   onChange={onChange}
                   required
                 />
@@ -72,14 +95,14 @@ export function FormularioCliente({titleText, data, onChange, onHandleCreate, on
               <SComplementoInput
                 type="text"
                 name="complemento"
-                value={data.complemento}
+                value={formData.complemento}
                 onChange={onChange}
               />
               <label>Bairro:</label>
               <SBairroInput
                 type="text"
                 name="bairro"
-                value={data.bairro}
+                value={formData.bairro}
                 onChange={onChange}
               />
           </div>
@@ -89,7 +112,7 @@ export function FormularioCliente({titleText, data, onChange, onHandleCreate, on
             <SCidadeInput
               type="text"
               name="cidade"
-              value={data.cidade}
+              value={formData.cidade}
               onChange={onChange}
               required
             />
@@ -98,7 +121,7 @@ export function FormularioCliente({titleText, data, onChange, onHandleCreate, on
               type="text"
               name="uf"
               maxLength={2}
-              value={data.uf}
+              value={formData.uf}
               onChange={onChange}
               required
             />
@@ -110,7 +133,7 @@ export function FormularioCliente({titleText, data, onChange, onHandleCreate, on
               row
               aria-labelledby="natureza"
               name="natureza"
-              value={data.natureza}
+              value={formData.natureza}
               onChange={onChange}
             >
               <FormControlLabel value="F" control={<Radio />} label="Pessoa Fisica" />
@@ -122,8 +145,8 @@ export function FormularioCliente({titleText, data, onChange, onHandleCreate, on
             <SCnpjInput
               type="text"
               name="cnpj"
-              maxLength={data.natureza == "F" ? 14 : 18}
-              value={data.natureza == "F" ? insertMaskInCpf(data.cnpj) : insertMaskInCnpj(data.cnpj)}
+              maxLength={formData.natureza == "F" ? 14 : 18}
+              value={formData.natureza == "F" ? insertMaskInCpf(formData.cnpj) : insertMaskInCnpj(formData.cnpj)}
               onChange={onChange}
               required
             />
@@ -133,7 +156,7 @@ export function FormularioCliente({titleText, data, onChange, onHandleCreate, on
             <SIns_estInput
               type="text"
               name="ins_est"
-              value={data.ins_est}
+              value={formData.ins_est}
               onChange={onChange}
             />
           </div> 
@@ -142,7 +165,7 @@ export function FormularioCliente({titleText, data, onChange, onHandleCreate, on
             <SIns_munInput
               type="text"
               name="ins_mun"
-              value={data.ins_mun}
+              value={formData.ins_mun}
               onChange={onChange}
             />
           </div> 
@@ -151,7 +174,7 @@ export function FormularioCliente({titleText, data, onChange, onHandleCreate, on
             <SemailInput
               type="text"
               name="email"
-              value={data.email}
+              value={formData.email}
               onChange={onChange}
               placeholder="contato@email.com.br"
               required
@@ -163,7 +186,7 @@ export function FormularioCliente({titleText, data, onChange, onHandleCreate, on
               type="text"
               name="telefone"
               maxLength={15}
-              value={insertMaskInTelefone(data.telefone)}
+              value={insertMaskInTelefone(formData.telefone)}
               onChange={onChange}
             />
             <label>Celular:</label>
@@ -171,7 +194,7 @@ export function FormularioCliente({titleText, data, onChange, onHandleCreate, on
               type="text"
               name="celular"
               maxLength={15}
-              value={insertMaskInCelular(data.celular)}
+              value={insertMaskInCelular(formData.celular)}
               onChange={onChange}
             />
           </div>
@@ -181,7 +204,7 @@ export function FormularioCliente({titleText, data, onChange, onHandleCreate, on
               row
               aria-labelledby="situacao"
               name="situacao"
-              value={data.situacao}
+              value={formData.situacao}
               onChange={onChange}
             >
               <FormControlLabel value="A" control={<Radio />} label="Ativa" />

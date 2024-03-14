@@ -3,7 +3,7 @@ import { ClienteContext } from "../../../../contexts/ClienteContext";
 import { toast } from "react-toastify";
 import { isEmailValid } from "../../../../helpers/utils";
 import { FormularioCliente } from "../../../../components/FormularioCliente";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { IListCliente } from "../../../../contexts/ClienteContext/types";
 
 
@@ -13,33 +13,35 @@ import { IListCliente } from "../../../../contexts/ClienteContext/types";
 export function EditarCliente() {
 
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const clienteForUpdate: IListCliente = location.state?.clienteForUpdate;
 
   const clienteContext = ClienteContext();
 
   // como receber o clientes enviado pelo TableClientes index.tsx ???
-  const [clientes] = useState<IListCliente>(
-    {} as IListCliente
-  );
-
+  //const [clientes] = useState<IListCliente>(
+  //  {} as IListCliente
+  //);
 
   const [formData, setFormData] = useState({
-    cli_codigo:  clientes.cli_codigo,
-    nome:        clientes.nome,
-    endereco:    clientes.endereco,
-    numero:      clientes.numero,
-    complemento: clientes.complemento,
-    bairro:      clientes.bairro,
-    cidade:      clientes.cidade,
-    uf:          clientes.uf,
-    cep:         clientes.cep,
-    natureza:    clientes.natureza,
-    cnpj:        clientes.cnpj,
-    ins_est:     clientes.ins_est, 
-    ins_mun:	 clientes.ins_mun,	 
-    email:       clientes.email, 
-    telefone:    clientes.telefone,
-    celular:     clientes.celular,
-    situacao:    clientes.situacao
+    cli_codigo:  clienteForUpdate.cli_codigo,
+    nome:        clienteForUpdate.nome,
+    endereco:    clienteForUpdate.endereco,
+    numero:      clienteForUpdate.numero,
+    complemento: clienteForUpdate.complemento,
+    bairro:      clienteForUpdate.bairro,
+    cidade:      clienteForUpdate.cidade,
+    uf:          clienteForUpdate.uf,
+    cep:         clienteForUpdate.cep,
+    natureza:    clienteForUpdate.natureza,
+    cnpj:        clienteForUpdate.cnpj,
+    ins_est:     clienteForUpdate.ins_est, 
+    ins_mun:	 clienteForUpdate.ins_mun,	 
+    email:       clienteForUpdate.email, 
+    telefone:    clienteForUpdate.telefone,
+    celular:     clienteForUpdate.celular,
+    situacao:    clienteForUpdate.situacao
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -74,7 +76,7 @@ export function EditarCliente() {
     }
 
     try {
-      clienteContext.updateCliente(clientes.cli_codigo, {
+      clienteContext.updateCliente(clienteForUpdate.cli_codigo, {
             nome: formData.nome,
             endereco: formData.endereco,
             numero: formData.numero,
@@ -121,10 +123,9 @@ export function EditarCliente() {
 
   return (
     <>
-      
         <FormularioCliente 
          titleText={"Editar Cliente"} 
-         data={clientes}
+         data={formData}
          onHandleCreate={handleCreate} 
          onChange={handleChange}
          onCheckCEP={checkCEP}
