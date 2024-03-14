@@ -13,14 +13,18 @@ import {
 } from "./styles";
 
 import {
-  AiOutlineApartment,
+ // AiOutlineApartment,
+  AiOutlineIdcard ,
+  AiOutlineUser,
+  AiOutlineTeam ,
+  AiOutlineCheckSquare,
   AiOutlineHome,
   AiOutlineLeft,
   AiOutlineRight,
-  AiOutlineSetting,
+  AiOutlineSolution,
+  //AiOutlineSetting,
 } from "react-icons/ai";
-import { MdLogout, MdOutlineAnalytics } from "react-icons/md";
-import { BsPeople } from "react-icons/bs";
+import { MdLogout } from "react-icons/md";
 
 import { iconAry } from "../../assets";
 import { getPermissionsFromToken } from "../../contexts/AuthProvider/util";
@@ -45,33 +49,38 @@ export function Sidebar() {
       notification: 0,
     },
     {
-      id: "FINANCEIRO",
-      label: "Financeiro",
-      icon: <MdOutlineAnalytics />,
-      to: "/financeiro",
+      id: "CLIENTES",
+      label: "Clientes",
+      icon: <AiOutlineTeam  />,
+      to: "/clientes",
       notification: 0,
     },
     {
-      id: "BACKOFFICE",
-      label: "BackOffice",
-      icon: <BsPeople />,
-      to: "/back-office",
+      id: "CONTATOS",
+      label: "Contatos",
+      icon: <AiOutlineIdcard />,
+      to: "/contatos",
       notification: 0,
     },
     {
-      id: "OPERACAO",
-      label: "Operações",
-      icon: <AiOutlineApartment />,
-      to: "/diagrams",
+      id: "CORRETORES",
+      label: "Corretores",
+      icon: <AiOutlineSolution />,
+      to: "/corretores",
       notification: 0,
     },
   ];
 
   const secondaryLinksArray = [
     {
-      label: "Admin",
-      icon: <AiOutlineSetting />,
-      to: "/admin",
+      label: "Usuários",
+      icon: <AiOutlineUser  />,
+      to: "/Usuarios",
+    },
+    {
+      label: "Permissões",
+      icon: <AiOutlineCheckSquare />,
+      to: "/Permissoes",
     },
     {
       label: "Logout",

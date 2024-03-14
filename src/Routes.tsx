@@ -5,6 +5,9 @@ import { ProtectedLayout } from "./components/ProtectedLayout";
 import { Layout } from "./components/Layout";
 import { Users } from "./pages/Users";
 import { Logout } from "./pages/Logout";
+import { Clientes } from "./pages/Clientes";
+import { CadastrarCliente } from "./pages/Clientes/components/CadastrarCliente";
+import { EditarCliente } from "./pages/Clientes/components/EditarCliente";
 
 export function RoutesForPages() {
   return (
@@ -17,9 +20,39 @@ export function RoutesForPages() {
           </Layout>
         }
       />
-
       <Route
-        path="/back-office"
+        path="/clientes"
+        element={
+          <ProtectedLayout>
+            <Layout>
+              <Clientes />
+            </Layout>
+          </ProtectedLayout>
+        }
+      />
+      <Route
+        path="/cliente-cadastrar"
+        element={
+          <ProtectedLayout>
+            <Layout>
+              <CadastrarCliente />
+            </Layout>
+          </ProtectedLayout>
+        }
+      />
+
+     <Route
+        path="/cliente-editar"
+        element={
+          <ProtectedLayout>
+            <Layout>
+              <EditarCliente />
+            </Layout>
+          </ProtectedLayout>
+        }
+      />
+      <Route
+        path="/usuarios"
         element={
           <ProtectedLayout>
             <Layout>
