@@ -21,4 +21,14 @@ export interface IListUser extends IUser {
   password?: string;
 }
 
-// export interface IUpdateUserData extends IUser {}
+export interface IUpdateUserData extends Omit<ICreateUserData, "password"> {
+  password?: string;
+}
+
+
+export interface IUserContext {
+  listUsers: () => Promise<any>;
+  createUser: (userData: ICreateUserData) => Promise<any>;
+  updateUsers: (userId: string, updateUserData: any) => void;
+  deleteUser: (userId: string) => void;
+}

@@ -3,19 +3,13 @@ import { Modal } from "../../../../components/Modal";
 import { UserContext } from "../../../../contexts/UserContext";
 import { toast } from "react-toastify";
 import { isEmailValid } from "../../../../helpers/utils";
-import { IListUser } from "../../../../contexts/UserContext/types";
+import { ModalEditUserProps } from "./types";
 import {
   SNameInput,
   SEmailInput,
   SPasswordInput,
   SFormContainer,
 } from "./styles";
-
-interface ModalEditUserProps {
-  open: boolean;
-  onClose: () => void;
-  user: IListUser;
-}
 
 export function ModalEditUser({ open, onClose, user }: ModalEditUserProps) {
   const userContext = UserContext();
@@ -58,7 +52,7 @@ export function ModalEditUser({ open, onClose, user }: ModalEditUserProps) {
         email: formData.email,
         password: formData.password,
       });
-      toast.success("Usuário atualizado com sucesso!");
+      toast.success(`Usuário ${formData.name} atualizado com sucesso!`);
       handleClose();
     } catch (error) {
       toast.error("Erro ao atualizar usuário.");
