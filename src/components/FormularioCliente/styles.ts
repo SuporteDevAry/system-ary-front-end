@@ -1,5 +1,3 @@
-
-
 import styled from "styled-components";
 import { btnReset } from "../../styles/variables";
 
@@ -65,7 +63,6 @@ export const SCli_codigoInput = styled.input`
     color: ${(props) => props.theme["gray-500"]};
   }
 `;
-
 
 export const SNomeInput = styled.input`
   width: 80%;
@@ -423,6 +420,7 @@ export const BoxContainer = styled.div`
   display: flex;
   justify-content: flex-end;
   padding-right: 16px;
+  gap: 8px;
 `;
 
 export const ButtonCreate = styled.button`

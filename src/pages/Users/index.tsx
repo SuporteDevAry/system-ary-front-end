@@ -85,7 +85,7 @@ export function Users() {
       <CardContent>
         <TableUsers
           isLoading={isLoading}
-          users={users}
+          data={users}
           onHandleUpdateUser={handleUpdateUser}
           onHandleDeleteUser={handleDeleteUser}
         />
