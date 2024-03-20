@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { ClienteContext } from "../../../../contexts/ClienteContext";
 import { toast } from "react-toastify";
-import { isEmailValid } from "../../../../helpers/utils";
-
+import { isEmailValid } from "../../../../helpers/back-end/utils";
 
 import { FormularioCliente } from "../../../../components/FormularioCliente";
-
+import { useNavigate } from "react-router-dom";
 
 export function CadastrarCliente() {
   const clienteContext = ClienteContext();
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     cli_codigo: "",
@@ -22,9 +22,9 @@ export function CadastrarCliente() {
     cep: "",
     natureza: "",
     cnpj: "",
-    ins_est: "", 
-    ins_mun: "",	 
-    email: "", 
+    ins_est: "",
+    ins_mun: "",
+    email: "",
     telefone: "",
     celular: "",
     situacao: "",
@@ -32,10 +32,10 @@ export function CadastrarCliente() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prevData) => ({...prevData, [name]: value}));
+    setFormData((prevData) => ({ ...prevData, [name]: value }));
   };
 
-  const handleClose = () => {
+  const handleClean = () => {
     setFormData({
       cli_codigo: "",
       nome: "",
@@ -48,9 +48,9 @@ export function CadastrarCliente() {
       cep: "",
       natureza: "",
       cnpj: "",
-      ins_est: "", 
-      ins_mun: "",	 
-      email: "", 
+      ins_est: "",
+      ins_mun: "",
+      email: "",
       telefone: "",
       celular: "",
       situacao: "",
@@ -77,7 +77,7 @@ export function CadastrarCliente() {
       !formData.cnpj ||
       !formData.email ||
       !formData.telefone ||
-      !formData.celular 
+      !formData.celular
     ) {
       toast.error("Por favor, preencha todos os campos.");
       return;
@@ -85,27 +85,28 @@ export function CadastrarCliente() {
 
     try {
       const newCliente = await clienteContext.createCliente({
-        cli_codigo:  formData.cli_codigo,
-        nome:        formData.nome,
-        endereco:    formData.endereco,
-        numero:      formData.numero,
+        cli_codigo: formData.cli_codigo,
+        nome: formData.nome,
+        endereco: formData.endereco,
+        numero: formData.numero,
         complemento: formData.complemento,
-        bairro:      formData.bairro,
-        cidade:      formData.cidade,
-        uf:          formData.uf,
-        cep:         formData.cep,
-        natureza:    formData.natureza,
-        cnpj:        formData.cnpj,
-        ins_est:     formData.ins_est, 
-        ins_mun:	   formData.ins_mun,	 
-        email:       formData.email, 
-        telefone:    formData.telefone,
-        celular:     formData.celular,
-        situacao:    formData.situacao
+        bairro: formData.bairro,
+        cidade: formData.cidade,
+        uf: formData.uf,
+        cep: formData.cep,
+        natureza: formData.natureza,
+        cnpj: formData.cnpj,
+        ins_est: formData.ins_est,
+        ins_mun: formData.ins_mun,
+        email: formData.email,
+        telefone: formData.telefone,
+        celular: formData.celular,
+        situacao: formData.situacao,
       });
 
-      toast.success(`Cliente ${formData.cli_codigo}, foi criado com sucesso!`);
-      handleClose();
+      toast.success(`Cliente ${formData.nome}, foi criado com sucesso!`);
+      navigate("/clientes");
+      handleClean();
 
       return newCliente;
     } catch (error) {
@@ -114,34 +115,30 @@ export function CadastrarCliente() {
   };
 
   const checkCEP = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const cep = e.target.value.replace(/\D/g, "");
+    fetch(`${process.env.URL_VIA_CEP}/${cep}/json/`)
+      .then((res) => res.json())
+      .then((data) => {
+        const dadosEndereco = {
+          endereco: data.logradouro,
+          bairro: data.bairro,
+          cidade: data.localidade,
+          uf: data.uf,
+        };
 
-      const cep = e.target.value.replace(/\D/g, '');
-
-      fetch(`https://viacep.com.br/ws/${cep}/json/`).then(res => res.json()).then(data => {
-
-      const dadosEndereco = {
-        endereco: data.logradouro,
-        bairro: data.bairro,
-        cidade: data.localidade,
-        uf: data.uf
-      };
-
-      setFormData({ ...formData, ...dadosEndereco });
-
-      })
-  }
+        setFormData({ ...formData, ...dadosEndereco });
+      });
+  };
 
   return (
     <>
-      
-        <FormularioCliente 
-         titleText={"Cadastrar Cliente"} 
-         data={formData}
-         onHandleCreate={handleCreate } 
-         onChange={handleChange}
-         onCheckCEP={checkCEP}
-         />
+      <FormularioCliente
+        titleText={"Cadastrar Cliente"}
+        data={formData}
+        onHandleCreate={handleCreate}
+        onChange={handleChange}
+        onCheckCEP={checkCEP}
+      />
     </>
   );
 }
-
