@@ -8,6 +8,9 @@ import { Logout } from "./pages/Logout";
 import { Clientes } from "./pages/Clientes";
 import { CadastrarCliente } from "./pages/Clientes/components/CadastrarCliente";
 import { EditarCliente } from "./pages/Clientes/components/EditarCliente";
+import { Contatos } from "./pages/Contatos";
+import { CadastrarContato } from "./pages/Contatos/components/CadastrarContato";
+import { EditarContato } from "./pages/Contatos/components/EditarContato";
 
 export function RoutesForPages() {
   return (
@@ -51,6 +54,39 @@ export function RoutesForPages() {
           </ProtectedLayout>
         }
       />
+
+      <Route
+        path="/contatos"
+        element={
+          <ProtectedLayout>
+            <Layout>
+              <Contatos />
+            </Layout>
+          </ProtectedLayout>
+        }
+      />
+      <Route
+        path="/contatos-cadastrar"
+        element={
+          <ProtectedLayout>
+            <Layout>
+              <CadastrarContato />
+            </Layout>
+          </ProtectedLayout>
+        }
+      />
+
+     <Route
+        path="/contatos-editar"
+        element={
+          <ProtectedLayout>
+            <Layout>
+              <EditarContato />
+            </Layout>
+          </ProtectedLayout>
+        }
+      />
+
       <Route
         path="/usuarios"
         element={
