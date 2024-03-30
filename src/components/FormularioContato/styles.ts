@@ -3,6 +3,18 @@ import TableRow from "@mui/material/TableRow";
 import TableCell from "@mui/material/TableCell";
 import { btnReset } from "../../styles/variables";
 
+
+export const SFormContainer = styled.div`
+  width: 750px;
+  display: flex;
+  flex-direction: column;
+  align-items: left;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  padding: 10px 0;
+  //gap: 1px;
+`;
+
 export const STableRow = styled(TableRow)`
   background-color: ${({ theme }) => theme["gray-300"]};
   font-weight: 900;
@@ -77,24 +89,13 @@ export const BoxContainer = styled.div`
   padding-right: 16px;
 `;
 
-export const SFormContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  padding: 32px 0;
-  gap: 8px;
-`;
-
-
 const BaseInput = styled.input`
   width: 260px;
-  height: 38px;
+  height: 30px;
   display: flex;
   flex-direction: column;
 
-  padding: 0 16px;
+  padding: 0 10px;
 
   color: ${(props) => props.theme["black"]};
   border-color: ${(props) => props.theme["gray-100"]};
@@ -110,12 +111,28 @@ const BaseInput = styled.input`
   }
 `;
 
-export const SCli_codigoInput = styled(BaseInput)``;
-export const SSequenciaInput = styled(BaseInput)``;
-export const SGrupoInput = styled(BaseInput)``;
-export const SNomeInput = styled(BaseInput)``;
-export const SCargoInput = styled(BaseInput)``;
-export const SEmailInput = styled(BaseInput)``;
-export const STelefoneInput = styled(BaseInput)``;
-export const SCelularInput = styled(BaseInput)``;
+export const SCli_codigoInput = styled(BaseInput)`
+  width: 100px;
+`;
+export const SSequenciaInput = styled(BaseInput)`
+  width: 100px;
+`;
+export const SGrupoInput = styled(BaseInput)`
+  width: 50%;
+`;
+export const SNomeInput = styled(BaseInput)`
+   width: 70%;
+`;
+export const SCargoInput = styled(BaseInput)`
+  width: 70%;
+ `;
+export const SEmailInput = styled(BaseInput)`
+  width: 50%;
+ `;
+export const STelefoneInput = styled(BaseInput)`
+  width: 30%;
+ `;
+export const SCelularInput = styled(BaseInput)`
+  width: 30%;
+`;
 export const SRecebe_emailInput = styled(BaseInput)``;

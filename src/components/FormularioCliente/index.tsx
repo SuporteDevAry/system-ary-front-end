@@ -112,6 +112,8 @@ export function FormularioCliente({
                         value={formData.numero}
                         onChange={onChange}
                     />
+                </div>
+                <div>
                     <label>Complemento:</label>
                     <SComplementoInput
                         type="text"
@@ -119,6 +121,8 @@ export function FormularioCliente({
                         value={formData.complemento}
                         onChange={onChange}
                     />
+                </div>
+                <div>
                     <label>Bairro:</label>
                     <SBairroInput
                         type="text"
@@ -127,7 +131,6 @@ export function FormularioCliente({
                         onChange={onChange}
                     />
                 </div>
-
                 <div>
                     <label>Cidade:</label>
                     <SCidadeInput
@@ -136,6 +139,8 @@ export function FormularioCliente({
                         value={formData.cidade}
                         onChange={onChange}
                     />
+                </div>
+                <div>
                     <label>UF:</label>
                     <SUfInput
                         type="text"
@@ -145,7 +150,6 @@ export function FormularioCliente({
                         onChange={onChange}
                     />
                 </div>
-
                 <div>
                     <label>Natureza:</label>
                     <RadioGroup
@@ -223,6 +227,8 @@ export function FormularioCliente({
                         value={insertMaskInTelefone(formData.telefone)}
                         onChange={onChange}
                     />
+                </div>
+                <div>
                     <label>Celular:</label>
                     <SCelularInput
                         type="text"
