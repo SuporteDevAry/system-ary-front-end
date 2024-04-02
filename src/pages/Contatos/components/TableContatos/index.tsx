@@ -22,7 +22,22 @@ import SearchIcon from "@mui/icons-material/Search";
 import { ClienteContext } from "../../../../contexts/ClienteContext";
 import { IListCliente } from "../../../../contexts/ClienteContext/types";
 
-const objClienteContato: Record<string, any> = { data: [] };
+export interface TClienteContato {
+    id: string;
+    cli_codigo: string;
+    cli_nome: string;
+    cnpj: string;
+    cidade: string;
+    uf: string;
+    sequencia: string;
+    grupo: string;
+    nome: string;
+    cargo: string;
+    email: string;
+    telefone: string;
+    celular: string;
+    recebe_email: string;
+}
 
 export function TableContatos() {
     const contatoContext = ContatoContext();
@@ -32,18 +47,9 @@ export function TableContatos() {
     const clienteContext = ClienteContext();
     const [clientes, setClientes] = useState<IListCliente[]>([]);
 
-    type TClienteContato = {
-        id: string;
-        cli_codigo: string;
-        cli_nome: string;
-        cnpj: string;
-        cidade: string;
-        uf: string;
-        sequencia: string;
-        grupo: string;
-        nome: string;
-        email: string;
-    };
+    const [objClienteContato, setObjClienteContato] = useState<
+        TClienteContato[]
+    >([]);
 
     const fetchData = async () => {
         try {
@@ -61,7 +67,7 @@ export function TableContatos() {
         fetchData();
     }, []);
 
-    const handleUpdateContato = async (contatos: IListContatos) => {
+    const handleUpdateContato = async (contatos: TClienteContato) => {
         navigate("/contatos-editar", { state: { contatoForUpdate: contatos } });
     };
 
@@ -82,43 +88,44 @@ export function TableContatos() {
     const handleSearch = async () => {
         const lcBusca = busca.toLowerCase();
 
-        var clientesFiltrado = clientes.filter(function (cliente: {
-            nome: any;
-        }) {
-            var nome = cliente.nome.toLowerCase();
-            var lcNome = nome.match(lcBusca);
-            return lcNome == lcBusca;
+        const clientesFiltrado = clientes.filter((cliente) => {
+            const nome = cliente.nome.toLowerCase();
+            const cnpj = cliente.cnpj.toLowerCase();
+            const cidade = cliente.cidade.toLowerCase();
+
+            if (nome.includes(lcBusca)) {
+                return nome.includes(lcBusca);
+            }
+            if (cnpj.includes(lcBusca)) {
+                return cnpj.includes(lcBusca);
+            }
+            if (cidade.includes(lcBusca)) {
+                return cidade.includes(lcBusca);
+            }
         });
 
-        //console.log('busca', lcBusca);
-        //console.log('clientes', clientes);
-        //console.log("contatos", contatos);
-        //console.log("clientesFiltrado", clientesFiltrado);
-
-        //var clienteContato = [{}];
-
-        objClienteContato.data = [];
-
-        clientesFiltrado.map((cliente) => {
-            contatos.map((contato) => {
-                if (cliente.cli_codigo == contato.cli_codigo) {
-                    objClienteContato?.data.push({
-                        id: contato.id,
-                        cli_codigo: cliente.cli_codigo,
-                        cli_nome: cliente.nome,
-                        cnpj: cliente.cnpj,
-                        cidade: cliente.cidade,
-                        uf: cliente.uf,
-                        sequencia: contato.sequencia,
-                        grupo: contato.grupo,
-                        nome: contato.nome,
-                        email: contato.email,
-                    });
-                }
-            });
+        const novoObjClienteContato = clientesFiltrado.flatMap((cliente) => {
+            return contatos
+                .filter((contato) => contato.cli_codigo === cliente.cli_codigo)
+                .map((contato) => ({
+                    id: contato.id,
+                    cli_codigo: cliente.cli_codigo,
+                    cli_nome: cliente.nome,
+                    cnpj: cliente.cnpj,
+                    cidade: cliente.cidade,
+                    uf: cliente.uf,
+                    sequencia: contato.sequencia,
+                    grupo: contato.grupo,
+                    nome: contato.nome,
+                    email: contato.email,
+                    telefone: contato.telefone,
+                    celular: contato.celular,
+                    cargo: contato.cargo,
+                    recebe_email: contato.recebe_email,
+                }));
         });
 
-        //console.log("clienteContato", objClienteContato);
+        setObjClienteContato(novoObjClienteContato as TClienteContato[]);
 
         fetchData();
     };
@@ -164,20 +171,18 @@ export function TableContatos() {
                 >
                     <TableHead>
                         <STableRow>
-                            <STableHeaderCell>Cód.Cliente</STableHeaderCell>
+                            <STableHeaderCell>Cód</STableHeaderCell>
                             <STableHeaderCell>Nome Cliente</STableHeaderCell>
                             <STableHeaderCell>CNPJ</STableHeaderCell>
                             <STableHeaderCell>Cidade</STableHeaderCell>
                             <STableHeaderCell>UF</STableHeaderCell>
                             <STableHeaderCell>Seq</STableHeaderCell>
-                            <STableHeaderCell>Grupo</STableHeaderCell>
-                            <STableHeaderCell>Nome</STableHeaderCell>
-                            <STableHeaderCell>E-mail</STableHeaderCell>
+                            <STableHeaderCell>Contato</STableHeaderCell>
                             <STableHeaderCell align="left"></STableHeaderCell>
                         </STableRow>
                     </TableHead>
                     <TableBody>
-                        {objClienteContato.data.map(
+                        {objClienteContato.map(
                             (cliContato: TClienteContato) => (
                                 <TableRow
                                     key={cliContato.id}
@@ -206,13 +211,7 @@ export function TableContatos() {
                                         {cliContato.sequencia}
                                     </TableCell>
                                     <TableCell align="left">
-                                        {cliContato.grupo}
-                                    </TableCell>
-                                    <TableCell align="left">
                                         {cliContato.nome}
-                                    </TableCell>
-                                    <TableCell align="left">
-                                        {cliContato.email}
                                     </TableCell>
                                     <TableCell>
                                         <SButtonContainer>
