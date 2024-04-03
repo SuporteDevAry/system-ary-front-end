@@ -13,8 +13,8 @@ import {
     STelefoneInput,
     SCelularInput,
 } from "./styles";
-import { insertMaskInTelefone } from "../insertMaskInFone";
-import { insertMaskInCelular } from "../insertMaskInCelular";
+import { insertMaskInTelefone } from "../../helpers/front-end/insertMaskInFone";
+import { insertMaskInCelular } from "../../helpers/front-end/insertMaskInCelular";
 import { IFormularioContatosProps } from "./types";
 import { useNavigate } from "react-router-dom";
 

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ClienteContext } from "../../../../contexts/ClienteContext";
 import { toast } from "react-toastify";
-import { isEmailValid } from "../../../../helpers/utils";
+import { isEmailValid } from "../../../../helpers/back-end/utils";
 import { FormularioCliente } from "../../../../components/FormularioCliente";
 import { useLocation, useNavigate } from "react-router-dom";
 import { IListCliente } from "../../../../contexts/ClienteContext/types";

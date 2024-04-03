@@ -13,53 +13,25 @@ import {
   STableHeaderCell,
   STableRow,
 } from "./styles";
-import { ClienteContext } from "../../../../contexts/ClienteContext";
-import { useEffect, useState } from "react";
-import { IListCliente } from "../../../../contexts/ClienteContext/types";
-import { useNavigate } from "react-router-dom";
-import { insertMaskInCpf } from "../../../../components/insertMaskInCpf";
-import { insertMaskInCnpj } from "../../../../components/insertMaskInCnpj";
 
-export function TableClientes() {
-  const clienteContext = ClienteContext();
-  const navigate = useNavigate();
-  const [clientes, setClientes] = useState<IListCliente[]>([]);
+import { insertMaskInCpf } from "../../../../helpers/front-end/insertMaskInCpf";
+import { insertMaskInCnpj } from "../../../../helpers/front-end/insertMaskInCnpj";
+import { ITableClientesProps } from "./types";
 
-  const fetchData = async () => {
-    try {
-      const response = await clienteContext.listClientes();
-      setClientes(response.data);
-    } catch (error) {
-      console.error("Erro lendo clientes:", error);
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
-  
-  const handleUpdateCliente = async (clientes: IListCliente) => {
-
-    navigate("/cliente-editar", {state: {clienteForUpdate: clientes}})
-    
-  };
-
-  const handleDeleteCliente = (clienteCli_codigo: string) => {
-    try {
-
-      
-      clienteContext.deleteCliente(clienteCli_codigo);
-      fetchData();
-
-    } catch (error) {
-      console.error("Erro excluindo cliente:", error);
-    }
-  };
-
+export function TableClientes({
+  data,
+  isLoading,
+  onHandleUpdateCliente,
+  onHandleDeleteCliente,
+}: ITableClientesProps) {
   return (
     <>
       <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 700 }} size="small" aria-label="custom pagination table">
+        <Table
+          sx={{ minWidth: 700 }}
+          size="small"
+          aria-label="custom pagination table"
+        >
           <TableHead>
             <STableRow>
               <STableHeaderCell>Código</STableHeaderCell>
@@ -71,30 +43,44 @@ export function TableClientes() {
             </STableRow>
           </TableHead>
           <TableBody>
-            {clientes?.map((clientes) => (
-              <TableRow
-                key={clientes.id}
-                sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-              >
-                <TableCell component="th" scope="row">
-                  {clientes.cli_codigo}
-                </TableCell>
-                <TableCell align="left">{clientes.nome}</TableCell>
-                <TableCell align="left">{clientes.natureza == "F" ? insertMaskInCpf(clientes.cnpj) : insertMaskInCnpj(clientes.cnpj)}</TableCell>
-                <TableCell align="left">{clientes.cidade}</TableCell>
-                <TableCell align="left">{clientes.uf}</TableCell>
-                <TableCell>
-                  <SButtonContainer>
-                    <SButtonEdit onClick={() => handleUpdateCliente(clientes)}>
-                      Editar
-                    </SButtonEdit>
-                    <SButtonDelete onClick={() => handleDeleteCliente(clientes.cli_codigo)}>
-                      Deletar
-                    </SButtonDelete>
-                  </SButtonContainer>
-                </TableCell>
-              </TableRow>
-            ))}
+            {isLoading ? (
+              <p> Loading ...</p> // criar um gif animado para por aqui
+            ) : (
+              data?.map((clientes) => (
+                <TableRow
+                  key={clientes.id}
+                  sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                >
+                  <TableCell component="th" scope="row">
+                    {clientes.cli_codigo}
+                  </TableCell>
+                  <TableCell align="left">{clientes.nome}</TableCell>
+                  <TableCell align="left">
+                    {clientes.natureza == "F"
+                      ? insertMaskInCpf(clientes.cnpj)
+                      : insertMaskInCnpj(clientes.cnpj)}
+                  </TableCell>
+                  <TableCell align="left">{clientes.cidade}</TableCell>
+                  <TableCell align="left">{clientes.uf}</TableCell>
+                  <TableCell>
+                    <SButtonContainer>
+                      <SButtonEdit
+                        onClick={() => onHandleUpdateCliente(clientes)}
+                      >
+                        Editar
+                      </SButtonEdit>
+                      <SButtonDelete
+                        onClick={() =>
+                          onHandleDeleteCliente(clientes.cli_codigo)
+                        }
+                      >
+                        Deletar
+                      </SButtonDelete>
+                    </SButtonContainer>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </TableContainer>

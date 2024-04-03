@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { ClienteContext } from "../../../../contexts/ClienteContext";
 import { toast } from "react-toastify";
-import { isEmailValid } from "../../../../helpers/utils";
+import { isEmailValid } from "../../../../helpers/back-end/utils";
 
 import { FormularioCliente } from "../../../../components/FormularioCliente";
+import { useNavigate } from "react-router-dom";
 
 export function CadastrarCliente() {
     const clienteContext = ClienteContext();
+    const navigate = useNavigate();
 
     const [formData, setFormData] = useState({
         cli_codigo: "",
@@ -33,7 +35,7 @@ export function CadastrarCliente() {
         setFormData((prevData) => ({ ...prevData, [name]: value }));
     };
 
-    const handleClose = () => {
+    const handleClean = () => {
         setFormData({
             cli_codigo: "",
             nome: "",
@@ -62,24 +64,24 @@ export function CadastrarCliente() {
             );
             return;
         }
-        // if (
-        //   !formData.cli_codigo ||
-        //   !formData.nome ||
-        //   !formData.endereco ||
-        //   !formData.numero ||
-        //   !formData.bairro ||
-        //   !formData.cidade ||
-        //   !formData.uf ||
-        //   !formData.cep ||
-        //   !formData.natureza ||
-        //   !formData.cnpj ||
-        //   !formData.email ||
-        //   !formData.telefone ||
-        //   !formData.celular
-        // ) {
-        //   toast.error("Por favor, preencha todos os campos.");
-        //   return;
-        // }
+        if (
+            !formData.cli_codigo ||
+            !formData.nome ||
+            !formData.endereco ||
+            !formData.numero ||
+            !formData.bairro ||
+            !formData.cidade ||
+            !formData.uf ||
+            !formData.cep ||
+            !formData.natureza ||
+            !formData.cnpj ||
+            !formData.email ||
+            !formData.telefone ||
+            !formData.celular
+        ) {
+            toast.error("Por favor, preencha todos os campos.");
+            return;
+        }
 
         try {
             const newCliente = await clienteContext.createCliente({
@@ -102,10 +104,9 @@ export function CadastrarCliente() {
                 situacao: formData.situacao,
             });
 
-            toast.success(
-                `Cliente ${formData.cli_codigo}, foi criado com sucesso!`
-            );
-            handleClose();
+            toast.success(`Cliente ${formData.nome}, foi criado com sucesso!`);
+            navigate("/clientes");
+            handleClean();
 
             return newCliente;
         } catch (error) {
@@ -115,8 +116,7 @@ export function CadastrarCliente() {
 
     const checkCEP = (e: React.ChangeEvent<HTMLInputElement>) => {
         const cep = e.target.value.replace(/\D/g, "");
-
-        fetch(`https://viacep.com.br/ws/${cep}/json/`)
+        fetch(`${process.env.URL_VIA_CEP}/${cep}/json/`)
             .then((res) => res.json())
             .then((data) => {
                 const dadosEndereco = {

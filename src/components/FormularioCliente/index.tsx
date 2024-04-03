@@ -20,11 +20,11 @@ import {
     SUfInput,
     SemailInput,
 } from "./styles";
-import { insertMaskInCEP } from "../insertMaskInCep";
-import { insertMaskInCpf } from "../insertMaskInCpf";
-import { insertMaskInCnpj } from "../insertMaskInCnpj";
-import { insertMaskInTelefone } from "../insertMaskInFone";
-import { insertMaskInCelular } from "../insertMaskInCelular";
+import { insertMaskInCEP } from "../../helpers/front-end/insertMaskInCep";
+import { insertMaskInCpf } from "../../helpers/front-end/insertMaskInCpf";
+import { insertMaskInCnpj } from "../../helpers/front-end/insertMaskInCnpj";
+import { insertMaskInTelefone } from "../../helpers/front-end/insertMaskInFone";
+import { insertMaskInCelular } from "../../helpers/front-end/insertMaskInCelular";
 import { IFormularioClienteProps } from "./types";
 import { useNavigate } from "react-router-dom";
 

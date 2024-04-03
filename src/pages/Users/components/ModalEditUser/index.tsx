@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Modal } from "../../../../components/Modal";
 import { UserContext } from "../../../../contexts/UserContext";
 import { toast } from "react-toastify";
-import { isEmailValid } from "../../../../helpers/utils";
+import { isEmailValid } from "../../../../helpers/back-end/utils";
 import { ModalEditUserProps } from "./types";
 import {
   SNameInput,
