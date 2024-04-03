@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ContatoContext } from "../../../../contexts/ContatoContext";
 import { toast } from "react-toastify";
-import { isEmailValid } from "../../../../helpers/utils";
+import { isEmailValid } from "../../../../helpers/back-end/utils";
 import { FormularioContato } from "../../../../components/FormularioContato";
 import { useLocation, useNavigate } from "react-router-dom";
 import { TClienteContato } from "../TableContatos";

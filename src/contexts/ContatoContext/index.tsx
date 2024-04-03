@@ -50,16 +50,6 @@ export const ContatosProvider = ({ children }: IContatosProvider) => {
         }
     }
 
-    async function validaCliente(contatoCli_codigo: string): Promise<any> {
-        try {
-            const response = await Api.get(`/contato/${contatoCli_codigo}`);
-
-            return response;
-        } catch (error) {
-            throw new Error(`${error}`);
-        }
-    }
-
     async function updateContato(
         contatoCli_codigo: string,
         contatoSequencia: string,
