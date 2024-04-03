@@ -1,6 +1,125 @@
 import styled from "styled-components";
 import { btnReset } from "../../styles/variables";
 
+export const SFormContainer = styled.div`
+  width: 750px;
+  display: flex;
+  flex-direction: column;
+  align-items: left;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  padding: 10px 0;
+  //gap: 1px;
+`;
+
+const BaseInput = styled.input`
+  width: 260px;
+  height: 30px;
+  display: flex;
+  flex-direction: column;
+
+  padding: 0 10px;
+
+  color: ${(props) => props.theme["black"]};
+  border-color: ${(props) => props.theme["gray-100"]};
+  border-radius: 8px;
+
+  &:focus {
+    box-shadow: none;
+    border-color: ${(props) => props.theme["yellow-500"]};
+  }
+
+  &::placeholder {
+    color: ${(props) => props.theme["gray-500"]};
+  }
+`;
+
+export const SCli_codigoInput = styled(BaseInput)`
+  width: 100px;
+`;
+
+export const SNomeInput = styled(BaseInput)`
+  width: 80%;
+`;
+
+export const SCepInput = styled(BaseInput)`
+  width: 20%;
+`;
+
+export const SEnderecoInput = styled(BaseInput)`
+  width: 80%;
+`;
+
+export const SNumeroInput = styled(BaseInput)`
+  width: 20%;
+`;
+
+export const SComplementoInput = styled(BaseInput)`
+  width: 70%;
+`;
+
+export const SBairroInput = styled(BaseInput)`
+  width: 50%;
+`;
+
+export const SCidadeInput = styled(BaseInput)`
+  width: 50%;
+`;
+
+export const SUfInput = styled(BaseInput)`
+  width: 20%;
+`;
+
+export const SNaturezaInput = styled(BaseInput)`
+  width: 20%;
+`;
+
+export const SCnpjInput = styled(BaseInput)`
+  width: 50%;
+`;
+
+export const SIns_estInput = styled(BaseInput)`
+  width: 50%;
+`;
+
+export const SIns_munInput = styled(BaseInput)`
+  width: 50%;
+`;
+
+export const SemailInput = styled(BaseInput)`
+  width: 50%;
+`;
+
+export const STelefoneInput = styled(BaseInput)`
+  width: 30%;
+`;
+
+export const SCelularInput = styled(BaseInput)`
+  width: 30%;
+`;
+
+export const SSituacaoInput = styled(BaseInput)`
+  width: 30%;
+`;
+
+export const BoxContainer = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  padding: 5px;
+`;
+
+export const ButtonCreate = styled.button`
+  ${btnReset};
+  background-color: ${({ theme }) => theme["yellow-100"]};
+  border-radius: 5px;
+  padding: 8px;
+
+  &:focus {
+    outline: 0;
+    box-shadow: 0 0 0 2px ${({ theme }) => theme["black-200"]};
+  }
+`;
+
 export const ButtonGravar = styled.button`
   background-color: ${({ theme }) => theme["yellow-100"]};
   border-radius: 5px;
@@ -23,414 +142,3 @@ export const ButtonCancelar = styled.button`
   }
 `;
 
-export const SFormContainer = styled.div`
-  width: 750px;
-  display: flex;
-  flex-direction: column;
-  align-items: left;
-  justify-content: space-between;
-  flex-wrap: nowrap;
-  padding: 32px 0;
-  gap: 8px;
-`;
-
-export const SLabelEndereco = styled.label`
-  display: block;
-`;
-
-export const SLabelNumero = styled.label`
-  display: block;
-`;
-
-export const SCli_codigoInput = styled.input`
-  width: 100px;
-  height: 38px;
-  display: flex;
-  flex-direction: column;
-
-  padding: 0 16px;
-
-  color: ${(props) => props.theme["gray-500"]};
-  border-color: ${(props) => props.theme["gray-100"]};
-  border-radius: 8px;
-
-  &:focus {
-    box-shadow: none;
-    border-color: ${(props) => props.theme["yellow-500"]};
-  }
-
-  &::placeholder {
-    color: ${(props) => props.theme["gray-500"]};
-  }
-`;
-
-export const SNomeInput = styled.input`
-  width: 80%;
-  height: 38px;
-  display: flex;
-  flex-direction: column;
-
-  padding: 0 16px;
-
-  color: ${(props) => props.theme["gray-500"]};
-  border-color: ${(props) => props.theme["gray-100"]};
-  border-radius: 8px;
-
-  &:focus {
-    box-shadow: none;
-    border-color: ${(props) => props.theme["yellow-500"]};
-  }
-
-  &::placeholder {
-    color: ${(props) => props.theme["gray-500"]};
-  }
-`;
-
-export const SEnderecoInput = styled.input`
-  width: 80%;
-  height: 38px;
-  display: flex;
-  flex-direction: column;
-
-  padding: 0 16px;
-
-  color: ${(props) => props.theme["gray-500"]};
-  border-color: ${(props) => props.theme["gray-100"]};
-  border-radius: 8px;
-
-  &:focus {
-    box-shadow: none;
-    border-color: ${(props) => props.theme["yellow-500"]};
-  }
-
-  &::placeholder {
-    color: ${(props) => props.theme["gray-500"]};
-  }
-`;
-
-export const SNumeroInput = styled.input`
-  width: 20%;
-  height: 38px;
-  display: flex;
-  flex-direction: column;
-
-  padding: 0 16px;
-
-  color: ${(props) => props.theme["gray-500"]};
-  border-color: ${(props) => props.theme["gray-100"]};
-  border-radius: 8px;
-
-  &:focus {
-    box-shadow: none;
-    border-color: ${(props) => props.theme["yellow-500"]};
-  }
-
-  &::placeholder {
-    color: ${(props) => props.theme["gray-500"]};
-  }
-`;
-
-export const SComplementoInput = styled.input`
-  width: 70%;
-  height: 38px;
-  display: flex;
-  flex-direction: column;
-
-  padding: 0 16px;
-
-  color: ${(props) => props.theme["gray-500"]};
-  border-color: ${(props) => props.theme["gray-100"]};
-  border-radius: 8px;
-
-  &:focus {
-    box-shadow: none;
-    border-color: ${(props) => props.theme["yellow-500"]};
-  }
-
-  &::placeholder {
-    color: ${(props) => props.theme["gray-500"]};
-  }
-`;
-
-export const SBairroInput = styled.input`
-  width: 50%;
-  height: 38px;
-  display: flex;
-  flex-direction: column;
-
-  padding: 0 16px;
-
-  color: ${(props) => props.theme["gray-500"]};
-  border-color: ${(props) => props.theme["gray-100"]};
-  border-radius: 8px;
-
-  &:focus {
-    box-shadow: none;
-    border-color: ${(props) => props.theme["yellow-500"]};
-  }
-
-  &::placeholder {
-    color: ${(props) => props.theme["gray-500"]};
-  }
-`;
-
-export const SCidadeInput = styled.input`
-  width: 50%;
-  height: 38px;
-  display: flex;
-  flex-direction: column;
-
-  padding: 0 16px;
-
-  color: ${(props) => props.theme["gray-500"]};
-  border-color: ${(props) => props.theme["gray-100"]};
-  border-radius: 8px;
-
-  &:focus {
-    box-shadow: none;
-    border-color: ${(props) => props.theme["yellow-500"]};
-  }
-
-  &::placeholder {
-    color: ${(props) => props.theme["gray-500"]};
-  }
-`;
-
-export const SUfInput = styled.input`
-  width: 20%;
-  height: 38px;
-  display: flex;
-  flex-direction: column;
-
-  padding: 0 16px;
-
-  color: ${(props) => props.theme["gray-500"]};
-  border-color: ${(props) => props.theme["gray-100"]};
-  border-radius: 8px;
-
-  &:focus {
-    box-shadow: none;
-    border-color: ${(props) => props.theme["yellow-500"]};
-  }
-
-  &::placeholder {
-    color: ${(props) => props.theme["gray-500"]};
-  }
-`;
-
-export const SCepInput = styled.input`
-  width: 20%;
-  height: 38px;
-  display: flex;
-  flex-direction: column;
-
-  padding: 0 16px;
-
-  color: ${(props) => props.theme["gray-500"]};
-  border-color: ${(props) => props.theme["gray-100"]};
-  border-radius: 8px;
-
-  &:focus {
-    box-shadow: none;
-    border-color: ${(props) => props.theme["yellow-500"]};
-  }
-
-  &::placeholder {
-    color: ${(props) => props.theme["gray-500"]};
-  }
-`;
-
-export const SNaturezaInput = styled.input`
-  width: 20%;
-  height: 38px;
-  display: flex;
-  flex-direction: column;
-
-  padding: 0 16px;
-
-  color: ${(props) => props.theme["gray-500"]};
-  border-color: ${(props) => props.theme["gray-100"]};
-  border-radius: 8px;
-
-  &:focus {
-    box-shadow: none;
-    border-color: ${(props) => props.theme["yellow-500"]};
-  }
-
-  &::placeholder {
-    color: ${(props) => props.theme["gray-500"]};
-  }
-`;
-
-export const SCnpjInput = styled.input`
-  width: 50%;
-  height: 38px;
-  display: flex;
-  flex-direction: column;
-
-  padding: 0 16px;
-
-  color: ${(props) => props.theme["gray-500"]};
-  border-color: ${(props) => props.theme["gray-100"]};
-  border-radius: 8px;
-
-  &:focus {
-    box-shadow: none;
-    border-color: ${(props) => props.theme["yellow-500"]};
-  }
-
-  &::placeholder {
-    color: ${(props) => props.theme["gray-500"]};
-  }
-`;
-
-export const SIns_estInput = styled.input`
-  width: 50%;
-  height: 38px;
-  display: flex;
-  flex-direction: column;
-
-  padding: 0 16px;
-
-  color: ${(props) => props.theme["gray-500"]};
-  border-color: ${(props) => props.theme["gray-100"]};
-  border-radius: 8px;
-
-  &:focus {
-    box-shadow: none;
-    border-color: ${(props) => props.theme["yellow-500"]};
-  }
-
-  &::placeholder {
-    color: ${(props) => props.theme["gray-500"]};
-  }
-`;
-
-export const SIns_munInput = styled.input`
-  width: 50%;
-  height: 38px;
-  display: flex;
-  flex-direction: column;
-
-  padding: 0 16px;
-
-  color: ${(props) => props.theme["gray-500"]};
-  border-color: ${(props) => props.theme["gray-100"]};
-  border-radius: 8px;
-
-  &:focus {
-    box-shadow: none;
-    border-color: ${(props) => props.theme["yellow-500"]};
-  }
-
-  &::placeholder {
-    color: ${(props) => props.theme["gray-500"]};
-  }
-`;
-
-export const SemailInput = styled.input`
-  width: 50%;
-  height: 38px;
-  display: flex;
-  flex-direction: column;
-
-  padding: 0 16px;
-
-  color: ${(props) => props.theme["gray-500"]};
-  border-color: ${(props) => props.theme["gray-100"]};
-  border-radius: 8px;
-
-  &:focus {
-    box-shadow: none;
-    border-color: ${(props) => props.theme["yellow-500"]};
-  }
-
-  &::placeholder {
-    color: ${(props) => props.theme["gray-500"]};
-  }
-`;
-
-export const STelefoneInput = styled.input`
-  width: 30%;
-  height: 38px;
-  display: flex;
-  flex-direction: column;
-
-  padding: 0 16px;
-
-  color: ${(props) => props.theme["gray-500"]};
-  border-color: ${(props) => props.theme["gray-100"]};
-  border-radius: 8px;
-
-  &:focus {
-    box-shadow: none;
-    border-color: ${(props) => props.theme["yellow-500"]};
-  }
-
-  &::placeholder {
-    color: ${(props) => props.theme["gray-500"]};
-  }
-`;
-
-export const SCelularInput = styled.input`
-  width: 30%;
-  height: 38px;
-  display: flex;
-  flex-direction: column;
-
-  padding: 0 16px;
-
-  color: ${(props) => props.theme["gray-500"]};
-  border-color: ${(props) => props.theme["gray-100"]};
-  border-radius: 8px;
-
-  &:focus {
-    box-shadow: none;
-    border-color: ${(props) => props.theme["yellow-500"]};
-  }
-
-  &::placeholder {
-    color: ${(props) => props.theme["gray-500"]};
-  }
-`;
-
-export const SSituacaoInput = styled.input`
-  width: 30%;
-  height: 38px;
-  display: flex;
-  flex-direction: column;
-
-  padding: 0 16px;
-
-  color: ${(props) => props.theme["gray-500"]};
-  border-color: ${(props) => props.theme["gray-100"]};
-  border-radius: 8px;
-
-  &:focus {
-    box-shadow: none;
-    border-color: ${(props) => props.theme["yellow-500"]};
-  }
-
-  &::placeholder {
-    color: ${(props) => props.theme["gray-500"]};
-  }
-`;
-
-export const BoxContainer = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  padding-right: 16px;
-  gap: 8px;
-`;
-
-export const ButtonCreate = styled.button`
-  ${btnReset};
-  background-color: ${({ theme }) => theme["yellow-100"]};
-  border-radius: 5px;
-  padding: 8px;
-
-  &:focus {
-    outline: 0;
-    box-shadow: 0 0 0 2px ${({ theme }) => theme["black-200"]};
-  }
-`;
