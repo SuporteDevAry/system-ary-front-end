@@ -1,11 +1,9 @@
 import { useState } from "react";
 import { ContatoContext } from "../../../../contexts/ContatoContext";
 import { toast } from "react-toastify";
-import { isEmailValid } from "../../../../helpers/utils";
-
+import { isEmailValid } from "../../../../helpers/back-end/utils";
 
 import { FormularioContato } from "../../../../components/FormularioContato";
-
 
 export function CadastrarContato() {
   const contatoContext = ContatoContext();
@@ -16,7 +14,7 @@ export function CadastrarContato() {
     grupo: "",
     nome: "",
     cargo: "",
-    email: "", 
+    email: "",
     telefone: "",
     celular: "",
     recebe_email: "",
@@ -24,7 +22,7 @@ export function CadastrarContato() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prevData) => ({...prevData, [name]: value}));
+    setFormData((prevData) => ({ ...prevData, [name]: value }));
   };
 
   const handleClose = () => {
@@ -34,7 +32,7 @@ export function CadastrarContato() {
       grupo: "",
       nome: "",
       cargo: "",
-      email: "", 
+      email: "",
       telefone: "",
       celular: "",
       recebe_email: "",
@@ -51,18 +49,20 @@ export function CadastrarContato() {
 
     try {
       const newContato = await contatoContext.createContato({
-        cli_codigo:  formData.cli_codigo,
-        sequencia:   formData.sequencia,
-        grupo:       formData.grupo,
-        nome:        formData.nome,
-        cargo:       formData.cargo,
-        email:       formData.email, 
-        telefone:    formData.telefone,
-        celular:     formData.celular,
-        recebe_email: formData.recebe_email
+        cli_codigo: formData.cli_codigo,
+        sequencia: formData.sequencia,
+        grupo: formData.grupo,
+        nome: formData.nome,
+        cargo: formData.cargo,
+        email: formData.email,
+        telefone: formData.telefone,
+        celular: formData.celular,
+        recebe_email: formData.recebe_email,
       });
 
-      toast.success(`Contato ${formData.cli_codigo} ${formData.sequencia}, foi criado com sucesso!`);
+      toast.success(
+        `Contato ${formData.cli_codigo} ${formData.sequencia}, foi criado com sucesso!`
+      );
       handleClose();
 
       return newContato;
@@ -73,14 +73,12 @@ export function CadastrarContato() {
 
   return (
     <>
-      
-        <FormularioContato 
-         titleText={"Cadastrar Contato"} 
-         data={formData}
-         onHandleCreate={handleCreate } 
-         onChange={handleChange}
-         />
+      <FormularioContato
+        titleText={"Cadastrar Contato"}
+        data={formData}
+        onHandleCreate={handleCreate}
+        onChange={handleChange}
+      />
     </>
   );
 }
-
