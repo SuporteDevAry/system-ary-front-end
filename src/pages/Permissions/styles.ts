@@ -2,16 +2,12 @@ import styled from "styled-components";
 import Card from "@mui/material/Card";
 import Switch from "@mui/material/Switch";
 import { V } from "../../styles/variables";
+import Box from "@mui/material/Box";
 
 export const SContainer = styled.div`
   width: 100%;
   display: flex;
-  background: ${(props) => props.theme["gray-300"]};
-`;
-
-export const SFormContainer = styled.div`
-  /* width: 50%;
-  padding: 20px; */
+  margin: 0px auto;
   flex: 1;
 `;
 
@@ -21,17 +17,18 @@ export const SDisplayContainer = styled.div`
   align-items: center;
   justify-content: center;
   flex-wrap: wrap;
-  padding: 32px 0;
+  padding: 32px;
   gap: 8px;
 `;
 
-export const SPermissionsContainer = styled.div`
+export const SPermissionsContainer = styled(Box)`
   width: 50%;
   display: flex;
   flex-wrap: wrap;
+  padding-left: 32px;
 `;
 
-export const SCardContainer = styled.div``;
+export const SCardContainer = styled(Box)``;
 
 export const SCard = styled(Card)`
   height: 130px;
@@ -43,6 +40,9 @@ export const SCard = styled(Card)`
   &.MuiCard-root {
     background-color: ${(props) => props.theme["gray-100"]};
   }
+
+  gap: 16px;
+  align-content: space-between;
 `;
 
 export const SCardIcon = styled.div`
@@ -50,40 +50,36 @@ export const SCardIcon = styled.div`
 `;
 
 export const SCardContent = styled.div`
-  display: flex;
+  display: inline-flex;
+  padding-top: 8px;
 `;
 
 export const SToogle = styled(Switch)`
-  &.Mui-checked {
-    color: ${(props) => props.theme["green-100"]};
-  }
+  float: right;
 
-  &.MuiSwitch-track {
-    background-color: "#cccccc"; // Altere a cor aqui para a cor desejada
-  }
-`;
+  span {
+    &.MuiSwitch-switchBase.Mui-checked {
+      color: ${(props) => props.theme["green-300"]};
+    }
 
-const BaseInput = styled.input`
-  width: 260px;
-  height: 38px;
-  display: flex;
-  flex-direction: column;
-
-  padding: 0 16px;
-
-  color: ${(props) => props.theme["gray-500"]};
-  border-color: ${(props) => props.theme["gray-100"]};
-  border-radius: 8px;
-
-  &:focus {
-    box-shadow: none;
-    border-color: ${(props) => props.theme["yellow-500"]};
-  }
-
-  &::placeholder {
-    color: ${(props) => props.theme["gray-500"]};
+    &.Mui-checked + .MuiSwitch-track {
+      background-color: ${(props) => props.theme["green-300"]};
+    }
   }
 `;
 
-export const SNameInput = styled(BaseInput)``;
-export const SEmailInput = styled(BaseInput)``;
+export const SBoxButton = styled(Box)`
+  padding-left: 60px;
+`;
+
+export const SBoxImage = styled(Box)`
+  padding-left: 30px;
+`;
+
+export const SBoxPermissionButton = styled(Box)`
+  /* display: flex;
+  justify-content: center;
+  padding-left: 95px;
+  padding-top: 32px; */
+  padding-left: 60px;
+`;

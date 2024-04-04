@@ -12,6 +12,7 @@ const newContext = createContext<IUserContext>({
   createUser: () => Promise.resolve(),
   updateUsers: () => {},
   deleteUser: () => {},
+  listUserPermissionsByEmail: () => Promise.resolve([]),
 });
 
 export const UserProvider = ({ children }: IUserProvider) => {
@@ -54,9 +55,25 @@ export const UserProvider = ({ children }: IUserProvider) => {
     }
   }
 
+  async function listUserPermissionsByEmail(email: string): Promise<any> {
+    try {
+      const response = await Api.get("/user/permissions", email);
+
+      return response;
+    } catch (error) {
+      console.error("Error updating user:", error);
+    }
+  }
+
   return (
     <newContext.Provider
-      value={{ listUsers, createUser, updateUsers, deleteUser }}
+      value={{
+        listUsers,
+        createUser,
+        updateUsers,
+        deleteUser,
+        listUserPermissionsByEmail,
+      }}
     >
       {children}
     </newContext.Provider>
