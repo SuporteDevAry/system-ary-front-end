@@ -23,7 +23,7 @@ import { FaEye, FaLock } from "react-icons/fa";
 import { RiEyeCloseLine } from "react-icons/ri";
 
 import { useAuth } from "../../contexts/AuthProvider/useAuth";
-import { isEmailValid } from "../../helpers/utils";
+import { isEmailValid } from "../../helpers/back-end/utils";
 
 export function Login() {
   const auth = useAuth();

@@ -15,14 +15,16 @@ import {
 import { FiUser } from "react-icons/fi";
 
 import {
-  AiOutlineApartment,
+  AiOutlineIdcard,
+  AiOutlineTeam,
   AiOutlineHome,
   AiOutlineLeft,
   AiOutlineRight,
   AiOutlineSetting,
 } from "react-icons/ai";
-import { MdLogout, MdOutlineAnalytics } from "react-icons/md";
-import { BsPeople } from "react-icons/bs";
+
+import { LiaFileContractSolid } from "react-icons/lia";
+import { MdLogout } from "react-icons/md";
 
 import { iconAry } from "../../assets";
 import { getPermissionsFromToken } from "../../contexts/AuthProvider/util";
@@ -47,40 +49,43 @@ export function Sidebar() {
       notification: 0,
     },
     {
-      id: "FINANCEIRO",
-      label: "Financeiro",
-      icon: <MdOutlineAnalytics />,
-      to: "/financeiro",
+      id: "CONTRATOS",
+      label: "Contratos",
+      icon: <LiaFileContractSolid />,
+      to: "/contratos",
       notification: 0,
     },
     {
-      id: "BACKOFFICE",
-      label: "BackOffice",
-      icon: <BsPeople />,
-      to: "/back-office",
+      id: "CLIENTES",
+      label: "Clientes",
+      icon: <AiOutlineTeam />,
+      to: "/clientes",
       notification: 0,
     },
     {
-      id: "OPERACAO",
-      label: "Operações",
-      icon: <AiOutlineApartment />,
-      to: "/diagrams",
+      id: "CONTATOS",
+      label: "Contatos",
+      icon: <AiOutlineIdcard />,
+      to: "/contatos",
       notification: 0,
     },
   ];
 
-  const secondaryLinksArray = [
+  let secondaryLinksArray = [
     {
+      id: "ADMIN",
       label: "Admin",
       icon: <AiOutlineSetting />,
       to: "/admin",
     },
     {
+      id: "MINHA CONTA",
       label: "Minha Conta",
       icon: <FiUser />,
-      to: "/myaccount",
+      to: "/minha-conta",
     },
     {
+      id: "LOGOUT",
       label: "Logout",
       icon: <MdLogout />,
       to: "/logout",
@@ -90,6 +95,13 @@ export function Sidebar() {
   const filteredLinksArray = linksArray.filter((link) =>
     menuItems?.includes(link.id)
   );
+
+  const isAdminPresent = menuItems?.includes("ADMIN");
+  if (!isAdminPresent) {
+    secondaryLinksArray = secondaryLinksArray.filter(
+      (link) => link.id !== "ADMIN"
+    );
+  }
 
   return (
     <SSidebar
@@ -124,8 +136,8 @@ export function Sidebar() {
         </SLinkContainer>
       ))}
       <SDivider />
-      {secondaryLinksArray.map(({ icon, label, to }) => (
-        <SLinkContainer key={label} isActive={pathname === to}>
+      {secondaryLinksArray.map(({ icon, label, to, id }) => (
+        <SLinkContainer key={id} isActive={pathname === to}>
           <SLink to={to} style={!sidebarOpen ? { width: `fit-content` } : {}}>
             <SLinkIcon>{icon}</SLinkIcon>
             {sidebarOpen && <SLinkLabel>{label}</SLinkLabel>}

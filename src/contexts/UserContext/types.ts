@@ -31,4 +31,5 @@ export interface IUserContext {
   updateUsers: (userId: string, updateUserData: any) => void;
   deleteUser: (userId: string) => void;
   listUserPermissionsByEmail: (email: string) => Promise<any>;
+  updateUserPermissions: (permissionId: string, updatedRules: string[]) => void;
 }

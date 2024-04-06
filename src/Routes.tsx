@@ -7,6 +7,12 @@ import { Users } from "./pages/Users";
 import { Logout } from "./pages/Logout";
 import { Permissions } from "./pages/Permissions";
 import { Admin } from "./pages/Admin";
+import { Clientes } from "./pages/Clientes";
+import { CadastrarCliente } from "./pages/Clientes/components/CadastrarCliente";
+import { EditarCliente } from "./pages/Clientes/components/EditarCliente";
+import { Contatos } from "./pages/Contatos";
+import { CadastrarContato } from "./pages/Contatos/components/CadastrarContato";
+import { EditarContato } from "./pages/Contatos/components/EditarContato";
 
 export function RoutesForPages() {
   return (
@@ -19,9 +25,68 @@ export function RoutesForPages() {
           </Layout>
         }
       />
-
       <Route
-        path="/back-office"
+        path="/clientes"
+        element={
+          <ProtectedLayout>
+            <Layout>
+              <Clientes />
+            </Layout>
+          </ProtectedLayout>
+        }
+      />
+      <Route
+        path="/cliente-cadastrar"
+        element={
+          <ProtectedLayout>
+            <Layout>
+              <CadastrarCliente />
+            </Layout>
+          </ProtectedLayout>
+        }
+      />
+      <Route
+        path="/cliente-editar"
+        element={
+          <ProtectedLayout>
+            <Layout>
+              <EditarCliente />
+            </Layout>
+          </ProtectedLayout>
+        }
+      />
+      <Route
+        path="/contatos"
+        element={
+          <ProtectedLayout>
+            <Layout>
+              <Contatos />
+            </Layout>
+          </ProtectedLayout>
+        }
+      />
+      <Route
+        path="/contatos-cadastrar"
+        element={
+          <ProtectedLayout>
+            <Layout>
+              <CadastrarContato />
+            </Layout>
+          </ProtectedLayout>
+        }
+      />
+      <Route
+        path="/contatos-editar"
+        element={
+          <ProtectedLayout>
+            <Layout>
+              <EditarContato />
+            </Layout>
+          </ProtectedLayout>
+        }
+      />
+      <Route
+        path="/admin/usuarios"
         element={
           <ProtectedLayout>
             <Layout>
@@ -41,7 +106,7 @@ export function RoutesForPages() {
         }
       />
       <Route
-        path="/admin/permissions"
+        path="/admin/permissoes"
         element={
           <ProtectedLayout>
             <Layout>

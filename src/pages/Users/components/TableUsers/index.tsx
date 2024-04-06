@@ -11,7 +11,7 @@ import CustomButton from "../../../../components/CustomButton";
 import { ITableUsersProps } from "./types";
 
 export function TableUsers({
-  users,
+  data,
   isLoading,
   onHandleUpdateUser,
   onHandleDeleteUser,
@@ -32,7 +32,7 @@ export function TableUsers({
             {isLoading ? (
               <p> Loading ...</p> // criar um gif animado para por aqui
             ) : (
-              users?.map((user) => (
+              data?.map((user) => (
                 <TableRow
                   key={user.id}
                   sx={{ "&:last-child td, &:last-child th": { border: 0 } }}

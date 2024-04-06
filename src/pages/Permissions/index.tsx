@@ -13,55 +13,63 @@ import {
   SBoxPermissionButton,
 } from "./styles";
 
-import { LiaUserShieldSolid } from "react-icons/lia";
-import { getPermissionsFromToken } from "../../contexts/AuthProvider/util";
 import CustomButton from "../../components/CustomButton";
 import Divider from "@mui/material/Divider";
 import Box from "@mui/material/Box";
 import CustomInput from "../../components/CustomInput";
-
-import { GrUserAdmin } from "react-icons/gr";
-import { MdOutlineDashboardCustomize } from "react-icons/md";
-import { IoIosPeople } from "react-icons/io";
-import { TiContacts } from "react-icons/ti";
-import { FaMoneyCheckDollar } from "react-icons/fa6";
 import { ModalUsers } from "./components/ModalUsers";
+import { UserContext } from "../../contexts/UserContext";
+
+// icons
+import {
+  AiOutlineIdcard,
+  AiOutlineTeam,
+  AiOutlineHome,
+  AiOutlineSetting,
+} from "react-icons/ai";
+import { LiaUserShieldSolid, LiaFileContractSolid } from "react-icons/lia";
+import { toast } from "react-toastify";
 
 interface IPermissions {
   [key: string]: boolean;
 }
 
 export function Permissions() {
+  const userContext = UserContext();
   const [isUserModalOpen, setUserModalOpen] = useState<boolean>(false);
   const [selectedUser, setSelectedUser] = useState<{
     name: string;
     email: string;
   } | null>(null);
+
+  const [permissionsToken, setPermissionsToken] = useState([]);
+  const [permissionId, setPermissionId] = useState<string>();
+
   const permissionsLinks = [
     {
-      label: "Admin",
-      icon: <GrUserAdmin size={40} />,
-      key: "ADMIN",
-    },
-    {
       label: "Dashboard",
-      icon: <MdOutlineDashboardCustomize size={40} />,
+      icon: <AiOutlineHome size={40} />,
       key: "DASHBOARD",
     },
     {
+      label: "Contratos",
+      icon: <LiaFileContractSolid size={40} />,
+      key: "CONTRATOS",
+    },
+    {
       label: "Clientes",
-      icon: <IoIosPeople size={40} />,
+      icon: <AiOutlineTeam size={40} />,
       key: "CLIENTES",
     },
     {
       label: "Contatos",
-      icon: <TiContacts size={40} />,
+      icon: <AiOutlineIdcard size={40} />,
       key: "CONTATOS",
     },
     {
-      label: "Financeiro",
-      icon: <FaMoneyCheckDollar size={40} />,
-      key: "FINANCEIRO",
+      label: "Admin",
+      icon: <AiOutlineSetting size={40} />,
+      key: "ADMIN",
     },
   ];
 
@@ -81,25 +89,41 @@ export function Permissions() {
   });
 
   const handleToggle = (permission: string) => {
-    console.log(permissions);
     setPermissions((prevPermissions) => ({
       ...prevPermissions,
       [permission]: !prevPermissions[permission],
     }));
   };
 
-  useEffect(() => {
-    const permissionsToken = getPermissionsFromToken();
-    console.log(permissionsToken);
-    // Atualizar o estado das permissões com base no token
-    const updatedPermissions = { ...initialPermissions };
-    permissionsToken?.forEach((permission) => {
-      if (permission in updatedPermissions) {
-        updatedPermissions[permission] = true;
+  const fetchData = async () => {
+    try {
+      if (formData.email) {
+        const response = await userContext.listUserPermissionsByEmail(
+          formData.email
+        );
+        setPermissionId(response.data.id);
+        setPermissionsToken(response.data.rules);
       }
-    });
-    setPermissions(updatedPermissions);
-  }, []);
+    } catch (error) {
+      toast.error(`Error fetching permissions by email:  ${error}`);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [formData.email]);
+
+  useEffect(() => {
+    if (permissionsToken.length > 0) {
+      const updatedPermissions = { ...initialPermissions };
+      permissionsToken?.forEach((permission) => {
+        if (permission in updatedPermissions) {
+          updatedPermissions[permission] = true;
+        }
+      });
+      setPermissions(updatedPermissions);
+    }
+  }, [permissionsToken]);
 
   const handleCreate = (selectedUserData: { name: string; email: string }) => {
     setSelectedUser(selectedUserData);
@@ -118,8 +142,25 @@ export function Permissions() {
     setUserModalOpen(false);
   };
 
-  const handleUpdatePermissions = () => {
-    alert("Oi, Olá!!");
+  const handleUpdatePermissions = async () => {
+    if (!permissionId) {
+      toast.error("ID da permissão não definido, para realizar atualização!");
+      return;
+    }
+
+    try {
+      const updatedRules = Object.entries(permissions)
+        .filter(([_, value]) => value)
+        .map(([key]) => key);
+
+      await userContext.updateUserPermissions(permissionId, updatedRules);
+
+      toast.success(
+        `Permissões do usuário ${formData.name} atualizado com sucesso!`
+      );
+    } catch (error) {
+      toast.error(`Erro ao atualizar permissões: ${error}`);
+    }
   };
 
   return (

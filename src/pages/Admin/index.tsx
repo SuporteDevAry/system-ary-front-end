@@ -8,12 +8,12 @@ export function Admin() {
     {
       label: "Gerenciamento de Usuários",
       icon: <FiUsers size={64} />,
-      to: "/back-office",
+      to: "/admin/usuarios",
     },
     {
       label: "Permissões",
       icon: <GoShieldCheck size={64} />,
-      to: "/admin/permissions",
+      to: "/admin/permissoes",
     },
   ];
   return (
@@ -21,7 +21,7 @@ export function Admin() {
       <h1>Administrador</h1>
       <SContainer>
         {cardLinks.map(({ icon, label, to }) => (
-          <Link to={to}>
+          <Link to={to} key={label}>
             <SCard>
               <SCardIcon>{icon}</SCardIcon>
               <SContent>{label}</SContent>

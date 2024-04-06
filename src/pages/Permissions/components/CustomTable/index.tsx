@@ -51,7 +51,7 @@ const CustomTable: React.FC<ICustomTableProps> = ({
           </TableRow>
         </TableHead>
         <TableBody>
-          {data.map((row) => (
+          {data?.map((row) => (
             <React.Fragment key={row.id}>
               <TableRow
                 onClick={() => {
