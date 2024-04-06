@@ -5,6 +5,8 @@ import { ProtectedLayout } from "./components/ProtectedLayout";
 import { Layout } from "./components/Layout";
 import { Users } from "./pages/Users";
 import { Logout } from "./pages/Logout";
+import { Permissions } from "./pages/Permissions";
+import { Admin } from "./pages/Admin";
 import { Clientes } from "./pages/Clientes";
 import { CadastrarCliente } from "./pages/Clientes/components/CadastrarCliente";
 import { EditarCliente } from "./pages/Clientes/components/EditarCliente";
@@ -43,8 +45,7 @@ export function RoutesForPages() {
           </ProtectedLayout>
         }
       />
-
-     <Route
+      <Route
         path="/cliente-editar"
         element={
           <ProtectedLayout>
@@ -54,7 +55,6 @@ export function RoutesForPages() {
           </ProtectedLayout>
         }
       />
-
       <Route
         path="/contatos"
         element={
@@ -75,8 +75,7 @@ export function RoutesForPages() {
           </ProtectedLayout>
         }
       />
-
-     <Route
+      <Route
         path="/contatos-editar"
         element={
           <ProtectedLayout>
@@ -86,13 +85,32 @@ export function RoutesForPages() {
           </ProtectedLayout>
         }
       />
-
       <Route
-        path="/usuarios"
+        path="/admin/usuarios"
         element={
           <ProtectedLayout>
             <Layout>
               <Users />
+            </Layout>
+          </ProtectedLayout>
+        }
+      />
+      <Route
+        path="/admin"
+        element={
+          <ProtectedLayout>
+            <Layout>
+              <Admin />
+            </Layout>
+          </ProtectedLayout>
+        }
+      />
+      <Route
+        path="/admin/permissoes"
+        element={
+          <ProtectedLayout>
+            <Layout>
+              <Permissions />
             </Layout>
           </ProtectedLayout>
         }

@@ -12,6 +12,8 @@ const newContext = createContext<IUserContext>({
   createUser: () => Promise.resolve(),
   updateUsers: () => {},
   deleteUser: () => {},
+  listUserPermissionsByEmail: () => Promise.resolve([]),
+  updateUserPermissions: () => Promise.resolve(),
 });
 
 export const UserProvider = ({ children }: IUserProvider) => {
@@ -54,9 +56,48 @@ export const UserProvider = ({ children }: IUserProvider) => {
     }
   }
 
+  async function listUserPermissionsByEmail(email: string): Promise<any> {
+    try {
+      const response = await Api.get("/user/permissions", {
+        params: { email },
+      });
+
+      return response;
+    } catch (error) {
+      console.error("Error updating user:", error);
+    }
+  }
+
+  async function updateUserPermissions(
+    permissionId: string,
+    updatedRules: string[]
+  ): Promise<any> {
+    try {
+      // colocando no padrão do Body
+      const permissionsToSave = {
+        rules: updatedRules,
+      };
+      console.log("Vamos ver o que temos no context: ", permissionsToSave);
+      const response = await Api.patch(
+        `/permission/${permissionId}`,
+        permissionsToSave
+      );
+      return response;
+    } catch (error) {
+      console.error("Error updating permissions:", error);
+    }
+  }
+
   return (
     <newContext.Provider
-      value={{ listUsers, createUser, updateUsers, deleteUser }}
+      value={{
+        listUsers,
+        createUser,
+        updateUsers,
+        deleteUser,
+        listUserPermissionsByEmail,
+        updateUserPermissions,
+      }}
     >
       {children}
     </newContext.Provider>
