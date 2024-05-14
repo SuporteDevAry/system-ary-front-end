@@ -9,7 +9,7 @@ export default defineConfig(({ mode }) => {
     },
     plugins: [react()],
     server: {
-      port: 8000, // definir a porta para 8080
+      port: 3000,
     },
   };
 });

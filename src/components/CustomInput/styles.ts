@@ -1,13 +1,29 @@
-import styled from "styled-components";
+import styled, { css } from "styled-components";
+import { labelPositionVariant } from "./types";
+import { HTMLAttributes } from "react";
 
-export const SContainer = styled.div`
+interface SContainerProps extends HTMLAttributes<HTMLDivElement> {
+  labelPosition?: labelPositionVariant;
+}
+
+export const SContainer = styled.div<SContainerProps>`
   display: flex;
-  align-items: center;
-  margin-bottom: 10px; // Espaçamento opcional entre os inputs
+  gap: 8px;
+  // Label pode ficar em cima do input com valor "top", ou pode ficar a esquerda com o valor "left"!
+  ${({ labelPosition }) =>
+    labelPosition === "top"
+      ? css`
+          flex-direction: column;
+        `
+      : labelPosition === "left"
+      ? css`
+          align-items: center;
+        `
+      : null}
 `;
 
 export const SLabel = styled.label`
-  margin-right: 10px; // Espaçamento opcional entre o label e o input
+  padding-right: 10px; // Espaçamento opcional entre o label e o input
 `;
 
 export const SCustomInput = styled.input`

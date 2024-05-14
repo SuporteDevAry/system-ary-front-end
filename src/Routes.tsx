@@ -13,6 +13,7 @@ import { EditarCliente } from "./pages/Clientes/components/EditarCliente";
 import { Contatos } from "./pages/Contatos";
 import { CadastrarContato } from "./pages/Contatos/components/CadastrarContato";
 import { EditarContato } from "./pages/Contatos/components/EditarContato";
+import { FormContract } from "./pages/Contratos";
 
 export function RoutesForPages() {
   return (
@@ -23,6 +24,16 @@ export function RoutesForPages() {
           <Layout>
             <Dashboard />
           </Layout>
+        }
+      />
+      <Route
+        path="/contratos"
+        element={
+          <ProtectedLayout>
+            <Layout>
+              <FormContract />
+            </Layout>
+          </ProtectedLayout>
         }
       />
       <Route

@@ -6,10 +6,11 @@ const CustomInput: React.FC<InputProps> = ({
   height,
   label,
   readOnly,
+  labelPosition,
   ...rest
 }) => {
   return (
-    <SContainer>
+    <SContainer labelPosition={labelPosition}>
       <SLabel>{label}</SLabel>
       <SCustomInput
         width={width}
