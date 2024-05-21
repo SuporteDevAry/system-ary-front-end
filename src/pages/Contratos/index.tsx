@@ -4,8 +4,8 @@ import { Step1 } from "./components/Step1";
 import { Step2 } from "./components/Step2";
 import { Step3 } from "./components/Step3";
 import { Step4 } from "./components/Step4";
+import { Review } from "./components/Review";
 
-// import Stepper from "@mui/material/Stepper";
 import Step from "@mui/material/Step";
 import StepLabel from "@mui/material/StepLabel";
 import { SButtonContainer, SContainer, SContent, SStepper } from "./styles";
@@ -19,8 +19,8 @@ export const FormContract: React.FC = () => {
     product: "",
     quality: "",
     quantity: "",
-    price: 0,
-    icms: 0,
+    price: "",
+    icms: "",
     payment: "",
     pickup: "",
     pickupLocation: "",
@@ -31,40 +31,19 @@ export const FormContract: React.FC = () => {
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value } = e.target;
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      [name]: value,
+    }));
   };
 
-  const steps: StepType[] = [
-    {
-      label: "Identificação",
-      elements: [<Step1 handleChange={handleChange} />],
-    },
-    {
-      label: "Produto",
-      elements: [<Step2 handleChange={handleChange} />],
-    },
-    {
-      label: "Info. de Venda",
-      elements: [<Step3 handleChange={handleChange} />],
-    },
-    {
-      label: "Observação",
-      elements: [<Step4 handleChange={handleChange} />],
-    },
-    {
-      label: "Review",
-      elements: [<Step4 handleChange={handleChange} />],
-    },
-    {
-      label: "Envio",
-      elements: [<Step4 handleChange={handleChange} />],
-    },
-  ];
-
-  const currentStep = steps[activeStep];
+  const updateFormData = (data: Partial<FormDataContract>) => {
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      ...data,
+    }));
+  };
 
   const handleNext = () => {
     setActiveStep((prevActiveStep) => prevActiveStep + 1);
@@ -73,6 +52,41 @@ export const FormContract: React.FC = () => {
   const handleBack = () => {
     setActiveStep((prevActiveStep) => prevActiveStep - 1);
   };
+
+  const steps: StepType[] = [
+    {
+      label: "Identificação",
+      elements: [<Step1 formData={formData} handleChange={handleChange} />],
+    },
+    {
+      label: "Produto",
+      elements: [
+        <Step2
+          formData={formData}
+          handleChange={handleChange}
+          updateFormData={updateFormData}
+        />,
+      ],
+    },
+    {
+      label: "Info. de Venda",
+      elements: [<Step3 formData={formData} handleChange={handleChange} />],
+    },
+    {
+      label: "Observação",
+      elements: [<Step4 formData={formData} handleChange={handleChange} />],
+    },
+    {
+      label: "Review",
+      elements: [<Review formData={formData} />],
+    },
+    {
+      label: "Envio",
+      elements: [<Step4 formData={formData} handleChange={handleChange} />],
+    },
+  ];
+
+  const currentStep = steps[activeStep];
 
   return (
     <SContainer>
@@ -88,11 +102,7 @@ export const FormContract: React.FC = () => {
 
       <SButtonContainer>
         {activeStep !== 0 && (
-          <CustomButton
-            onClick={handleBack}
-            //disabled={activeStep === 0}
-            variant={"primary"}
-          >
+          <CustomButton onClick={handleBack} variant={"primary"}>
             Voltar
           </CustomButton>
         )}

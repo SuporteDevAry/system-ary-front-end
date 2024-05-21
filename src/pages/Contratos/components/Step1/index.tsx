@@ -1,11 +1,11 @@
 import React from "react";
 import { StepProps } from "../../types";
 import Box from "@mui/material/Box";
-import CustomInput from "../../../../components/CustomInput";
+import { CustomInput } from "../../../../components/CustomInput";
 import CustomButton from "../../../../components/CustomButton";
 import { SContainer, SContainerBuyer, SContainerSeller } from "./style";
 
-export const Step1: React.FC<StepProps> = ({ handleChange }) => {
+export const Step1: React.FC<StepProps> = ({ handleChange, formData }) => {
   return (
     <SContainer>
       <SContainerSeller>
@@ -16,15 +16,14 @@ export const Step1: React.FC<StepProps> = ({ handleChange }) => {
             label="Vendedor: "
             labelPosition="top"
             onChange={handleChange}
-            readOnly
-            //value={formData.name}
+            //readOnly
+            value={formData.seller}
           />
         </Box>
         <CustomButton
           variant="success"
           width="180px"
-          onClick={() => {} /* handleOpenUserModal */}
-          //disabled={!!formData.email}
+          //onClick={() => {handleOpenUserModal}}
         >
           Selecione Vendedor
         </CustomButton>
@@ -37,15 +36,14 @@ export const Step1: React.FC<StepProps> = ({ handleChange }) => {
             label="Comprador:"
             labelPosition="top"
             onChange={handleChange}
-            readOnly
-            //value={formData.email}
+            //readOnly
+            value={formData.buyer}
           />
         </Box>
         <CustomButton
           variant="success"
           width="180px"
-          onClick={() => {} /* handleOpenUserModal */}
-          //disabled={!!formData.email}
+          //onClick={() => {handleOpenUserModal}}
         >
           Selecione Comprador
         </CustomButton>

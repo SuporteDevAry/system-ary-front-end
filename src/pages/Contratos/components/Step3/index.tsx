@@ -1,8 +1,8 @@
-import CustomInput from "../../../../components/CustomInput";
+import { CustomInput } from "../../../../components/CustomInput";
 import { StepProps } from "../../types";
 import { SContainer } from "./styles";
 
-export const Step3: React.FC<StepProps> = ({ handleChange }) => {
+export const Step3: React.FC<StepProps> = ({ handleChange, formData }) => {
   return (
     <SContainer>
       <CustomInput
@@ -11,6 +11,7 @@ export const Step3: React.FC<StepProps> = ({ handleChange }) => {
         label="Quantidade:"
         labelPosition="top"
         onChange={handleChange}
+        value={formData.quantity}
       />
 
       <CustomInput
@@ -19,6 +20,7 @@ export const Step3: React.FC<StepProps> = ({ handleChange }) => {
         label="Preço:"
         labelPosition="top"
         onChange={handleChange}
+        value={formData.price}
       />
 
       <CustomInput
@@ -27,6 +29,7 @@ export const Step3: React.FC<StepProps> = ({ handleChange }) => {
         label="ICMS:"
         labelPosition="top"
         onChange={handleChange}
+        value={formData.icms}
       />
 
       <CustomInput
@@ -35,6 +38,7 @@ export const Step3: React.FC<StepProps> = ({ handleChange }) => {
         label="Pagamento:"
         labelPosition="top"
         onChange={handleChange}
+        value={formData.payment}
       />
 
       <CustomInput
@@ -43,6 +47,7 @@ export const Step3: React.FC<StepProps> = ({ handleChange }) => {
         label="Retirada:"
         labelPosition="top"
         onChange={handleChange}
+        value={formData.pickup}
       />
 
       <CustomInput
@@ -51,6 +56,7 @@ export const Step3: React.FC<StepProps> = ({ handleChange }) => {
         label="Local de Retirada:"
         labelPosition="top"
         onChange={handleChange}
+        value={formData.pickupLocation}
       />
 
       <CustomInput
@@ -59,6 +65,7 @@ export const Step3: React.FC<StepProps> = ({ handleChange }) => {
         label="Conferência:"
         labelPosition="top"
         onChange={handleChange}
+        value={formData.inspection}
       />
     </SContainer>
   );

@@ -1,7 +1,6 @@
 export type StepType = {
   label: string;
   elements: JSX.Element[];
-  /* icon: React.ReactNode; */
 };
 
 export type FormDataContract = {
@@ -10,8 +9,8 @@ export type FormDataContract = {
   product: string;
   quality: string;
   quantity: string;
-  price: number;
-  icms: number;
+  price: string;
+  icms: string;
   payment: string;
   pickup: string;
   pickupLocation: string;
@@ -20,7 +19,9 @@ export type FormDataContract = {
 };
 
 export interface StepProps {
-  handleChange: (
+  formData: FormDataContract;
+  handleChange?: (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => void;
+  updateFormData?: (data: Partial<FormDataContract>) => void;
 }

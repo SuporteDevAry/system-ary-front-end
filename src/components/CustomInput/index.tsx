@@ -1,12 +1,16 @@
+import React from "react";
 import { SContainer, SLabel, SCustomInput } from "./styles";
-import { InputProps } from "./types";
+import { CustomInputProps } from "./types";
 
-const CustomInput: React.FC<InputProps> = ({
+export const CustomInput: React.FC<CustomInputProps> = ({
   width,
   height,
   label,
   readOnly,
   labelPosition,
+  placeholder,
+  value,
+  type,
   ...rest
 }) => {
   return (
@@ -16,10 +20,10 @@ const CustomInput: React.FC<InputProps> = ({
         width={width}
         height={height}
         readOnly={readOnly}
+        value={value}
+        type={type}
         {...rest}
       />
     </SContainer>
   );
 };
-
-export default CustomInput;

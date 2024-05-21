@@ -6,7 +6,7 @@ export const SContainer = styled.div`
   gap: 8px;
 `;
 
-export const SText = styled.header``;
+export const SText = styled.h4``;
 
 export const STextArea = styled.textarea`
   color: ${(props) => props.theme["gray-600"]};
@@ -15,6 +15,7 @@ export const STextArea = styled.textarea`
   max-width: 800px;
   height: 140px;
   border-width: 2px;
+  padding: 16px 16px 0;
 
   &:focus {
     box-shadow: none;
