@@ -105,7 +105,7 @@ export function EditarCliente() {
   const checkCEP = (e: React.ChangeEvent<HTMLInputElement>) => {
     const cep = e.target.value.replace(/\D/g, "");
 
-    fetch(`${process.env.URL_VIA_CEP}/${cep}/json/`)
+    fetch(`${process.env.REACT_APP_URL_VIA_CEP}/${cep}/json/`)
       .then((res) => res.json())
       .then((data) => {
         const dadosEndereco = {
