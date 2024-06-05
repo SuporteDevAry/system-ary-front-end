@@ -1,6 +1,6 @@
 import { CustomInput } from "../../../../components/CustomInput";
 import { StepProps } from "../../types";
-import { SContainer } from "./styles";
+import { SContainer, SText, STextArea } from "./styles";
 import { CustomSelect } from "../../../../components/CustomSelect";
 
 export const Step2: React.FC<StepProps> = ({
@@ -36,9 +36,16 @@ export const Step2: React.FC<StepProps> = ({
 
       <CustomInput
         type="text"
-        name="quality"
-        label="Qualidade: "
+        name="crop"
+        label="Safra: "
         labelPosition="top"
+        onChange={handleChange}
+        value={formData.crop}
+      />
+
+      <SText>Qualidade:</SText>
+      <STextArea
+        name="quality"
         onChange={handleChange}
         value={formData.quality}
       />

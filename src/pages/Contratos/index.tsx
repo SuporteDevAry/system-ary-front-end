@@ -17,6 +17,7 @@ export const FormContract: React.FC = () => {
     seller: "",
     buyer: "",
     product: "",
+    crop: "",
     quality: "",
     quantity: "",
     price: "",

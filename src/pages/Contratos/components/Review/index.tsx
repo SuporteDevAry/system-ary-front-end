@@ -15,6 +15,7 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
       <h3>Produto</h3>
       <br />
       <p>Produto: {formData.product}</p>
+      <p>Safra: {formData.crop}</p>
       <p>Qualidade: {formData.quality}</p>
       <br />
 

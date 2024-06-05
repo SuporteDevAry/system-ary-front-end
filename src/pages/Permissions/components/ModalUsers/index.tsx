@@ -1,15 +1,10 @@
 import { useEffect, useState } from "react";
 import { Modal } from "../../../../components/Modal";
-import CustomTable from "../CustomTable";
-import { ModalUsersProps } from "./types";
+import CustomTable from "../../../../components/CustomTable";
+import { ISelectedUser, ModalUsersProps } from "./types";
 import { UserContext } from "../../../../contexts/UserContext";
 import { IListUser } from "../../../../contexts/UserContext/types";
-import { IColumn } from "../CustomTable/types";
-
-interface ISelectedUser {
-  name: string;
-  email: string;
-}
+import { IColumn } from "../../../../components/CustomTable/types";
 
 export function ModalUsers({ open, onClose, onConfirm }: ModalUsersProps) {
   const userContext = UserContext();
