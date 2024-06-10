@@ -8,12 +8,16 @@ export function ModalClientes({
   onClose,
   onConfirm,
   open,
+  data,
+  loading,
+  selectionType,
 }: ModalClientesProps) {
   const [selectedCustomer, setSelectedCustomer] =
     useState<ISelectedCustomer | null>(null);
 
   const handleConfirm = () => {
     if (selectedCustomer) {
+      console.log("Salvo no Modal", selectedCustomer);
       onConfirm(selectedCustomer);
       onClose();
     }
@@ -24,18 +28,23 @@ export function ModalClientes({
   };
 
   useEffect(() => {
-    console.log("Passei no Modal", open);
+    //To Remove
+    console.log("Passei no Modal", data);
   }, []);
 
   const nameColumns: IColumn[] = [
-    { field: "name", header: "Nome" },
-    { field: "email", header: "E-mail" },
+    { field: "nome", header: "Nome" },
+    { field: "cnpj", header: "CNPJ/CPF" },
+    { field: "cidade", header: "Cidade" },
+    { field: "uf", header: "UF" },
   ];
 
   return (
     <>
       <Modal
-        titleText={"Selecione o usuário, que deseja alterar as permissões!"}
+        titleText={`Selecione um ${
+          selectionType === "buyer" ? "Comprador" : "Vendedor"
+        }!`}
         open={open}
         confirmButton="Confirmar"
         cancelButton="Cancelar"
@@ -44,20 +53,15 @@ export function ModalClientes({
         onClose={handleClose}
         onHandleCreate={handleConfirm}
       >
-        {
-          <>
-            <p>Search</p>
-            <p>Button</p>
-            <p>Tabela</p>
-          </>
-        }
-
         <CustomTable
-          data={[]}
+          isLoading={loading}
+          data={data}
           columns={nameColumns}
           hasCheckbox
-          //hasPagination
-          onRowClick={(rowData) => setSelectedCustomer({ name: rowData.name })}
+          hasPagination
+          onRowClick={(rowData) =>
+            setSelectedCustomer({ name: rowData.nome, type: selectionType })
+          }
         />
       </Modal>
     </>

@@ -11,4 +11,5 @@ export interface ICustomTableProps {
   hasCheckbox?: boolean;
   collapsible?: boolean;
   onRowClick?: (rowData: any) => void;
+  isLoading?: boolean;
 }
