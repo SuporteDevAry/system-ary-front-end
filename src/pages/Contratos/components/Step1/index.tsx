@@ -3,7 +3,7 @@ import { StepProps } from "../../types";
 import Box from "@mui/material/Box";
 import { CustomInput } from "../../../../components/CustomInput";
 import CustomButton from "../../../../components/CustomButton";
-import { SContainer, SContainerBuyer, SContainerSeller } from "./style";
+import { SContainer, SContainerBuyer, SContainerSeller } from "./styles";
 import { ModalClientes } from "./components/ModalClientes";
 import { ClienteContext } from "../../../../contexts/ClienteContext";
 
@@ -52,7 +52,6 @@ export const Step1: React.FC<StepProps> = ({ handleChange, formData }) => {
     name: string;
     type: string;
   }) => {
-    console.log("Salvo no Index", selectedCustomer, selectCustomerData);
     setSelectedCustomer(selectCustomerData);
     if (handleChange) {
       const event = {

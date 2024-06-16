@@ -15,6 +15,8 @@ export function Modal({
   confirmButton,
   variantCancel,
   variantConfirm,
+  maxWidth = "md",
+  fullWidth = true,
   onHandleCreate,
   onClose,
 }: IModalProps) {
@@ -23,7 +25,13 @@ export function Modal({
   };
 
   return (
-    <Dialog onClose={handleClose} open={open}>
+    <Dialog
+      onClose={handleClose}
+      open={open}
+      maxWidth={maxWidth}
+      fullWidth={fullWidth}
+      // sx={{ "& .MuiDialog-paper": { minHeight: "400px", maxHeight: "90vh" } }} // Customize height
+    >
       <DialogTitle>{titleText}</DialogTitle>
       <DialogContent>
         <DialogContentText>{children}</DialogContentText>
