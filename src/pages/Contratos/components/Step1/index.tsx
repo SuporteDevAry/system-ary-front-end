@@ -14,9 +14,11 @@ export const Step1: React.FC<StepProps> = ({ handleChange, formData }) => {
   const [selectionType, setSelectionType] = useState<"buyer" | "seller">(
     "buyer"
   );
-  const [selectedCustomer, setSelectedCustomer] = useState<{
-    name: string;
-  } | null>(null);
+
+  // To Remove
+  // const [selectedCustomer, setSelectedCustomer] = useState<{
+  //   name: string;
+  // } | null>(null);
 
   const clienteContext = ClienteContext();
 
@@ -52,7 +54,7 @@ export const Step1: React.FC<StepProps> = ({ handleChange, formData }) => {
     name: string;
     type: string;
   }) => {
-    setSelectedCustomer(selectCustomerData);
+    //setSelectedCustomer(selectCustomerData);
     if (handleChange) {
       const event = {
         target: {

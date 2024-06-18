@@ -23,6 +23,7 @@ export function ModalClientes({
     useState<ISelectedCustomer | null>(null);
 
   const [searchTerm, setSearchTerm] = useState("");
+
   const [dataTable, setDataTable] = useState<TableData[]>([]);
 
   const handleConfirm = () => {

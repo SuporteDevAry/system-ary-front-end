@@ -1,11 +1,9 @@
 import DialogTitle from "@mui/material/DialogTitle";
 import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
-
 import CustomButton from "../CustomButton";
 import { IModalProps } from "./types";
+import { SDialogActions, SDialogContent } from "./styles";
 
 export function Modal({
   open,
@@ -33,14 +31,14 @@ export function Modal({
       // sx={{ "& .MuiDialog-paper": { minHeight: "400px", maxHeight: "90vh" } }} // Customize height
     >
       <DialogTitle>{titleText}</DialogTitle>
-      <DialogContent>
+      <SDialogContent>
         <DialogContentText>{children}</DialogContentText>
-      </DialogContent>
-      <DialogActions>
+      </SDialogContent>
+      <SDialogActions>
         {cancelButton && (
           <CustomButton
             variant={variantCancel}
-            width="80px"
+            width="90px"
             onClick={handleClose}
           >
             {cancelButton}
@@ -49,13 +47,13 @@ export function Modal({
         {confirmButton && (
           <CustomButton
             variant={variantConfirm}
-            width="80px"
+            width="90px"
             onClick={onHandleCreate}
           >
             {confirmButton}
           </CustomButton>
         )}
-      </DialogActions>
+      </SDialogActions>
     </Dialog>
   );
 }

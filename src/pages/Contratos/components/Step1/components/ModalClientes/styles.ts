@@ -1,9 +1,11 @@
 import styled from "styled-components";
+import { V } from "../../../../../../styles/variables";
 
 export const SContainerSearchAndButton = styled.div`
   display: flex;
-  gap: 16px;
+  gap: ${V.mdSpacing};
   flex-direction: row;
-  padding-top: 16px;
-  padding-bottom: 16px;
+  padding-top: ${V.smSpacing};
+  padding-bottom: ${V.mdSpacing};
+  margin-left: -16px;
 `;
