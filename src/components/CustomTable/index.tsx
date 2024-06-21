@@ -17,11 +17,12 @@ import { SColumnHeader, SCheckbox, STableHead } from "./styles";
 const CustomTable: React.FC<ICustomTableProps> = ({
   data,
   columns,
+  isLoading,
   hasPagination = false,
   hasCheckbox = false,
   collapsible = false,
+  renderChildren,
   onRowClick,
-  isLoading,
 }) => {
   const [openRows, setOpenRows] = useState<number[]>([]);
   const [selectedRowId, setSelectedRowId] = useState<number | null>(null);
@@ -40,10 +41,6 @@ const CustomTable: React.FC<ICustomTableProps> = ({
     }
   };
 
-  // const handleChangePage = (_event: unknown, newPage: number) => {
-  //   setPage(newPage);
-  // };
-
   const handleChangePage = (
     _event: React.MouseEvent<HTMLButtonElement> | null,
     newPage: number
@@ -54,14 +51,13 @@ const CustomTable: React.FC<ICustomTableProps> = ({
   const handleChangeRowsPerPage = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
-    //setRowsPerPage(+event.target.value);
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
 
   return (
     <TableContainer component={Paper}>
-      <Table>
+      <Table size="small">
         <STableHead>
           <TableRow>
             {hasCheckbox && <TableCell />}
@@ -82,7 +78,7 @@ const CustomTable: React.FC<ICustomTableProps> = ({
                 <React.Fragment key={row.id}>
                   <TableRow
                     onClick={() => {
-                      if (onRowClick) {
+                      if (onRowClick && !collapsible) {
                         onRowClick(row);
                       }
                       if (collapsible) {
@@ -116,16 +112,7 @@ const CustomTable: React.FC<ICustomTableProps> = ({
                           unmountOnExit
                         >
                           <Box margin={1}>
-                            <Table size="small" aria-label="purchases">
-                              <TableBody>
-                                <TableRow>
-                                  <TableCell component="th" scope="row">
-                                    Extra Info
-                                  </TableCell>
-                                  <TableCell>Teste</TableCell>
-                                </TableRow>
-                              </TableBody>
-                            </Table>
+                            {renderChildren ? renderChildren(row) : null}
                           </Box>
                         </Collapse>
                       </TableCell>
@@ -137,7 +124,6 @@ const CustomTable: React.FC<ICustomTableProps> = ({
         </TableBody>
       </Table>
       {hasPagination && (
-        // <Box display="flex" justifyContent="flex-start">
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"
@@ -147,7 +133,6 @@ const CustomTable: React.FC<ICustomTableProps> = ({
           onPageChange={handleChangePage}
           onRowsPerPageChange={handleChangeRowsPerPage}
         />
-        //</Box>
       )}
     </TableContainer>
   );

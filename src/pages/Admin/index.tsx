@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { SContainer, SCard, SCardIcon, SContent } from "./styles";
+import { SContainer, SCard, SCardIcon, SContent, STitle } from "./styles";
 import { FiUsers } from "react-icons/fi";
 import { GoShieldCheck } from "react-icons/go";
 
@@ -18,7 +18,7 @@ export function Admin() {
   ];
   return (
     <>
-      <h1>Administrador</h1>
+      <STitle>Administrador</STitle>
       <SContainer>
         {cardLinks.map(({ icon, label, to }) => (
           <Link to={to} key={label}>

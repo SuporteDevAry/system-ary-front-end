@@ -22,6 +22,7 @@ export const CustomInput: React.FC<CustomInputProps> = ({
         readOnly={readOnly}
         value={value}
         type={type}
+        placeholder={placeholder}
         {...rest}
       />
     </SContainer>

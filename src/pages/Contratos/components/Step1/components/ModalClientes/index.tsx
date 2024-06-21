@@ -2,14 +2,14 @@ import { useEffect, useState } from "react";
 import { Modal } from "../../../../../../components/Modal";
 import { ISelectedCustomer, ModalClientesProps } from "./types";
 import CustomTable from "../../../../../../components/CustomTable";
-import { IColumn } from "../../../../../../components/CustomTable/types";
+import {
+  IColumn,
+  TableDataProps,
+} from "../../../../../../components/CustomTable/types";
 import { CustomSearch } from "../../../../../../components/CustomSearch";
 import CustomButton from "../../../../../../components/CustomButton";
 
 import { SContainerSearchAndButton } from "./styles";
-interface TableData {
-  [key: string]: any;
-}
 
 export function ModalClientes({
   onClose,
@@ -24,11 +24,10 @@ export function ModalClientes({
 
   const [searchTerm, setSearchTerm] = useState("");
 
-  const [dataTable, setDataTable] = useState<TableData[]>([]);
+  const [dataTable, setDataTable] = useState<TableDataProps[]>([]);
 
   const handleConfirm = () => {
     if (selectedCustomer) {
-      console.log("Salvo no Modal", selectedCustomer);
       onConfirm(selectedCustomer);
       onClose();
     }
@@ -66,6 +65,14 @@ export function ModalClientes({
     { field: "cnpj", header: "CNPJ/CPF" },
     { field: "cidade", header: "Cidade" },
     { field: "uf", header: "UF" },
+    // { field: "uf", header: "UF" },
+    // { field: "uf", header: "UF" },
+    // { field: "uf", header: "UF" },
+    // { field: "uf", header: "UF" },
+    // { field: "uf", header: "UF" },
+    // { field: "uf", header: "UF" },
+    // { field: "uf", header: "UF" },
+    // { field: "uf", header: "UF" },
   ];
 
   return (

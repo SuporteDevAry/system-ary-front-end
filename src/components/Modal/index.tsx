@@ -13,8 +13,8 @@ export function Modal({
   confirmButton,
   variantCancel,
   variantConfirm,
-  maxWidth = "md",
-  fullWidth = true,
+  maxWidth,
+  fullWidth,
   onHandleCreate,
   onClose,
 }: IModalProps) {

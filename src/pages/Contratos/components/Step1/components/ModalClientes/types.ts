@@ -13,3 +13,4 @@ export interface ISelectedCustomer {
   name: string;
   type: string;
 }
+

@@ -1,15 +1,22 @@
+import { ReactNode } from "react";
+
 export interface IColumn {
   header: string;
   field: string;
 }
 
+export interface TableDataProps {
+  [key: string]: any;
+}
+
 export interface ICustomTableProps {
-  columns: IColumn[];
   //data: T[];
+  columns: IColumn[];
   data: any[];
   hasPagination?: boolean;
   hasCheckbox?: boolean;
   collapsible?: boolean;
-  onRowClick?: (rowData: any) => void;
   isLoading?: boolean;
+  renderChildren?: (row: TableDataProps) => ReactNode;
+  onRowClick?: (row: TableDataProps) => void;
 }

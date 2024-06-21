@@ -13,7 +13,9 @@ import { EditarCliente } from "./pages/Clientes/components/EditarCliente";
 import { Contatos } from "./pages/Contatos";
 import { CadastrarContato } from "./pages/Contatos/components/CadastrarContato";
 import { EditarContato } from "./pages/Contatos/components/EditarContato";
-import { FormContract } from "./pages/Contratos";
+import { Contrato } from "./pages/Contratos";
+import { HistoricoContratos } from "./pages/Contratos/pages/HistoricoContratos";
+import { NovoContrato } from "./pages/Contratos/pages/CriarNovoContrato";
 
 export function RoutesForPages() {
   return (
@@ -31,7 +33,27 @@ export function RoutesForPages() {
         element={
           <ProtectedLayout>
             <Layout>
-              <FormContract />
+              <Contrato />
+            </Layout>
+          </ProtectedLayout>
+        }
+      />
+      <Route
+        path="/contratos/novo-contrato"
+        element={
+          <ProtectedLayout>
+            <Layout>
+              <NovoContrato />
+            </Layout>
+          </ProtectedLayout>
+        }
+      />
+      <Route
+        path="/contratos/historico"
+        element={
+          <ProtectedLayout>
+            <Layout>
+              <HistoricoContratos />
             </Layout>
           </ProtectedLayout>
         }
