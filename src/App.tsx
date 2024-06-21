@@ -7,18 +7,19 @@ import { Helmet } from "react-helmet";
 import { ToastContainer } from "react-toastify";
 
 export function App() {
-  return (
-    <ThemeProvider theme={defaultTheme}>
-      <ToastContainer autoClose={5000} />
-      <Helmet>
-        <title>
-          Ary Oleofar &#8211; Ary Oleofar Corretora de Mercadorias LTDA
-        </title>
-      </Helmet>
-      <BrowserRouter>
-        <RoutesForPages />
-        <GlobalStyle />
-      </BrowserRouter>
-    </ThemeProvider>
-  );
+    return (
+        <ThemeProvider theme={defaultTheme}>
+            <ToastContainer autoClose={5000} />
+            <Helmet>
+                <title>
+                    Ary Oleofar &#8211; Ary Oleofar Corretora de Mercadorias
+                    LTDA
+                </title>
+            </Helmet>
+            <BrowserRouter>
+                <RoutesForPages />
+                <GlobalStyle />
+            </BrowserRouter>
+        </ThemeProvider>
+    );
 }
