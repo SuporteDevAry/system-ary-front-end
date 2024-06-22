@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react";
 
 import Box from "@mui/material/Box";
-import { CustomInput } from "../../../../components/CustomInput";
-import CustomButton from "../../../../components/CustomButton";
+import { CustomInput } from "../../../../../../components/CustomInput";
+import CustomButton from "../../../../../../components/CustomButton";
 import { SContainer, SContainerBuyer, SContainerSeller } from "./styles";
 import { ModalClientes } from "./components/ModalClientes";
-import { ClienteContext } from "../../../../contexts/ClienteContext";
+import { ClienteContext } from "../../../../../../contexts/ClienteContext";
 
-import { IListCliente } from "../../../../contexts/ClienteContext/types";
-import { StepProps } from "../../pages/CriarNovoContrato/types";
+import { IListCliente } from "../../../../../../contexts/ClienteContext/types";
+import { StepProps } from "../../types";
 
 export const Step1: React.FC<StepProps> = ({ handleChange, formData }) => {
   const [isCustomerModalOpen, setCustomerModalOpen] = useState<boolean>(false);

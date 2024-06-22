@@ -1,21 +1,23 @@
-import { CustomInput } from "../../../../components/CustomInput";
+import { CustomInput } from "../../../../../../components/CustomInput";
 import { StepProps } from "../../types";
 import { SContainer, SText, STextArea } from "./styles";
-import { CustomSelect } from "../../../../components/CustomSelect";
+import { CustomSelect } from "../../../../../../components/CustomSelect";
+import { ProductType, productInfo } from "./types";
 
 export const Step2: React.FC<StepProps> = ({
   handleChange,
   formData,
   updateFormData,
 }) => {
-  // const handleSelectChange = (value: string) => {
-  //   // Atualiza o state formData no componente pai
-  //   updateFormData?.({ product: value });
-  // };
-
   const handleFieldChange = (field: string, value: string) => {
-    // Atualiza o state formData no componente pai
-    updateFormData?.({ ...formData, [field]: value });
+    const info = productInfo[value as ProductType];
+    updateFormData?.({
+      ...formData,
+      [field]: value,
+      quality: info.quality,
+      observation: info.observation,
+      nameProduct: info.name,
+    });
   };
 
   return (
