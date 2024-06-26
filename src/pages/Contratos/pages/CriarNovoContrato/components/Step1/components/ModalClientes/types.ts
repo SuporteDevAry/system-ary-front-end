@@ -1,4 +1,4 @@
-import { IListCliente } from "../../../../../../contexts/ClienteContext/types";
+import { IListCliente } from "../../../../../../../../contexts/ClienteContext/types";
 
 export interface ModalClientesProps {
   open: boolean;
@@ -13,4 +13,3 @@ export interface ISelectedCustomer {
   name: string;
   type: string;
 }
-

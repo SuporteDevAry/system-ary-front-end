@@ -7,6 +7,7 @@ export type FormDataContract = {
   seller: string;
   buyer: string;
   product: string;
+  nameProduct: string;
   crop: string;
   quality: string;
   quantity: string;

@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
-import { Modal } from "../../../../../../components/Modal";
+import { Modal } from "../../../../../../../../components/Modal";
 import { ISelectedCustomer, ModalClientesProps } from "./types";
-import CustomTable from "../../../../../../components/CustomTable";
+import CustomTable from "../../../../../../../../components/CustomTable";
 import {
   IColumn,
   TableDataProps,
-} from "../../../../../../components/CustomTable/types";
-import { CustomSearch } from "../../../../../../components/CustomSearch";
-import CustomButton from "../../../../../../components/CustomButton";
+} from "../../../../../../../../components/CustomTable/types";
+import { CustomSearch } from "../../../../../../../../components/CustomSearch";
+import CustomButton from "../../../../../../../../components/CustomButton";
 
 import { SContainerSearchAndButton } from "./styles";
 

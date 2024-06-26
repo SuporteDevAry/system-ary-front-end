@@ -1,10 +1,10 @@
 import React from "react";
 import { FormDataContract, StepType } from "./types";
-import { Step1 } from "../../components/Step1";
-import { Step2 } from "../../components/Step2";
-import { Step3 } from "../../components/Step3";
-import { Step4 } from "../../components/Step4";
-import { Review } from "../../components/Review";
+import { Step1 } from "./components/Step1";
+import { Step2 } from "./components/Step2";
+import { Step3 } from "./components/Step3";
+import { Step4 } from "./components/Step4";
+import { Review } from "./components/Review";
 
 import Step from "@mui/material/Step";
 import StepLabel from "@mui/material/StepLabel";
@@ -17,6 +17,7 @@ export const NovoContrato: React.FC = () => {
     seller: "",
     buyer: "",
     product: "",
+    nameProduct: "",
     crop: "",
     quality: "",
     quantity: "",
@@ -82,7 +83,7 @@ export const NovoContrato: React.FC = () => {
       elements: [<Review formData={formData} />],
     },
     {
-      label: "Envio",
+      label: "Salvar",
       elements: [<Step4 formData={formData} handleChange={handleChange} />],
     },
   ];

@@ -1,5 +1,10 @@
+<<<<<<< HEAD:src/pages/Contratos/components/Step3/index.tsx
 import { CustomInput } from "../../../../components/CustomInput";
 import { StepProps } from "../../pages/CriarNovoContrato/types";
+=======
+import { CustomInput } from "../../../../../../components/CustomInput";
+import { StepProps } from "../../types";
+>>>>>>> 341f9a7f8e5997943688ac4f15c22a8d01d3a9ac:src/pages/Contratos/pages/CriarNovoContrato/components/Step3/index.tsx
 import { SContainer } from "./styles";
 
 export const Step3: React.FC<StepProps> = ({ handleChange, formData }) => {
