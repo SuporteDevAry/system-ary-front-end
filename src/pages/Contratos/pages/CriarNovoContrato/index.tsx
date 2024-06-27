@@ -5,6 +5,7 @@ import { Step2 } from "./components/Step2";
 import { Step3 } from "./components/Step3";
 import { Step4 } from "./components/Step4";
 import { Review } from "./components/Review";
+import { Save } from "./components/Save";
 
 import Step from "@mui/material/Step";
 import StepLabel from "@mui/material/StepLabel";
@@ -84,7 +85,9 @@ export const NovoContrato: React.FC = () => {
     },
     {
       label: "Salvar",
-      elements: [<Step4 formData={formData} handleChange={handleChange} />],
+      elements: [
+        <Save formData={formData} handleChange={handleChange} />,
+      ],
     },
   ];
 

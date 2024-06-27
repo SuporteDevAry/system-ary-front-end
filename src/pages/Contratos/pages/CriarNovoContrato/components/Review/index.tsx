@@ -18,7 +18,7 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
           Nome do Produto: <SValue>{formData.nameProduct}</SValue>
         </SKey>
         <SKey>
-          Produto: <SValue>{formData.product}</SValue>
+          Sigla do Produto: <SValue>{formData.product}</SValue>
         </SKey>
         <SKey>
           Safra:<SValue> {formData.crop}</SValue>
