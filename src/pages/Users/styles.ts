@@ -7,6 +7,14 @@ export const STitle = styled.h1`
 
 export const BoxContainer = styled.div`
   display: flex;
-  gap: 197px;
+  justify-content: space-between;
   padding-top: 16px;
+  padding-right: 18px;
+`;
+
+export const SButtonContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  justify-content: flex-end;
 `;

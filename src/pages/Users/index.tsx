@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { ModalCreateNewUser } from "./components/ModalCreateNewUser";
 import { TableUsers } from "./components/TableUsers";
-import { BoxContainer, STitle } from "./styles";
+import { BoxContainer, SButtonContainer, STitle } from "./styles";
 import CardContent from "@mui/material/CardContent";
 import CustomButton from "../../components/CustomButton";
 import { ModalEditUser } from "./components/ModalEditUser";
@@ -9,6 +9,7 @@ import { UserContext } from "../../contexts/UserContext";
 import { IListUser } from "../../contexts/UserContext/types";
 import { toast } from "react-toastify";
 import { CustomSearch } from "../../components/CustomSearch";
+import CustomTable from "../../components/CustomTable";
 
 export function Users() {
   const userContext = UserContext();
@@ -90,6 +91,31 @@ export function Users() {
     handleSearch();
   }, [searchTerm]);
 
+  const nameColumns = [
+    { field: "name", header: "Nome" },
+    { field: "email", header: "E-mail" },
+    { field: "created_at", header: "Data de Criação" },
+  ];
+
+  const renderActionButtons = (row: any) => (
+    <SButtonContainer>
+      <CustomButton
+        variant={"primary"}
+        width="80px"
+        onClick={() => handleUpdateUser(row)}
+      >
+        Editar
+      </CustomButton>
+      <CustomButton
+        variant={"danger"}
+        width="80px"
+        onClick={() => handleDeleteUser(row.id)}
+      >
+        Deletar
+      </CustomButton>
+    </SButtonContainer>
+  );
+
   return (
     <>
       <STitle>Usuários</STitle>
@@ -110,11 +136,12 @@ export function Users() {
       </BoxContainer>
 
       <CardContent>
-        <TableUsers
-          isLoading={isLoading}
+        <CustomTable
           data={dataTable}
-          onHandleUpdateUser={handleUpdateUser}
-          onHandleDeleteUser={handleDeleteUser}
+          columns={nameColumns}
+          isLoading={isLoading}
+          hasPagination={true}
+          actionButtons={renderActionButtons}
         />
       </CardContent>
 

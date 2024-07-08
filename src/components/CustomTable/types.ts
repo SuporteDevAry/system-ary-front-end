@@ -19,4 +19,5 @@ export interface ICustomTableProps {
   isLoading?: boolean;
   renderChildren?: (row: TableDataProps) => ReactNode;
   onRowClick?: (row: TableDataProps) => void;
+  actionButtons?: (row: TableDataProps) => ReactNode;
 }

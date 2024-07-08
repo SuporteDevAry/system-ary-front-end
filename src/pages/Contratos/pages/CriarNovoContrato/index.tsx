@@ -15,6 +15,7 @@ import CustomButton from "../../../../components/CustomButton";
 export const NovoContrato: React.FC = () => {
   const [activeStep, setActiveStep] = React.useState<number>(0);
   const [formData, setFormData] = React.useState<FormDataContract>({
+    numberBroker: "",
     seller: "",
     buyer: "",
     product: "",
@@ -85,9 +86,7 @@ export const NovoContrato: React.FC = () => {
     },
     {
       label: "Salvar",
-      elements: [
-        <Save formData={formData} handleChange={handleChange} />,
-      ],
+      elements: [<Save formData={formData} handleChange={handleChange} />],
     },
   ];
 

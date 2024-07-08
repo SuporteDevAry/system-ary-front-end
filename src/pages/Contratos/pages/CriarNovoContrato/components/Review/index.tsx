@@ -8,7 +8,11 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
         <STitle>Review</STitle>
 
         <SKey>
-          Vendedor:<SValue>{formData.seller}</SValue>{" "}
+          Nº Corretor:<SValue>{formData.seller}</SValue>
+        </SKey>
+
+        <SKey>
+          Vendedor:<SValue>{formData.seller}</SValue>
         </SKey>
         <SKey>
           Comprador: <SValue>{formData.buyer}</SValue>

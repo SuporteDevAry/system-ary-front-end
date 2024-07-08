@@ -12,7 +12,10 @@ import {
 } from "@mui/material";
 import { ICustomTableProps } from "./types";
 import { SColumnHeader, SCheckbox, STableHead } from "./styles";
+import { convertToCustomFormat } from "../../helpers/dateFormat";
 // import { KeyboardArrowDown, KeyboardArrowUp } from "@mui/icons-material";
+
+const locale = "pt-BR";
 
 const CustomTable: React.FC<ICustomTableProps> = ({
   data,
@@ -23,6 +26,7 @@ const CustomTable: React.FC<ICustomTableProps> = ({
   collapsible = false,
   renderChildren,
   onRowClick,
+  actionButtons,
 }) => {
   const [openRows, setOpenRows] = useState<number[]>([]);
   const [selectedRowId, setSelectedRowId] = useState<number | null>(null);
@@ -66,11 +70,22 @@ const CustomTable: React.FC<ICustomTableProps> = ({
                 <SColumnHeader>{column.header}</SColumnHeader>
               </TableCell>
             ))}
+            {actionButtons && <TableCell />}
           </TableRow>
         </STableHead>
         <TableBody>
           {isLoading ? (
-            <p>Loading...</p>
+            <TableRow>
+              <TableCell
+                colSpan={
+                  columns.length +
+                  (hasCheckbox ? 1 : 0) +
+                  (actionButtons ? 1 : 0)
+                }
+              >
+                <p>Loading...</p>
+              </TableCell>
+            </TableRow>
           ) : (
             data
               ?.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
@@ -96,15 +111,24 @@ const CustomTable: React.FC<ICustomTableProps> = ({
                     )}
                     {columns.map((column) => (
                       <TableCell key={column.field}>
-                        {row[column.field]}
+                        {column.field === "created_at"
+                          ? convertToCustomFormat(row[column.field], locale)
+                          : row[column.field]}
                       </TableCell>
                     ))}
+                    {actionButtons && (
+                      <TableCell>{actionButtons(row)}</TableCell>
+                    )}
                   </TableRow>
                   {collapsible && (
                     <TableRow>
                       <TableCell
                         style={{ paddingBottom: 0, paddingTop: 0 }}
-                        colSpan={columns.length + (hasCheckbox ? 1 : 0)}
+                        colSpan={
+                          columns.length +
+                          (hasCheckbox ? 1 : 0) +
+                          (actionButtons ? 1 : 0)
+                        }
                       >
                         <Collapse
                           in={openRows.includes(row.id)}
