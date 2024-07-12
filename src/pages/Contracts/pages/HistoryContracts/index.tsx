@@ -9,7 +9,7 @@ import {
 } from "../../../../components/CustomTable/types";
 import { CustomTimeline } from "../../../../components/CustomTimeline";
 
-export function HistoricoContratos() {
+export function HistoryContracts() {
   const [searchTerm, setSearchTerm] = useState("");
   const [dataTable, setDataTable] = useState<TableDataProps[]>([]);
 

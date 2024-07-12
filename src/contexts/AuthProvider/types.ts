@@ -15,3 +15,8 @@ export interface IAuthProvider {
 export interface Token {
   permissions: string[];
 }
+export interface IUserDataFromToken {
+  email: string;
+  name: string;
+  permissions: string[];
+}

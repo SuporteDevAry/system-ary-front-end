@@ -12,7 +12,7 @@ import StepLabel from "@mui/material/StepLabel";
 import { SButtonContainer, SContainer, SContent, SStepper } from "./styles";
 import CustomButton from "../../../../components/CustomButton";
 
-export const NovoContrato: React.FC = () => {
+export const CreateNewContract: React.FC = () => {
   const [activeStep, setActiveStep] = React.useState<number>(0);
   const [formData, setFormData] = React.useState<FormDataContract>({
     numberBroker: "",

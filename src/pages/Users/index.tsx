@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { ModalCreateNewUser } from "./components/ModalCreateNewUser";
-import { TableUsers } from "./components/TableUsers";
 import { BoxContainer, SButtonContainer, STitle } from "./styles";
 import CardContent from "@mui/material/CardContent";
 import CustomButton from "../../components/CustomButton";
@@ -142,6 +141,7 @@ export function Users() {
           isLoading={isLoading}
           hasPagination={true}
           actionButtons={renderActionButtons}
+          dateFields={["created_at"]}
         />
       </CardContent>
 

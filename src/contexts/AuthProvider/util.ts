@@ -1,5 +1,5 @@
 import { Api } from "../../services/api";
-import { IUser, Token } from "./types";
+import { IUser, IUserDataFromToken, Token } from "./types";
 
 export function setUserLocalStorage(user: IUser | null) {
   localStorage.setItem("#u", JSON.stringify(user));
@@ -36,6 +36,21 @@ export function getPermissionsFromToken(): string[] | null {
     try {
       const token = JSON.parse(atob(user.token.split(".")[1])) as Token;
       return token.permissions || [];
+    } catch (error) {
+      console.error("Erro ao decodificar o token:", error);
+    }
+  }
+
+  return null;
+}
+
+export function getDataUserFromToken(): IUserDataFromToken | null {
+  const user = getUserLocalStorage();
+
+  if (user && user.token) {
+    try {
+      const token = JSON.parse(atob(user.token.split(".")[1]));
+      return token;
     } catch (error) {
       console.error("Erro ao decodificar o token:", error);
     }

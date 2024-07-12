@@ -17,6 +17,7 @@ export interface ICustomTableProps {
   hasCheckbox?: boolean;
   collapsible?: boolean;
   isLoading?: boolean;
+  dateFields?: string[];
   renderChildren?: (row: TableDataProps) => ReactNode;
   onRowClick?: (row: TableDataProps) => void;
   actionButtons?: (row: TableDataProps) => ReactNode;

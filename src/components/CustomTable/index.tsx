@@ -13,6 +13,8 @@ import {
 import { ICustomTableProps } from "./types";
 import { SColumnHeader, SCheckbox, STableHead } from "./styles";
 import { convertToCustomFormat } from "../../helpers/dateFormat";
+import { insertMaskInCpf } from "../../helpers/front-end/insertMaskInCpf";
+import { insertMaskInCnpj } from "../../helpers/front-end/insertMaskInCnpj";
 // import { KeyboardArrowDown, KeyboardArrowUp } from "@mui/icons-material";
 
 const locale = "pt-BR";
@@ -24,6 +26,7 @@ const CustomTable: React.FC<ICustomTableProps> = ({
   hasPagination = false,
   hasCheckbox = false,
   collapsible = false,
+  dateFields,
   renderChildren,
   onRowClick,
   actionButtons,
@@ -57,6 +60,18 @@ const CustomTable: React.FC<ICustomTableProps> = ({
   ) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
+  };
+
+  const formatCellValue = (row: any, column: { field: string }): string => {
+    if (column.field === "cnpj") {
+      return row.natureza === "F"
+        ? insertMaskInCpf(row.cnpj)
+        : insertMaskInCnpj(row.cnpj);
+    }
+    if (dateFields?.includes(column.field)) {
+      return convertToCustomFormat(row[column.field], locale);
+    }
+    return row[column.field];
   };
 
   return (
@@ -111,11 +126,10 @@ const CustomTable: React.FC<ICustomTableProps> = ({
                     )}
                     {columns.map((column) => (
                       <TableCell key={column.field}>
-                        {column.field === "created_at"
-                          ? convertToCustomFormat(row[column.field], locale)
-                          : row[column.field]}
+                        {formatCellValue(row, column)}
                       </TableCell>
                     ))}
+
                     {actionButtons && (
                       <TableCell>{actionButtons(row)}</TableCell>
                     )}
