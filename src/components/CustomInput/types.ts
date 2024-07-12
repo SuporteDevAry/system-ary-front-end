@@ -1,10 +1,14 @@
-export interface InputProps {
+import { HTMLInputTypeAttribute } from "react";
+
+export type labelPositionVariant = "left" | "top";
+export interface CustomInputProps {
   width?: string;
   height?: string;
-  label: string;
+  label?: string;
+  labelPosition?: labelPositionVariant;
   placeholder?: string;
-  type: string;
-  name: string;
+  type?: HTMLInputTypeAttribute | "number" | undefined;
+  name?: string;
   value?: string;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   readOnly?: boolean;

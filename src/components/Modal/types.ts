@@ -11,4 +11,6 @@ export interface IModalProps {
   onHandleCreate: () => void;
   variantCancel: ButtonVariant;
   variantConfirm: ButtonVariant;
+  maxWidth?: "xs" | "sm" | "md" | "lg" | "xl";
+  fullWidth?: boolean;
 }

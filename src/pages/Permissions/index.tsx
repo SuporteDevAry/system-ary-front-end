@@ -16,7 +16,7 @@ import {
 import CustomButton from "../../components/CustomButton";
 import Divider from "@mui/material/Divider";
 import Box from "@mui/material/Box";
-import CustomInput from "../../components/CustomInput";
+import { CustomInput } from "../../components/CustomInput";
 import { ModalUsers } from "./components/ModalUsers";
 import { UserContext } from "../../contexts/UserContext";
 
@@ -176,6 +176,7 @@ export function Permissions() {
               label="Nome:"
               type="text"
               name="name"
+              labelPosition="left"
               value={formData.name}
               readOnly
             />
@@ -185,6 +186,7 @@ export function Permissions() {
               type="email"
               label="E-mail:"
               name="email"
+              labelPosition="left"
               value={formData.email}
               readOnly
             />

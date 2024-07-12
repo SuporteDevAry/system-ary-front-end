@@ -2,6 +2,11 @@ import styled from "styled-components";
 import Card from "@mui/material/Card";
 import { V } from "../../styles/variables";
 
+
+export const STitle = styled.h1`
+  padding-left: ${V.mdSpacing};
+`;
+
 export const SContainer = styled.div`
   display: flex;
   justify-content: flex-end;

@@ -16,6 +16,7 @@ export function Contatos() {
       <BoxContainer>
         <ButtonCreate onClick={handleCreateContato}> Criar Novo</ButtonCreate>
       </BoxContainer>
+      
       <CardContent>
         <TableContatos />
       </CardContent>

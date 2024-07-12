@@ -13,6 +13,10 @@ import { EditarCliente } from "./pages/Clientes/components/EditarCliente";
 import { Contatos } from "./pages/Contatos";
 import { CadastrarContato } from "./pages/Contatos/components/CadastrarContato";
 import { EditarContato } from "./pages/Contatos/components/EditarContato";
+import { Contract } from "./pages/Contracts";
+import { HistoryContracts } from "./pages/Contracts/pages/HistoryContracts";
+import { CreateNewContract } from "./pages/Contracts/pages/CreateNewContract";
+import { MyAccount } from "./pages/MyAccount";
 
 export function RoutesForPages() {
   return (
@@ -23,6 +27,36 @@ export function RoutesForPages() {
           <Layout>
             <Dashboard />
           </Layout>
+        }
+      />
+      <Route
+        path="/contratos"
+        element={
+          <ProtectedLayout>
+            <Layout>
+              <Contract />
+            </Layout>
+          </ProtectedLayout>
+        }
+      />
+      <Route
+        path="/contratos/novo-contrato"
+        element={
+          <ProtectedLayout>
+            <Layout>
+              <CreateNewContract />
+            </Layout>
+          </ProtectedLayout>
+        }
+      />
+      <Route
+        path="/contratos/historico"
+        element={
+          <ProtectedLayout>
+            <Layout>
+              <HistoryContracts />
+            </Layout>
+          </ProtectedLayout>
         }
       />
       <Route
@@ -111,6 +145,16 @@ export function RoutesForPages() {
           <ProtectedLayout>
             <Layout>
               <Permissions />
+            </Layout>
+          </ProtectedLayout>
+        }
+      />
+      <Route
+        path="/minha-conta"
+        element={
+          <ProtectedLayout>
+            <Layout>
+              <MyAccount />
             </Layout>
           </ProtectedLayout>
         }
