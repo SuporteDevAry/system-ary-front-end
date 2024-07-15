@@ -1,43 +1,24 @@
-<<<<<<< HEAD:src/pages/Contratos/components/Step2/index.tsx
-import { CustomInput } from "../../../../components/CustomInput";
-import { SContainer, SText, STextArea } from "./styles";
-import { CustomSelect } from "../../../../components/CustomSelect";
-import { StepProps } from "../../pages/CriarNovoContrato/types";
-=======
 import { CustomInput } from "../../../../../../components/CustomInput";
 import { StepProps } from "../../types";
 import { SContainer, SText, STextArea } from "./styles";
 import { CustomSelect } from "../../../../../../components/CustomSelect";
 import { ProductType, productInfo } from "./types";
->>>>>>> 341f9a7f8e5997943688ac4f15c22a8d01d3a9ac:src/pages/Contratos/pages/CriarNovoContrato/components/Step2/index.tsx
 
 export const Step2: React.FC<StepProps> = ({
     handleChange,
     formData,
     updateFormData,
 }) => {
-<<<<<<< HEAD:src/pages/Contratos/components/Step2/index.tsx
-    // const handleSelectChange = (value: string) => {
-    //   // Atualiza o state formData no componente pai
-    //   updateFormData?.({ product: value });
-    // };
-
     const handleFieldChange = (field: string, value: string) => {
-        // Atualiza o state formData no componente pai
-        updateFormData?.({ ...formData, [field]: value });
+        const info = productInfo[value as ProductType];
+        updateFormData?.({
+            ...formData,
+            [field]: value,
+            quality: info.quality,
+            observation: info.observation,
+            nameProduct: info.name,
+        });
     };
-=======
-  const handleFieldChange = (field: string, value: string) => {
-    const info = productInfo[value as ProductType];
-    updateFormData?.({
-      ...formData,
-      [field]: value,
-      quality: info.quality,
-      observation: info.observation,
-      nameProduct: info.name,
-    });
-  };
->>>>>>> 341f9a7f8e5997943688ac4f15c22a8d01d3a9ac:src/pages/Contratos/pages/CriarNovoContrato/components/Step2/index.tsx
 
     return (
         <SContainer>
@@ -46,7 +27,7 @@ export const Step2: React.FC<StepProps> = ({
                 label="Mercadoria: "
                 labelPosition="top"
                 selectOptions={[
-                    { value: "S", label: "SOJA" },
+                    { value: "S", label: "SOJA EM GRÃOS" },
                     { value: "CN", label: "MILHO" },
                     { value: "T", label: "TRIGO" },
                     { value: "SG", label: "SORGO" },

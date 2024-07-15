@@ -9,7 +9,7 @@ interface ProductInfo {
 // ATENÇÃO !!! = Não Mudar a Identação dos Objetos abaixo!
 export const productInfo: Record<ProductType, ProductInfo> = {
   S: {
-    name: `SOJA`,
+    name: `SOJA EM GRÃOS`,
     quality: `Padrão exportação conforme ANEC 41.
 Soja transgênica (GMO positivo).`,
     observation: `1-Mercadoria destinada à exportação.

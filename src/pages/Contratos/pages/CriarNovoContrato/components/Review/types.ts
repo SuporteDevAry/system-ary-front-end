@@ -1,4 +1,4 @@
-import { FormDataContract } from "../../pages/CriarNovoContrato/types";
+import { FormDataContract } from "../../types";
 
 export interface ReviewProps {
   formData: FormDataContract;
