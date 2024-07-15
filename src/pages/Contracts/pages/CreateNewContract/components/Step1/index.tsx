@@ -9,6 +9,7 @@ import { ClienteContext } from "../../../../../../contexts/ClienteContext";
 
 import { IListCliente } from "../../../../../../contexts/ClienteContext/types";
 import { StepProps } from "../../types";
+import { SText, STextArea } from "../Step2/styles";
 
 export const Step1: React.FC<StepProps> = ({ handleChange, formData }) => {
   const [isCustomerModalOpen, setCustomerModalOpen] = useState<boolean>(false);
@@ -65,6 +66,15 @@ export const Step1: React.FC<StepProps> = ({ handleChange, formData }) => {
   return (
     <>
       <SContainer>
+        <CustomInput
+          type="text"
+          name="numberBroker"
+          label="Nº Corretor:"
+          labelPosition="top"
+          onChange={handleChange}
+          value={formData.numberBroker}
+        />
+
         <SContainerSeller>
           <Box>
             <CustomInput
@@ -84,6 +94,12 @@ export const Step1: React.FC<StepProps> = ({ handleChange, formData }) => {
             Selecione Vendedor
           </CustomButton>
         </SContainerSeller>
+        <SText>Lista de Email Vendedor:</SText>
+        <STextArea
+          name="observation"
+          onChange={handleChange}
+          value={formData.observation}
+        />
         <SContainerBuyer>
           <Box>
             <CustomInput
@@ -103,6 +119,12 @@ export const Step1: React.FC<StepProps> = ({ handleChange, formData }) => {
             Selecione Comprador
           </CustomButton>
         </SContainerBuyer>
+        <SText>Lista de Email Comprador :</SText>
+        <STextArea
+          name="observation"
+          onChange={handleChange}
+          value={formData.observation}
+        />
       </SContainer>
 
       <ModalClientes

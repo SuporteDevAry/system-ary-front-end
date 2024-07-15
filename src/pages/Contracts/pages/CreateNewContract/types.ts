@@ -4,6 +4,7 @@ export type StepType = {
 };
 
 export type FormDataContract = {
+  numberBroker: string;
   seller: string;
   buyer: string;
   product: string;

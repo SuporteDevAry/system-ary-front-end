@@ -4,7 +4,7 @@ import { SContainer, SCard, SCardIcon, SContent, STitle } from "./styles";
 import { IoFileTrayStackedOutline } from "react-icons/io5";
 import { RxFileText } from "react-icons/rx";
 
-export function Contrato() {
+export function Contract() {
   const cardLinks = [
     {
       label: "Criar Novo Contrato",

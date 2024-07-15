@@ -5,15 +5,17 @@ import { Step2 } from "./components/Step2";
 import { Step3 } from "./components/Step3";
 import { Step4 } from "./components/Step4";
 import { Review } from "./components/Review";
+import { Save } from "./components/Save";
 
 import Step from "@mui/material/Step";
 import StepLabel from "@mui/material/StepLabel";
 import { SButtonContainer, SContainer, SContent, SStepper } from "./styles";
 import CustomButton from "../../../../components/CustomButton";
 
-export const NovoContrato: React.FC = () => {
+export const CreateNewContract: React.FC = () => {
   const [activeStep, setActiveStep] = React.useState<number>(0);
   const [formData, setFormData] = React.useState<FormDataContract>({
+    numberBroker: "",
     seller: "",
     buyer: "",
     product: "",
@@ -84,7 +86,7 @@ export const NovoContrato: React.FC = () => {
     },
     {
       label: "Salvar",
-      elements: [<Step4 formData={formData} handleChange={handleChange} />],
+      elements: [<Save formData={formData} handleChange={handleChange} />],
     },
   ];
 

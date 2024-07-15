@@ -12,7 +12,12 @@ import {
 } from "@mui/material";
 import { ICustomTableProps } from "./types";
 import { SColumnHeader, SCheckbox, STableHead } from "./styles";
+import { convertToCustomFormat } from "../../helpers/dateFormat";
+import { insertMaskInCpf } from "../../helpers/front-end/insertMaskInCpf";
+import { insertMaskInCnpj } from "../../helpers/front-end/insertMaskInCnpj";
 // import { KeyboardArrowDown, KeyboardArrowUp } from "@mui/icons-material";
+
+const locale = "pt-BR";
 
 const CustomTable: React.FC<ICustomTableProps> = ({
   data,
@@ -21,8 +26,10 @@ const CustomTable: React.FC<ICustomTableProps> = ({
   hasPagination = false,
   hasCheckbox = false,
   collapsible = false,
+  dateFields,
   renderChildren,
   onRowClick,
+  actionButtons,
 }) => {
   const [openRows, setOpenRows] = useState<number[]>([]);
   const [selectedRowId, setSelectedRowId] = useState<number | null>(null);
@@ -55,6 +62,18 @@ const CustomTable: React.FC<ICustomTableProps> = ({
     setPage(0);
   };
 
+  const formatCellValue = (row: any, column: { field: string }): string => {
+    if (column.field === "cnpj") {
+      return row.natureza === "F"
+        ? insertMaskInCpf(row.cnpj)
+        : insertMaskInCnpj(row.cnpj);
+    }
+    if (dateFields?.includes(column.field)) {
+      return convertToCustomFormat(row[column.field], locale);
+    }
+    return row[column.field];
+  };
+
   return (
     <TableContainer component={Paper}>
       <Table size="small">
@@ -66,11 +85,22 @@ const CustomTable: React.FC<ICustomTableProps> = ({
                 <SColumnHeader>{column.header}</SColumnHeader>
               </TableCell>
             ))}
+            {actionButtons && <TableCell />}
           </TableRow>
         </STableHead>
         <TableBody>
           {isLoading ? (
-            <p>Loading...</p>
+            <TableRow>
+              <TableCell
+                colSpan={
+                  columns.length +
+                  (hasCheckbox ? 1 : 0) +
+                  (actionButtons ? 1 : 0)
+                }
+              >
+                <p>Loading...</p>
+              </TableCell>
+            </TableRow>
           ) : (
             data
               ?.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
@@ -96,15 +126,23 @@ const CustomTable: React.FC<ICustomTableProps> = ({
                     )}
                     {columns.map((column) => (
                       <TableCell key={column.field}>
-                        {row[column.field]}
+                        {formatCellValue(row, column)}
                       </TableCell>
                     ))}
+
+                    {actionButtons && (
+                      <TableCell>{actionButtons(row)}</TableCell>
+                    )}
                   </TableRow>
                   {collapsible && (
                     <TableRow>
                       <TableCell
                         style={{ paddingBottom: 0, paddingTop: 0 }}
-                        colSpan={columns.length + (hasCheckbox ? 1 : 0)}
+                        colSpan={
+                          columns.length +
+                          (hasCheckbox ? 1 : 0) +
+                          (actionButtons ? 1 : 0)
+                        }
                       >
                         <Collapse
                           in={openRows.includes(row.id)}

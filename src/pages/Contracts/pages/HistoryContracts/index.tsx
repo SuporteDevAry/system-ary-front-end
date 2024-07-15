@@ -9,7 +9,7 @@ import {
 } from "../../../../components/CustomTable/types";
 import { CustomTimeline } from "../../../../components/CustomTimeline";
 
-export function HistoricoContratos() {
+export function HistoryContracts() {
   const [searchTerm, setSearchTerm] = useState("");
   const [dataTable, setDataTable] = useState<TableDataProps[]>([]);
 
@@ -57,10 +57,12 @@ export function HistoricoContratos() {
   }, [searchTerm]);
 
   const nameColumns: IColumn[] = [
+    { field: "status", header: "Status" },
+    { field: "contract_details", header: "Em uso" },
     { field: "nr_contrato", header: "Nº Contrato" },
     { field: "produto", header: "Produto" },
-    { field: "status", header: "Status" },
     { field: "contract_details", header: "Detalhes do Contrato" },
+    { field: "contract_details", header: "Criado por" },
   ];
 
   return (

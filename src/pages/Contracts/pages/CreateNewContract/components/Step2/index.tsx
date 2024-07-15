@@ -17,6 +17,7 @@ export const Step2: React.FC<StepProps> = ({
             quality: info.quality,
             observation: info.observation,
             nameProduct: info.name,
+            inspection: info.inspection,
         });
     };
 
@@ -27,7 +28,7 @@ export const Step2: React.FC<StepProps> = ({
                 label="Mercadoria: "
                 labelPosition="top"
                 selectOptions={[
-                    { value: "S", label: "SOJA EM GRÃOS" },
+                    { value: "S", label: "SOJA em Grão" },
                     { value: "CN", label: "MILHO" },
                     { value: "T", label: "TRIGO" },
                     { value: "SG", label: "SORGO" },

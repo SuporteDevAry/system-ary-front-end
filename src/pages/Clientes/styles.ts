@@ -1,9 +1,15 @@
 import styled from "styled-components";
 import { btnReset } from "../../styles/variables";
+import { V } from "../../styles/variables";
+
+export const STitle = styled.h1`
+  padding-left: ${V.mdSpacing};
+`;
 
 export const BoxContainer = styled.div`
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  padding-top: 16px;
   padding-right: 16px;
 `;
 
@@ -79,14 +85,12 @@ export const SCli_codigoInput = styled.input`
   }
 `;
 
-
 export const SNomeInput = styled.input`
   width: 80%;
   height: 38px;
   padding: 0 16px;
   display: flex;
   flex-direction: column;
-
 
   color: ${(props) => props.theme["black"]};
   border-color: ${(props) => props.theme["gray-100"]};
@@ -250,8 +254,6 @@ export const SUfInput = styled.input`
     color: ${(props) => props.theme["gray-500"]};
   }
 `;
-
-
 
 export const SNaturezaInput = styled.input`
   width: 20%;
@@ -425,3 +427,35 @@ export const SSituacaoInput = styled.input`
   }
 `;
 
+export const SButtonContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  justify-content: flex-end;
+`;
+
+export const SButtonEdit = styled.button`
+  ${btnReset};
+  background-color: ${({ theme }) => theme["gray-300"]};
+  border-radius: 5px;
+  padding: 8px;
+  color: ${({ theme }) => theme["black-200"]};
+
+  &:focus {
+    outline: 0;
+    box-shadow: 0 0 0 2px ${({ theme }) => theme["black-200"]};
+  }
+`;
+
+export const SButtonDelete = styled.button`
+  ${btnReset};
+  background-color: ${({ theme }) => theme["red-500"]};
+  border-radius: 5px;
+  padding: 8px;
+  color: ${({ theme }) => theme["white-100"]};
+
+  &:focus {
+    outline: 0;
+    box-shadow: 0 0 0 2px ${({ theme }) => theme["black-200"]};
+  }
+`;
