@@ -1,13 +1,9 @@
 import { useState } from "react";
 import { ClienteContext } from "../../../../contexts/ClienteContext";
 import { toast } from "react-toastify";
-import { isEmailValid } from "../../../../helpers/back-end/utils";
 import { FormularioCliente } from "../../../../components/FormularioCliente";
 import { useLocation, useNavigate } from "react-router-dom";
 import { IListCliente } from "../../../../contexts/ClienteContext/types";
-
-// Se colocar para receber o parametro o programa fica correto, mas o routes fica com erro
-// EditarCliente(clientes: IListCliente)
 
 export function EditarCliente() {
   const navigate = useNavigate();
@@ -17,29 +13,23 @@ export function EditarCliente() {
 
   const clienteContext = ClienteContext();
 
-  // como receber o clientes enviado pelo TableClientes index.tsx ???
-  //const [clientes] = useState<IListCliente>(
-  //  {} as IListCliente
-  //);
-
   const [formData, setFormData] = useState({
-    cli_codigo: clienteForUpdate.cli_codigo,
-    nome: clienteForUpdate.nome,
-    endereco: clienteForUpdate.endereco,
-    numero: clienteForUpdate.numero,
-    complemento: clienteForUpdate.complemento,
-    bairro: clienteForUpdate.bairro,
-    cidade: clienteForUpdate.cidade,
-    uf: clienteForUpdate.uf,
-    cep: clienteForUpdate.cep,
-    natureza: clienteForUpdate.natureza,
-    cnpj: clienteForUpdate.cnpj,
+    nickname: clienteForUpdate.nickname,
+    name: clienteForUpdate.name,
+    address: clienteForUpdate.address,
+    number: clienteForUpdate.number,
+    complement: clienteForUpdate.complement,
+    district: clienteForUpdate.district,
+    city: clienteForUpdate.city,
+    state: clienteForUpdate.state,
+    zip_code: clienteForUpdate.zip_code,
+    kind: clienteForUpdate.kind,
+    cnpj_cpf: clienteForUpdate.cnpj_cpf,
     ins_est: clienteForUpdate.ins_est,
     ins_mun: clienteForUpdate.ins_mun,
-    email: clienteForUpdate.email,
-    telefone: clienteForUpdate.telefone,
-    celular: clienteForUpdate.celular,
-    situacao: clienteForUpdate.situacao,
+    telephone: clienteForUpdate.telephone,
+    cellphone: clienteForUpdate.cellphone,
+    situation: clienteForUpdate.situation,
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -48,12 +38,6 @@ export function EditarCliente() {
   };
 
   const handleCreate = async () => {
-    if (!isEmailValid(formData.email)) {
-      toast.error(
-        "Formato de e-mail inválido, verifique se seu e-mail está correto."
-      );
-      return;
-    }
     // if (
     //   !formData.cli_codigo ||
     //   !formData.nome ||
@@ -74,28 +58,26 @@ export function EditarCliente() {
     // }
 
     try {
-      clienteContext.updateCliente(clienteForUpdate.cli_codigo, {
-        nome: formData.nome,
-        endereco: formData.endereco,
-        numero: formData.numero,
-        complemento: formData.complemento,
-        bairro: formData.bairro,
-        cidade: formData.cidade,
-        uf: formData.uf,
-        cep: formData.cep,
-        natureza: formData.natureza,
-        cnpj: formData.cnpj,
+      clienteContext.updateCliente(clienteForUpdate.id, {
+        nickname: formData.nickname,
+        name: formData.name,
+        address: formData.address,
+        number: formData.number,
+        complement: formData.complement,
+        district: formData.district,
+        city: formData.city,
+        state: formData.state,
+        zip_code: formData.zip_code,
+        kind: formData.kind,
+        cnpj_cpf: formData.cnpj_cpf,
         ins_est: formData.ins_est,
         ins_mun: formData.ins_mun,
-        email: formData.email,
-        telefone: formData.telefone,
-        celular: formData.celular,
-        situacao: formData.situacao,
+        telephone: formData.telephone,
+        cellphone: formData.cellphone,
+        situation: formData.situation,
       });
 
-      toast.success(
-        `Cliente ${formData.cli_codigo}, foi alterado com sucesso!`
-      );
+      toast.success(`Cliente ${formData.name}, foi alterado com sucesso!`);
       navigate("/clientes");
     } catch (error) {
       toast.error(`Erro ao tentar alterar o Cliente, ${error}`);
@@ -109,10 +91,10 @@ export function EditarCliente() {
       .then((res) => res.json())
       .then((data) => {
         const dadosEndereco = {
-          endereco: data.logradouro,
-          bairro: data.bairro,
-          cidade: data.localidade,
-          uf: data.uf,
+          address: data.logradouro,
+          district: data.bairro,
+          city: data.localidade,
+          state: data.uf,
         };
 
         setFormData({ ...formData, ...dadosEndereco });

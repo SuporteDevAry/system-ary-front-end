@@ -11,5 +11,7 @@ export interface CustomInputProps {
   name?: string;
   value?: string;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onBlur?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   readOnly?: boolean;
+  maxLength?: number;
 }

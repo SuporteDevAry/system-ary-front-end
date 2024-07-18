@@ -1,12 +1,17 @@
 import { createContext, useContext } from "react";
-import { IClientesProvider, ICreateClientesData, IUpdateClientesData } from "./types";
-import { Api } from "../../services/api"; 
+import {
+  IClientesProvider,
+  ICreateClientesData,
+  IUpdateClientesData,
+} from "./types";
+import { Api } from "../../services/api";
 
 interface IClienteContext {
   listClientes: () => Promise<any>;
   createCliente: (clienteData: ICreateClientesData) => Promise<any>;
-  updateCliente: (clienteCli_codigo: string, updateClienteData: any) => void;
-  deleteCliente: (clienteCli_codigo: string) => void;
+  updateCliente: (clientId: string, updateClienteData: any) => void;
+  deleteCliente: (clientId: string) => void;
+  getClientById: (clientId: string) => void;
 }
 
 const newContext = createContext<IClienteContext>({
@@ -14,13 +19,14 @@ const newContext = createContext<IClienteContext>({
   createCliente: () => Promise.resolve(),
   updateCliente: () => {},
   deleteCliente: () => {},
+  getClientById: () => {},
 });
 
 export const ClientesProvider = ({ children }: IClientesProvider) => {
-
   async function listClientes(): Promise<any> {
     try {
-      const response = await Api.get("/clientes");
+      const response = await Api.get("/clients");
+
       return response;
     } catch (error) {
       console.error("Erro incluindo Cliente:", error);
@@ -30,7 +36,7 @@ export const ClientesProvider = ({ children }: IClientesProvider) => {
 
   async function createCliente(clienteData: ICreateClientesData): Promise<any> {
     try {
-      const response = await Api.post("/cliente", clienteData);
+      const response = await Api.post("/client", clienteData);
 
       return response;
     } catch (error) {
@@ -38,28 +44,50 @@ export const ClientesProvider = ({ children }: IClientesProvider) => {
     }
   }
 
-  async function updateCliente(clienteCli_codigo: string, updateClienteData: IUpdateClientesData) {
+  async function updateCliente(
+    clientId: string,
+    updateClienteData: IUpdateClientesData
+  ) {
     try {
-      const response = await Api.patch(`/cliente/${clienteCli_codigo}`, updateClienteData);
+      const response = await Api.patch(
+        `/client/${clientId}`,
+        updateClienteData
+      );
       return response;
     } catch (error) {
-      console.error("Erro gravando dados do Cliente:", error);
+      console.error("Erro ao salvar dados do Cliente:", error);
     }
   }
 
-  async function deleteCliente(clienteCli_codigo: string) {
+  async function deleteCliente(clientId: string) {
     try {
-      const response = await Api.delete(`/cliente/${clienteCli_codigo}`);
+      const response = await Api.delete(`/client/${clientId}`);
 
       return response;
     } catch (error) {
-      console.error("Error excluindo Cliente:", error);
+      console.error("Error ao excluir Cliente:", error);
+    }
+  }
+
+  async function getClientById(clientId: string) {
+    try {
+      const response = await Api.get(`/client/client-by-id/${clientId}`);
+
+      return response;
+    } catch (error) {
+      console.error("Error ao buscar Cliente:", error);
     }
   }
 
   return (
     <newContext.Provider
-      value={{ listClientes, createCliente, updateCliente, deleteCliente }}
+      value={{
+        listClientes,
+        createCliente,
+        updateCliente,
+        deleteCliente,
+        getClientById,
+      }}
     >
       {children}
     </newContext.Provider>

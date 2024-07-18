@@ -15,6 +15,7 @@ import { SColumnHeader, SCheckbox, STableHead } from "./styles";
 import { convertToCustomFormat } from "../../helpers/dateFormat";
 import { insertMaskInCpf } from "../../helpers/front-end/insertMaskInCpf";
 import { insertMaskInCnpj } from "../../helpers/front-end/insertMaskInCnpj";
+import Loading from "../Loading";
 // import { KeyboardArrowDown, KeyboardArrowUp } from "@mui/icons-material";
 
 const locale = "pt-BR";
@@ -98,7 +99,8 @@ const CustomTable: React.FC<ICustomTableProps> = ({
                   (actionButtons ? 1 : 0)
                 }
               >
-                <p>Loading...</p>
+                Loading
+                <Loading />
               </TableCell>
             </TableRow>
           ) : (
@@ -170,6 +172,7 @@ const CustomTable: React.FC<ICustomTableProps> = ({
           page={page}
           onPageChange={handleChangePage}
           onRowsPerPageChange={handleChangeRowsPerPage}
+          labelRowsPerPage="Linhas por página:"
         />
       )}
     </TableContainer>

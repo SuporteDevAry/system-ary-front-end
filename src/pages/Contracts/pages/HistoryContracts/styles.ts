@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import { V } from "../../../../styles/variables";
 
-export const STitle = styled.h1``;
+export const STitle = styled.h2``;
 
 export const SContainer = styled.div`
   width: 900px;

@@ -1,4 +1,4 @@
-import { Api } from "../../services/api";
+import { Api, ApiCustom } from "../../services/api";
 import { IUser, IUserDataFromToken, Token } from "./types";
 
 export function setUserLocalStorage(user: IUser | null) {
@@ -22,7 +22,8 @@ export async function LoginRequest(
   password: string
 ): Promise<IUser> {
   try {
-    const request = await Api.post("/login", { email, password });
+    const request = await ApiCustom.post("/login", { email, password });
+    console.log("#LoginRequest", email, password);
     return request.data;
   } catch (error) {
     throw error;

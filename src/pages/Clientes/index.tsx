@@ -1,12 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import {
-  BoxContainer,
-  ButtonCreate,
-  SButtonContainer,
-  SButtonDelete,
-  SButtonEdit,
-  STitle,
-} from "./styles";
+import { BoxContainer, SButtonContainer, STitle } from "./styles";
 
 import CardContent from "@mui/material/CardContent";
 import { ClienteContext } from "../../contexts/ClienteContext";
@@ -14,6 +7,8 @@ import { useEffect, useState } from "react";
 import { IListCliente } from "../../contexts/ClienteContext/types";
 import CustomTable from "../../components/CustomTable";
 import { CustomSearch } from "../../components/CustomSearch";
+import CustomButton from "../../components/CustomButton";
+import { toast } from "react-toastify";
 
 export function Clientes() {
   const clienteContext = ClienteContext();
@@ -50,10 +45,17 @@ export function Clientes() {
     });
   };
 
-  const handleDeleteCliente = (clienteCli_codigo: string) => {
+  const handleViewCustomer = async (clientes: IListCliente) => {
+    navigate("/visualizar-cliente", {
+      state: { clientForView: clientes },
+    });
+  };
+
+  const handleDeleteCliente = (clientId: string) => {
     try {
-      clienteContext.deleteCliente(clienteCli_codigo);
+      clienteContext.deleteCliente(clientId);
       fetchData();
+      toast.success(`Cliente com id:${clientId}, foi deletado com sucesso!`);
     } catch (error) {
       console.error("Erro excluindo cliente:", error);
     }
@@ -77,19 +79,36 @@ export function Clientes() {
   }, [searchTerm]);
 
   const nameColumns = [
-    { field: "cli_codigo", header: "Código" },
-    { field: "nome", header: "Nome" },
-    { field: "cnpj", header: "CNPJ/CPF" },
-    { field: "cidade", header: "Cidade" },
-    { field: "uf", header: "UF" },
+    { field: "code_client", header: "Código" },
+    { field: "nickname", header: "Nome" },
+    { field: "cnpj_cpf", header: "CNPJ/CPF" },
+    { field: "city", header: "Cidade" },
+    { field: "state", header: "UF" },
   ];
 
   const renderActionButtons = (row: any) => (
     <SButtonContainer>
-      <SButtonEdit onClick={() => handleUpdateCliente(row)}>Editar</SButtonEdit>
-      <SButtonDelete onClick={() => handleDeleteCliente(row.cli_codigo)}>
+      <CustomButton
+        variant="secondary"
+        width="80px"
+        onClick={() => handleViewCustomer(row)}
+      >
+        Detalhes
+      </CustomButton>
+      <CustomButton
+        variant="primary"
+        width="60px"
+        onClick={() => handleUpdateCliente(row)}
+      >
+        Editar
+      </CustomButton>
+      <CustomButton
+        variant="danger"
+        width="60px"
+        onClick={() => handleDeleteCliente(row.id)}
+      >
         Deletar
-      </SButtonDelete>
+      </CustomButton>
     </SButtonContainer>
   );
 
@@ -103,7 +122,13 @@ export function Clientes() {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-        <ButtonCreate onClick={handleCreateCliente}> Criar Novo</ButtonCreate>
+        <CustomButton
+          variant="success"
+          width="180px"
+          onClick={handleCreateCliente}
+        >
+          Criar Novo Cliente
+        </CustomButton>
       </BoxContainer>
 
       <CardContent>

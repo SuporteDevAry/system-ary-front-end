@@ -1,6 +1,6 @@
 import styled from "styled-components";
 
-export const STitle = styled.h1``;
+export const STitle = styled.h2``;
 
 export const SKey = styled.p`
   display: flex;

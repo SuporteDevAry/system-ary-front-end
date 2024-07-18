@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { getDataUserFromToken } from "../../contexts/AuthProvider/util";
 import { IUserDataFromToken } from "../../contexts/AuthProvider/types";
 
-export const MyAccount: React.FC = () => {
+export function MyAccount(): JSX.Element {
   const [user, setUser] = useState<IUserDataFromToken | null>();
 
   useEffect(() => {
@@ -40,4 +40,4 @@ export const MyAccount: React.FC = () => {
       </SMain>
     </SContainer>
   );
-};
+}

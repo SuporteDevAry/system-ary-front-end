@@ -17,6 +17,7 @@ import { Contract } from "./pages/Contracts";
 import { HistoryContracts } from "./pages/Contracts/pages/HistoryContracts";
 import { CreateNewContract } from "./pages/Contracts/pages/CreateNewContract";
 import { MyAccount } from "./pages/MyAccount";
+import { ViewCustomer } from "./pages/Clientes/components/ViewCustomer";
 
 export function RoutesForPages() {
   return (
@@ -69,6 +70,18 @@ export function RoutesForPages() {
           </ProtectedLayout>
         }
       />
+
+      <Route
+        path="/visualizar-cliente"
+        element={
+          <ProtectedLayout>
+            <Layout>
+              <ViewCustomer />
+            </Layout>
+          </ProtectedLayout>
+        }
+      />
+
       <Route
         path="/cliente-cadastrar"
         element={
