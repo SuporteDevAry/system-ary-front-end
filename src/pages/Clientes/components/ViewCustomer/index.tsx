@@ -16,73 +16,107 @@ import CustomButton from "../../../../components/CustomButton";
 import { CustomSearch } from "../../../../components/CustomSearch";
 import { useLocation } from "react-router-dom";
 import { IListCliente } from "../../../../contexts/ClienteContext/types";
+import { insertMaskInCpf } from "../../../../helpers/front-end/insertMaskInCpf";
+import { insertMaskInCnpj } from "../../../../helpers/front-end/insertMaskInCnpj";
+import { ContatoContext } from "../../../../contexts/ContatoContext";
+import { IListContatos } from "../../../../contexts/ContatoContext/types";
+import { ModalCreateNewContact } from "./components/ModalCreateNewContact";
+import { ModalUpdateContact } from "./components/ModalUpdateContact";
 export function ViewCustomer(): JSX.Element {
   const location = useLocation();
 
-  const dataClient: IListCliente = location.state?.clientForView;
+  const [dataClient, setDataClient] = useState<IListCliente | null>(null);
+  const contactContext = ContatoContext();
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [dataTable, setDataTable] = useState<string[]>();
   const [searchTerm, setSearchTerm] = useState("");
-  const [customerContactsList, setCustomerContactsList] = useState<string[]>(
-    []
+  const [customerContactsList, setCustomerContactsList] = useState<
+    IListContatos[]
+  >([]);
+  const [dataTable, setDataTable] = useState<IListContatos[]>([]);
+  const [isNewContactModal, setNewContactModal] = useState<boolean>(false);
+  const [isUpdateContactModal, setUpdateContactModal] =
+    useState<boolean>(false);
+
+  const [contactForUpdate, setContactForUpdate] = useState<IListContatos>(
+    {} as IListContatos
   );
-  const list = [
-    {
-      name: "Andre",
-      email: "andre@dev.com",
-      sector: "Desenvolviment Software",
-      telephone: "1197900-0007",
-      cellphone: "1197900-0007",
-    },
-    {
-      name: "Denyse",
-      email: "denyse@dev.com",
-      sector: "Desenvolviment Software",
-      telephone: "1197900-0007",
-      cellphone: "1197900-0007",
-    },
-  ];
 
   useEffect(() => {
-    console.log("##OPAAClientsss", dataClient);
-    setCustomerContactsList(list);
-    setIsLoading(false);
-  }, []);
-  //   const handleUpdateCustomerContact = async (customerContacts: []) => {
-  //     setEditUserModalOpen(true);
-  //     setUserForUpdate(user);
-  //   };
+    const clientForView: IListCliente = location.state?.clientForView;
+    setDataClient(clientForView);
+  }, [location]);
 
-  //   const handleDeleteCustomerContact = (customerContactId: string) => {
-  //     try {
-  //       clienteContext.deleteCliente(customerContactId);
-  //       fetchData();
-  //     } catch (error) {
-  //       console.error("Erro excluindo cliente:", error);
-  //     }
-  //   };
+  const fetchData = async () => {
+    if (!dataClient) return;
+    try {
+      setIsLoading(true);
+      const response = await contactContext.getContactsByClient(
+        dataClient.code_client
+      );
+      setCustomerContactsList(response.data);
+      setDataTable(response.data);
+    } catch (error) {
+      console.error("Erro lendo clientes:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-  //   const handleSearch = () => {
-  //     if (searchTerm.trim() === "") {
-  //       setDataTable(customerContactsList);
-  //     } else {
-  //       const filteredData = [customerContactsList.filter((item) =>
-  //         Object.values(item).some((value) =>
-  //           value.toString().toLowerCase().includes(searchTerm.toLowerCase())
-  //         )
-  //       );
-  //       setDataTable(filteredData);
-  //     }
-  //   };
+  useEffect(() => {
+    if (dataClient) {
+      fetchData();
+    }
+  }, [dataClient]);
 
-  //   useEffect(() => {
-  //     handleSearch();
-  //   }, [searchTerm]);
+  const handleCreateNewContact = async () => {
+    setNewContactModal(true);
+  };
+
+  const handleCloseNewContactModal = () => {
+    setNewContactModal(false);
+    fetchData();
+  };
+
+  const handleUpdateCustomerContact = async (contact: IListContatos) => {
+    setUpdateContactModal(true);
+    setContactForUpdate(contact);
+  };
+
+  const handleCloseUpdateContactModal = () => {
+    setUpdateContactModal(false);
+    fetchData();
+  };
+
+  const handleDeleteCustomerContact = (contactId: string) => {
+    try {
+      contactContext.deleteContato(contactId);
+      fetchData();
+    } catch (error) {
+      console.error("Erro excluindo cliente:", error);
+    }
+  };
+
+  const handleSearch = () => {
+    if (searchTerm.trim() === "") {
+      setDataTable(customerContactsList);
+    } else {
+      const filteredData = customerContactsList.filter((item) =>
+        Object.values(item).some((value) =>
+          value.toString().toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      );
+      setDataTable(filteredData);
+    }
+  };
+
+  useEffect(() => {
+    handleSearch();
+  }, [searchTerm]);
 
   const nameColumnsFromDataClient = [
     { field: "code_client", header: "Código:" },
-    { field: "name", header: "Nome:" },
-    { field: "nickname", header: "Apelido:" },
+    { field: "name", header: "Razão Social:" },
+    { field: "nickname", header: "Nome Fantasia:" },
     { field: "address", header: "Endereço:" },
     { field: "number", header: " Nº:" },
     { field: "complement", header: "Complemento:" },
@@ -95,6 +129,16 @@ export function ViewCustomer(): JSX.Element {
     { field: "cellphone", header: "Celular:" },
   ];
 
+  const formatCellValue = (row: any, column: { field: string }): string => {
+    if (column.field === "cnpj_cpf") {
+      return row.kind === "F"
+        ? insertMaskInCpf(row.cnpj_cpf)
+        : insertMaskInCnpj(row.cnpj_cpf);
+    }
+
+    return row[column.field];
+  };
+
   const nameColumnsFromContacts = [
     { field: "name", header: "Nome" },
     { field: "email", header: "E-mail" },
@@ -106,22 +150,16 @@ export function ViewCustomer(): JSX.Element {
   const renderActionButtons = (row: any) => (
     <SButtonContainer>
       <CustomButton
-        variant={"primary"}
+        $variant={"primary"}
         width="80px"
-        onClick={() => {
-          alert("Editar contato");
-          row;
-        }} //() => handleUpdateCustomerContact(row)}
+        onClick={() => handleUpdateCustomerContact(row)}
       >
         Editar
       </CustomButton>
       <CustomButton
-        variant={"danger"}
+        $variant={"danger"}
         width="80px"
-        onClick={() => {
-          alert("Deletar contato");
-          row;
-        }} //() => handleDeleteCustomerContact(row.id)}
+        onClick={() => handleDeleteCustomerContact(row.id)}
       >
         Deletar
       </CustomButton>
@@ -129,66 +167,82 @@ export function ViewCustomer(): JSX.Element {
   );
 
   return (
-    <SContainer>
-      <STitle>Dados do Cliente</STitle>
+    <>
+      <SContainer>
+        <STitle>Dados do Cliente</STitle>
 
-      <SCardInfo>
-        {nameColumnsFromDataClient.map((column) => {
-          const isAddressField = [
-            "address",
-            "number",
-            "complement",
-            "district",
-            "city",
-            "state",
-          ].includes(column.field);
+        <SCardInfo>
+          {nameColumnsFromDataClient.map((column) => {
+            const isAddressField = [
+              "address",
+              "number",
+              "complement",
+              "district",
+              "city",
+              "state",
+            ].includes(column.field);
 
-          return isAddressField ? (
-            <SCardContainer>
-              <SkeyName>
-                {column.header}
-                <SKeyValue>{dataClient[column.field]}</SKeyValue>
-              </SkeyName>
-            </SCardContainer>
-          ) : (
-            <SKeyContainer>
-              <SkeyName>
-                {column.header}
-                <SKeyValue>{dataClient[column.field]}</SKeyValue>
-              </SkeyName>
-            </SKeyContainer>
-          );
-        })}
-      </SCardInfo>
+            const formattedValue = dataClient
+              ? formatCellValue(dataClient, column)
+              : "";
 
-      <STitle>Contatos do Cliente</STitle>
+            return isAddressField ? (
+              <SCardContainer key={column.field}>
+                <SkeyName>
+                  {column.header}
+                  <SKeyValue>{dataClient?.[column.field]}</SKeyValue>
+                </SkeyName>
+              </SCardContainer>
+            ) : (
+              <SKeyContainer key={column.field}>
+                <SkeyName>
+                  {column.header}
+                  <SKeyValue>{formattedValue}</SKeyValue>
+                </SkeyName>
+              </SKeyContainer>
+            );
+          })}
+        </SCardInfo>
 
-      <SCardInfo>
-        <BoxContainer>
-          <CustomSearch
-            width="400px"
-            placeholder="Digite o Nome ou Código ou CNPJ"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <CustomButton
-            onClick={() => alert("Criar uma novo contato")}
-            variant={"success"}
-            width="180px"
-          >
-            Criar Novo Contato
-          </CustomButton>
-        </BoxContainer>
-        <CardContent>
-          <CustomTable
-            data={list}
-            columns={nameColumnsFromContacts}
-            isLoading={isLoading}
-            hasPagination={true}
-            actionButtons={renderActionButtons}
-          />
-        </CardContent>
-      </SCardInfo>
-    </SContainer>
+        <STitle>Contatos do Cliente</STitle>
+
+        <SCardInfo>
+          <BoxContainer>
+            <CustomSearch
+              width="400px"
+              placeholder="Digite o Nome ou E-mail"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <CustomButton
+              onClick={handleCreateNewContact}
+              $variant={"success"}
+              width="180px"
+            >
+              Criar Novo Contato
+            </CustomButton>
+          </BoxContainer>
+          <CardContent>
+            <CustomTable
+              data={dataTable}
+              columns={nameColumnsFromContacts}
+              isLoading={isLoading}
+              hasPagination={true}
+              actionButtons={renderActionButtons}
+            />
+          </CardContent>
+        </SCardInfo>
+      </SContainer>
+
+      <ModalCreateNewContact
+        open={isNewContactModal}
+        onClose={handleCloseNewContactModal}
+      />
+      <ModalUpdateContact
+        open={isUpdateContactModal}
+        onClose={handleCloseUpdateContactModal}
+        dataContact={contactForUpdate}
+      />
+    </>
   );
 }

@@ -5,7 +5,7 @@ export interface CustomInputProps {
   width?: string;
   height?: string;
   label?: string;
-  labelPosition?: labelPositionVariant;
+  $labelPosition?: labelPositionVariant;
   placeholder?: string;
   type?: HTMLInputTypeAttribute | "number" | undefined;
   name?: string;

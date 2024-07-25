@@ -19,12 +19,12 @@ export const LoaderContainer = styled.div`
   height: 100px;
 `;
 
-export const LoaderDot = styled.div<{ delay: string }>`
+export const LoaderDot = styled.div<{ $delay: string }>`
   width: 20px;
   height: 20px;
   border-radius: 50%;
   background-color: ${({ theme }) => theme["black-300"]};
   margin: 0 10px;
   animation: ${loaderDot} 1.5s infinite ease-in-out;
-  animation-delay: ${({ delay }) => delay};
+  animation-delay: ${({ $delay }) => $delay};
 `;

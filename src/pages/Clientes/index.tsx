@@ -80,7 +80,7 @@ export function Clientes() {
 
   const nameColumns = [
     { field: "code_client", header: "Código" },
-    { field: "nickname", header: "Nome" },
+    { field: "nickname", header: "Nome Fantasia" },
     { field: "cnpj_cpf", header: "CNPJ/CPF" },
     { field: "city", header: "Cidade" },
     { field: "state", header: "UF" },
@@ -89,21 +89,21 @@ export function Clientes() {
   const renderActionButtons = (row: any) => (
     <SButtonContainer>
       <CustomButton
-        variant="secondary"
+        $variant="secondary"
         width="80px"
         onClick={() => handleViewCustomer(row)}
       >
         Detalhes
       </CustomButton>
       <CustomButton
-        variant="primary"
+        $variant="primary"
         width="60px"
         onClick={() => handleUpdateCliente(row)}
       >
         Editar
       </CustomButton>
       <CustomButton
-        variant="danger"
+        $variant="danger"
         width="60px"
         onClick={() => handleDeleteCliente(row.id)}
       >
@@ -118,12 +118,12 @@ export function Clientes() {
       <BoxContainer>
         <CustomSearch
           width="400px"
-          placeholder="Digite o Nome ou Código ou CNPJ"
+          placeholder="Digite o Nome, CNPJ ou Cidade"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
         <CustomButton
-          variant="success"
+          $variant="success"
           width="180px"
           onClick={handleCreateCliente}
         >

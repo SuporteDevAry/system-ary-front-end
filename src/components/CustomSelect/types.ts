@@ -4,7 +4,7 @@ export interface CustomSelectProps {
   width?: string;
   height?: string;
   label: string;
-  labelPosition: labelPositionVariant;
+  $labelPosition: labelPositionVariant;
   placeholder?: string;
   name: string;
   value: string;

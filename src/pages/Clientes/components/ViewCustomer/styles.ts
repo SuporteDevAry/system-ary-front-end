@@ -22,12 +22,14 @@ export const SKeyContainer = styled.div`
   display: flex;
   flex-direction: column;
   padding-top: 8px;
+  padding-left: 16px;
 `;
 
 export const SCardContainer = styled.span`
   display: inline-block;
   padding-right: 8px;
   margin-top: 8px;
+  padding-left: 16px;
 `;
 
 export const SkeyName = styled.span`

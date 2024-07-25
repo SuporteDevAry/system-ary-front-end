@@ -7,7 +7,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
   width,
   height,
   label,
-  labelPosition,
+  $labelPosition,
   selectOptions,
   onSelectChange,
   value,
@@ -22,7 +22,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
   };
 
   return (
-    <SContainer labelPosition={labelPosition}>
+    <SContainer $labelPosition={$labelPosition}>
       <SLabel>{label}</SLabel>
 
       <SSelect

@@ -98,7 +98,7 @@ export function ModalClientes({
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <CustomButton variant="primary" width="70px" onClick={handleSearch}>
+          <CustomButton $variant="primary" width="70px" onClick={handleSearch}>
             Search
           </CustomButton>
         </SContainerSearchAndButton>

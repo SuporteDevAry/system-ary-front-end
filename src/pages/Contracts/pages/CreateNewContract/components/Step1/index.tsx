@@ -70,7 +70,7 @@ export const Step1: React.FC<StepProps> = ({ handleChange, formData }) => {
           type="text"
           name="numberBroker"
           label="Nº Corretor:"
-          labelPosition="top"
+          $labelPosition="top"
           onChange={handleChange}
           value={formData.numberBroker}
         />
@@ -81,13 +81,13 @@ export const Step1: React.FC<StepProps> = ({ handleChange, formData }) => {
               type="text"
               name="seller"
               label="Vendedor: "
-              labelPosition="top"
+              $labelPosition="top"
               onChange={handleChange}
               value={formData.seller}
             />
           </Box>
           <CustomButton
-            variant="success"
+            $variant="success"
             width="180px"
             onClick={() => handleOpenCustomerModal("seller")}
           >
@@ -106,13 +106,13 @@ export const Step1: React.FC<StepProps> = ({ handleChange, formData }) => {
               type="text"
               name="buyer"
               label="Comprador:"
-              labelPosition="top"
+              $labelPosition="top"
               onChange={handleChange}
               value={formData.buyer}
             />
           </Box>
           <CustomButton
-            variant="success"
+            $variant="success"
             width="180px"
             onClick={() => handleOpenCustomerModal("buyer")}
           >

@@ -106,11 +106,11 @@ export const CreateNewContract: React.FC = () => {
 
       <SButtonContainer>
         {activeStep !== 0 && (
-          <CustomButton onClick={handleBack} variant={"primary"}>
+          <CustomButton onClick={handleBack} $variant={"primary"}>
             Voltar
           </CustomButton>
         )}
-        <CustomButton onClick={handleNext} variant={"success"}>
+        <CustomButton onClick={handleNext} $variant={"success"}>
           {activeStep === steps.length - 1 ? "Enviar" : "Avançar"}
         </CustomButton>
       </SButtonContainer>

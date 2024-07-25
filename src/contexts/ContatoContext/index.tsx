@@ -10,11 +10,11 @@ interface IContatosContext {
   listContatos: () => Promise<any>;
   createContato: (contatoData: ICreateContatosData) => Promise<any>;
   updateContato: (
-    contatoCli_codigo: string,
-    contatoSequencia: string,
-    updateContatoData: any
+    contactId: string,
+    updateContatoData: IUpdateContatosData
   ) => void;
-  deleteContato: (contatoCli_codigo: string, contatoSequencia: string) => void;
+  deleteContato: (contactId: string) => void;
+  getContactsByClient: (clientId: string) => Promise<any>;
 }
 
 const newContext = createContext<IContatosContext>({
@@ -22,6 +22,7 @@ const newContext = createContext<IContatosContext>({
   createContato: () => Promise.resolve(),
   updateContato: () => {},
   deleteContato: () => {},
+  getContactsByClient: () => Promise.resolve(),
 });
 
 export const ContatosProvider = ({ children }: IContatosProvider) => {
@@ -35,9 +36,19 @@ export const ContatosProvider = ({ children }: IContatosProvider) => {
     }
   }
 
+  async function getContactsByClient(clientId: string): Promise<any> {
+    try {
+      const response = await Api.get(`/contact/${clientId}`);
+
+      return response;
+    } catch (error) {
+      console.error("Error ao buscar Contatos por Cliente:", error);
+    }
+  }
+
   async function createContato(contatoData: ICreateContatosData): Promise<any> {
     try {
-      const response = await Api.post("/contato", contatoData);
+      const response = await Api.post("/contact", contatoData);
 
       return response;
     } catch (error) {
@@ -46,13 +57,12 @@ export const ContatosProvider = ({ children }: IContatosProvider) => {
   }
 
   async function updateContato(
-    contatoCli_codigo: string,
-    contatoSequencia: string,
+    contactId: string,
     updateContatoData: IUpdateContatosData
   ) {
     try {
       const response = await Api.patch(
-        `/contato/${contatoCli_codigo}/${contatoSequencia}`,
+        `/contact/${contactId}`,
         updateContatoData
       );
       return response;
@@ -61,14 +71,9 @@ export const ContatosProvider = ({ children }: IContatosProvider) => {
     }
   }
 
-  async function deleteContato(
-    contatoCli_codigo: string,
-    contatoSequencia: string
-  ) {
+  async function deleteContato(contactId: string) {
     try {
-      const response = await Api.delete(
-        `/contato/${contatoCli_codigo}/${contatoSequencia}`
-      );
+      const response = await Api.delete(`/contact/${contactId}/`);
 
       return response;
     } catch (error) {
@@ -83,6 +88,7 @@ export const ContatosProvider = ({ children }: IContatosProvider) => {
         createContato,
         updateContato,
         deleteContato,
+        getContactsByClient,
       }}
     >
       {children}

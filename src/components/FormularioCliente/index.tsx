@@ -25,8 +25,8 @@ export function FormularioCliente({
 
       <CustomInput
         type="text"
-        label="Nome:"
-        labelPosition="top"
+        label="Razão Social:"
+        $labelPosition="top"
         name="name"
         width="70%"
         value={data.name}
@@ -35,8 +35,8 @@ export function FormularioCliente({
 
       <CustomInput
         type="text"
-        label="Apelido:"
-        labelPosition="top"
+        label="Nome Fantasia:"
+        $labelPosition="top"
         name="nickname"
         width="70%"
         value={data.nickname}
@@ -46,7 +46,7 @@ export function FormularioCliente({
       <CustomInput
         type="text"
         label="CEP:"
-        labelPosition="top"
+        $labelPosition="top"
         name="zip_code"
         maxLength={9}
         value={insertMaskInCEP(data.zip_code)}
@@ -58,7 +58,7 @@ export function FormularioCliente({
         type="text"
         name="address"
         label="Endereço:"
-        labelPosition="top"
+        $labelPosition="top"
         width="70%"
         value={data.address}
         onChange={onChange}
@@ -68,7 +68,7 @@ export function FormularioCliente({
         type="number"
         name="number"
         label="Nº:"
-        labelPosition="top"
+        $labelPosition="top"
         value={data.number}
         onChange={onChange}
       />
@@ -77,7 +77,7 @@ export function FormularioCliente({
         type="text"
         name="complement"
         label="Complemento:"
-        labelPosition="top"
+        $labelPosition="top"
         width="70%"
         value={data.complement}
         onChange={onChange}
@@ -87,7 +87,7 @@ export function FormularioCliente({
         type="text"
         name="district"
         label="Bairro:"
-        labelPosition="top"
+        $labelPosition="top"
         value={data.district}
         onChange={onChange}
       />
@@ -96,7 +96,7 @@ export function FormularioCliente({
         type="text"
         name="city"
         label="Cidade:"
-        labelPosition="top"
+        $labelPosition="top"
         value={data.city}
         onChange={onChange}
       />
@@ -105,7 +105,7 @@ export function FormularioCliente({
         type="text"
         name="state"
         label="UF:"
-        labelPosition="top"
+        $labelPosition="top"
         maxLength={2}
         value={data.state}
         onChange={onChange}
@@ -142,7 +142,7 @@ export function FormularioCliente({
         type="text"
         name="cnpj_cpf"
         label="CPF/CNPJ:"
-        labelPosition="top"
+        $labelPosition="top"
         maxLength={data.kind == "F" ? 14 : 18}
         value={
           data.kind == "F"
@@ -156,7 +156,7 @@ export function FormularioCliente({
         type="text"
         name="ins_est"
         label="Ins.Estadual:"
-        labelPosition="top"
+        $labelPosition="top"
         value={data.ins_est}
         onChange={onChange}
       />
@@ -165,7 +165,7 @@ export function FormularioCliente({
         type="text"
         name="ins_mun"
         label="Ins.Municipal:"
-        labelPosition="top"
+        $labelPosition="top"
         value={data.ins_mun}
         onChange={onChange}
       />
@@ -174,7 +174,7 @@ export function FormularioCliente({
         type="text"
         name="telephone"
         label="Telefone:"
-        labelPosition="top"
+        $labelPosition="top"
         maxLength={15}
         value={insertMaskInTelefone(data.telephone)}
         onChange={onChange}
@@ -184,7 +184,7 @@ export function FormularioCliente({
         type="text"
         name="cellphone"
         label="Celular:"
-        labelPosition="top"
+        $labelPosition="top"
         maxLength={15}
         value={insertMaskInCelular(data.cellphone)}
         onChange={onChange}
@@ -199,19 +199,27 @@ export function FormularioCliente({
           value={data.situation}
           onChange={onChange}
         >
-          <FormControlLabel value="A" control={<Radio />} label="Ativa" />
-          <FormControlLabel value="I" control={<Radio />} label="Inativa" />
+          <FormControlLabel value="ATIVA" control={<Radio />} label="Ativa" />
+          <FormControlLabel
+            value="INATIVA"
+            control={<Radio />}
+            label="Inativa"
+          />
         </RadioGroup>
       </div>
       <BoxContainer>
         <CustomButton
-          variant={"primary"}
+          $variant={"primary"}
           width="80px"
           onClick={() => navigate("/clientes")}
         >
           Cancelar
         </CustomButton>
-        <CustomButton variant={"success"} width="80px" onClick={onHandleCreate}>
+        <CustomButton
+          $variant={"success"}
+          width="80px"
+          onClick={onHandleCreate}
+        >
           Gravar
         </CustomButton>
       </BoxContainer>

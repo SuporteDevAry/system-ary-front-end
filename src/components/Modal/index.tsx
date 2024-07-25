@@ -37,7 +37,7 @@ export function Modal({
       <SDialogActions>
         {cancelButton && (
           <CustomButton
-            variant={variantCancel}
+            $variant={variantCancel}
             width="90px"
             onClick={handleClose}
           >
@@ -46,7 +46,7 @@ export function Modal({
         )}
         {confirmButton && (
           <CustomButton
-            variant={variantConfirm}
+            $variant={variantConfirm}
             width="90px"
             onClick={onHandleCreate}
           >
