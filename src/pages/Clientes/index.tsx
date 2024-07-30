@@ -1,19 +1,15 @@
 import { useNavigate } from "react-router-dom";
-import {
-  BoxContainer,
-  ButtonCreate,
-  SButtonContainer,
-  SButtonDelete,
-  SButtonEdit,
-  STitle,
-} from "./styles";
+import { BoxContainer, SButtonContainer, STitle } from "./styles";
 
 import CardContent from "@mui/material/CardContent";
 import { ClienteContext } from "../../contexts/ClienteContext";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { IListCliente } from "../../contexts/ClienteContext/types";
 import CustomTable from "../../components/CustomTable";
 import { CustomSearch } from "../../components/CustomSearch";
+import CustomButton from "../../components/CustomButton";
+import { toast } from "react-toastify";
+import { ModalDelete } from "../../components/ModalDelete";
 
 export function Clientes() {
   const clienteContext = ClienteContext();
@@ -22,8 +18,13 @@ export function Clientes() {
   const [clientes, setClientes] = useState<IListCliente[]>([]);
   const [dataTable, setDataTable] = useState<IListCliente[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isDeleteModal, setDeleteModal] = useState<boolean>(false);
+  const [selectedClient, setSelectedClient] = useState<IListCliente | null>(
+    null
+  );
+  const [modalContent, setModalContent] = useState<string>("");
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setIsLoading(true);
       const response = await clienteContext.listClientes();
@@ -34,32 +35,59 @@ export function Clientes() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [clienteContext]);
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [fetchData]);
 
-  const handleCreateCliente = async () => {
+  const handleCreateCliente = () => {
     navigate("/cliente-cadastrar");
   };
 
-  const handleUpdateCliente = async (clientes: IListCliente) => {
+  const handleUpdateCliente = (clientes: IListCliente) => {
     navigate("/cliente-editar", {
       state: { clienteForUpdate: clientes },
     });
   };
 
-  const handleDeleteCliente = (clienteCli_codigo: string) => {
+  const handleViewCustomer = (clientes: IListCliente) => {
+    navigate("/visualizar-cliente", {
+      state: { clientForView: clientes },
+    });
+  };
+
+  const handleDeleteCliente = async () => {
+    if (!selectedClient) return;
     try {
-      clienteContext.deleteCliente(clienteCli_codigo);
+      await clienteContext.deleteCliente(selectedClient.id);
       fetchData();
+      toast.success(
+        `Cliente ${selectedClient.nickname} com id:${selectedClient.id}, foi deletado com sucesso!`
+      );
     } catch (error) {
       console.error("Erro excluindo cliente:", error);
+    } finally {
+      setDeleteModal(false);
+      setSelectedClient(null);
     }
   };
 
-  const handleSearch = () => {
+  const handleOpenDeleteModal = (client: IListCliente) => {
+    setModalContent(
+      `Tem certeza que deseja deletar o cliente: ${client.nickname}?`
+    );
+    setSelectedClient(client);
+    setDeleteModal(true);
+  };
+
+  const handleCloseDeleteModal = () => {
+    setDeleteModal(false);
+    setSelectedClient(null);
+    fetchData();
+  };
+
+  const handleSearch = useCallback(() => {
     if (searchTerm.trim() === "") {
       setDataTable(clientes);
     } else {
@@ -70,27 +98,50 @@ export function Clientes() {
       );
       setDataTable(filteredData);
     }
-  };
+  }, [searchTerm, clientes]);
 
   useEffect(() => {
     handleSearch();
-  }, [searchTerm]);
+  }, [searchTerm, handleSearch]);
 
-  const nameColumns = [
-    { field: "cli_codigo", header: "Código" },
-    { field: "nome", header: "Nome" },
-    { field: "cnpj", header: "CNPJ/CPF" },
-    { field: "cidade", header: "Cidade" },
-    { field: "uf", header: "UF" },
-  ];
+  const nameColumns = useMemo(
+    () => [
+      { field: "code_client", header: "Código" },
+      { field: "nickname", header: "Nome Fantasia" },
+      { field: "cnpj_cpf", header: "CNPJ/CPF" },
+      { field: "city", header: "Cidade" },
+      { field: "state", header: "UF" },
+    ],
+    []
+  );
 
-  const renderActionButtons = (row: any) => (
-    <SButtonContainer>
-      <SButtonEdit onClick={() => handleUpdateCliente(row)}>Editar</SButtonEdit>
-      <SButtonDelete onClick={() => handleDeleteCliente(row.cli_codigo)}>
-        Deletar
-      </SButtonDelete>
-    </SButtonContainer>
+  const renderActionButtons = useCallback(
+    (row: any) => (
+      <SButtonContainer>
+        <CustomButton
+          $variant="secondary"
+          width="80px"
+          onClick={() => handleViewCustomer(row)}
+        >
+          Detalhes
+        </CustomButton>
+        <CustomButton
+          $variant="primary"
+          width="60px"
+          onClick={() => handleUpdateCliente(row)}
+        >
+          Editar
+        </CustomButton>
+        <CustomButton
+          $variant="danger"
+          width="60px"
+          onClick={() => handleOpenDeleteModal(row)}
+        >
+          Deletar
+        </CustomButton>
+      </SButtonContainer>
+    ),
+    [handleViewCustomer, handleUpdateCliente, handleOpenDeleteModal]
   );
 
   return (
@@ -99,11 +150,17 @@ export function Clientes() {
       <BoxContainer>
         <CustomSearch
           width="400px"
-          placeholder="Digite o Nome ou Código ou CNPJ"
+          placeholder="Digite o Nome, CNPJ ou Cidade"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-        <ButtonCreate onClick={handleCreateCliente}> Criar Novo</ButtonCreate>
+        <CustomButton
+          $variant="success"
+          width="180px"
+          onClick={handleCreateCliente}
+        >
+          Criar Novo Cliente
+        </CustomButton>
       </BoxContainer>
 
       <CardContent>
@@ -115,6 +172,14 @@ export function Clientes() {
           actionButtons={renderActionButtons}
         />
       </CardContent>
+      {selectedClient && (
+        <ModalDelete
+          open={isDeleteModal}
+          onClose={handleCloseDeleteModal}
+          content={modalContent}
+          onConfirm={handleDeleteCliente}
+        />
+      )}
     </>
   );
 }

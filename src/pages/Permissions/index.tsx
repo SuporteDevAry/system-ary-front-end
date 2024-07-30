@@ -45,6 +45,7 @@ export function Permissions() {
   const [permissionsToken, setPermissionsToken] = useState([]);
   const [permissionId, setPermissionId] = useState<string>();
 
+  //Para inserir um novo card na tela permissão: src/components/Sidebar/index.tsx
   const permissionsLinks = [
     {
       label: "Dashboard",
@@ -62,9 +63,9 @@ export function Permissions() {
       key: "CLIENTES",
     },
     {
-      label: "Contatos",
+      label: "Execução",
       icon: <AiOutlineIdcard size={40} />,
-      key: "CONTATOS",
+      key: "EXECUCAO",
     },
     {
       label: "Admin",
@@ -176,7 +177,7 @@ export function Permissions() {
               label="Nome:"
               type="text"
               name="name"
-              labelPosition="left"
+              $labelPosition="left"
               value={formData.name}
               readOnly
             />
@@ -186,14 +187,14 @@ export function Permissions() {
               type="email"
               label="E-mail:"
               name="email"
-              labelPosition="left"
+              $labelPosition="left"
               value={formData.email}
               readOnly
             />
           </Box>
           <SBoxButton>
             <CustomButton
-              variant="success"
+              $variant="success"
               width="260px"
               onClick={handleOpenUserModal}
               disabled={!!formData.email}
@@ -203,7 +204,7 @@ export function Permissions() {
           </SBoxButton>
           <SBoxPermissionButton>
             <CustomButton
-              variant="success"
+              $variant="success"
               width="260px"
               onClick={handleUpdatePermissions}
               disabled={!formData.email}

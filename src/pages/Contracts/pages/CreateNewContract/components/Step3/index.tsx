@@ -1,5 +1,6 @@
 import { CustomInput } from "../../../../../../components/CustomInput";
 import { StepProps } from "../../types";
+import { SText, STextArea } from "../Step2/styles";
 import { SContainer } from "./styles";
 
 export const Step3: React.FC<StepProps> = ({ handleChange, formData }) => {
@@ -9,7 +10,7 @@ export const Step3: React.FC<StepProps> = ({ handleChange, formData }) => {
         type="text"
         name="quantity"
         label="Quantidade:"
-        labelPosition="top"
+        $labelPosition="top"
         onChange={handleChange}
         value={formData.quantity}
       />
@@ -18,7 +19,7 @@ export const Step3: React.FC<StepProps> = ({ handleChange, formData }) => {
         type="number"
         name="price"
         label="Preço:"
-        labelPosition="top"
+        $labelPosition="top"
         onChange={handleChange}
         value={formData.price}
       />
@@ -27,7 +28,7 @@ export const Step3: React.FC<StepProps> = ({ handleChange, formData }) => {
         type="number"
         name="icms"
         label="ICMS:"
-        labelPosition="top"
+        $labelPosition="top"
         onChange={handleChange}
         value={formData.icms}
       />
@@ -36,7 +37,7 @@ export const Step3: React.FC<StepProps> = ({ handleChange, formData }) => {
         type="text"
         name="payment"
         label="Pagamento:"
-        labelPosition="top"
+        $labelPosition="top"
         onChange={handleChange}
         value={formData.payment}
       />
@@ -45,7 +46,7 @@ export const Step3: React.FC<StepProps> = ({ handleChange, formData }) => {
         type="text"
         name="pickup"
         label="Retirada:"
-        labelPosition="top"
+        $labelPosition="top"
         onChange={handleChange}
         value={formData.pickup}
       />
@@ -54,16 +55,22 @@ export const Step3: React.FC<StepProps> = ({ handleChange, formData }) => {
         type="text"
         name="pickupLocation"
         label="Local de Retirada:"
-        labelPosition="top"
+        $labelPosition="top"
         onChange={handleChange}
         value={formData.pickupLocation}
       />
 
-      <CustomInput
+      {/* <CustomInput
         type="text"
         name="inspection"
         label="Conferência:"
-        labelPosition="top"
+        $labelPosition="top"
+        onChange={handleChange}
+        value={formData.inspection}
+      /> */}
+      <SText>Conferência:</SText>
+      <STextArea
+        name="inspection"
         onChange={handleChange}
         value={formData.inspection}
       />

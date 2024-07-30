@@ -99,14 +99,14 @@ export function Users() {
   const renderActionButtons = (row: any) => (
     <SButtonContainer>
       <CustomButton
-        variant={"primary"}
+        $variant={"primary"}
         width="80px"
         onClick={() => handleUpdateUser(row)}
       >
         Editar
       </CustomButton>
       <CustomButton
-        variant={"danger"}
+        $variant={"danger"}
         width="80px"
         onClick={() => handleDeleteUser(row.id)}
       >
@@ -126,7 +126,7 @@ export function Users() {
           onChange={(e) => setSearchTerm(e.target.value)}
         />
         <CustomButton
-          variant={"success"}
+          $variant={"success"}
           width="100px"
           onClick={handleCreateNewUser}
         >

@@ -15,7 +15,7 @@ export function Modal({
   variantConfirm,
   maxWidth,
   fullWidth,
-  onHandleCreate,
+  onHandleConfirm,
   onClose,
 }: IModalProps) {
   const handleClose = () => {
@@ -37,7 +37,7 @@ export function Modal({
       <SDialogActions>
         {cancelButton && (
           <CustomButton
-            variant={variantCancel}
+            $variant={variantCancel}
             width="90px"
             onClick={handleClose}
           >
@@ -46,9 +46,9 @@ export function Modal({
         )}
         {confirmButton && (
           <CustomButton
-            variant={variantConfirm}
+            $variant={variantConfirm}
             width="90px"
-            onClick={onHandleCreate}
+            onClick={onHandleConfirm}
           >
             {confirmButton}
           </CustomButton>

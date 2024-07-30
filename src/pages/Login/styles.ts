@@ -63,12 +63,12 @@ export const BoxInputUser = styled.div`
   }
 `;
 
-export const BoxInputPassword = styled.div<{ showPasswordIcon: boolean }>`
+export const BoxInputPassword = styled.div<{ $showPasswordIcon: boolean }>`
   position: relative;
 
   input {
-    padding-left: ${({ showPasswordIcon }) =>
-    showPasswordIcon ? "18px" : "35px"};
+    padding-left: ${({ $showPasswordIcon }) =>
+      $showPasswordIcon ? "18px" : "35px"};
 
     /* Outros estilos do input */
   }
@@ -76,8 +76,8 @@ export const BoxInputPassword = styled.div<{ showPasswordIcon: boolean }>`
   svg {
     position: absolute;
     top: 50%;
-    ${({ showPasswordIcon }) =>
-    showPasswordIcon ? "right: 10px" : "left: 10px"};
+    ${({ $showPasswordIcon }) =>
+      $showPasswordIcon ? "right: 10px" : "left: 10px"};
     transform: translateY(-50%);
     /* Estilos adicionais do ícone */
     cursor: pointer;
@@ -107,8 +107,7 @@ const BaseInput = styled.input`
   }
 `;
 
-export const UserInput = styled(BaseInput)`
-`;
+export const UserInput = styled(BaseInput)``;
 
 export const PasswordInput = styled(BaseInput)``;
 
@@ -144,9 +143,9 @@ export const ButtonComponent = styled.button`
 
   &:hover {
     color: ${(props) =>
-    props.disabled ? props.theme["black"] : props.theme["white"]};
+      props.disabled ? props.theme["black"] : props.theme["white"]};
     background-color: ${(props) =>
-    props.disabled ? props.theme["yellow-600"] : props.theme["black"]};
+      props.disabled ? props.theme["yellow-600"] : props.theme["black"]};
     border: none;
     outline: none;
   }

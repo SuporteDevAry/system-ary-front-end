@@ -1,29 +1,26 @@
-
 export interface IFormData {
-    cli_codigo: string;
-    nome: string;
-    endereco: string;
-    numero: string;
-    complemento: string;
-    bairro: string;
-    cidade: string;
-    uf: string;
-    cep: string;
-    natureza: string;
-    cnpj: string;
-    ins_est: string;
-    ins_mun: string;
-    email: string;
-    telefone: string;
-    celular: string;
-    situacao: string;
-
+  nickname: string;
+  name: string;
+  address: string;
+  number: string;
+  complement: string;
+  district: string;
+  city: string;
+  state: string;
+  zip_code: string;
+  kind: string;
+  cnpj_cpf: string;
+  ins_est: string;
+  ins_mun: string;
+  telephone: string;
+  cellphone: string;
+  situation: string;
 }
 
 export interface IFormularioClienteProps {
-    titleText: string;
-    data: IFormData;
-    onHandleCreate: () => void;
-    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-    onCheckCEP: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  titleText: string;
+  data: IFormData;
+  onHandleCreate: () => void;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onCheckCEP: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }

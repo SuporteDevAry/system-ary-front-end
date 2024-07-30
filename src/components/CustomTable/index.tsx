@@ -15,6 +15,7 @@ import { SColumnHeader, SCheckbox, STableHead } from "./styles";
 import { convertToCustomFormat } from "../../helpers/dateFormat";
 import { insertMaskInCpf } from "../../helpers/front-end/insertMaskInCpf";
 import { insertMaskInCnpj } from "../../helpers/front-end/insertMaskInCnpj";
+import Loading from "../Loading";
 // import { KeyboardArrowDown, KeyboardArrowUp } from "@mui/icons-material";
 
 const locale = "pt-BR";
@@ -63,10 +64,10 @@ const CustomTable: React.FC<ICustomTableProps> = ({
   };
 
   const formatCellValue = (row: any, column: { field: string }): string => {
-    if (column.field === "cnpj") {
-      return row.natureza === "F"
-        ? insertMaskInCpf(row.cnpj)
-        : insertMaskInCnpj(row.cnpj);
+    if (column.field === "cnpj_cpf") {
+      return row.kind === "F"
+        ? insertMaskInCpf(row.cnpj_cpf)
+        : insertMaskInCnpj(row.cnpj_cpf);
     }
     if (dateFields?.includes(column.field)) {
       return convertToCustomFormat(row[column.field], locale);
@@ -98,7 +99,7 @@ const CustomTable: React.FC<ICustomTableProps> = ({
                   (actionButtons ? 1 : 0)
                 }
               >
-                <p>Loading...</p>
+                <Loading />
               </TableCell>
             </TableRow>
           ) : (
@@ -170,6 +171,7 @@ const CustomTable: React.FC<ICustomTableProps> = ({
           page={page}
           onPageChange={handleChangePage}
           onRowsPerPageChange={handleChangeRowsPerPage}
+          labelRowsPerPage="Linhas por página:"
         />
       )}
     </TableContainer>

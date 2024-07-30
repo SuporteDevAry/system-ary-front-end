@@ -2,7 +2,7 @@ import styled from "styled-components";
 import Card from "@mui/material/Card";
 import { V } from "../../styles/variables";
 
-export const STitle = styled.h1`
+export const STitle = styled.h2`
   padding-left: ${V.mdSpacing};
 `;
 

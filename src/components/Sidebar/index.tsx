@@ -30,7 +30,7 @@ import { iconAry } from "../../assets";
 import { getPermissionsFromToken } from "../../contexts/AuthProvider/util";
 
 export function Sidebar() {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
   const { pathname } = useLocation();
 
   const [menuItems, setMenuItens] = useState<string[] | null>([]);
@@ -40,6 +40,7 @@ export function Sidebar() {
     setMenuItens(permissions);
   }, []);
 
+  // Verificar se os nomes da permissão estão corretos: src/pages/Permissions/index.tsx
   const linksArray = [
     {
       id: "DASHBOARD",
@@ -63,10 +64,10 @@ export function Sidebar() {
       notification: 0,
     },
     {
-      id: "CONTATOS",
-      label: "Contatos",
+      id: "EXECUCAO",
+      label: "Execução",
       icon: <AiOutlineIdcard />,
-      to: "/contatos",
+      to: "/execucao",
       notification: 0,
     },
   ];
@@ -105,12 +106,12 @@ export function Sidebar() {
 
   return (
     <SSidebar
-      isOpen={sidebarOpen}
+      $isOpen={sidebarOpen}
       style={!sidebarOpen ? { width: `fit-content` } : {}}
     >
       <>
         <SSidebarButton
-          isOpen={sidebarOpen}
+          $isOpen={sidebarOpen}
           onClick={() => setSidebarOpen((p) => !p)}
         >
           {sidebarOpen ? <AiOutlineLeft /> : <AiOutlineRight />}
@@ -121,7 +122,7 @@ export function Sidebar() {
       </SLogo>
       <SDivider />
       {filteredLinksArray.map(({ icon, label, notification, to }) => (
-        <SLinkContainer key={label} isActive={pathname === to}>
+        <SLinkContainer key={label} $isActive={pathname === to}>
           <SLink to={to} style={!sidebarOpen ? { width: `fit-content` } : {}}>
             <SLinkIcon>{icon}</SLinkIcon>
             {sidebarOpen && (
@@ -137,7 +138,7 @@ export function Sidebar() {
       ))}
       <SDivider />
       {secondaryLinksArray.map(({ icon, label, to, id }) => (
-        <SLinkContainer key={id} isActive={pathname === to}>
+        <SLinkContainer key={id} $isActive={pathname === to}>
           <SLink to={to} style={!sidebarOpen ? { width: `fit-content` } : {}}>
             <SLinkIcon>{icon}</SLinkIcon>
             {sidebarOpen && <SLinkLabel>{label}</SLinkLabel>}
