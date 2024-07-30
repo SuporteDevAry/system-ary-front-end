@@ -174,6 +174,8 @@ export function Extenso(vlr: number): string {
                 }
             }
 
+            extenso = extenso.substring(0, extenso.trimEnd().length - 1);
+
             return extenso;
         } else {
             return "Ponto 2 - Numero maior que 999 trilhões";
