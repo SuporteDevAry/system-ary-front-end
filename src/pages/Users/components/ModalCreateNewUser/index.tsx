@@ -88,7 +88,7 @@ export function ModalCreateNewUser({ open, onClose }: ModalCreateNewUserProps) {
       confirmButton="Criar"
       cancelButton="Fechar"
       onClose={handleClose}
-      onHandleCreate={handleCreate}
+      onHandleConfirm={handleCreate}
       variantCancel={"primary"}
       variantConfirm={"success"}
     >

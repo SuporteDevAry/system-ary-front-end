@@ -66,7 +66,7 @@ export function ModalEditUser({ open, onClose, user }: ModalEditUserProps) {
       confirmButton="Atualizar"
       cancelButton="Cancelar"
       onClose={handleClose}
-      onHandleCreate={handleUpdate}
+      onHandleConfirm={handleUpdate}
       variantCancel={"primary"}
       variantConfirm={"success"}
     >

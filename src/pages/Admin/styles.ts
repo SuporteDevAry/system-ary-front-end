@@ -2,8 +2,7 @@ import styled from "styled-components";
 import Card from "@mui/material/Card";
 import { V } from "../../styles/variables";
 
-
-export const STitle = styled.h1`
+export const STitle = styled.h2`
   padding-left: ${V.mdSpacing};
 `;
 
@@ -38,7 +37,6 @@ export const SCard = styled(Card)`
   }
 
   @media (max-width: 420px), handheld and (orientation: landscape) {
-
     height: 100px;
     width: 100px;
   }

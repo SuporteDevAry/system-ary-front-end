@@ -1,5 +1,6 @@
 import { CustomInput } from "../../../../../../components/CustomInput";
 import { StepProps } from "../../types";
+import { SText, STextArea } from "../Step2/styles";
 import { SContainer } from "./styles";
 
 export const Step3: React.FC<StepProps> = ({ handleChange, formData }) => {

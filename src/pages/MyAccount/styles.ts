@@ -1,6 +1,6 @@
 import styled from "styled-components";
 
-export const STitle = styled.h1``;
+export const STitle = styled.h2``;
 
 export const SContainer = styled.div`
   width: 900px;
@@ -13,13 +13,13 @@ export const SMain = styled.div`
   padding-top: 16px;
 `;
 
-export const SName = styled.p`
+export const SName = styled.span`
   display: flex;
   flex-direction: row;
   gap: 4px;
   font-weight: 900;
 `;
 
-export const SValue = styled.p`
+export const SValue = styled.span`
   font-weight: 500;
 `;

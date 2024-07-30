@@ -2,7 +2,7 @@ import { SButton } from "./styles";
 import { CustomButtonProps } from "./types";
 
 const CustomButton: React.FC<CustomButtonProps> = ({
-  variant,
+  $variant,
   width,
   height,
   disabled,
@@ -11,7 +11,7 @@ const CustomButton: React.FC<CustomButtonProps> = ({
 }) => {
   return (
     <SButton
-      variant={variant}
+      $variant={$variant}
       width={width}
       height={height}
       disabled={disabled}

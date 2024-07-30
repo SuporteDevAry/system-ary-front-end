@@ -101,7 +101,7 @@ export function Login() {
                 />
               </BoxInputUser>
               <BoxInputPassword
-                showPasswordIcon={formData?.password.length > 0}
+                $showPasswordIcon={formData?.password.length > 0}
               >
                 <PasswordInput
                   placeholder="Senha"

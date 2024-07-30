@@ -1,60 +1,30 @@
 export interface IContatosProvider {
-    children: JSX.Element;
+  children: JSX.Element;
 }
 
 export interface IContatos {
-    id: string;
-    cli_codigo: string;
-    sequencia: string;
-    grupo: string;
-    nome: string;
-    cargo: string;
-    email: string;
-    telefone: string;
-    celular: string;
-    recebe_email: string;
-    created_at: string;
-    updated_at: string;
+  id: string;
+  code_client: string;
+  name: string;
+  email: string;
+  sector: string;
+  telephone: string;
+  cellphone: string;
+  created_at: string;
+  updated_at: string;
 }
 
-export interface ICreateContatosData {
-    cli_codigo: string;
-    sequencia: string;
-    grupo: string;
-    nome: string;
-    cargo: string;
-    email: string;
-    telefone: string;
-    celular: string;
-    recebe_email: string;
+export interface ICreateContatosData
+  extends Omit<IContatos, "id" | "created_at" | "updated_at"> {
+  code_client: string;
+  name: string;
+  email: string;
+  sector: string;
+  telephone: string;
+  cellphone: string;
 }
 
-export interface IUpdateContatosData {
-    cli_codigo: string;
-    sequencia: string;
-    grupo: string;
-    nome: string;
-    cargo: string;
-    email: string;
-    telefone: string;
-    celular: string;
-    recebe_email: string;
-}
+export interface IUpdateContatosData
+  extends Omit<IContatos, "id" | "code_client" | "created_at" | "updated_at"> {}
 
-
-
-export interface IListContatos extends IContatos {
-    id: string;
-    cli_codigo: string;
-    sequencia: string;
-    grupo: string;
-    nome: string;
-    cargo: string;
-    email: string;
-    telefone: string;
-    celular: string;
-    recebe_email: string;
-    created_at: string;
-    updated_at: string;
-}
-
+export interface IListContatos extends IContatos {}

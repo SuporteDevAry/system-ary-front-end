@@ -3,19 +3,19 @@ import { labelPositionVariant } from "./types";
 import { HTMLAttributes } from "react";
 import { Select } from "@mui/material";
 interface SContainerProps extends HTMLAttributes<HTMLDivElement> {
-  labelPosition?: labelPositionVariant;
+  $labelPosition?: labelPositionVariant;
 }
 
 export const SContainer = styled.div<SContainerProps>`
   display: flex;
   gap: 8px;
   // Label pode ficar em cima do input com valor "top", ou pode ficar a esquerda com o valor "left"!
-  ${({ labelPosition }) =>
-    labelPosition === "top"
+  ${({ $labelPosition }) =>
+    $labelPosition === "top"
       ? css`
           flex-direction: column;
         `
-      : labelPosition === "left"
+      : $labelPosition === "left"
       ? css`
           align-items: center;
         `

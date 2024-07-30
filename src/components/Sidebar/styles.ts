@@ -3,15 +3,18 @@ import { Link } from "react-router-dom";
 import { V, btnReset } from "../../styles/variables";
 
 interface isOpenProps {
-  isOpen: boolean;
+  $isOpen: boolean;
 }
 
 interface isActiveProps {
-  isActive: boolean;
+  $isActive: boolean;
 }
 
-export const SSidebar = styled.div<isOpenProps>`
-  width: ${(isOpen) => (!isOpen ? `auto` : V.sidebarWidth)};
+export const DIVBASE = styled.div``;
+export const BUTTONBASE = styled.button``;
+
+export const SSidebar = styled(DIVBASE)<isOpenProps>`
+  width: ${($isOpen) => (!$isOpen ? `auto` : V.sidebarWidth)};
   background: ${({ theme }) => theme["white-100"]};
 
   height: 100vh;
@@ -20,11 +23,11 @@ export const SSidebar = styled.div<isOpenProps>`
   position: relative;
 `;
 
-export const SSidebarButton = styled.button<isOpenProps>`
+export const SSidebarButton = styled(BUTTONBASE)<isOpenProps>`
   ${btnReset};
   position: absolute;
   top: ${V.xxlSpacing};
-  right: ${(isOpen) => (isOpen ? `-16px` : `-40px`)};
+  right: ${($isOpen) => ($isOpen ? `-16px` : `-40px`)};
   width: 32px;
   height: 32px;
   border-radius: ${V.borderRadiusMid};
@@ -36,7 +39,7 @@ export const SSidebarButton = styled.button<isOpenProps>`
   justify-content: center;
   cursor: pointer;
 
-  transform: ${(isOpen) => (!isOpen ? `rotate(180deg)` : `initial`)};
+  transform: ${($isOpen) => (!$isOpen ? `rotate(180deg)` : `initial`)};
 `;
 
 export const SLogo = styled.div`
@@ -58,9 +61,9 @@ export const SDivider = styled.div`
   margin: ${V.lgSpacing} 0;
 `;
 
-export const SLinkContainer = styled.div<isActiveProps>`
-  background: ${({ theme, isActive }) =>
-    !isActive ? `transparent` : theme["gray-300"]};
+export const SLinkContainer = styled(DIVBASE)<isActiveProps>`
+  background: ${({ theme, $isActive }) =>
+    !$isActive ? `transparent` : theme["gray-300"]};
   border-radius: ${V.borderRadius};
   margin: 8px 0;
 
