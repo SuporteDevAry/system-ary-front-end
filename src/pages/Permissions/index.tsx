@@ -45,6 +45,7 @@ export function Permissions() {
   const [permissionsToken, setPermissionsToken] = useState([]);
   const [permissionId, setPermissionId] = useState<string>();
 
+  //Para inserir um novo card na tela permissão: src/components/Sidebar/index.tsx
   const permissionsLinks = [
     {
       label: "Dashboard",
@@ -62,9 +63,9 @@ export function Permissions() {
       key: "CLIENTES",
     },
     {
-      label: "Contatos",
+      label: "Execução",
       icon: <AiOutlineIdcard size={40} />,
-      key: "CONTATOS",
+      key: "EXECUCAO",
     },
     {
       label: "Admin",

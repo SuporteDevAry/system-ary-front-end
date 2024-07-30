@@ -40,6 +40,7 @@ export function Sidebar() {
     setMenuItens(permissions);
   }, []);
 
+  // Verificar se os nomes da permissão estão corretos: src/pages/Permissions/index.tsx
   const linksArray = [
     {
       id: "DASHBOARD",
@@ -63,10 +64,10 @@ export function Sidebar() {
       notification: 0,
     },
     {
-      id: "CONTATOS",
-      label: "Contatos",
+      id: "EXECUCAO",
+      label: "Execução",
       icon: <AiOutlineIdcard />,
-      to: "/contatos",
+      to: "/execucao",
       notification: 0,
     },
   ];

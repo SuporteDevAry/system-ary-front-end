@@ -87,7 +87,7 @@ export function ModalClientes({
         variantCancel={"primary"}
         variantConfirm={"success"}
         onClose={handleClose}
-        onHandleCreate={handleConfirm}
+        onHandleConfirm={handleConfirm}
         maxWidth="md"
         fullWidth
       >

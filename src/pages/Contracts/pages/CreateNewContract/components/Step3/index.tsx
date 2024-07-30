@@ -1,5 +1,6 @@
 import { CustomInput } from "../../../../../../components/CustomInput";
 import { StepProps } from "../../types";
+import { SText, STextArea } from "../Step2/styles";
 import { SContainer } from "./styles";
 
 export const Step3: React.FC<StepProps> = ({ handleChange, formData }) => {
@@ -59,11 +60,17 @@ export const Step3: React.FC<StepProps> = ({ handleChange, formData }) => {
         value={formData.pickupLocation}
       />
 
-      <CustomInput
+      {/* <CustomInput
         type="text"
         name="inspection"
         label="Conferência:"
         $labelPosition="top"
+        onChange={handleChange}
+        value={formData.inspection}
+      /> */}
+      <SText>Conferência:</SText>
+      <STextArea
+        name="inspection"
         onChange={handleChange}
         value={formData.inspection}
       />

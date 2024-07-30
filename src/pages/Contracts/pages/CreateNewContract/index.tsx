@@ -102,7 +102,7 @@ export const CreateNewContract: React.FC = () => {
         ))}
       </SStepper>
 
-      <SContent>{currentStep.elements}</SContent>
+      <SContent key={currentStep.label}>{currentStep.elements}</SContent>
 
       <SButtonContainer>
         {activeStep !== 0 && (

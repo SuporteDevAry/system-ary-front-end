@@ -22,7 +22,7 @@ export const SContainer = styled.div<SContainerProps>`
       : null}
 `;
 
-export const SLabel = styled.label`
+export const SLabel = styled.span`
   padding-right: 10px; // Espaçamento opcional entre o label e o input
 `;
 

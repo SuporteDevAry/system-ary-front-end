@@ -91,7 +91,7 @@ export function ModalCreateNewContact({
       confirmButton="Criar"
       cancelButton="Fechar"
       onClose={handleClose}
-      onHandleCreate={handleCreate}
+      onHandleConfirm={handleCreate}
       variantCancel={"primary"}
       variantConfirm={"success"}
     >

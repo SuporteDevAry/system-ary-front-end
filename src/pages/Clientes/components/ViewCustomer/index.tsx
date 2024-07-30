@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   BoxContainer,
   SButtonContainer,
@@ -22,6 +22,9 @@ import { ContatoContext } from "../../../../contexts/ContatoContext";
 import { IListContatos } from "../../../../contexts/ContatoContext/types";
 import { ModalCreateNewContact } from "./components/ModalCreateNewContact";
 import { ModalUpdateContact } from "./components/ModalUpdateContact";
+import { ModalDelete } from "../../../../components/ModalDelete";
+import { toast } from "react-toastify";
+
 export function ViewCustomer(): JSX.Element {
   const location = useLocation();
 
@@ -41,12 +44,18 @@ export function ViewCustomer(): JSX.Element {
     {} as IListContatos
   );
 
+  const [isDeleteModal, setDeleteModal] = useState<boolean>(false);
+  const [selectedContact, setSelectedContact] = useState<IListContatos | null>(
+    null
+  );
+  const [modalContent, setModalContent] = useState<string>("");
+
   useEffect(() => {
     const clientForView: IListCliente = location.state?.clientForView;
     setDataClient(clientForView);
   }, [location]);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     if (!dataClient) return;
     try {
       setIsLoading(true);
@@ -60,7 +69,7 @@ export function ViewCustomer(): JSX.Element {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [contactContext, dataClient]);
 
   useEffect(() => {
     if (dataClient) {
@@ -68,7 +77,7 @@ export function ViewCustomer(): JSX.Element {
     }
   }, [dataClient]);
 
-  const handleCreateNewContact = async () => {
+  const handleCreateNewContact = () => {
     setNewContactModal(true);
   };
 
@@ -77,7 +86,7 @@ export function ViewCustomer(): JSX.Element {
     fetchData();
   };
 
-  const handleUpdateCustomerContact = async (contact: IListContatos) => {
+  const handleUpdateCustomerContact = (contact: IListContatos) => {
     setUpdateContactModal(true);
     setContactForUpdate(contact);
   };
@@ -87,16 +96,37 @@ export function ViewCustomer(): JSX.Element {
     fetchData();
   };
 
-  const handleDeleteCustomerContact = (contactId: string) => {
+  const handleDeleteCustomerContact = async () => {
+    if (!selectedContact) return;
     try {
-      contactContext.deleteContato(contactId);
+      await contactContext.deleteContato(selectedContact.id);
       fetchData();
+      toast.success(
+        `Contato ${selectedContact.name} com id:${selectedContact.id}, foi deletado com sucesso!`
+      );
     } catch (error) {
       console.error("Erro excluindo cliente:", error);
+    } finally {
+      setDeleteModal(false);
+      setSelectedContact(null);
     }
   };
 
-  const handleSearch = () => {
+  const handleOpenDeleteModal = (contact: IListContatos) => {
+    setModalContent(
+      `Tem certeza que deseja deletar o contato: ${contact.name}?`
+    );
+    setSelectedContact(contact);
+    setDeleteModal(true);
+  };
+
+  const handleCloseDeleteModal = () => {
+    setDeleteModal(false);
+    setSelectedContact(null);
+    fetchData();
+  };
+
+  const handleSearch = useCallback(() => {
     if (searchTerm.trim() === "") {
       setDataTable(customerContactsList);
     } else {
@@ -107,27 +137,30 @@ export function ViewCustomer(): JSX.Element {
       );
       setDataTable(filteredData);
     }
-  };
+  }, [searchTerm, customerContactsList]);
 
   useEffect(() => {
     handleSearch();
-  }, [searchTerm]);
+  }, [searchTerm, handleSearch]);
 
-  const nameColumnsFromDataClient = [
-    { field: "code_client", header: "Código:" },
-    { field: "name", header: "Razão Social:" },
-    { field: "nickname", header: "Nome Fantasia:" },
-    { field: "address", header: "Endereço:" },
-    { field: "number", header: " Nº:" },
-    { field: "complement", header: "Complemento:" },
-    { field: "district", header: "Bairro:" },
-    { field: "city", header: "Cidade:" },
-    { field: "state", header: "UF:" },
-    { field: "cnpj_cpf", header: "CNPJ/CPF:" },
-    { field: "situation", header: "Situação:" },
-    { field: "telephone", header: "Telefone:" },
-    { field: "cellphone", header: "Celular:" },
-  ];
+  const nameColumnsFromDataClient = useMemo(
+    () => [
+      { field: "code_client", header: "Código:" },
+      { field: "name", header: "Razão Social:" },
+      { field: "nickname", header: "Nome Fantasia:" },
+      { field: "address", header: "Endereço:" },
+      { field: "number", header: " Nº:" },
+      { field: "complement", header: "Complemento:" },
+      { field: "district", header: "Bairro:" },
+      { field: "city", header: "Cidade:" },
+      { field: "state", header: "UF:" },
+      { field: "cnpj_cpf", header: "CNPJ/CPF:" },
+      { field: "situation", header: "Situação:" },
+      { field: "telephone", header: "Telefone:" },
+      { field: "cellphone", header: "Celular:" },
+    ],
+    []
+  );
 
   const formatCellValue = (row: any, column: { field: string }): string => {
     if (column.field === "cnpj_cpf") {
@@ -139,31 +172,37 @@ export function ViewCustomer(): JSX.Element {
     return row[column.field];
   };
 
-  const nameColumnsFromContacts = [
-    { field: "name", header: "Nome" },
-    { field: "email", header: "E-mail" },
-    { field: "sector", header: "Setor" },
-    { field: "telephone", header: "Telefone" },
-    { field: "cellphone", header: "Celular" },
-  ];
+  const nameColumnsFromContacts = useMemo(
+    () => [
+      { field: "name", header: "Nome" },
+      { field: "email", header: "E-mail" },
+      { field: "sector", header: "Setor" },
+      { field: "telephone", header: "Telefone" },
+      { field: "cellphone", header: "Celular" },
+    ],
+    []
+  );
 
-  const renderActionButtons = (row: any) => (
-    <SButtonContainer>
-      <CustomButton
-        $variant={"primary"}
-        width="80px"
-        onClick={() => handleUpdateCustomerContact(row)}
-      >
-        Editar
-      </CustomButton>
-      <CustomButton
-        $variant={"danger"}
-        width="80px"
-        onClick={() => handleDeleteCustomerContact(row.id)}
-      >
-        Deletar
-      </CustomButton>
-    </SButtonContainer>
+  const renderActionButtons = useCallback(
+    (row: any) => (
+      <SButtonContainer>
+        <CustomButton
+          $variant={"primary"}
+          width="80px"
+          onClick={() => handleUpdateCustomerContact(row)}
+        >
+          Editar
+        </CustomButton>
+        <CustomButton
+          $variant={"danger"}
+          width="80px"
+          onClick={() => handleOpenDeleteModal(row)}
+        >
+          Deletar
+        </CustomButton>
+      </SButtonContainer>
+    ),
+    [handleUpdateCustomerContact, handleCloseDeleteModal]
   );
 
   return (
@@ -243,6 +282,14 @@ export function ViewCustomer(): JSX.Element {
         onClose={handleCloseUpdateContactModal}
         dataContact={contactForUpdate}
       />
+      {selectedContact && (
+        <ModalDelete
+          open={isDeleteModal}
+          onClose={handleCloseDeleteModal}
+          onConfirm={handleDeleteCustomerContact}
+          content={modalContent}
+        />
+      )}
     </>
   );
 }

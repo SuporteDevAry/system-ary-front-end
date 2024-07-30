@@ -15,7 +15,7 @@ export function Modal({
   variantConfirm,
   maxWidth,
   fullWidth,
-  onHandleCreate,
+  onHandleConfirm,
   onClose,
 }: IModalProps) {
   const handleClose = () => {
@@ -48,7 +48,7 @@ export function Modal({
           <CustomButton
             $variant={variantConfirm}
             width="90px"
-            onClick={onHandleCreate}
+            onClick={onHandleConfirm}
           >
             {confirmButton}
           </CustomButton>

@@ -8,7 +8,7 @@ export interface IModalProps {
   confirmButton?: string;
   open: boolean;
   onClose: () => void;
-  onHandleCreate: () => void;
+  onHandleConfirm: () => void;
   variantCancel: ButtonVariant;
   variantConfirm: ButtonVariant;
   maxWidth?: "xs" | "sm" | "md" | "lg" | "xl";

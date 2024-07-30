@@ -73,7 +73,7 @@ export function ModalUsers({ open, onClose, onConfirm }: ModalUsersProps) {
         variantCancel={"primary"}
         variantConfirm={"success"}
         onClose={handleClose}
-        onHandleCreate={handleConfirm}
+        onHandleConfirm={handleConfirm}
         maxWidth="md"
         fullWidth
       >

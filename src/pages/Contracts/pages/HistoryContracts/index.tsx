@@ -58,11 +58,11 @@ export function HistoryContracts() {
 
   const nameColumns: IColumn[] = [
     { field: "status", header: "Status" },
-    { field: "contract_details", header: "Em uso" },
+    { field: "last_to_use", header: "Em uso" },
     { field: "nr_contrato", header: "Nº Contrato" },
     { field: "produto", header: "Produto" },
     { field: "contract_details", header: "Detalhes do Contrato" },
-    { field: "contract_details", header: "Criado por" },
+    { field: "created_by", header: "Criado por" },
   ];
 
   return (
