@@ -77,7 +77,7 @@ export const UserProvider = ({ children }: IUserProvider) => {
       const permissionsToSave = {
         rules: updatedRules,
       };
-      console.log("Vamos ver o que temos no context: ", permissionsToSave);
+
       const response = await Api.patch(
         `/permission/${permissionId}`,
         permissionsToSave

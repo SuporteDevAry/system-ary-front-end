@@ -164,6 +164,16 @@ export function Permissions() {
     }
   };
 
+  const handleClearInput = () => {
+    setFormData({
+      name: "",
+      email: "",
+    });
+    setSelectedUser(null);
+    setPermissions(initialPermissions);
+    setPermissionsToken([]);
+  };
+
   return (
     <>
       <SContainer>
@@ -210,6 +220,16 @@ export function Permissions() {
               disabled={!formData.email}
             >
               Atualizar permissões
+            </CustomButton>
+          </SBoxPermissionButton>
+          <SBoxPermissionButton>
+            <CustomButton
+              $variant="danger"
+              width="260px"
+              onClick={handleClearInput}
+              disabled={!formData.email}
+            >
+              Limpar campos
             </CustomButton>
           </SBoxPermissionButton>
         </SDisplayContainer>

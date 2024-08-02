@@ -36,7 +36,7 @@ export const SButton = styled.button<CustomButtonProps>`
         ? theme["white"]
         : theme["black"]};
     background-color: ${({ theme, $variant, disabled }) =>
-      disabled ? theme["yellow-600"] : getColor(theme, $variant)};
+      disabled ? getColor(theme, $variant) : getColor(theme, $variant)};
 
     outline: 0;
     box-shadow: 0 0 0 2px ${({ theme }) => theme["black-200"]};
