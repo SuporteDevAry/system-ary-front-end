@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 
 import Box from "@mui/material/Box";
 import { CustomInput } from "../../../../../../components/CustomInput";
@@ -22,7 +22,7 @@ export const Step1: React.FC<StepProps> = ({ handleChange, formData }) => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [clientes, setClientes] = useState<IListCliente[]>([]);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setIsLoading(true);
       const response = await clienteContext.listClientes();
@@ -32,7 +32,7 @@ export const Step1: React.FC<StepProps> = ({ handleChange, formData }) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [clienteContext]);
 
   useEffect(() => {
     fetchData();

@@ -4,12 +4,8 @@ import { UserContext } from "../../../../contexts/UserContext";
 import { toast } from "react-toastify";
 import { isEmailValid } from "../../../../helpers/back-end/utils";
 import { ModalEditUserProps } from "./types";
-import {
-  SNameInput,
-  SEmailInput,
-  SPasswordInput,
-  SFormContainer,
-} from "./styles";
+import { SFormContainer } from "./styles";
+import { CustomInput } from "../../../../components/CustomInput";
 
 export function ModalEditUser({ open, onClose, user }: ModalEditUserProps) {
   const userContext = UserContext();
@@ -61,7 +57,7 @@ export function ModalEditUser({ open, onClose, user }: ModalEditUserProps) {
 
   return (
     <Modal
-      titleText={"Editar usuário"}
+      titleText={"Editar Usuário"}
       open={open}
       confirmButton="Atualizar"
       cancelButton="Cancelar"
@@ -71,37 +67,30 @@ export function ModalEditUser({ open, onClose, user }: ModalEditUserProps) {
       variantConfirm={"success"}
     >
       <SFormContainer>
-        <div>
-          <label>Nome:</label>
-          <SNameInput
-            type="text"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            required
-          />
-        </div>
-
-        <div>
-          <label>E-mail:</label>
-          <SEmailInput
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div>
-          <label>Senha:</label>
-          <SPasswordInput
-            type="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-          />
-        </div>
+        <CustomInput
+          type="text"
+          name="name"
+          label="Nome:"
+          $labelPosition="top"
+          onChange={handleChange}
+          value={formData.name}
+        />
+        <CustomInput
+          type="email"
+          name="email"
+          label="E-mail:"
+          $labelPosition="top"
+          onChange={handleChange}
+          value={formData.email}
+        />
+        <CustomInput
+          type="password"
+          name="password"
+          label="Senha:"
+          $labelPosition="top"
+          onChange={handleChange}
+          value={formData.password}
+        />
       </SFormContainer>
     </Modal>
   );

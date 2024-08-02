@@ -6,6 +6,5 @@ export const SFormContainer = styled.div`
   align-items: center;
   justify-content: center;
   flex-wrap: wrap;
-  padding: 32px 0;
   gap: 8px;
 `;

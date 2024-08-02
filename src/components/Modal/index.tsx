@@ -28,7 +28,6 @@ export function Modal({
       open={open}
       maxWidth={maxWidth}
       fullWidth={fullWidth}
-      // sx={{ "& .MuiDialog-paper": { minHeight: "400px", maxHeight: "90vh" } }} // Customize height
     >
       <DialogTitle>{titleText}</DialogTitle>
       <SDialogContent>

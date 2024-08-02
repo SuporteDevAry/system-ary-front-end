@@ -3,14 +3,9 @@ import { Modal } from "../../../../components/Modal";
 import { UserContext } from "../../../../contexts/UserContext";
 import { toast } from "react-toastify";
 import { isEmailValid } from "../../../../helpers/back-end/utils";
-import {
-  SFormContainer,
-  SNameInput,
-  SConfirmPasswordInput,
-  SEmailInput,
-  SPasswordInput,
-} from "./styles";
+import { SFormContainer } from "./styles";
 import { ModalCreateNewUserProps } from "./types";
+import { CustomInput } from "../../../../components/CustomInput";
 
 export function ModalCreateNewUser({ open, onClose }: ModalCreateNewUserProps) {
   const userContext = UserContext();
@@ -83,7 +78,7 @@ export function ModalCreateNewUser({ open, onClose }: ModalCreateNewUserProps) {
 
   return (
     <Modal
-      titleText={"Criar novo usuário"}
+      titleText={"Criar Novo Usuário"}
       open={open}
       confirmButton="Criar"
       cancelButton="Fechar"
@@ -93,49 +88,38 @@ export function ModalCreateNewUser({ open, onClose }: ModalCreateNewUserProps) {
       variantConfirm={"success"}
     >
       <SFormContainer>
-        <div>
-          <label>Nome:</label>
-          <SNameInput
-            type="text"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            required
-          />
-        </div>
-
-        <div>
-          <label>E-mail:</label>
-          <SEmailInput
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-          />
-        </div>
-
-        <div>
-          <label>Senha:</label>
-          <SPasswordInput
-            type="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-          />
-        </div>
-
-        <div>
-          <label>Confirme a Senha:</label>
-          <SConfirmPasswordInput
-            type="password"
-            name="confirmPassword"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            required
-          />
-        </div>
+        <CustomInput
+          type="text"
+          name="name"
+          label="Nome:"
+          $labelPosition="top"
+          onChange={handleChange}
+          value={formData.name}
+        />
+        <CustomInput
+          type="email"
+          name="email"
+          label="E-mail:"
+          $labelPosition="top"
+          onChange={handleChange}
+          value={formData.email}
+        />
+        <CustomInput
+          type="password"
+          name="password"
+          label="Senha:"
+          $labelPosition="top"
+          onChange={handleChange}
+          value={formData.password}
+        />
+        <CustomInput
+          type="password"
+          name="confirmPassword"
+          label="Confirme a Senha:"
+          $labelPosition="top"
+          onChange={handleChange}
+          value={formData.confirmPassword}
+        />
       </SFormContainer>
     </Modal>
   );
