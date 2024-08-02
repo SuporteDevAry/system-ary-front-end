@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   SCard,
   SCardContent,
@@ -46,41 +46,46 @@ export function Permissions() {
   const [permissionId, setPermissionId] = useState<string>();
 
   //Para inserir um novo card na tela permissão: src/components/Sidebar/index.tsx
-  const permissionsLinks = [
-    {
-      label: "Dashboard",
-      icon: <AiOutlineHome size={40} />,
-      key: "DASHBOARD",
-    },
-    {
-      label: "Contratos",
-      icon: <LiaFileContractSolid size={40} />,
-      key: "CONTRATOS",
-    },
-    {
-      label: "Clientes",
-      icon: <AiOutlineTeam size={40} />,
-      key: "CLIENTES",
-    },
-    {
-      label: "Execução",
-      icon: <AiOutlineIdcard size={40} />,
-      key: "EXECUCAO",
-    },
-    {
-      label: "Admin",
-      icon: <AiOutlineSetting size={40} />,
-      key: "ADMIN",
-    },
-  ];
-
-  const initialPermissions: IPermissions = permissionsLinks.reduce(
-    (acc, { key }) => {
-      acc[key] = false;
-      return acc;
-    },
-    {} as IPermissions
+  const permissionsLinks = useMemo(
+    () => [
+      {
+        label: "Dashboard",
+        icon: <AiOutlineHome size={40} />,
+        key: "DASHBOARD",
+      },
+      {
+        label: "Contratos",
+        icon: <LiaFileContractSolid size={40} />,
+        key: "CONTRATOS",
+      },
+      {
+        label: "Clientes",
+        icon: <AiOutlineTeam size={40} />,
+        key: "CLIENTES",
+      },
+      {
+        label: "Execução",
+        icon: <AiOutlineIdcard size={40} />,
+        key: "EXECUCAO",
+      },
+      {
+        label: "Admin",
+        icon: <AiOutlineSetting size={40} />,
+        key: "ADMIN",
+      },
+    ],
+    []
   );
+
+  const initialPermissions: IPermissions = useMemo(
+    () =>
+      permissionsLinks.reduce((acc, { key }) => {
+        acc[key] = false;
+        return acc;
+      }, {} as IPermissions),
+    [permissionsLinks]
+  );
+
   const [permissions, setPermissions] =
     useState<IPermissions>(initialPermissions);
 
@@ -89,14 +94,14 @@ export function Permissions() {
     email: selectedUser?.email,
   });
 
-  const handleToggle = (permission: string) => {
+  const handleToggle = useCallback((permission: string) => {
     setPermissions((prevPermissions) => ({
       ...prevPermissions,
       [permission]: !prevPermissions[permission],
     }));
-  };
+  }, []);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       if (formData.email) {
         const response = await userContext.listUserPermissionsByEmail(
@@ -108,11 +113,11 @@ export function Permissions() {
     } catch (error) {
       toast.error(`Error fetching permissions by email:  ${error}`);
     }
-  };
+  }, [formData.email, userContext]);
 
   useEffect(() => {
     fetchData();
-  }, [formData.email]);
+  }, [fetchData]);
 
   useEffect(() => {
     if (permissionsToken.length > 0) {
@@ -124,26 +129,29 @@ export function Permissions() {
       });
       setPermissions(updatedPermissions);
     }
-  }, [permissionsToken]);
+  }, [permissionsToken, initialPermissions]);
 
-  const handleCreate = (selectedUserData: { name: string; email: string }) => {
-    setSelectedUser(selectedUserData);
+  const handleCreate = useCallback(
+    (selectedUserData: { name: string; email: string }) => {
+      setSelectedUser(selectedUserData);
 
-    setFormData({
-      name: selectedUserData.name,
-      email: selectedUserData.email,
-    });
-  };
+      setFormData({
+        name: selectedUserData.name,
+        email: selectedUserData.email,
+      });
+    },
+    []
+  );
 
-  const handleOpenUserModal = async () => {
+  const handleOpenUserModal = useCallback(() => {
     setUserModalOpen(true);
-  };
+  }, []);
 
-  const handleCloseUserModal = () => {
+  const handleCloseUserModal = useCallback(() => {
     setUserModalOpen(false);
-  };
+  }, []);
 
-  const handleUpdatePermissions = async () => {
+  const handleUpdatePermissions = useCallback(async () => {
     if (!permissionId) {
       toast.error("ID da permissão não definido, para realizar atualização!");
       return;
@@ -162,9 +170,9 @@ export function Permissions() {
     } catch (error) {
       toast.error(`Erro ao atualizar permissões: ${error}`);
     }
-  };
+  }, []);
 
-  const handleClearInput = () => {
+  const handleClearInput = useCallback(() => {
     setFormData({
       name: "",
       email: "",
@@ -172,7 +180,7 @@ export function Permissions() {
     setSelectedUser(null);
     setPermissions(initialPermissions);
     setPermissionsToken([]);
-  };
+  }, [initialPermissions]);
 
   return (
     <>

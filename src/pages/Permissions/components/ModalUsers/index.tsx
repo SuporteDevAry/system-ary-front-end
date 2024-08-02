@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Modal } from "../../../../components/Modal";
 import CustomTable from "../../../../components/CustomTable";
 import { ISelectedUser, ModalUsersProps } from "./types";
@@ -16,7 +16,7 @@ export function ModalUsers({ open, onClose, onConfirm }: ModalUsersProps) {
   const [dataTable, setDataTable] = useState<IListUser[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       const response = await userContext.listUsers();
       setUsers(response.data);
@@ -24,11 +24,11 @@ export function ModalUsers({ open, onClose, onConfirm }: ModalUsersProps) {
     } catch (error) {
       console.error("Error fetching users:", error);
     }
-  };
+  }, [useCallback]);
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [fetchData]);
 
   const handleClose = () => {
     onClose();
@@ -41,7 +41,7 @@ export function ModalUsers({ open, onClose, onConfirm }: ModalUsersProps) {
     }
   };
 
-  const handleSearch = () => {
+  const handleSearch = useCallback(() => {
     if (searchTerm.trim() === "") {
       setDataTable(users);
     } else {
@@ -52,11 +52,11 @@ export function ModalUsers({ open, onClose, onConfirm }: ModalUsersProps) {
       );
       setDataTable(filteredData);
     }
-  };
+  }, [searchTerm, users]);
 
   useEffect(() => {
     handleSearch();
-  }, [searchTerm]);
+  }, [searchTerm, handleSearch]);
 
   const nameColumns: IColumn[] = [
     { field: "name", header: "Nome" },

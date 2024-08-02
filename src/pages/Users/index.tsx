@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { ModalCreateNewUser } from "./components/ModalCreateNewUser";
 import { BoxContainer, SButtonContainer, STitle } from "./styles";
 import CardContent from "@mui/material/CardContent";
@@ -22,7 +22,7 @@ export function Users() {
   const [dataTable, setDataTable] = useState<IListUser[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setIsLoading(true);
       const response = await userContext.listUsers();
@@ -33,7 +33,7 @@ export function Users() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [userContext]);
 
   useEffect(() => {
     fetchData();
@@ -73,7 +73,7 @@ export function Users() {
     }
   };
 
-  const handleSearch = () => {
+  const handleSearch = useCallback(() => {
     if (searchTerm.trim() === "") {
       setDataTable(users);
     } else {
@@ -84,17 +84,20 @@ export function Users() {
       );
       setDataTable(filteredData);
     }
-  };
+  }, [searchTerm, users]);
 
   useEffect(() => {
     handleSearch();
-  }, [searchTerm]);
+  }, [searchTerm, handleSearch]);
 
-  const nameColumns = [
-    { field: "name", header: "Nome" },
-    { field: "email", header: "E-mail" },
-    { field: "created_at", header: "Data de Criação" },
-  ];
+  const nameColumns = useMemo(
+    () => [
+      { field: "name", header: "Nome" },
+      { field: "email", header: "E-mail" },
+      { field: "created_at", header: "Data de Criação" },
+    ],
+    []
+  );
 
   const renderActionButtons = (row: any) => (
     <SButtonContainer>

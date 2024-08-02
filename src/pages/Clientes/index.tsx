@@ -1,9 +1,9 @@
 import { useNavigate } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { BoxContainer, SButtonContainer, STitle } from "./styles";
 
 import CardContent from "@mui/material/CardContent";
 import { ClienteContext } from "../../contexts/ClienteContext";
-import { useCallback, useEffect, useMemo, useState } from "react";
 import { IListCliente } from "../../contexts/ClienteContext/types";
 import CustomTable from "../../components/CustomTable";
 import { CustomSearch } from "../../components/CustomSearch";
