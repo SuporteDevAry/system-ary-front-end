@@ -1,9 +1,10 @@
 import { StepProps } from "../../types";
 import CustomButton from "../../../../../../components/CustomButton";
 import { Extenso } from "../../../../../../utils/Extenso";
-import puppeteer from "puppeteer";
+//import puppeteer from "puppeteer";
 
 export const Review: React.FC<StepProps> = ({ formData }) => {
+    /*
     async function generatePDF(
         htmlContent: string,
         outputPath: string
@@ -26,7 +27,7 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
         //     printBackground: true, // Inclui backgrounds CSS no PDF
         // });
 
-        const pdf = await page.pdf({
+        await page.pdf({
             path: outputPath,
             margin: {
                 top: "100px",
@@ -41,6 +42,7 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
         // Fecha o navegador
         await browser.close();
     }
+    */
 
     const handleImprimir = () => {
         console.log("handleImprimir");
@@ -50,8 +52,8 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
 
         console.log("Entrou no win");
 
-        const elemento = document.getElementById("contrato");
-        const htmlContent = elemento ? elemento.innerHTML : "";
+        //const elemento = document.getElementById("contrato");
+        //const htmlContent = elemento ? elemento.innerHTML : "";
 
         // const estilo = `
         //     <style>
@@ -78,9 +80,9 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
             `);
             */
 
-        generatePDF(htmlContent, "c:/temp/contrato-gerado-1.pdf")
-            .then(() => console.log("PDF gerado com sucesso!"))
-            .catch((err) => console.error("Erro ao gerar PDF:", err));
+        // generatePDF(htmlContent, "c:/temp/contrato-gerado-1.pdf")
+        //     .then(() => console.log("PDF gerado com sucesso!"))
+        //     .catch((err) => console.error("Erro ao gerar PDF:", err));
 
         //win.print();
         //win.close();
@@ -103,10 +105,13 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
 
     let quantity_aux = formData.quantity.replace(/[.,]/g, "");
     let int_qtd = parseInt(quantity_aux) * 1000; // Multiplicar por mil para exibir em quilos
+    let formattedQtd = int_qtd.toLocaleString();
 
     const qtde_extenso = Extenso(int_qtd);
-
-    //const qtde_extenso = "Quinze milhões e quinhentos mil - exemplo";
+    let qtde_em_quilos =
+        int_qtd < 1000000
+            ? `(${qtde_extenso}) quilos.`
+            : `(${qtde_extenso}) de quilos.`;
 
     return (
         <>
@@ -181,7 +186,7 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
                         <strong>QUANTIDADE:</strong>
                     </p>
                     <p style={{ textAlign: "justify" }}>
-                        {int_qtd} ({qtde_extenso}) quilos.
+                        {formattedQtd} {qtde_em_quilos}
                     </p>
                     <br />
 
@@ -303,7 +308,7 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
                     </div> */}
                 </div>
                 <div style={{ textAlign: "right" }}>
-                    <CustomButton onClick={handleImprimir} variant={"primary"}>
+                    <CustomButton onClick={handleImprimir} $variant={"primary"}>
                         Imprimir
                     </CustomButton>
                 </div>

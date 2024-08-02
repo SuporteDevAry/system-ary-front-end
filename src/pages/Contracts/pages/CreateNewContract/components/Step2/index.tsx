@@ -26,7 +26,7 @@ export const Step2: React.FC<StepProps> = ({
             <CustomSelect
                 name="product"
                 label="Mercadoria: "
-                labelPosition="top"
+                $labelPosition="top"
                 selectOptions={[
                     { value: "S", label: "SOJA em Grão" },
                     { value: "CN", label: "MILHO" },
@@ -41,7 +41,7 @@ export const Step2: React.FC<StepProps> = ({
                 type="text"
                 name="crop"
                 label="Safra: "
-                labelPosition="top"
+                $labelPosition="top"
                 onChange={handleChange}
                 value={formData.crop}
             />
