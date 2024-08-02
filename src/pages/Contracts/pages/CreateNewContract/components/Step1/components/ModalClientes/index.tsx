@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Modal } from "../../../../../../../../components/Modal";
 import { ISelectedCustomer, ModalClientesProps } from "./types";
 import CustomTable from "../../../../../../../../components/CustomTable";
@@ -63,20 +63,15 @@ export function ModalClientes({
         handleSearch();
     }, [searchTerm]);
 
-    const nameColumns: IColumn[] = [
-        { field: "name", header: "Nome" },
-        { field: "cnpj_cpf", header: "CNPJ/CPF" },
-        { field: "city", header: "Cidade" },
-        { field: "zip_code", header: "UF" },
-        // { field: "uf", header: "UF" },
-        // { field: "uf", header: "UF" },
-        // { field: "uf", header: "UF" },
-        // { field: "uf", header: "UF" },
-        // { field: "uf", header: "UF" },
-        // { field: "uf", header: "UF" },
-        // { field: "uf", header: "UF" },
-        // { field: "uf", header: "UF" },
-    ];
+    const nameColumns: IColumn[] = useMemo(
+        () => [
+            { field: "name", header: "Nome" },
+            { field: "cnpj_cpf", header: "CNPJ/CPF" },
+            { field: "city", header: "Cidade" },
+            { field: "state", header: "UF" },
+        ],
+        []
+    );
 
     return (
         <>
@@ -117,7 +112,7 @@ export function ModalClientes({
                     hasPagination
                     onRowClick={(rowData) =>
                         setSelectedCustomer({
-                            name: rowData.nome,
+                            name: rowData.name,
                             type: selectionType,
                         })
                     }

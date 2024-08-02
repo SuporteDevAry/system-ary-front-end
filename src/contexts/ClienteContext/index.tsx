@@ -5,6 +5,7 @@ import {
   IUpdateClientesData,
 } from "./types";
 import { Api } from "../../services/api";
+import { AxiosError } from "axios";
 
 interface IClienteContext {
   listClientes: () => Promise<any>;
@@ -40,7 +41,12 @@ export const ClientesProvider = ({ children }: IClientesProvider) => {
 
       return response;
     } catch (error) {
-      throw new Error(`${error}`);
+      const err = error as AxiosError;
+
+      if (err.response && err.response.data) {
+        const errorMessage = (err.response.data as { message: string }).message;
+        throw new Error(errorMessage);
+      }
     }
   }
 
