@@ -24,6 +24,8 @@ import { ModalCreateNewContact } from "./components/ModalCreateNewContact";
 import { ModalUpdateContact } from "./components/ModalUpdateContact";
 import { ModalDelete } from "../../../../components/ModalDelete";
 import { toast } from "react-toastify";
+import { insertMaskInTelefone } from "../../../../helpers/front-end/insertMaskInFone";
+import { insertMaskInCelular } from "../../../../helpers/front-end/insertMaskInCelular";
 
 export function ViewCustomer(): JSX.Element {
   const location = useLocation();
@@ -168,6 +170,10 @@ export function ViewCustomer(): JSX.Element {
         ? insertMaskInCpf(row.cnpj_cpf)
         : insertMaskInCnpj(row.cnpj_cpf);
     }
+
+    if (column.field === "telephone")
+      return insertMaskInTelefone(row.telephone);
+    if (column.field === "cellphone") return insertMaskInCelular(row.cellphone);
 
     return row[column.field];
   };

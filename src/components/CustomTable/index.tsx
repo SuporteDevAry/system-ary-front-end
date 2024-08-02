@@ -16,6 +16,8 @@ import { convertToCustomFormat } from "../../helpers/dateFormat";
 import { insertMaskInCpf } from "../../helpers/front-end/insertMaskInCpf";
 import { insertMaskInCnpj } from "../../helpers/front-end/insertMaskInCnpj";
 import Loading from "../Loading";
+import { insertMaskInTelefone } from "../../helpers/front-end/insertMaskInFone";
+import { insertMaskInCelular } from "../../helpers/front-end/insertMaskInCelular";
 // import { KeyboardArrowDown, KeyboardArrowUp } from "@mui/icons-material";
 
 const locale = "pt-BR";
@@ -72,6 +74,12 @@ const CustomTable: React.FC<ICustomTableProps> = ({
     if (dateFields?.includes(column.field)) {
       return convertToCustomFormat(row[column.field], locale);
     }
+
+    if (column.field === "telephone")
+      return insertMaskInTelefone(row.telephone);
+
+    if (column.field === "cellphone") return insertMaskInCelular(row.cellphone);
+
     return row[column.field];
   };
 
