@@ -106,6 +106,7 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
     let quantity_aux = formData.quantity.replace(/[.,]/g, "");
     let int_qtd = parseInt(quantity_aux) * 1000; // Multiplicar por mil para exibir em quilos
     let formattedQtd = int_qtd.toLocaleString();
+    let formattedObs = formData.observation; //.replace(/[". "]/g, "");
 
     const qtde_extenso = Extenso(int_qtd);
     let qtde_em_quilos =
@@ -137,7 +138,8 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
                             Confirma&ccedil;&atilde;o de venda nr.
                             <span>
                                 {" "}
-                                {formData.product}.5.NNNNNN/{ano}{" "}
+                                {formData.product}.{formData.numberBroker}
+                                .NNNNNN/{ano}{" "}
                             </span>
                             nesta data:
                         </p>
@@ -219,7 +221,7 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
                         <strong>ENTREGA:</strong>
                     </p>
                     <p style={{ textAlign: "justify" }}>
-                        Até o dia {formData.pickup},limpo e seco sobre rodas.
+                        Até o dia {formData.pickup}, limpo e seco sobre rodas.
                     </p>
                     <br />
 
@@ -243,9 +245,7 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
                     <p style={{ textAlign: "left" }}>
                         <strong>OBSERVA&Ccedil;&Otilde;ES:</strong>
                     </p>
-                    <p style={{ textAlign: "justify" }}>
-                        {formData.observation}
-                    </p>
+                    <p style={{ textAlign: "justify" }}>{formattedObs}</p>
                     <br />
 
                     <p style={{ textAlign: "justify" }}>
