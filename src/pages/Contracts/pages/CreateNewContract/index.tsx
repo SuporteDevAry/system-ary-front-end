@@ -5,7 +5,6 @@ import { Step2 } from "./components/Step2";
 import { Step3 } from "./components/Step3";
 import { Step4 } from "./components/Step4";
 import { Review } from "./components/Review";
-import { Save } from "./components/Save";
 
 import Step from "@mui/material/Step";
 import StepLabel from "@mui/material/StepLabel";
@@ -18,15 +17,21 @@ export const CreateNewContract: React.FC = () => {
     numberBroker: "",
     seller: "",
     buyer: "",
+    listEmailSeller: "",
+    listEmailBuyer: "",
     product: "",
     nameProduct: "",
     crop: "",
     quality: "",
     quantity: "",
     price: "",
+    typeCurrency: "",
     icms: "",
     payment: "",
+    commissionSeller: "",
+    commissionBuyer: "",
     pickup: "",
+    typePickup: "",
     pickupLocation: "",
     inspection: "",
     observation: "",
@@ -74,7 +79,13 @@ export const CreateNewContract: React.FC = () => {
     },
     {
       label: "Info. de Venda",
-      elements: [<Step3 formData={formData} handleChange={handleChange} />],
+      elements: [
+        <Step3
+          formData={formData}
+          handleChange={handleChange}
+          updateFormData={updateFormData}
+        />,
+      ],
     },
     {
       label: "Observação",
@@ -83,10 +94,6 @@ export const CreateNewContract: React.FC = () => {
     {
       label: "Review",
       elements: [<Review formData={formData} />],
-    },
-    {
-      label: "Salvar",
-      elements: [<Save formData={formData} handleChange={handleChange} />],
     },
   ];
 
@@ -111,7 +118,7 @@ export const CreateNewContract: React.FC = () => {
           </CustomButton>
         )}
         <CustomButton onClick={handleNext} $variant={"success"}>
-          {activeStep === steps.length - 1 ? "Enviar" : "Avançar"}
+          {activeStep === steps.length - 1 ? "Salvar" : "Avançar"}
         </CustomButton>
       </SButtonContainer>
     </SContainer>

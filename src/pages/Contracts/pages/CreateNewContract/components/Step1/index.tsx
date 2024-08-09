@@ -96,9 +96,9 @@ export const Step1: React.FC<StepProps> = ({ handleChange, formData }) => {
         </SContainerSeller>
         <SText>Lista de Email Vendedor:</SText>
         <STextArea
-          name="observation"
+          name="listEmailSeller"
           onChange={handleChange}
-          value={formData.observation}
+          value={formData.listEmailSeller}
         />
         <SContainerBuyer>
           <Box>
@@ -121,9 +121,9 @@ export const Step1: React.FC<StepProps> = ({ handleChange, formData }) => {
         </SContainerBuyer>
         <SText>Lista de Email Comprador :</SText>
         <STextArea
-          name="observation"
+          name="listEmailBuyer"
           onChange={handleChange}
-          value={formData.observation}
+          value={formData.listEmailBuyer}
         />
       </SContainer>
 
