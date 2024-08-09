@@ -1,3 +1,4 @@
+import { formatCurrency } from "../../../../../../helpers/currencyFormat";
 import { StepProps } from "../../types";
 import { STitle, SKey, SValue, SBox } from "./styles";
 
@@ -8,7 +9,7 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
         <STitle>Review</STitle>
 
         <SKey>
-          Nº Corretor:<SValue>{formData.seller}</SValue>
+          Nº Corretor:<SValue>{formData.numberBroker}</SValue>
         </SKey>
 
         <SKey>
@@ -35,7 +36,10 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
           Quantidade: <SValue> {formData.quantity}</SValue>
         </SKey>
         <SKey>
-          Preço: <SValue>{formData.price}</SValue>
+          Preço:
+          <SValue>
+            {formatCurrency(formData.price, formData.typeCurrency)}
+          </SValue>
         </SKey>
         <SKey>
           ICMS: <SValue>{formData.icms}</SValue>
@@ -44,10 +48,11 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
           Forma de pagamento: <SValue>{formData.payment}</SValue>
         </SKey>
         <SKey>
-          Retirada: <SValue>{formData.pickup}</SValue>
+          {formData.typePickup}: <SValue>{formData.pickup}</SValue>
         </SKey>
         <SKey>
-          Local de Retirada: <SValue>{formData.pickupLocation}</SValue>
+          Local de {formData.typePickup}:
+          <SValue>{formData.pickupLocation}</SValue>
         </SKey>
         <SKey>
           Conferência: <SValue>{formData.inspection}</SValue>
@@ -55,6 +60,12 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
 
         <SKey>
           Observação: <SValue>{formData.observation}</SValue>
+        </SKey>
+        <SKey>
+          Comissão Vendedor: <SValue>{formData.commissionSeller}</SValue>
+        </SKey>
+        <SKey>
+          Comissão Comprador: <SValue>{formData.commissionBuyer}</SValue>
         </SKey>
       </SBox>
     </>
