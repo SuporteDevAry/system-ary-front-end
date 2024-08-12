@@ -44,3 +44,18 @@ export const SCustomInput = styled.input`
     color: ${(props) => props.theme["gray-500"]};
   }
 `;
+
+export const SRadioGroup = styled.div`
+  display: flex;
+  gap: 8px;
+`;
+
+export const SRadioOption = styled.label`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  input {
+    margin-right: 4px;
+  }
+`;

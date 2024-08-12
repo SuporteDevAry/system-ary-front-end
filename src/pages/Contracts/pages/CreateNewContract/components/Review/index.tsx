@@ -1,6 +1,8 @@
+import { formatCurrency } from "../../../../../../helpers/currencyFormat";
 import { StepProps } from "../../types";
 import CustomButton from "../../../../../../components/CustomButton";
 import { Extenso } from "../../../../../../utils/Extenso";
+import { SKey, SValue } from "./styles";
 //import puppeteer from "puppeteer";
 
 export const Review: React.FC<StepProps> = ({ formData }) => {
@@ -17,6 +19,9 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
         await page.setContent(htmlContent, {
             waitUntil: "networkidle0", // Espera até que a página esteja totalmente carregada
         });
+        <SKey>
+          Nº Corretor:<SValue>{formData.numberBroker}</SValue>
+        </SKey>
 
         await page.emulateMediaType("screen");
 
@@ -196,8 +201,8 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
                         <strong>PRE&Ccedil;O:</strong>
                     </p>
                     <p style={{ textAlign: "justify" }}>
-                        R$ {formData.price.replace(".", ",")} por sacas de
-                        60(sessenta) quilos, (+D.U.E.).
+                        {formatCurrency(formData.price, formData.typeCurrency)}{" "}
+                        por sacas de 60(sessenta) quilos, (+D.U.E.).
                     </p>
                     <br />
 
@@ -263,8 +268,16 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
 
                     <p style={{ textAlign: "justify" }}>
                         <strong>
-                            === Comissão de <span>&perc_comissao</span> por
-                            conta do vendedor. ===
+                            === Comissão de{" "}
+                            <span>{formData.commissionSeller}</span> por conta
+                            do vendedor. ===
+                        </strong>
+                    </p>
+                    <p style={{ textAlign: "justify" }}>
+                        <strong>
+                            === Comissão de{" "}
+                            <span>{formData.commissionBuyer}</span> por conta do
+                            comprador. ===
                         </strong>
                     </p>
                     <br />
@@ -315,4 +328,12 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
             </div>
         </>
     );
+
+    // <SKey>
+    //   {formData.typePickup}: <SValue>{formData.pickup}</SValue>
+    // </SKey>
+    // <SKey>
+    //   Local de {formData.typePickup}:
+    //   <SValue>{formData.pickupLocation}</SValue>
+    // </SKey>
 };
