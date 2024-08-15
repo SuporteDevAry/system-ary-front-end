@@ -22,6 +22,29 @@ import { NotificationContext } from "../../contexts/NotificationContext";
 import { INotifications } from "../../contexts/NotificationContext/types";
 
 export function NotificationCenter() {
+    const moka_notifications = [
+        {
+            id: "68d503be-db61-4930-94f3-1e2cb42ea3fe",
+            user: "carlos@dev.com",
+            read: false,
+            content: "Notificação 2, Contrato conferido pela execução.",
+            type: "info",
+            isLoading: false,
+            created_at: "2024-08-06T23:50:30.241Z",
+            updated_at: "2024-08-06T23:50:30.241Z",
+        },
+        {
+            id: "50c37b63-dbf9-4d14-bc38-3237650fd8d4",
+            user: "carlos@dev.com",
+            read: false,
+            content: "Notificação 4, Contrato validado pela execução.",
+            type: "info",
+            isLoading: false,
+            created_at: "2024-08-06T23:52:15.234Z",
+            updated_at: "2024-08-06T23:52:15.234Z",
+        },
+    ];
+
     const token = getUserLocalStorage();
     const parsejwt = JSON.parse(atob(token.token.split(".")[1]));
     const user = parsejwt.email;
@@ -42,9 +65,13 @@ export function NotificationCenter() {
         setShowUnreadOnly(!showUnreadOnly);
     };
 
-    // CRIAR FUNCIONALIDADES LER APAGAR
-    const toggleRead = (id: any) => {
-        notifications[id].read = !notifications[id].read;
+    const toggleRead = (notification_id: any) => {
+        const updatedNotifications = notifications.map((notification, id) =>
+            notification.id === notification_id
+                ? { ...notification, read: !notification.read }
+                : notification
+        );
+        setNotifications(updatedNotifications);
     };
 
     const clear = () => {
@@ -52,43 +79,33 @@ export function NotificationCenter() {
     };
 
     const toogleAllAsRead = () => {
-        notifications.map((notification) => {
-            notification.read = true;
-        });
+        const updatedNotifications = notifications.map((notification) => ({
+            ...notification,
+            read: true,
+        }));
+        setNotifications(updatedNotifications);
     };
-
-    // async function listUserNotifications(): Promise<any> {
-    //     try {
-    //         const response = await Api.get(`/notifications/user/${user}`);
-    //         console.log("Component: ", response);
-    //         setNotifications(response.data);
-    //         return response;
-    //     } catch (error) {
-    //         console.error("Erro lendo notificações:", error);
-    //         throw error;
-    //     }
-    // }
 
     const fetchData = async () => {
         try {
             const response = await notificationContext.listUserNotifications(
                 `${user}`
             );
-
             console.log("Component: ", response);
-
             setNotifications(response);
+
+            // mokado
+            setNotifications(moka_notifications);
         } catch (error) {
             console.error("Erro lendo notificações:", error);
-        } finally {
         }
     };
 
     useEffect(() => {
         fetchData();
-    }, []);
+    }, []); // Chama fetchData apenas uma vez quando o componente é montado
 
-    var unreadCount = 3; // notifications.length;
+    var unreadCount = notifications.length;
 
     return (
         <Box sx={{ margin: "8px" }}>

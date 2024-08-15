@@ -2,105 +2,107 @@ import { formatCurrency } from "../../../../../../helpers/currencyFormat";
 import { StepProps } from "../../types";
 import CustomButton from "../../../../../../components/CustomButton";
 import { Extenso } from "../../../../../../utils/Extenso";
-import { SKey, SValue } from "./styles";
+
 //import puppeteer from "puppeteer";
 
 export const Review: React.FC<StepProps> = ({ formData }) => {
-    /*
-    async function generatePDF(
-        htmlContent: string,
-        outputPath: string
-    ): Promise<void> {
-        // Lança uma nova instância do navegador
-        const browser = await puppeteer.launch({ headless: false });
-        const page = await browser.newPage();
-
-        // Define o conteúdo HTML da página
-        await page.setContent(htmlContent, {
-            waitUntil: "networkidle0", // Espera até que a página esteja totalmente carregada
-        });
-        <SKey>
-          Nº Corretor:<SValue>{formData.numberBroker}</SValue>
-        </SKey>
-
-        await page.emulateMediaType("screen");
-
-        // Gera o PDF da página
-        // await page.pdf({
-        //     path: outputPath,
-        //     format: "A4",
-        //     printBackground: true, // Inclui backgrounds CSS no PDF
-        // });
-
-        await page.pdf({
-            path: outputPath,
-            margin: {
-                top: "100px",
-                right: "50px",
-                bottom: "100px",
-                left: "50px",
-            },
-            printBackground: true, // Inclui backgrounds CSS no PDF
-            format: "A4",
-        });
-
-        // Fecha o navegador
-        await browser.close();
-    }
-    */
-
     const handleImprimir = () => {
-        console.log("handleImprimir");
+        const elemento = document.getElementById("contrato");
+        const htmlContent = elemento ? elemento.innerHTML : "";
 
-        //const win = window.open("", "_blank", "height=2480px, width=3508px");
-        //if (win && !win.closed) {
+        // // Copia todos os estilos do documento original
+        // const estilos = Array.from(document.styleSheets)
+        //     .map((styleSheet) => {
+        //         try {
+        //             return Array.from(styleSheet.cssRules)
+        //                 .map((rule) => rule.cssText)
+        //                 .join("");
+        //         } catch (e) {
+        //             console.log("Erro ao acessar regras de estilo: ", e);
+        //             return "";
+        //         }
+        //     })
+        //     .join("");
 
-        console.log("Entrou no win");
+        // console.log(estilos);
 
-        //const elemento = document.getElementById("contrato");
-        //const htmlContent = elemento ? elemento.innerHTML : "";
+        const estilo = `
+            body, p, span {
+                font-family:  Roboto, sans-serif;
+                font-weight: 400;
+                font-size: 0.8rem;
+                margin: 0;
+                padding: 0;
+            }
+        `;
 
-        // const estilo = `
-        //     <style>
-        //     body {
-        //         font-family: 'Roboto', sans-serif;
-        //         font-weight: 400;
-        //         font-size: 0.6rem;
-        //         letter-spacing: .6px;
-        //     }
-        //     </style>
-        // `;
+        // Cria um iframe invisível
+        const iframe = document.createElement("iframe");
+        iframe.style.position = "absolute";
+        //iframe.style.width = "3508px";
+        //iframe.style.height = "2480px";
+        iframe.style.border = "none";
 
-        /*
-            win.document.open();
-            win.document.write(`
-                <html>
-                  <head>
+        document.body.appendChild(iframe);
+
+        // Verifica se o contentWindow não é null
+        const iframeWindow = iframe.contentWindow;
+        if (!iframeWindow) {
+            console.error("Falha ao acessar o contentWindow do iframe.");
+            return;
+        }
+
+        const doc = iframeWindow.document;
+        doc.open();
+        doc.write(`
+            <html>
+                <head>
+                <style>
                     ${estilo}
-                  </head>
-                  <body>
-                    ${htmlContent}
-                  </body>
-                </html>
-            `);
-            */
+                </style>
+                </head>
+                <body>
+                ${htmlContent}
+                </body>
+            </html>
+        `);
 
-        // generatePDF(htmlContent, "c:/temp/contrato-gerado-1.pdf")
-        //     .then(() => console.log("PDF gerado com sucesso!"))
-        //     .catch((err) => console.error("Erro ao gerar PDF:", err));
+        doc.close();
 
-        //win.print();
-        //win.close();
+        // Espera até que as imagens no iframe sejam carregadas
+        iframe.onload = () => {
+            const imgs = doc.getElementsByTagName("img");
+            let loadedImages = 0;
 
-        // win.onload = () => {
-        //     const imgs = win.document.getElementsByTagName("img");
-        //     for (let img of imgs) {
-        //         img.src = img.src; // força o recarregamento da imagem
-        //     }
-        // };
-        //} else {
-        //     console.error("Falha ao abrir a nova janela.");
-        // }
+            const checkAllImagesLoaded = () => {
+                if (loadedImages === imgs.length) {
+                    iframeWindow.focus();
+                    iframeWindow.print();
+                    document.body.removeChild(iframe); // Remove o iframe após a impressão
+                }
+            };
+
+            if (imgs.length === 0) {
+                iframeWindow.focus();
+                iframeWindow.print();
+                document.body.removeChild(iframe);
+            } else {
+                for (let img of imgs) {
+                    img.src = img.src.replace("low-res", "high-res");
+                    loadedImages++;
+                    checkAllImagesLoaded();
+
+                    // img.onload = () => {
+                    //     loadedImages++;
+                    //     checkAllImagesLoaded();
+                    // };
+                    // img.onerror = () => {
+                    //     loadedImages++;
+                    //     checkAllImagesLoaded();
+                    // };
+                }
+            }
+        };
     };
 
     const today = new Date();
@@ -115,18 +117,19 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
 
     const qtde_extenso = Extenso(int_qtd);
     let qtde_em_quilos =
-        int_qtd < 1000000
-            ? `(${qtde_extenso}) quilos.`
-            : `(${qtde_extenso}) de quilos.`;
+        int_qtd <= 1000000
+            ? `(${qtde_extenso}) de quilos.`
+            : `(${qtde_extenso}) quilos.`;
 
     return (
         <>
-            <div>
+            <div style={{ width: 900 }}>
                 <div id="contrato">
                     <div style={{ textAlign: "center" }}>
                         <img
                             src="/src/assets/img/logo-ary-contrato.jpeg"
                             alt="logo ary contrato jpg"
+                            width={300}
                         />
                     </div>
                     <br />
@@ -156,21 +159,21 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
                             margin: "0",
                         }}
                     >
-                        <strong>VENDEDOR:</strong>
+                        <strong>Vendedor:</strong>
                         <span style={{ paddingLeft: "10px" }}>
                             {formData.seller}
                         </span>
                     </p>
 
                     <p style={{ textAlign: "left" }}>
-                        <strong>COMPRADOR:</strong>
+                        <strong>Comprador:</strong>
                         <span style={{ paddingLeft: "10px" }}>
                             {formData.buyer}
                         </span>
                     </p>
                     <br />
                     <p style={{ textAlign: "left", margin: "0" }}>
-                        <strong>MERCADORIA:</strong>
+                        <strong>Mercadoria:</strong>
                         <p style={{ textAlign: "left" }}>
                             <span>{formData.nameProduct}</span>
                             <span>
@@ -184,13 +187,13 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
                     <br />
 
                     <p style={{ textAlign: "left" }}>
-                        <strong>QUALIDADE:</strong>
+                        <strong>Qualidade:</strong>
                     </p>
                     <p style={{ textAlign: "justify" }}>{formData.quality}</p>
                     <br />
 
                     <p style={{ textAlign: "left" }}>
-                        <strong>QUANTIDADE:</strong>
+                        <strong>Quantidade:</strong>
                     </p>
                     <p style={{ textAlign: "justify" }}>
                         {formattedQtd} {qtde_em_quilos}
@@ -198,7 +201,7 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
                     <br />
 
                     <p style={{ textAlign: "left" }}>
-                        <strong>PRE&Ccedil;O:</strong>
+                        <strong>Pre&ccedil;o:</strong>
                     </p>
                     <p style={{ textAlign: "justify" }}>
                         {formatCurrency(formData.price, formData.typeCurrency)}{" "}
@@ -207,13 +210,13 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
                     <br />
 
                     <p style={{ textAlign: "left" }}>
-                        <strong>ICMS:</strong>
+                        <strong>Icms:</strong>
                     </p>
                     <p style={{ textAlign: "justify" }}>{formData.icms}</p>
                     <br />
 
                     <p style={{ textAlign: "left" }}>
-                        <strong>PAGAMENTO:</strong>
+                        <strong>Pagamento:</strong>
                     </p>
                     <p style={{ textAlign: "justify" }}>
                         No dia {formData.payment} , via Banco ...., Ag. nr .
@@ -223,24 +226,21 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
                     <br />
 
                     <p style={{ textAlign: "left" }}>
-                        <strong>ENTREGA:</strong>
+                        <strong>{formData.typePickup}:</strong>
+                    </p>
+                    <p style={{ textAlign: "justify" }}>{formData.pickup}</p>
+                    <br />
+
+                    <p style={{ textAlign: "left" }}>
+                        <strong>Local de {formData.typePickup}:</strong>
                     </p>
                     <p style={{ textAlign: "justify" }}>
-                        Até o dia {formData.pickup}, limpo e seco sobre rodas.
+                        {formData.pickupLocation}
                     </p>
                     <br />
 
                     <p style={{ textAlign: "left" }}>
-                        <strong>LOCAL DE ENTREGA:</strong>
-                    </p>
-                    <p style={{ textAlign: "justify" }}>
-                        No terminal de {formData.pickupLocation} em{" "}
-                        {formData.pickup}.
-                    </p>
-                    <br />
-
-                    <p style={{ textAlign: "left" }}>
-                        <strong>CONFER&Ecirc;NCIA:</strong>
+                        <strong>Confer&ecirc;ncia:</strong>
                     </p>
                     <p style={{ textAlign: "justify" }}>
                         {formData.inspection}
@@ -248,7 +248,7 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
                     <br />
 
                     <p style={{ textAlign: "left" }}>
-                        <strong>OBSERVA&Ccedil;&Otilde;ES:</strong>
+                        <strong>Observa&ccedil;&otilde;es:</strong>
                     </p>
                     <p style={{ textAlign: "justify" }}>{formattedObs}</p>
                     <br />
@@ -328,12 +328,4 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
             </div>
         </>
     );
-
-    // <SKey>
-    //   {formData.typePickup}: <SValue>{formData.pickup}</SValue>
-    // </SKey>
-    // <SKey>
-    //   Local de {formData.typePickup}:
-    //   <SValue>{formData.pickupLocation}</SValue>
-    // </SKey>
 };
