@@ -14,8 +14,9 @@ export type FormDataContract = {
   crop: string;
   quality: string;
   quantity: string;
-  price: string;
   typeCurrency: "Real" | "Dólar" | string;
+  price: string;
+  typeICMS: string;
   icms: string;
   payment: string;
   commissionSeller: string;
