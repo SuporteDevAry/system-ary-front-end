@@ -1,7 +1,7 @@
 import { formatCurrency } from "../../../../../../helpers/currencyFormat";
 import { StepProps } from "../../types";
 import CustomButton from "../../../../../../components/CustomButton";
-import { Extenso } from "../../../../../../utils/Extenso";
+import { Extenso } from "../../../../../../helpers/Extenso";
 
 //import puppeteer from "puppeteer";
 
@@ -89,6 +89,8 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
     int_qtd <= 1000000
       ? `(${qtde_extenso}) quilos.`
       : `(${qtde_extenso}) de quilos.`;
+
+  console.log("form", formData);
 
   return (
     <>
