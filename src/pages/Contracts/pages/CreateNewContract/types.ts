@@ -3,10 +3,22 @@ export type StepType = {
   elements: JSX.Element[];
 };
 
+export type CustomerInfo = {
+  name: string;
+  address?: string;
+  number?: string;
+  complement?: string;
+  district?: string;
+  city?: string;
+  state?: string;
+  cnpjCpf?: string;
+  insEst?: string;
+};
+
 export type FormDataContract = {
   numberBroker: string;
-  seller: string;
-  buyer: string;
+  seller: CustomerInfo;
+  buyer: CustomerInfo;
   listEmailSeller: string;
   listEmailBuyer: string;
   product: string;

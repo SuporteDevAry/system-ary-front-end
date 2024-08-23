@@ -90,8 +90,6 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
       ? `(${qtde_extenso}) quilos.`
       : `(${qtde_extenso}) de quilos.`;
 
-  console.log("form", formData);
-
   return (
     <>
       <div style={{ width: 900 }}>
@@ -131,12 +129,21 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
             }}
           >
             <strong>Vendedor:</strong>
-            <span style={{ paddingLeft: "10px" }}>{formData.seller}</span>
+            <span style={{ paddingLeft: "10px" }}>{formData.seller.name}</span>
+            <span style={{ paddingLeft: "10px" }}>
+              {formData.seller.address}
+            </span>
+            <span style={{ paddingLeft: "10px" }}>
+              {formData.seller.cnpjCpf}
+            </span>
           </p>
 
           <p style={{ textAlign: "left" }}>
             <strong>Comprador:</strong>
-            <span style={{ paddingLeft: "10px" }}>{formData.buyer}</span>
+            <span style={{ paddingLeft: "10px" }}>
+              {formData.buyer?.cnpjCpf}
+            </span>
+            <span style={{ paddingLeft: "10px" }}>{formData.buyer.name}</span>
           </p>
           <br />
           <p style={{ textAlign: "left", margin: "0" }}>
@@ -187,8 +194,9 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
           </p>
           <p style={{ textAlign: "justify" }}>
             No dia {formData.payment} , via Banco ...., Ag. nr . ..... , c/c nr
-            . ......, no CNPJ: &cnpj_vendedor em nome de{" "}
-            <strong>{formData.seller}</strong>.
+            . ......, no CNPJ: <strong>{formData.seller.cnpjCpf}</strong> em
+            nome de
+            <strong>{formData.seller.name}</strong>.
           </p>
           <br />
 
@@ -265,10 +273,10 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
               }}
             >
               <div style={{ flex: "1" }}>
-                <strong>{formData.seller}</strong>
+                <strong>{formData.seller.name}</strong>
               </div>
               <div style={{ flex: "1" }}>
-                <strong>{formData.buyer}</strong>
+                <strong>{formData.buyer.name}</strong>
               </div>
             </div>
           </div>
