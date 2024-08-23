@@ -174,7 +174,7 @@ export function Extenso(vlr: number): string {
                 }
             }
 
-            extenso = extenso.substring(0, extenso.trimEnd().length - 1);
+            //extenso = extenso.substring(0, extenso.trimEnd().length - 1);
 
             return extenso;
         } else {

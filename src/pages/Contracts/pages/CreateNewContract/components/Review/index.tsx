@@ -2,29 +2,40 @@ import { formatCurrency } from "../../../../../../helpers/currencyFormat";
 import { StepProps } from "../../types";
 import CustomButton from "../../../../../../components/CustomButton";
 import { Extenso } from "../../../../../../utils/Extenso";
-
-//import puppeteer from "puppeteer";
+import jsPDF from "jspdf";
 
 export const Review: React.FC<StepProps> = ({ formData }) => {
+    const geraPDF = () => {
+        const contrato = document.getElementById("contrato");
+        if (contrato) {
+            var pdf = new jsPDF("p", "pt", "a4");
+
+            const marginX = 20;
+            const marginY = 20;
+            const pageWidth = pdf.internal.pageSize.getWidth() - marginX * 2;
+            const pageHeight = pdf.internal.pageSize.getHeight() - marginY * 2;
+            const contratoWidth = contrato.offsetWidth;
+            const contratoHeight = contrato.offsetHeight;
+            const scaleX = pageWidth / contratoWidth;
+            const scaleY = pageHeight / contratoHeight;
+            const scale = Math.min(scaleX, scaleY);
+
+            pdf.html(contrato, {
+                callback: function (pdf) {
+                    pdf.save("contratoPDF.pdf");
+                },
+                x: marginX,
+                y: marginY,
+                html2canvas: {
+                    scale: scale,
+                },
+            });
+        }
+    };
+
     const handleImprimir = () => {
         const elemento = document.getElementById("contrato");
         const htmlContent = elemento ? elemento.innerHTML : "";
-
-        // // Copia todos os estilos do documento original
-        // const estilos = Array.from(document.styleSheets)
-        //     .map((styleSheet) => {
-        //         try {
-        //             return Array.from(styleSheet.cssRules)
-        //                 .map((rule) => rule.cssText)
-        //                 .join("");
-        //         } catch (e) {
-        //             console.log("Erro ao acessar regras de estilo: ", e);
-        //             return "";
-        //         }
-        //     })
-        //     .join("");
-
-        // console.log(estilos);
 
         const estilo = `
             body, p, span {
@@ -36,16 +47,12 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
             }
         `;
 
-        // Cria um iframe invisível
         const iframe = document.createElement("iframe");
         iframe.style.position = "absolute";
-        //iframe.style.width = "3508px";
-        //iframe.style.height = "2480px";
         iframe.style.border = "none";
 
         document.body.appendChild(iframe);
 
-        // Verifica se o contentWindow não é null
         const iframeWindow = iframe.contentWindow;
         if (!iframeWindow) {
             console.error("Falha ao acessar o contentWindow do iframe.");
@@ -69,7 +76,8 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
 
         doc.close();
 
-        // Espera até que as imagens no iframe sejam carregadas
+        geraPDF();
+
         iframe.onload = () => {
             const imgs = doc.getElementsByTagName("img");
             let loadedImages = 0;
@@ -78,7 +86,7 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
                 if (loadedImages === imgs.length) {
                     iframeWindow.focus();
                     iframeWindow.print();
-                    document.body.removeChild(iframe); // Remove o iframe após a impressão
+                    document.body.removeChild(iframe);
                 }
             };
 
@@ -91,35 +99,30 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
                     img.src = img.src.replace("low-res", "high-res");
                     loadedImages++;
                     checkAllImagesLoaded();
-
-                    // img.onload = () => {
-                    //     loadedImages++;
-                    //     checkAllImagesLoaded();
-                    // };
-                    // img.onerror = () => {
-                    //     loadedImages++;
-                    //     checkAllImagesLoaded();
-                    // };
                 }
             }
         };
     };
 
     const today = new Date();
-    const ano = today.getFullYear();
+    const ano = today.getFullYear().toString().substr(-2);
     const mesextenso = today.toLocaleString("pt-BR", { month: "long" });
     const dia = today.toLocaleString("pt-BR", { day: "2-digit" });
 
-    let quantity_aux = formData.quantity.replace(/[.,]/g, "");
-    let int_qtd = parseInt(quantity_aux) * 1000; // Multiplicar por mil para exibir em quilos
-    let formattedQtd = int_qtd.toLocaleString();
-    let formattedObs = formData.observation; //.replace(/[". "]/g, "");
+    // se forem 1.000 toneladas   = 1.000.000 quilos
+    // se foram 300,250 toneladas =   300.250 quilos
 
-    const qtde_extenso = Extenso(int_qtd);
-    let qtde_em_quilos =
-        int_qtd <= 1000000
-            ? `(${qtde_extenso}) de quilos.`
-            : `(${qtde_extenso}) quilos.`;
+    let quantity_aux = !formData.quantity.match(/,/g)
+        ? formData.quantity.replace(/[.]/g, "")
+        : formData.quantity.replace(/[,]/g, ".");
+
+    let qtd_informada = Number(quantity_aux) * 1000; // Multiplicar por mil para exibir em quilos
+    let formattedQtd = qtd_informada.toLocaleString();
+
+    const qtde_extenso = Extenso(qtd_informada);
+    let qtde_em_quilos = `(${qtde_extenso})`;
+
+    let formattedCSeller = `${formData.commissionSeller}%`;
 
     return (
         <>
@@ -141,15 +144,14 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
                                 {dia} de {mesextenso} de {ano}
                             </span>
                         </p>
-                        <br />
                         <p style={{ textAlign: "center" }}>
                             Confirma&ccedil;&atilde;o de venda nr.
                             <span>
                                 {" "}
                                 {formData.product}.{formData.numberBroker}
-                                .NNNNNN/{ano}{" "}
+                                -NNNNNN/{ano}{" "}
                             </span>
-                            nesta data:
+                            fechada nesta data:
                         </p>
                     </h3>
                     <br />
@@ -189,14 +191,19 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
                     <p style={{ textAlign: "left" }}>
                         <strong>Qualidade:</strong>
                     </p>
-                    <p style={{ textAlign: "justify" }}>{formData.quality}</p>
+                    <p style={{ textAlign: "left", whiteSpace: "pre-line" }}>
+                        {formData.quality}
+                    </p>
                     <br />
 
                     <p style={{ textAlign: "left" }}>
                         <strong>Quantidade:</strong>
                     </p>
                     <p style={{ textAlign: "justify" }}>
-                        {formattedQtd} {qtde_em_quilos}
+                        <strong>
+                            {formattedQtd} {qtde_em_quilos}
+                        </strong>{" "}
+                        quilos.
                     </p>
                     <br />
 
@@ -204,7 +211,12 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
                         <strong>Pre&ccedil;o:</strong>
                     </p>
                     <p style={{ textAlign: "justify" }}>
-                        {formatCurrency(formData.price, formData.typeCurrency)}{" "}
+                        <strong>
+                            {formatCurrency(
+                                formData.price,
+                                formData.typeCurrency
+                            )}
+                        </strong>{" "}
                         por sacas de 60(sessenta) quilos, (+D.U.E.).
                     </p>
                     <br />
@@ -250,7 +262,9 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
                     <p style={{ textAlign: "left" }}>
                         <strong>Observa&ccedil;&otilde;es:</strong>
                     </p>
-                    <p style={{ textAlign: "justify" }}>{formattedObs}</p>
+                    <p style={{ textAlign: "justify", whiteSpace: "pre-line" }}>
+                        {formData.observation}
+                    </p>
                     <br />
 
                     <p style={{ textAlign: "justify" }}>
@@ -269,15 +283,17 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
                     <p style={{ textAlign: "justify" }}>
                         <strong>
                             === Comissão de{" "}
-                            <span>{formData.commissionSeller}</span> por conta
-                            do vendedor. ===
+                            <span>{formattedCSeller.replace(".", ",")}</span>{" "}
+                            por conta do vendedor. ===
                         </strong>
                     </p>
                     <p style={{ textAlign: "justify" }}>
                         <strong>
                             === Comissão de{" "}
-                            <span>{formData.commissionBuyer}</span> por conta do
-                            comprador. ===
+                            <span>
+                                {formData.commissionBuyer.replace(".", ",")}
+                            </span>{" "}
+                            por conta do comprador. ===
                         </strong>
                     </p>
                     <br />
@@ -305,10 +321,12 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
                             }}
                         >
                             <div style={{ flex: "1" }}>
-                                <strong>{formData.seller}</strong>
+                                <strong>VENDEDOR</strong>
+                                {/* <strong>{formData.seller}</strong> */}
                             </div>
                             <div style={{ flex: "1" }}>
-                                <strong>{formData.buyer}</strong>
+                                <strong>COMPRADOR</strong>
+                                {/* <strong>{formData.buyer}</strong> */}
                             </div>
                         </div>
                     </div>
