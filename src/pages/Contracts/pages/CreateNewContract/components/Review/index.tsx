@@ -1,7 +1,7 @@
 import { formatCurrency } from "../../../../../../helpers/currencyFormat";
 import { StepProps } from "../../types";
 import CustomButton from "../../../../../../components/CustomButton";
-import { Extenso } from "../../../../../../utils/Extenso";
+import { Extenso } from "../../../../../../helpers/Extenso";
 import jsPDF from "jspdf";
 
 export const Review: React.FC<StepProps> = ({ formData }) => {
@@ -62,18 +62,17 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
         const doc = iframeWindow.document;
         doc.open();
         doc.write(`
-            <html>
-                <head>
+        <html>
+            <head>
                 <style>
                     ${estilo}
                 </style>
-                </head>
-                <body>
+            </head>
+            <body>
                 ${htmlContent}
-                </body>
-            </html>
-        `);
-
+            </body>
+        </html>
+    `);
         doc.close();
 
         geraPDF();
@@ -163,14 +162,17 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
                     >
                         <strong>Vendedor:</strong>
                         <span style={{ paddingLeft: "10px" }}>
-                            {formData.seller}
+                            {formData.seller.name}
                         </span>
                     </p>
 
                     <p style={{ textAlign: "left" }}>
                         <strong>Comprador:</strong>
                         <span style={{ paddingLeft: "10px" }}>
-                            {formData.buyer}
+                            {formData.buyer?.cnpjCpf}
+                        </span>
+                        <span style={{ paddingLeft: "10px" }}>
+                            {formData.buyer.name}
                         </span>
                     </p>
                     <br />
@@ -232,8 +234,9 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
                     </p>
                     <p style={{ textAlign: "justify" }}>
                         No dia {formData.payment} , via Banco ...., Ag. nr .
-                        ..... , c/c nr . ......, no CNPJ: &cnpj_vendedor em nome
-                        de <strong>{formData.seller}</strong>.
+                        ..... , c/c nr . ......, no CNPJ:{" "}
+                        <strong>{formData.seller.cnpjCpf}</strong> em nome de
+                        <strong>{formData.seller.name}</strong>.
                     </p>
                     <br />
 

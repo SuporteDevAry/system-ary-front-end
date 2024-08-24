@@ -1,15 +1,17 @@
 import { IListCliente } from "../../../../../../../../contexts/ClienteContext/types";
+import { CustomerInfo } from "../../../../types";
 
 export interface ModalClientesProps {
   open: boolean;
   onClose: () => void;
-  onConfirm: (selectedCustomerData: { name: string; type: string }) => void;
+  onConfirm: (
+    selectedCustomerData: CustomerInfo & { type: "buyer" | "seller" }
+  ) => void;
   data: IListCliente[];
   loading: boolean;
-  selectionType: string;
+  selectionType: "seller" | "buyer";
 }
 
-export interface ISelectedCustomer {
-  name: string;
-  type: string;
+export interface ISelectedCustomer extends CustomerInfo {
+  type: "seller" | "buyer";
 }

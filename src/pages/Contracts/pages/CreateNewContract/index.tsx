@@ -15,8 +15,28 @@ export const CreateNewContract: React.FC = () => {
   const [activeStep, setActiveStep] = React.useState<number>(0);
   const [formData, setFormData] = React.useState<FormDataContract>({
     numberBroker: "",
-    seller: "",
-    buyer: "",
+    seller: {
+      address: "",
+      city: "",
+      cnpjCpf: "",
+      district: "",
+      insEst: "",
+      name: "",
+      number: "",
+      state: "",
+      complement: "",
+    },
+    buyer: {
+      address: "",
+      city: "",
+      cnpjCpf: "",
+      district: "",
+      insEst: "",
+      name: "",
+      number: "",
+      state: "",
+      complement: "",
+    },
     listEmailSeller: "",
     listEmailBuyer: "",
     product: "",
@@ -24,14 +44,15 @@ export const CreateNewContract: React.FC = () => {
     crop: "",
     quality: "",
     quantity: "",
-    price: "",
     typeCurrency: "",
+    price: "",
+    typeICMS: "",
     icms: "",
     payment: "",
     commissionSeller: "",
     commissionBuyer: "",
-    pickup: "",
     typePickup: "",
+    pickup: "",
     pickupLocation: "",
     inspection: "",
     observation: "",
@@ -65,7 +86,13 @@ export const CreateNewContract: React.FC = () => {
   const steps: StepType[] = [
     {
       label: "Identificação",
-      elements: [<Step1 formData={formData} handleChange={handleChange} />],
+      elements: [
+        <Step1
+          formData={formData}
+          handleChange={handleChange}
+          updateFormData={updateFormData}
+        />,
+      ],
     },
     {
       label: "Produto",
