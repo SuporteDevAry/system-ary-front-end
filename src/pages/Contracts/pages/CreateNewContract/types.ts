@@ -11,8 +11,8 @@ export type CustomerInfo = {
   district?: string;
   city?: string;
   state?: string;
-  cnpjCpf?: string;
-  insEst?: string;
+  cnpj_cpf?: string;
+  ins_est?: string;
 };
 
 export type FormDataContract = {
