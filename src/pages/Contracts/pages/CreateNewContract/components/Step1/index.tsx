@@ -8,8 +8,10 @@ import { ModalClientes } from "./components/ModalClientes";
 import { ClienteContext } from "../../../../../../contexts/ClienteContext";
 
 import { IListCliente } from "../../../../../../contexts/ClienteContext/types";
-import { CustomerInfo, StepProps } from "../../types";
+import { StepProps } from "../../types";
 import { SText, STextArea } from "../Step2/styles";
+import { CustomerInfo } from "../../../../../../contexts/ContractContext/types";
+import { getDataUserFromToken } from "../../../../../../contexts/AuthProvider/util";
 
 export const Step1: React.FC<StepProps> = ({
   handleChange,
@@ -40,6 +42,10 @@ export const Step1: React.FC<StepProps> = ({
 
   useEffect(() => {
     fetchData();
+    const userInfo = getDataUserFromToken();
+    if (userInfo?.email) {
+      updateFormData?.({ owner_contract: userInfo.email });
+    }
   }, []);
 
   const handleOpenCustomerModal = (type: "buyer" | "seller") => {

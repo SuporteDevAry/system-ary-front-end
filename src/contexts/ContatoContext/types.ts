@@ -28,3 +28,14 @@ export interface IUpdateContatosData
   extends Omit<IContatos, "id" | "code_client" | "created_at" | "updated_at"> {}
 
 export interface IListContatos extends IContatos {}
+
+export interface IContatosContext {
+  listContatos: () => Promise<any>;
+  createContato: (contatoData: ICreateContatosData) => Promise<any>;
+  updateContato: (
+    contactId: string,
+    updateContatoData: IUpdateContatosData
+  ) => void;
+  deleteContato: (contactId: string) => void;
+  getContactsByClient: (clientId: string) => Promise<any>;
+}

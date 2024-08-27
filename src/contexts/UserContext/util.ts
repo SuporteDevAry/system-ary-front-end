@@ -6,17 +6,6 @@ interface IUpdateUserData {
   email: string;
 }
 
-
-
-// interface IUserData {
-//   id: string;
-//   name: string;
-//   email: string;
-//   permissions_id: string;
-//   created_at: string;
-//   updated_at: string;
-// }
-
 export const addUser = async (userData: ICreateUserData) => {
   try {
     const response = await Api.post("/api/user", userData);

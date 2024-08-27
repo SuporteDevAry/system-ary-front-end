@@ -1,26 +1,16 @@
+import { CustomerInfo } from "../../../../contexts/ContractContext/types";
+
 export type StepType = {
   label: string;
   elements: JSX.Element[];
-};
-
-export type CustomerInfo = {
-  name: string;
-  address?: string;
-  number?: string;
-  complement?: string;
-  district?: string;
-  city?: string;
-  state?: string;
-  cnpj_cpf?: string;
-  ins_est?: string;
 };
 
 export type FormDataContract = {
   numberBroker: string;
   seller: CustomerInfo;
   buyer: CustomerInfo;
-  listEmailSeller: string;
-  listEmailBuyer: string;
+  listEmailSeller: string[];
+  listEmailBuyer: string[];
   product: string;
   nameProduct: string;
   crop: string;
@@ -38,6 +28,10 @@ export type FormDataContract = {
   pickupLocation: string;
   inspection: string;
   observation: string;
+  owner_contract: string;
+  total_contract_value: number;
+  quantity_kg: number;
+  quantity_bag: number;
 };
 
 export interface StepProps {

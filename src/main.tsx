@@ -6,6 +6,7 @@ import { UserProvider } from "./contexts/UserContext/index.tsx";
 import { ClientesProvider } from "./contexts/ClienteContext/index.tsx";
 import { ContatosProvider } from "./contexts/ContatoContext/index.tsx";
 import { NotificationsProvider } from "./contexts/NotificationContext/index.tsx";
+import { ContractProvider } from "./contexts/ContractContext/index.tsx";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
@@ -14,7 +15,9 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
         <ClientesProvider>
           <ContatosProvider>
             <NotificationsProvider>
-              <App />
+              <ContractProvider>
+                <App />
+              </ContractProvider>
             </NotificationsProvider>
           </ContatosProvider>
         </ClientesProvider>
