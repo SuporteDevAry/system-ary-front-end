@@ -12,142 +12,144 @@ import { SButtonContainer, SContainer, SContent, SStepper } from "./styles";
 import CustomButton from "../../../../components/CustomButton";
 
 export const CreateNewContract: React.FC = () => {
-  const [activeStep, setActiveStep] = React.useState<number>(0);
-  const [formData, setFormData] = React.useState<FormDataContract>({
-    numberBroker: "",
-    seller: {
-      address: "",
-      city: "",
-      cnpjCpf: "",
-      district: "",
-      insEst: "",
-      name: "",
-      number: "",
-      state: "",
-      complement: "",
-    },
-    buyer: {
-      address: "",
-      city: "",
-      cnpjCpf: "",
-      district: "",
-      insEst: "",
-      name: "",
-      number: "",
-      state: "",
-      complement: "",
-    },
-    listEmailSeller: "",
-    listEmailBuyer: "",
-    product: "",
-    nameProduct: "",
-    crop: "",
-    quality: "",
-    quantity: "",
-    typeCurrency: "",
-    price: "",
-    typeICMS: "",
-    icms: "",
-    payment: "",
-    commissionSeller: "",
-    commissionBuyer: "",
-    typePickup: "",
-    pickup: "",
-    pickupLocation: "",
-    inspection: "",
-    observation: "",
-  });
+    const [activeStep, setActiveStep] = React.useState<number>(0);
+    const [formData, setFormData] = React.useState<FormDataContract>({
+        numberBroker: "",
+        seller: {
+            address: "",
+            city: "",
+            cnpj_cpf: "",
+            district: "",
+            ins_est: "",
+            name: "",
+            number: "",
+            state: "",
+            complement: "",
+        },
+        buyer: {
+            address: "",
+            city: "",
+            cnpj_cpf: "",
+            district: "",
+            ins_est: "",
+            name: "",
+            number: "",
+            state: "",
+            complement: "",
+        },
+        listEmailSeller: "",
+        listEmailBuyer: "",
+        product: "",
+        nameProduct: "",
+        crop: "",
+        quality: "",
+        quantity: "",
+        typeCurrency: "",
+        price: "",
+        typeICMS: "",
+        icms: "",
+        payment: "",
+        commissionSeller: "",
+        commissionBuyer: "",
+        typePickup: "",
+        pickup: "",
+        pickupLocation: "",
+        inspection: "",
+        observation: "",
+    });
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prevFormData) => ({
-      ...prevFormData,
-      [name]: value,
-    }));
-  };
+    const handleChange = (
+        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    ) => {
+        const { name, value } = e.target;
+        setFormData((prevFormData) => ({
+            ...prevFormData,
+            [name]: value,
+        }));
+    };
 
-  const updateFormData = (data: Partial<FormDataContract>) => {
-    setFormData((prevFormData) => ({
-      ...prevFormData,
-      ...data,
-    }));
-  };
+    const updateFormData = (data: Partial<FormDataContract>) => {
+        setFormData((prevFormData) => ({
+            ...prevFormData,
+            ...data,
+        }));
+    };
 
-  const handleNext = () => {
-    setActiveStep((prevActiveStep) => prevActiveStep + 1);
-  };
+    const handleNext = () => {
+        setActiveStep((prevActiveStep) => prevActiveStep + 1);
+    };
 
-  const handleBack = () => {
-    setActiveStep((prevActiveStep) => prevActiveStep - 1);
-  };
+    const handleBack = () => {
+        setActiveStep((prevActiveStep) => prevActiveStep - 1);
+    };
 
-  const steps: StepType[] = [
-    {
-      label: "Identificação",
-      elements: [
-        <Step1
-          formData={formData}
-          handleChange={handleChange}
-          updateFormData={updateFormData}
-        />,
-      ],
-    },
-    {
-      label: "Produto",
-      elements: [
-        <Step2
-          formData={formData}
-          handleChange={handleChange}
-          updateFormData={updateFormData}
-        />,
-      ],
-    },
-    {
-      label: "Info. de Venda",
-      elements: [
-        <Step3
-          formData={formData}
-          handleChange={handleChange}
-          updateFormData={updateFormData}
-        />,
-      ],
-    },
-    {
-      label: "Observação",
-      elements: [<Step4 formData={formData} handleChange={handleChange} />],
-    },
-    {
-      label: "Review",
-      elements: [<Review formData={formData} />],
-    },
-  ];
+    const steps: StepType[] = [
+        {
+            label: "Identificação",
+            elements: [
+                <Step1
+                    formData={formData}
+                    handleChange={handleChange}
+                    updateFormData={updateFormData}
+                />,
+            ],
+        },
+        {
+            label: "Produto",
+            elements: [
+                <Step2
+                    formData={formData}
+                    handleChange={handleChange}
+                    updateFormData={updateFormData}
+                />,
+            ],
+        },
+        {
+            label: "Info. de Venda",
+            elements: [
+                <Step3
+                    formData={formData}
+                    handleChange={handleChange}
+                    updateFormData={updateFormData}
+                />,
+            ],
+        },
+        {
+            label: "Observação",
+            elements: [
+                <Step4 formData={formData} handleChange={handleChange} />,
+            ],
+        },
+        {
+            label: "Review",
+            elements: [<Review formData={formData} />],
+        },
+    ];
 
-  const currentStep = steps[activeStep];
+    const currentStep = steps[activeStep];
 
-  return (
-    <SContainer>
-      <SStepper activeStep={activeStep}>
-        {steps.map((item, index) => (
-          <Step key={index}>
-            <StepLabel>{item.label}</StepLabel>
-          </Step>
-        ))}
-      </SStepper>
+    return (
+        <SContainer>
+            <SStepper activeStep={activeStep}>
+                {steps.map((item, index) => (
+                    <Step key={index}>
+                        <StepLabel>{item.label}</StepLabel>
+                    </Step>
+                ))}
+            </SStepper>
 
-      <SContent key={currentStep.label}>{currentStep.elements}</SContent>
+            <SContent key={currentStep.label}>{currentStep.elements}</SContent>
 
-      <SButtonContainer>
-        {activeStep !== 0 && (
-          <CustomButton onClick={handleBack} $variant={"primary"}>
-            Voltar
-          </CustomButton>
-        )}
-        <CustomButton onClick={handleNext} $variant={"success"}>
-          {activeStep === steps.length - 1 ? "Salvar" : "Avançar"}
-        </CustomButton>
-      </SButtonContainer>
-    </SContainer>
-  );
+            <SButtonContainer>
+                {activeStep !== 0 && (
+                    <CustomButton onClick={handleBack} $variant={"primary"}>
+                        Voltar
+                    </CustomButton>
+                )}
+                <CustomButton onClick={handleNext} $variant={"success"}>
+                    {activeStep === steps.length - 1 ? "Salvar" : "Avançar"}
+                </CustomButton>
+            </SButtonContainer>
+        </SContainer>
+    );
 };

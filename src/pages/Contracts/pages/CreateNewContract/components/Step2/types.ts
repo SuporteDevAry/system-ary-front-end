@@ -10,13 +10,11 @@ interface ProductInfo {
 // ATENÇÃO !!! = Não Mudar a Identação dos Objetos abaixo!
 export const productInfo: Record<ProductType, ProductInfo> = {
   S: {
-    name: `SOJA em Grão`,
+    name: `SOJA em Grãos`,
     quality: `Padrão exportação conforme ANEC 41.
 Soja transgênica (GMO positivo).`,
     observation: `1-Mercadoria destinada à exportação.
-2-O comprador se compromete a apresentar os documentos de exportação no prazo determinado por
-lei, tais como:
-
+2-O comprador se compromete a apresentar os documentos de exportação no prazo determinado por lei, tais como:
 DUE com referência das Notas Fiscais de Remessa.
 NF de Exportação.
 Bill of Lading (BL).
@@ -27,9 +25,7 @@ Bill of Lading (BL).
     name: `MILHO`,
     quality: `Padrão exportação conforme contrato ANEC nr. 43.`,
     observation: `1-Mercadoria destinada à exportação.
-2-O comprador se compromete a apresentar os documentos de exportação no prazo determinado por
-lei, tais como:
-
+2-O comprador se compromete a apresentar os documentos de exportação no prazo determinado por lei, tais como:
 DUE com referência das Notas Fiscais de Remessa.
 NF de Exportação.
 Bill of Lading (BL).

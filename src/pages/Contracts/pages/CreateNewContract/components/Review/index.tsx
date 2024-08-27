@@ -41,7 +41,7 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
         const estilo = `
             body, p, span {
                 font-family:  Roboto, sans-serif;
-                font-weight: 400;
+                font-weight: 300;
                 font-size: 10px;
                 margin: 0;
                 padding: 0;
@@ -85,7 +85,6 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
                     iframeWindow.focus();
                     //iframeWindow.print(); // Imprimir pelo windows
                     geraPDF(); // gerar arquivo PDF.
-                    console.log("ponto1");
                     document.body.removeChild(iframe);
                 }
             };
@@ -94,7 +93,6 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
                 iframeWindow.focus();
                 //iframeWindow.print();
                 //geraPDF();
-                console.log("ponto2");
                 document.body.removeChild(iframe);
             } else {
                 for (let img of imgs) {
@@ -123,7 +121,15 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
     let formattedQtd = qtd_informada.toLocaleString();
 
     const qtde_extenso = Extenso(qtd_informada);
-    let qtde_em_quilos = `(${qtde_extenso})`;
+    let formattedExtenso = `(${qtde_extenso})`;
+
+    //let precoSaca: number = parseFloat(formData.price.replace(",", "."));
+    //let total_contrato: number = (qtd_informada / 60) * precoSaca;
+
+    // console.log("formData.quantity", formData.quantity);
+    // console.log("qtd_informada", qtd_informada);
+    // console.log("precoSaca", precoSaca);
+    // console.log("total_contrato", total_contrato);
 
     let formattedSellerCNPJ = formData.seller.cnpj_cpf
         ? insertMaskInCnpj(formData.seller.cnpj_cpf)
@@ -133,6 +139,23 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
         : "";
 
     let formattedCSeller = `${formData.commissionSeller}%`;
+
+    function formatObservationText(observation: string) {
+        // Quebra o texto em linhas usando o caractere de nova linha como delimitador
+        const lines = observation.split("\n");
+
+        // Mapeia as linhas, adicionando as margens de acordo
+        return lines
+            .map((line) => {
+                // Verifica se a linha começa com um número seguido de um traço (número de item)
+                if (/^\d+-/.test(line)) {
+                    return `<span style="display:block; margin-left:0;">${line}</span>`;
+                } else {
+                    return `<span style="display:block; margin-left:15px;">${line}</span>`;
+                }
+            })
+            .join("");
+    }
 
     return (
         <>
@@ -147,19 +170,19 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
                     </div>
                     <br />
                     <h3>
-                        <p style={{ textAlign: "center" }}>
+                        <p style={{ paddingLeft: "300px" }}>
                             S&atilde;o Paulo,{" "}
                             <span>
                                 {" "}
                                 {dia} de {mesextenso} de {ano4}
                             </span>
                         </p>
-                        <p style={{ textAlign: "center" }}>
+                        <p style={{ paddingLeft: "300px" }}>
                             Confirma&ccedil;&atilde;o de venda nr.
                             <span>
                                 {" "}
                                 {formData.product}.{formData.numberBroker}
-                                -NNNNNN/{ano2}{" "}
+                                -NNN/{ano2}{" "}
                             </span>
                             fechada nesta data:
                         </p>
@@ -172,12 +195,12 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
                         }}
                     >
                         <div>
-                            <strong>Vendedor:</strong>
-                            <span style={{ paddingLeft: "20px" }}>
+                            <strong>VENDEDOR:</strong>
+                            <span style={{ paddingLeft: "50px" }}>
                                 {formData.seller.name}
                             </span>
                             <br></br>
-                            <span style={{ paddingLeft: "100px" }}>
+                            <span style={{ paddingLeft: "140px" }}>
                                 {formData.seller.address}
                                 {","}
                                 {formData.seller.number}
@@ -185,7 +208,7 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
                                 {formData.seller.district}
                             </span>
                             <br></br>
-                            <span style={{ paddingLeft: "100px" }}>
+                            <span style={{ paddingLeft: "140px" }}>
                                 <strong>
                                     {formData.seller.city}
                                     {" - "}
@@ -193,7 +216,7 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
                                 </strong>
                             </span>
                             <br></br>
-                            <span style={{ paddingLeft: "100px" }}>
+                            <span style={{ paddingLeft: "140px" }}>
                                 CNPJ: {formattedSellerCNPJ}
                             </span>
                             <span style={{ paddingLeft: "30px" }}>
@@ -211,12 +234,12 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
                         }}
                     >
                         <div>
-                            <strong>Comprador:</strong>
-                            <span style={{ paddingLeft: "10px" }}>
+                            <strong>COMPRADOR:</strong>
+                            <span style={{ paddingLeft: "30px" }}>
                                 {formData.buyer.name}
                             </span>
                             <br></br>
-                            <span style={{ paddingLeft: "100px" }}>
+                            <span style={{ paddingLeft: "140px" }}>
                                 {formData.buyer.address}
                                 {","}
                                 {formData.buyer.number}
@@ -224,7 +247,7 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
                                 {formData.buyer.district}
                             </span>
                             <br></br>
-                            <span style={{ paddingLeft: "100px" }}>
+                            <span style={{ paddingLeft: "140px" }}>
                                 <strong>
                                     {formData.buyer.city}
                                     {" - "}
@@ -232,7 +255,7 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
                                 </strong>
                             </span>
                             <br></br>
-                            <span style={{ paddingLeft: "100px" }}>
+                            <span style={{ paddingLeft: "140px" }}>
                                 CNPJ: {formattedBuyerCNPJ}
                             </span>
                             <span style={{ paddingLeft: "30px" }}>
@@ -271,7 +294,7 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
                     </p>
                     <p style={{ textAlign: "justify" }}>
                         <strong>
-                            {formattedQtd} {qtde_em_quilos}
+                            {formattedQtd} {formattedExtenso}
                         </strong>{" "}
                         quilos.
                     </p>
@@ -292,7 +315,7 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
                     <br />
 
                     <p style={{ textAlign: "left" }}>
-                        <strong>Icms:</strong>
+                        <strong>ICMS:</strong>
                     </p>
                     <p style={{ textAlign: "justify" }}>{formData.icms}</p>
                     <br />
@@ -334,9 +357,16 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
                     <p style={{ textAlign: "left" }}>
                         <strong>Observa&ccedil;&otilde;es:</strong>
                     </p>
-                    <p style={{ textAlign: "justify", whiteSpace: "pre-line" }}>
+                    {/* <p style={{ textAlign: "justify", whiteSpace: "pre-line" }}>
                         {formData.observation}
-                    </p>
+                    </p> */}
+                    <p
+                        style={{ textAlign: "justify", whiteSpace: "pre-line" }}
+                        dangerouslySetInnerHTML={{
+                            __html: formatObservationText(formData.observation),
+                        }}
+                    />
+
                     <br />
 
                     <p style={{ textAlign: "justify" }}>
@@ -352,11 +382,15 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
                     <br />
 
                     <p style={{ textAlign: "justify" }}>
+                        <strong>===</strong>
+                        <br></br>
                         <strong>
-                            === Comissão de{" "}
+                            Comissão de{" "}
                             <span>{formattedCSeller.replace(".", ",")}</span>{" "}
-                            por conta do vendedor. ===
+                            por conta do vendedor.
                         </strong>
+                        <br></br>
+                        <strong>===</strong>
                     </p>
                     {/* <p style={{ textAlign: "justify" }}>
                         <strong>
@@ -411,7 +445,7 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
                 </div>
                 <div style={{ textAlign: "right" }}>
                     <CustomButton onClick={handleImprimir} $variant={"primary"}>
-                        PDF
+                        Gerar PDF
                     </CustomButton>
                 </div>
             </div>

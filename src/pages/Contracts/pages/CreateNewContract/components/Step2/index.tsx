@@ -28,7 +28,7 @@ export const Step2: React.FC<StepProps> = ({
                 label="Mercadoria: "
                 $labelPosition="top"
                 selectOptions={[
-                    { value: "S", label: "SOJA em Grão" },
+                    { value: "S", label: "SOJA em Grãos" },
                     { value: "CN", label: "MILHO" },
                     { value: "T", label: "TRIGO" },
                     { value: "SG", label: "SORGO" },
