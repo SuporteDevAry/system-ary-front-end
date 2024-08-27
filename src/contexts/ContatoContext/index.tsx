@@ -1,21 +1,11 @@
 import { createContext, useContext } from "react";
 import {
+  IContatosContext,
   IContatosProvider,
   ICreateContatosData,
   IUpdateContatosData,
 } from "./types";
 import { Api } from "../../services/api";
-
-interface IContatosContext {
-  listContatos: () => Promise<any>;
-  createContato: (contatoData: ICreateContatosData) => Promise<any>;
-  updateContato: (
-    contactId: string,
-    updateContatoData: IUpdateContatosData
-  ) => void;
-  deleteContato: (contactId: string) => void;
-  getContactsByClient: (clientId: string) => Promise<any>;
-}
 
 const newContext = createContext<IContatosContext>({
   listContatos: () => Promise.resolve(),

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { FormDataContract, StepType } from "./types";
 import { Step1 } from "./components/Step1";
 import { Step2 } from "./components/Step2";
@@ -8,19 +8,23 @@ import { Review } from "./components/Review";
 
 import Step from "@mui/material/Step";
 import StepLabel from "@mui/material/StepLabel";
+import CircularProgress from "@mui/material/CircularProgress";
 import { SButtonContainer, SContainer, SContent, SStepper } from "./styles";
 import CustomButton from "../../../../components/CustomButton";
+import { ContractContext } from "../../../../contexts/ContractContext";
+import { FormDataToIContractDataDTO } from "../../../../helpers/DTO/FormDataToIcontractDataDTO";
 
 export const CreateNewContract: React.FC = () => {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [activeStep, setActiveStep] = React.useState<number>(0);
   const [formData, setFormData] = React.useState<FormDataContract>({
     numberBroker: "",
     seller: {
       address: "",
       city: "",
-      cnpjCpf: "",
+      cnpj_cpf: "",
       district: "",
-      insEst: "",
+      ins_est: "",
       name: "",
       number: "",
       state: "",
@@ -29,16 +33,16 @@ export const CreateNewContract: React.FC = () => {
     buyer: {
       address: "",
       city: "",
-      cnpjCpf: "",
+      cnpj_cpf: "",
       district: "",
-      insEst: "",
+      ins_est: "",
       name: "",
       number: "",
       state: "",
       complement: "",
     },
-    listEmailSeller: "",
-    listEmailBuyer: "",
+    listEmailSeller: [],
+    listEmailBuyer: [],
     product: "",
     nameProduct: "",
     crop: "",
@@ -56,7 +60,13 @@ export const CreateNewContract: React.FC = () => {
     pickupLocation: "",
     inspection: "",
     observation: "",
+    owner_contract: "",
+    total_contract_value: 0,
+    quantity_bag: 0,
+    quantity_kg: 0,
   });
+
+  const { createContract } = ContractContext();
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -75,8 +85,24 @@ export const CreateNewContract: React.FC = () => {
     }));
   };
 
-  const handleNext = () => {
-    setActiveStep((prevActiveStep) => prevActiveStep + 1);
+  const handleNext = async () => {
+    if (activeStep === steps.length - 1) {
+      // Se for o último step, cria o contrato
+
+      setIsLoading(true);
+      try {
+        const contractData = FormDataToIContractDataDTO(formData);
+        const response = await createContract(contractData);
+        console.log("Contrato criado com sucesso", response, contractData);
+      } catch (error) {
+        console.error("Erro ao criar o contrato:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    } else {
+      // Se não for o último step, avança para o próximo
+      setActiveStep((prevActiveStep) => prevActiveStep + 1);
+    }
   };
 
   const handleBack = () => {
@@ -145,7 +171,13 @@ export const CreateNewContract: React.FC = () => {
           </CustomButton>
         )}
         <CustomButton onClick={handleNext} $variant={"success"}>
-          {activeStep === steps.length - 1 ? "Salvar" : "Avançar"}
+          {isLoading ? (
+            <CircularProgress size={24} />
+          ) : activeStep === steps.length - 1 ? (
+            "Salvar"
+          ) : (
+            "Avançar"
+          )}
         </CustomButton>
       </SButtonContainer>
     </SContainer>

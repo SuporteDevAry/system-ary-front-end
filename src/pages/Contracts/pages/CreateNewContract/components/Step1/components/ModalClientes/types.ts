@@ -1,5 +1,5 @@
 import { IListCliente } from "../../../../../../../../contexts/ClienteContext/types";
-import { CustomerInfo } from "../../../../types";
+import { CustomerInfo } from "../../../../../../../../contexts/ContractContext/types";
 
 export interface ModalClientesProps {
   open: boolean;
