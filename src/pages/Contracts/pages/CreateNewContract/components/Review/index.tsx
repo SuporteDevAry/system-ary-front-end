@@ -163,21 +163,21 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
                 <div id="contrato">
                     <div style={{ margin: 0, textAlign: "center" }}>
                         <img
-                            src="/src/assets/img/logo-ary-contrato.jpeg"
-                            alt="logo ary contrato jpg"
-                            width={300}
+                            src="/src/assets/img/Logo_Ary_Completo.jpg"
+                            alt="logo ary completo jpg"
+                            width={330}
                         />
                     </div>
                     <br />
                     <h3>
-                        <p style={{ paddingLeft: "300px" }}>
+                        <p style={{ paddingLeft: "280px" }}>
                             S&atilde;o Paulo,{" "}
                             <span>
                                 {" "}
                                 {dia} de {mesextenso} de {ano4}
                             </span>
                         </p>
-                        <p style={{ paddingLeft: "300px" }}>
+                        <p style={{ paddingLeft: "280px" }}>
                             Confirma&ccedil;&atilde;o de venda nr.
                             <span>
                                 {" "}
