@@ -65,7 +65,7 @@ export function FormularioCliente({
       />
 
       <CustomInput
-        type="number"
+        type="text"
         name="number"
         label="Nº:"
         $labelPosition="top"

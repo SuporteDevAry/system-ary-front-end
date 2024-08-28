@@ -60,18 +60,17 @@ export const Step1: React.FC<StepProps> = ({
   const handleSelected = useCallback(
     (selectCustomerData: CustomerInfo & { type: "seller" | "buyer" }) => {
       if (updateFormData) {
-        // Atualiza o formData com os dados do cliente selecionado
-        // updateFormData({
-        //   ...formData,
-        //   [selectCustomerData.type]: {
-        //     ...selectCustomerData,
-        //   },
-        // });
-
         updateFormData({
           [selectCustomerData.type]: {
-            ...formData[selectCustomerData.type], // Preserva os campos existentes
-            ...selectCustomerData, // Atualiza apenas os campos recebidos
+            name: selectCustomerData.name,
+            address: selectCustomerData.address,
+            number: selectCustomerData.number,
+            complement: selectCustomerData.complement,
+            district: selectCustomerData.district,
+            city: selectCustomerData.city,
+            state: selectCustomerData.state,
+            cnpj_cpf: selectCustomerData.cnpj_cpf,
+            ins_est: selectCustomerData.ins_est,
           },
         });
       }
