@@ -6,6 +6,7 @@ import { SContainer, SText, STextArea } from "./styles";
 import { fieldInfo, FieldType } from "./types";
 
 export const Step3: React.FC<StepProps> = ({
+  id,
   handleChange,
   formData,
   updateFormData,
@@ -64,7 +65,7 @@ export const Step3: React.FC<StepProps> = ({
   };
 
   return (
-    <SContainer>
+    <SContainer id={id}>
       <CustomInput
         type="text"
         name="quantity"

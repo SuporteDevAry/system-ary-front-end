@@ -1,4 +1,7 @@
-import { IContractData } from "../../contexts/ContractContext/types";
+import {
+  CustomerInfo,
+  IContractData,
+} from "../../contexts/ContractContext/types";
 import { FormDataContract } from "../../pages/Contracts/pages/CreateNewContract/types";
 
 export const FormDataToIContractDataDTO = (
@@ -20,8 +23,8 @@ export const FormDataToIContractDataDTO = (
     type_icms: data.typeICMS,
     icms: data.icms,
     payment: data.payment,
-    commission_seller: parseFloat(data.commissionSeller),
-    commission_buyer: parseFloat(data.commissionBuyer),
+    commission_seller: parseFloat(data?.commissionSeller ?? ""),
+    commission_buyer: parseFloat(data?.commissionBuyer ?? ""),
     type_pickup: data.typePickup,
     pickup: data.pickup,
     pickup_location: data.pickupLocation,
@@ -33,3 +36,17 @@ export const FormDataToIContractDataDTO = (
     quantity_bag: data.quantity_bag,
   };
 };
+
+export function filterCustomerInfo(data: any): CustomerInfo {
+  return {
+    name: data.name,
+    address: data.address,
+    number: data.number,
+    complement: data.complement,
+    district: data.district,
+    city: data.city,
+    state: data.state,
+    cnpj_cpf: data.cnpj_cpf,
+    ins_est: data.ins_est,
+  };
+}

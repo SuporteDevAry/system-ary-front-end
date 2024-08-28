@@ -6,7 +6,6 @@ import CustomButton from "../../../../../../components/CustomButton";
 import { SContainer, SContainerBuyer, SContainerSeller } from "./styles";
 import { ModalClientes } from "./components/ModalClientes";
 import { ClienteContext } from "../../../../../../contexts/ClienteContext";
-
 import { IListCliente } from "../../../../../../contexts/ClienteContext/types";
 import { StepProps } from "../../types";
 import { SText, STextArea } from "../Step2/styles";
@@ -14,6 +13,7 @@ import { CustomerInfo } from "../../../../../../contexts/ContractContext/types";
 import { getDataUserFromToken } from "../../../../../../contexts/AuthProvider/util";
 
 export const Step1: React.FC<StepProps> = ({
+  id,
   handleChange,
   formData,
   updateFormData,
@@ -48,32 +48,42 @@ export const Step1: React.FC<StepProps> = ({
     }
   }, []);
 
-  const handleOpenCustomerModal = (type: "buyer" | "seller") => {
+  const handleOpenCustomerModal = useCallback((type: "buyer" | "seller") => {
     setSelectionType(type);
     setCustomerModalOpen(true);
-  };
+  }, []);
 
-  const handleCloseCustomerModal = () => {
+  const handleCloseCustomerModal = useCallback(() => {
     setCustomerModalOpen(false);
-  };
+  }, []);
 
-  const handleSelected = (
-    selectCustomerData: CustomerInfo & { type: "seller" | "buyer" }
-  ) => {
-    if (updateFormData) {
-      // Atualiza o formData com os dados do cliente selecionado
-      updateFormData({
-        ...formData,
-        [selectCustomerData.type]: {
-          ...selectCustomerData,
-        },
-      });
-    }
-  };
+  const handleSelected = useCallback(
+    (selectCustomerData: CustomerInfo & { type: "seller" | "buyer" }) => {
+      if (updateFormData) {
+        // Atualiza o formData com os dados do cliente selecionado
+        // updateFormData({
+        //   ...formData,
+        //   [selectCustomerData.type]: {
+        //     ...selectCustomerData,
+        //   },
+        // });
+
+        updateFormData({
+          [selectCustomerData.type]: {
+            ...formData[selectCustomerData.type], // Preserva os campos existentes
+            ...selectCustomerData, // Atualiza apenas os campos recebidos
+          },
+        });
+      }
+    },
+    [formData, updateFormData, handleCloseCustomerModal]
+  );
+
+  //filterCustomerInfo()
 
   return (
     <>
-      <SContainer>
+      <SContainer id={id}>
         <CustomInput
           type="text"
           name="numberBroker"

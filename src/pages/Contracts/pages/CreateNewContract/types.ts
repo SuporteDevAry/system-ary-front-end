@@ -21,8 +21,8 @@ export type FormDataContract = {
   typeICMS: string;
   icms: string;
   payment: string;
-  commissionSeller: string;
-  commissionBuyer: string;
+  commissionSeller?: string;
+  commissionBuyer?: string;
   typePickup: string;
   pickup: string;
   pickupLocation: string;
@@ -35,6 +35,7 @@ export type FormDataContract = {
 };
 
 export interface StepProps {
+  id: string;
   formData: FormDataContract;
   handleChange?: (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
