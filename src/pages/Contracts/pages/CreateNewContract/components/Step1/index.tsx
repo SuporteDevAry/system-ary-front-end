@@ -81,8 +81,6 @@ export const Step1: React.FC<StepProps> = ({
     [formData, updateFormData, handleCloseCustomerModal]
   );
 
-  //filterCustomerInfo()
-
   return (
     <>
       <SContainer id={id}>

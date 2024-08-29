@@ -48,9 +48,12 @@ Api.interceptors.response.use(
       window.location.href = "/login";
     }
 
-    // if (error.response && error.response.status === 500) {
-    //   deleteUserLocalStorage();
-    // }
+    /* Toda vem que der algum erro de aplicação, exemplo: token expirar, ele limpa o token do localstorage
+     * Isso será melhorado com um valida token, futuramente
+     */
+    if (error.response && error.response.status === 500) {
+      deleteUserLocalStorage();
+    }
 
     return Promise.reject(error);
   }

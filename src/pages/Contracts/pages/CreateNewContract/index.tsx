@@ -94,7 +94,14 @@ export const CreateNewContract: React.FC = () => {
       try {
         const contractData = FormDataToIContractDataDTO(formData);
         const response = await createContract(contractData);
-        console.log("Contrato criado com sucesso", response, contractData);
+
+        toast.success(
+          <div>
+            Contrato de Número:
+            <strong>{response?.data?.number_contract}</strong> criado com
+            sucesso!
+          </div>
+        );
       } catch (error) {
         toast.error(
           `Erro ao tentar criar contrato, contacte o administrador do sistema ${error}`
@@ -154,13 +161,7 @@ export const CreateNewContract: React.FC = () => {
     },
     {
       label: "Review",
-      elements: [
-        <Review
-          id="review"
-          formData={formData}
-          updateFormData={updateFormData}
-        />,
-      ],
+      elements: [<Review id="review" formData={formData} />],
     },
   ];
 

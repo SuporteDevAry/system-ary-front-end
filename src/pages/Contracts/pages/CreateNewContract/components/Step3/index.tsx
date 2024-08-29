@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CustomInput } from "../../../../../../components/CustomInput";
 import { formatCurrency } from "../../../../../../helpers/currencyFormat";
 import { StepProps } from "../../types";
@@ -63,6 +63,27 @@ export const Step3: React.FC<StepProps> = ({
       price: rawPrice.toString(),
     });
   };
+
+  useEffect(() => {
+    const quantityWorked = !formData.quantity.match(/,/g)
+      ? formData.quantity.replace(/[.]/g, "")
+      : formData.quantity.replace(/[,]/g, ".");
+
+    const price = parseFloat(formData.price.replace(",", "."));
+    const quantityToKG = Number(quantityWorked) * 1000;
+    console.log(quantityToKG);
+    const quantityToBag = quantityToKG / 60;
+    const totalContractValue = Math.round(price * quantityToBag).toFixed(2);
+
+    if (totalContractValue) {
+      updateFormData?.({
+        ...formData,
+        total_contract_value: parseFloat(totalContractValue),
+        quantity_kg: quantityToKG,
+        quantity_bag: quantityToBag,
+      });
+    }
+  }, [formData.price, formData.quantity]);
 
   return (
     <SContainer id={id}>

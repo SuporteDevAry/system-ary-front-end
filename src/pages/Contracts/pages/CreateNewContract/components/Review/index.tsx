@@ -4,10 +4,9 @@ import CustomButton from "../../../../../../components/CustomButton";
 import { Extenso } from "../../../../../../helpers/Extenso";
 import jsPDF from "jspdf";
 import { insertMaskInCnpj } from "../../../../../../helpers/front-end/insertMaskInCnpj";
-import { useEffect } from "react";
 import { toast } from "react-toastify";
 
-export const Review: React.FC<StepProps> = ({ formData, updateFormData }) => {
+export const Review: React.FC<StepProps> = ({ formData }) => {
   const geraPDF = () => {
     const contrato = document.getElementById("contrato");
     if (contrato) {
@@ -122,25 +121,8 @@ export const Review: React.FC<StepProps> = ({ formData, updateFormData }) => {
   let qtd_informada = Number(quantity_aux) * 1000; // Multiplicar por mil para exibir em quilos
   let formattedQtd = qtd_informada.toLocaleString();
 
-  console.log("qAux", quantity_aux);
-  console.log("qinformada", qtd_informada);
   const qtde_extenso = Extenso(qtd_informada);
   let formattedExtenso = `(${qtde_extenso})`;
-
-  let price = parseFloat(formData.price.replace(",", "."));
-  let quantity_kg = qtd_informada;
-  let quantity_bag = quantity_kg / 60;
-  let total_contract_value = price * quantity_bag;
-  Math.round(total_contract_value).toFixed(2);
-  useEffect(() => {
-    if (total_contract_value) {
-      updateFormData?.({
-        total_contract_value: total_contract_value,
-        quantity_kg: quantity_kg,
-        quantity_bag: quantity_bag,
-      });
-    }
-  }, []);
 
   let formattedSellerCNPJ = formData.seller.cnpj_cpf
     ? insertMaskInCnpj(formData.seller.cnpj_cpf)
