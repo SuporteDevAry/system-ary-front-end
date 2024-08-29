@@ -14,8 +14,12 @@ export const ContractProvider = ({ children }: IContractsProvider) => {
       const response = await Api.get("/grain-contracts");
       return response;
     } catch (error) {
-      console.error("Erro listando Contratos:", error);
-      throw error;
+      const err = error as AxiosError;
+
+      if (err.response && err.response.data) {
+        const errorMessage = (err.response.data as { message: string }).message;
+        throw new Error(errorMessage);
+      }
     }
   }
 
@@ -25,8 +29,6 @@ export const ContractProvider = ({ children }: IContractsProvider) => {
 
       return response;
     } catch (error) {
-      console.error("Erro ao criar Contratos:", error);
-
       const err = error as AxiosError;
 
       if (err.response && err.response.data) {

@@ -67,7 +67,9 @@ export function ViewCustomer(): JSX.Element {
       setCustomerContactsList(response.data);
       setDataTable(response.data);
     } catch (error) {
-      console.error("Erro lendo clientes:", error);
+      toast.error(
+        `Erro ao tentar ler clientes, contacte o administrador do sistema ${error}`
+      );
     } finally {
       setIsLoading(false);
     }
@@ -107,7 +109,9 @@ export function ViewCustomer(): JSX.Element {
         `Contato ${selectedContact.name} com id:${selectedContact.id}, foi deletado com sucesso!`
       );
     } catch (error) {
-      console.error("Erro excluindo cliente:", error);
+      toast.error(
+        `Erro ao tentar excluir cliente, contacte o administrador do sistema ${error}`
+      );
     } finally {
       setDeleteModal(false);
       setSelectedContact(null);

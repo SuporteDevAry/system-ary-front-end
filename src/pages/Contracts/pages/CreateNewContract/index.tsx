@@ -13,6 +13,7 @@ import { SButtonContainer, SContainer, SContent, SStepper } from "./styles";
 import CustomButton from "../../../../components/CustomButton";
 import { ContractContext } from "../../../../contexts/ContractContext";
 import { FormDataToIContractDataDTO } from "../../../../helpers/DTO/FormDataToIcontractDataDTO";
+import { toast } from "react-toastify";
 
 export const CreateNewContract: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -95,7 +96,9 @@ export const CreateNewContract: React.FC = () => {
         const response = await createContract(contractData);
         console.log("Contrato criado com sucesso", response, contractData);
       } catch (error) {
-        console.error("Erro ao criar o contrato:", error);
+        toast.error(
+          `Erro ao tentar criar contrato, contacte o administrador do sistema ${error}`
+        );
       } finally {
         setIsLoading(false);
       }
@@ -151,7 +154,13 @@ export const CreateNewContract: React.FC = () => {
     },
     {
       label: "Review",
-      elements: [<Review id="review" formData={formData}  updateFormData={updateFormData} />],
+      elements: [
+        <Review
+          id="review"
+          formData={formData}
+          updateFormData={updateFormData}
+        />,
+      ],
     },
   ];
 

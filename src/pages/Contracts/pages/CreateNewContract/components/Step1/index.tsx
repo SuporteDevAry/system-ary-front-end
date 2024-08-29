@@ -11,6 +11,7 @@ import { StepProps } from "../../types";
 import { SText, STextArea } from "../Step2/styles";
 import { CustomerInfo } from "../../../../../../contexts/ContractContext/types";
 import { getDataUserFromToken } from "../../../../../../contexts/AuthProvider/util";
+import { toast } from "react-toastify";
 
 export const Step1: React.FC<StepProps> = ({
   id,
@@ -34,7 +35,9 @@ export const Step1: React.FC<StepProps> = ({
       const response = await clienteContext.listClientes();
       setClientes(response.data);
     } catch (error) {
-      console.error("Erro lendo clientes:", error);
+      toast.error(
+        `Erro ao tentar ler clientes, contacte o administrador do sistema ${error}`
+      );
     } finally {
       setIsLoading(false);
     }

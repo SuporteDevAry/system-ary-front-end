@@ -29,7 +29,9 @@ export function Users() {
       setUsers(response.data);
       setDataTable(response.data);
     } catch (error) {
-      console.error("Error fetching users:", error);
+      toast.error(
+        `Erro ao tentar ler usuários, contacte o administrador do sistema ${error}`
+      );
     } finally {
       setIsLoading(false);
     }
@@ -69,7 +71,9 @@ export function Users() {
         `Usuário ${userDeleted[0].name}, foi deletado com sucesso!`
       );
     } catch (error) {
-      console.error("Error deleting user:", error);
+      toast.error(
+        `Erro ao tentar deletar usuário, contacte o administrador do sistema ${error}`
+      );
     }
   };
 

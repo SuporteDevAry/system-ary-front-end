@@ -7,6 +7,7 @@ import { IListUser } from "../../../../contexts/UserContext/types";
 import { IColumn } from "../../../../components/CustomTable/types";
 import { CustomSearch } from "../../../../components/CustomSearch";
 import { SBoxSearch } from "./styles";
+import { toast } from "react-toastify";
 
 export function ModalUsers({ open, onClose, onConfirm }: ModalUsersProps) {
   const userContext = UserContext();
@@ -22,7 +23,9 @@ export function ModalUsers({ open, onClose, onConfirm }: ModalUsersProps) {
       setUsers(response.data);
       setDataTable(response.data);
     } catch (error) {
-      console.error("Error fetching users:", error);
+      toast.error(
+        `Erro ao tentar ler usuários, contacte o administrador do sistema ${error}`
+      );
     }
   }, [useCallback]);
 

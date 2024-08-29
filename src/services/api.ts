@@ -1,10 +1,10 @@
 import axios from "axios";
 import axiosRetry from "axios-retry";
 import {
+  deleteUserLocalStorage,
   getUserLocalStorage,
   setUserLocalStorage,
 } from "../contexts/AuthProvider/util";
-import { useNavigate } from "react-router-dom";
 
 export const ApiCustom = axios.create({
   baseURL: process.env.URL_API_NODE,
@@ -42,13 +42,15 @@ Api.interceptors.response.use(
     return response;
   },
   (error) => {
-    const navigate = useNavigate();
-
     if (error.response && error.response.status === 401) {
       setUserLocalStorage(null);
 
-      navigate("/login");
+      window.location.href = "/login";
     }
+
+    // if (error.response && error.response.status === 500) {
+    //   deleteUserLocalStorage();
+    // }
 
     return Promise.reject(error);
   }

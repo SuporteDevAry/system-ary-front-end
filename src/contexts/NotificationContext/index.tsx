@@ -1,6 +1,7 @@
 import { createContext, useContext } from "react";
 import { INotificationsProvider, IUpdateNotificationData } from "./types";
 import { Api } from "../../services/api";
+import { AxiosError } from "axios";
 
 interface INotificationContext {
   listUserNotifications: (user: string) => Promise<any>;
@@ -19,8 +20,12 @@ export const NotificationsProvider = ({ children }: INotificationsProvider) => {
 
       return response;
     } catch (error) {
-      console.error("Erro lendo notificações:", error);
-      throw error;
+      const err = error as AxiosError;
+
+      if (err.response && err.response.data) {
+        const errorMessage = (err.response.data as { message: string }).message;
+        throw new Error(errorMessage);
+      }
     }
   }
 
@@ -35,7 +40,12 @@ export const NotificationsProvider = ({ children }: INotificationsProvider) => {
       );
       return response;
     } catch (error) {
-      console.error("Erro alterando notificação:", error);
+      const err = error as AxiosError;
+
+      if (err.response && err.response.data) {
+        const errorMessage = (err.response.data as { message: string }).message;
+        throw new Error(errorMessage);
+      }
     }
   }
 

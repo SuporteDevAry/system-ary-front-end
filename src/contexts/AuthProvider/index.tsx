@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { IAuthProvider, IContext, IUser } from "./types";
 import { LoginRequest, getUserLocalStorage, setUserLocalStorage } from "./util";
 
@@ -43,4 +43,10 @@ export const AuthProvider = ({ children }: IAuthProvider) => {
       {children}
     </AuthContext.Provider>
   );
+};
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+
+  return context;
 };

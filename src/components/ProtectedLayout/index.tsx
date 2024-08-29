@@ -1,13 +1,15 @@
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../contexts/AuthProvider/useAuth";
 import CustomButton from "../CustomButton";
 import { SCardInfo, SContainer, SMain } from "./styles";
+import { deleteUserLocalStorage } from "../../contexts/AuthProvider/util";
+import { useAuth } from "../../contexts/AuthProvider";
 
 export const ProtectedLayout = ({ children }: { children: JSX.Element }) => {
   const auth = useAuth();
   const navigate = useNavigate();
 
   const handleSendLogin = () => {
+    deleteUserLocalStorage();
     navigate("/login");
   };
 
