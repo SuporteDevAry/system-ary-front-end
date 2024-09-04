@@ -1,4 +1,7 @@
-import { CustomerInfo } from "../../../../contexts/ContractContext/types";
+import {
+  ContractStatus,
+  CustomerInfo,
+} from "../../../../contexts/ContractContext/types";
 
 export type StepType = {
   label: string;
@@ -32,6 +35,7 @@ export type FormDataContract = {
   total_contract_value: number;
   quantity_kg: number;
   quantity_bag: number;
+  status: ContractStatus;
 };
 
 export interface StepProps {

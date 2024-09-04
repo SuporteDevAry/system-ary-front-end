@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import CustomButton from "../../../../components/CustomButton";
 import { CustomSearch } from "../../../../components/CustomSearch";
 import CustomTable from "../../../../components/CustomTable";
@@ -8,42 +8,71 @@ import {
   TableDataProps,
 } from "../../../../components/CustomTable/types";
 import { CustomTimeline } from "../../../../components/CustomTimeline";
+import { ContractContext } from "../../../../contexts/ContractContext";
+import { toast } from "react-toastify";
+import {
+  ContractStatus,
+  IContractData,
+  IUserInfo,
+} from "../../../../contexts/ContractContext/types";
+
+export type ITimelineEvent = {
+  date: string;
+  time: string;
+  status: string;
+  owner_change: IUserInfo;
+};
 
 export function HistoryContracts() {
+  const contractContext = ContractContext();
+
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [listcontracts, setListContracts] = useState<IContractData[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [dataTable, setDataTable] = useState<TableDataProps[]>([]);
+  const [timelineEvents, setTimelineEvents] = useState<any[]>([]);
 
-  const data = [
-    { nr_contrato: "001", status: "Ativo", produto: "Soja" },
-    { nr_contrato: "002", status: "Pendente", produto: "Milho" },
-    { nr_contrato: "003", status: "Finalizado", produto: "Trigo" },
-    { nr_contrato: "004", status: "Cancelado", produto: "Arroz" },
-    { nr_contrato: "005", status: "Ativo", produto: "Cevada" },
-    { nr_contrato: "006", status: "Pendente", produto: "Sorgo" },
-    { nr_contrato: "007", status: "Finalizado", produto: "Aveia" },
-    { nr_contrato: "008", status: "Cancelado", produto: "Centeio" },
-    { nr_contrato: "009", status: "Ativo", produto: "Lentilha" },
-    { nr_contrato: "010", status: "Pendente", produto: "Grão-de-bico" },
-  ];
+  const fetchData = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const response = await contractContext.listContracts();
+      setListContracts(response.data);
+      setDataTable(response.data);
+      const contracts: IContractData[] = response.data;
 
-  const timelineEvents = [
-    { date: "07/06/2024", time: "09:30 am", status: "A Conferir" },
-    { date: "08/06/2024", time: "10:00 am", status: "Validado" },
-    { date: "09/06/2024", time: "12:00 am", status: "Conferido" },
-    { date: "10/06/2024", time: "9:00 am", status: "Enviado" },
-  ];
+      const formattedData: TableDataProps[] = contracts.map((contract) => ({
+        ...contract,
+        status_current: contract.status.status_current,
+      }));
+      setDataTable(formattedData);
 
-  //   useEffect(() => {
-  //     if (data) {
-  //       setDataTable(data);
-  //     }
-  //   }, [data]);
+      const events: ITimelineEvent[] = contracts.flatMap((history) =>
+        history.status.history.map((entry) => ({
+          date: entry.date,
+          time: entry.time,
+          status: entry.status,
+          owner_change: entry.owner_change,
+        }))
+      );
+      setTimelineEvents(events);
+    } catch (error) {
+      toast.error(
+        `Erro ao tentar ler contratos, contacte o administrador do sistema ${error}`
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  }, [contractContext]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const handleSearch = () => {
     if (searchTerm.trim() === "") {
-      setDataTable(data);
+      setDataTable(listcontracts);
     } else {
-      const filteredData = data.filter((item) =>
+      const filteredData = listcontracts.filter((item) =>
         Object.values(item).some((value) =>
           value.toString().toLowerCase().includes(searchTerm.toLowerCase())
         )
@@ -53,16 +82,16 @@ export function HistoryContracts() {
   };
 
   useEffect(() => {
+    console.log("Como tá vindo o dado", dataTable);
     handleSearch();
   }, [searchTerm]);
 
   const nameColumns: IColumn[] = [
-    { field: "status", header: "Status" },
-    { field: "last_to_use", header: "Em uso" },
-    { field: "nr_contrato", header: "Nº Contrato" },
-    { field: "produto", header: "Produto" },
+    { field: "status_current", header: "Status" },
+    { field: "number_contract", header: "Nº Contrato" },
+    { field: "created_at", header: "Data" },
     { field: "contract_details", header: "Detalhes do Contrato" },
-    { field: "created_by", header: "Criado por" },
+    { field: "owner_contract", header: "Criado por" },
   ];
 
   return (
@@ -81,7 +110,7 @@ export function HistoryContracts() {
         </CustomButton>
       </SContainerSearchAndButton>
       <CustomTable
-        //isLoading={loading}
+        isLoading={isLoading}
         data={dataTable}
         columns={nameColumns}
         //hasCheckbox
@@ -92,6 +121,7 @@ export function HistoryContracts() {
         // }
         onRowClick={(row) => console.log(row)}
         renderChildren={() => <CustomTimeline events={timelineEvents} />}
+        dateFields={["created_at"]}
       />
     </SContainer>
   );

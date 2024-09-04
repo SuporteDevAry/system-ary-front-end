@@ -19,7 +19,7 @@ export const ProtectedLayout = ({ children }: { children: JSX.Element }) => {
         <SCardInfo>
           <SMain>
             <h1>Que pena! Você não tem acesso a essa página!</h1>
-            <p>Clique no botão abaixo para ir para o Login.</p>
+            <div>Clique no botão abaixo para ir para o Login.</div>
             <CustomButton
               $variant={"primary"}
               width="180px"

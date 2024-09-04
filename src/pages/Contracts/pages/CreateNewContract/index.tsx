@@ -1,5 +1,7 @@
-import React, { useState } from "react";
-import { FormDataContract, StepType } from "./types";
+import React, { useEffect, useState } from "react";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
+
 import { Step1 } from "./components/Step1";
 import { Step2 } from "./components/Step2";
 import { Step3 } from "./components/Step3";
@@ -13,11 +15,18 @@ import { SButtonContainer, SContainer, SContent, SStepper } from "./styles";
 import CustomButton from "../../../../components/CustomButton";
 import { ContractContext } from "../../../../contexts/ContractContext";
 import { FormDataToIContractDataDTO } from "../../../../helpers/DTO/FormDataToIcontractDataDTO";
-import { toast } from "react-toastify";
+
+import { getDataUserFromToken } from "../../../../contexts/AuthProvider/util";
+import { formattedDate } from "../../../../helpers/dateFormat";
+import { IUserInfo } from "../../../../contexts/ContractContext/types";
+import { FormDataContract, StepType } from "./types";
 
 export const CreateNewContract: React.FC = () => {
+  const { createContract } = ContractContext();
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [activeStep, setActiveStep] = React.useState<number>(0);
+  const [activeStep, setActiveStep] = useState<number>(0);
+  const [dataUserInfo, setDataUserInfo] = useState<IUserInfo | null>(null);
   const [formData, setFormData] = React.useState<FormDataContract>({
     numberBroker: "",
     seller: {
@@ -65,9 +74,19 @@ export const CreateNewContract: React.FC = () => {
     total_contract_value: 0,
     quantity_bag: 0,
     quantity_kg: 0,
+    status: {
+      status_current: "",
+      history: [],
+    },
   });
 
-  const { createContract } = ContractContext();
+  useEffect(() => {
+    const userInfo = getDataUserFromToken();
+    if (userInfo) {
+      setDataUserInfo(userInfo);
+      updateStatus("A Conferir");
+    }
+  }, []);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -84,6 +103,36 @@ export const CreateNewContract: React.FC = () => {
       ...prevFormData,
       ...data,
     }));
+  };
+  const updateStatus = (newStatus: string) => {
+    const newDate = formattedDate();
+    const newTime = new Date().toLocaleTimeString("pt-BR", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+
+    if (formData.status.status_current !== newStatus) {
+      const newStatusEntry = {
+        date: newDate,
+        time: newTime,
+        status: newStatus,
+        owner_change: {
+          name: dataUserInfo?.name ?? "",
+          email: dataUserInfo?.email ?? "",
+        },
+      };
+
+      const updatedStatus = {
+        status_current: newStatus,
+        history: [...formData.status.history, newStatusEntry],
+      };
+
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        status: updatedStatus,
+      }));
+    }
   };
 
   const handleNext = async () => {
@@ -102,6 +151,7 @@ export const CreateNewContract: React.FC = () => {
             sucesso!
           </div>
         );
+        navigate("/contratos/historico");
       } catch (error) {
         toast.error(
           `Erro ao tentar criar contrato, contacte o administrador do sistema ${error}`
@@ -165,7 +215,7 @@ export const CreateNewContract: React.FC = () => {
     },
   ];
 
-  const currentStep = steps[activeStep];
+  const currentStep = steps[activeStep] || { elements: [] };
 
   return (
     <SContainer>

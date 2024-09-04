@@ -71,7 +71,6 @@ export const Step3: React.FC<StepProps> = ({
 
     const price = parseFloat(formData.price.replace(",", "."));
     const quantityToKG = Number(quantityWorked) * 1000;
-    console.log(quantityToKG);
     const quantityToBag = quantityToKG / 60;
     const totalContractValue = Math.round(price * quantityToBag).toFixed(2);
 
