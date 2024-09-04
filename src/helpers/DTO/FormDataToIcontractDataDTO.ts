@@ -31,5 +31,9 @@ export const FormDataToIContractDataDTO = (
     total_contract_value: data.total_contract_value,
     quantity_kg: data.quantity_kg,
     quantity_bag: data.quantity_bag,
+    status: {
+      status_current: data.status.status_current || "",
+      history: data.status.history || [],
+    },
   };
 };

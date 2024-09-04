@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { BoxContainer, SButtonContainer, STitle } from "./styles";
 
@@ -14,6 +14,7 @@ import { ModalDelete } from "../../components/ModalDelete";
 export function Clientes() {
   const clienteContext = ClienteContext();
   const navigate = useNavigate();
+  const location = useLocation();
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [clientes, setClientes] = useState<IListCliente[]>([]);
   const [dataTable, setDataTable] = useState<IListCliente[]>([]);
@@ -40,6 +41,15 @@ export function Clientes() {
   }, [clienteContext]);
 
   useEffect(() => {
+    // Aqui verificaremos o estado pra ver se tem o update como true, para podermos atualizar a tabela conforme falado no componente do EditarCliente.
+    if (location.state && location.state.updated) {
+      fetchData();
+
+      navigate(location.pathname, { state: {} });
+    }
+  }, [location.state, fetchData, navigate]);
+
+  useEffect(() => {
     fetchData();
   }, [fetchData]);
 
@@ -63,10 +73,11 @@ export function Clientes() {
     if (!selectedClient) return;
     try {
       await clienteContext.deleteCliente(selectedClient.id);
-      fetchData();
+
       toast.success(
         `Cliente ${selectedClient.nickname} com id:${selectedClient.id}, foi deletado com sucesso!`
       );
+      fetchData();
     } catch (error) {
       toast.error(
         `Erro ao tentar excluir cliente, contacte o administrador do sistema ${error}`

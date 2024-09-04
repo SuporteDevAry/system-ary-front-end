@@ -298,7 +298,7 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
             <strong>
               {formatCurrency(formData.price, formData.typeCurrency)}
             </strong>{" "}
-            por sacas de 60(sessenta) quilos, (+D.U.E.).
+            por saca de 60(sessenta) quilos, (+D.U.E.).
           </p>
           <br />
 
