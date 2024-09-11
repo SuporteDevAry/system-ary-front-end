@@ -37,10 +37,18 @@ export function formattedDate(): string {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
+  });
+
+  return formatDate;
+}
+
+export function formattedTime(): string {
+  const date = new Date();
+  const formatTime = date.toLocaleString("pt-BR", {
     hour: "2-digit",
     minute: "2-digit",
     hour12: true,
   });
 
-  return formatDate;
+  return formatTime;
 }

@@ -15,134 +15,145 @@ import { HistoryContracts } from "./pages/Contracts/pages/HistoryContracts";
 import { CreateNewContract } from "./pages/Contracts/pages/CreateNewContract";
 import { MyAccount } from "./pages/MyAccount";
 import { ViewCustomer } from "./pages/Clientes/components/ViewCustomer";
+import { ViewContract } from "./pages/Contracts/pages/HistoryContracts/components/ViewContract";
 
 export function RoutesForPages() {
-    return (
-        <Routes>
-            <Route
-                path="/dashboard"
-                element={
-                    <Layout>
-                        <Dashboard />
-                    </Layout>
-                }
-            />
-            <Route
-                path="/contratos"
-                element={
-                    <ProtectedLayout>
-                        <Layout>
-                            <Contract />
-                        </Layout>
-                    </ProtectedLayout>
-                }
-            />
-            <Route
-                path="/contratos/novo-contrato"
-                element={
-                    <ProtectedLayout>
-                        <Layout>
-                            <CreateNewContract />
-                        </Layout>
-                    </ProtectedLayout>
-                }
-            />
-            <Route
-                path="/contratos/historico"
-                element={
-                    <ProtectedLayout>
-                        <Layout>
-                            <HistoryContracts />
-                        </Layout>
-                    </ProtectedLayout>
-                }
-            />
-            <Route
-                path="/clientes"
-                element={
-                    <ProtectedLayout>
-                        <Layout>
-                            <Clientes />
-                        </Layout>
-                    </ProtectedLayout>
-                }
-            />
+  return (
+    <Routes>
+      <Route
+        path="/dashboard"
+        element={
+          <Layout>
+            <Dashboard />
+          </Layout>
+        }
+      />
+      <Route
+        path="/contratos"
+        element={
+          <ProtectedLayout>
+            <Layout>
+              <Contract />
+            </Layout>
+          </ProtectedLayout>
+        }
+      />
+      <Route
+        path="/contratos/novo-contrato"
+        element={
+          <ProtectedLayout>
+            <Layout>
+              <CreateNewContract />
+            </Layout>
+          </ProtectedLayout>
+        }
+      />
+      <Route
+        path="/contratos/historico"
+        element={
+          <ProtectedLayout>
+            <Layout>
+              <HistoryContracts />
+            </Layout>
+          </ProtectedLayout>
+        }
+      />
+      <Route
+        path="/visualizar-contrato"
+        element={
+          <ProtectedLayout>
+            <Layout>
+              <ViewContract />
+            </Layout>
+          </ProtectedLayout>
+        }
+      />
+      <Route
+        path="/clientes"
+        element={
+          <ProtectedLayout>
+            <Layout>
+              <Clientes />
+            </Layout>
+          </ProtectedLayout>
+        }
+      />
 
-            <Route
-                path="/visualizar-cliente"
-                element={
-                    <ProtectedLayout>
-                        <Layout>
-                            <ViewCustomer />
-                        </Layout>
-                    </ProtectedLayout>
-                }
-            />
+      <Route
+        path="/visualizar-cliente"
+        element={
+          <ProtectedLayout>
+            <Layout>
+              <ViewCustomer />
+            </Layout>
+          </ProtectedLayout>
+        }
+      />
 
-            <Route
-                path="/cliente-cadastrar"
-                element={
-                    <ProtectedLayout>
-                        <Layout>
-                            <CadastrarCliente />
-                        </Layout>
-                    </ProtectedLayout>
-                }
-            />
-            <Route
-                path="/cliente-editar"
-                element={
-                    <ProtectedLayout>
-                        <Layout>
-                            <EditarCliente />
-                        </Layout>
-                    </ProtectedLayout>
-                }
-            />
-            <Route
-                path="/admin/usuarios"
-                element={
-                    <ProtectedLayout>
-                        <Layout>
-                            <Users />
-                        </Layout>
-                    </ProtectedLayout>
-                }
-            />
-            <Route
-                path="/admin"
-                element={
-                    <ProtectedLayout>
-                        <Layout>
-                            <Admin />
-                        </Layout>
-                    </ProtectedLayout>
-                }
-            />
-            <Route
-                path="/admin/permissoes"
-                element={
-                    <ProtectedLayout>
-                        <Layout>
-                            <Permissions />
-                        </Layout>
-                    </ProtectedLayout>
-                }
-            />
-            <Route
-                path="/minha-conta"
-                element={
-                    <ProtectedLayout>
-                        <Layout>
-                            <MyAccount />
-                        </Layout>
-                    </ProtectedLayout>
-                }
-            />
-            <Route path="/" element={<Login />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/logout" element={<Logout />} />
-            <Route path="*" element={<Login />} />
-        </Routes>
-    );
+      <Route
+        path="/cliente-cadastrar"
+        element={
+          <ProtectedLayout>
+            <Layout>
+              <CadastrarCliente />
+            </Layout>
+          </ProtectedLayout>
+        }
+      />
+      <Route
+        path="/cliente-editar"
+        element={
+          <ProtectedLayout>
+            <Layout>
+              <EditarCliente />
+            </Layout>
+          </ProtectedLayout>
+        }
+      />
+      <Route
+        path="/admin/usuarios"
+        element={
+          <ProtectedLayout>
+            <Layout>
+              <Users />
+            </Layout>
+          </ProtectedLayout>
+        }
+      />
+      <Route
+        path="/admin"
+        element={
+          <ProtectedLayout>
+            <Layout>
+              <Admin />
+            </Layout>
+          </ProtectedLayout>
+        }
+      />
+      <Route
+        path="/admin/permissoes"
+        element={
+          <ProtectedLayout>
+            <Layout>
+              <Permissions />
+            </Layout>
+          </ProtectedLayout>
+        }
+      />
+      <Route
+        path="/minha-conta"
+        element={
+          <ProtectedLayout>
+            <Layout>
+              <MyAccount />
+            </Layout>
+          </ProtectedLayout>
+        }
+      />
+      <Route path="/" element={<Login />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/logout" element={<Logout />} />
+      <Route path="*" element={<Login />} />
+    </Routes>
+  );
 }

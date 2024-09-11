@@ -12,7 +12,6 @@ export function MyAccount(): JSX.Element {
 
   useEffect(() => {
     const userInfo = getDataUserFromToken();
-    console.log(userInfo?.email);
     setUser(userInfo);
   }, []);
 

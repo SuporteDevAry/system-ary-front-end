@@ -7,30 +7,20 @@ import {
   IColumn,
   TableDataProps,
 } from "../../../../components/CustomTable/types";
-import { CustomTimeline } from "../../../../components/CustomTimeline";
+import { CustomTimeline } from "./components/CustomTimeline";
 import { ContractContext } from "../../../../contexts/ContractContext";
 import { toast } from "react-toastify";
-import {
-  ContractStatus,
-  IContractData,
-  IUserInfo,
-} from "../../../../contexts/ContractContext/types";
-
-export type ITimelineEvent = {
-  date: string;
-  time: string;
-  status: string;
-  owner_change: IUserInfo;
-};
+import { IContractData } from "../../../../contexts/ContractContext/types";
+import { useNavigate } from "react-router-dom";
 
 export function HistoryContracts() {
   const contractContext = ContractContext();
-
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [listcontracts, setListContracts] = useState<IContractData[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [dataTable, setDataTable] = useState<TableDataProps[]>([]);
-  const [timelineEvents, setTimelineEvents] = useState<any[]>([]);
+  // const [timelineEvents, setTimelineEvents] = useState<any[]>([]);
 
   const fetchData = useCallback(async () => {
     try {
@@ -43,18 +33,14 @@ export function HistoryContracts() {
       const formattedData: TableDataProps[] = contracts.map((contract) => ({
         ...contract,
         status_current: contract.status.status_current,
-      }));
-      setDataTable(formattedData);
-
-      const events: ITimelineEvent[] = contracts.flatMap((history) =>
-        history.status.history.map((entry) => ({
+        history: contract.status.history.map((entry) => ({
           date: entry.date,
           time: entry.time,
           status: entry.status,
           owner_change: entry.owner_change,
-        }))
-      );
-      setTimelineEvents(events);
+        })),
+      }));
+      setDataTable(formattedData);
     } catch (error) {
       toast.error(
         `Erro ao tentar ler contratos, contacte o administrador do sistema ${error}`
@@ -82,17 +68,34 @@ export function HistoryContracts() {
   };
 
   useEffect(() => {
-    console.log("Como tá vindo o dado", dataTable);
     handleSearch();
   }, [searchTerm]);
+
+  const handleViewContract = (contract: IContractData) => {
+    navigate("/visualizar-contrato", {
+      state: { contractForView: contract },
+    });
+  };
 
   const nameColumns: IColumn[] = [
     { field: "status_current", header: "Status" },
     { field: "number_contract", header: "Nº Contrato" },
     { field: "created_at", header: "Data" },
-    { field: "contract_details", header: "Detalhes do Contrato" },
     { field: "owner_contract", header: "Criado por" },
   ];
+
+  const renderActionButtons = useCallback(
+    (row: any) => (
+      <CustomButton
+        $variant="secondary"
+        width="180px"
+        onClick={() => handleViewContract(row)}
+      >
+        Detalhes do contrato
+      </CustomButton>
+    ),
+    []
+  );
 
   return (
     <SContainer>
@@ -113,15 +116,15 @@ export function HistoryContracts() {
         isLoading={isLoading}
         data={dataTable}
         columns={nameColumns}
-        //hasCheckbox
         hasPagination
         collapsible
         // onRowClick={(rowData) =>
         //   setSelectedCustomer({ name: rowData.nome, type: selectionType })
         // }
         onRowClick={(row) => console.log(row)}
-        renderChildren={() => <CustomTimeline events={timelineEvents} />}
+        renderChildren={(row) => <CustomTimeline events={row.history || []} />}
         dateFields={["created_at"]}
+        actionButtons={renderActionButtons}
       />
     </SContainer>
   );

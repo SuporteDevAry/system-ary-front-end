@@ -57,6 +57,7 @@ export interface IContractData {
   quantity_kg: number;
   quantity_bag: number;
   status: ContractStatus;
+  number_contract: string;
 }
 
 export interface IContractContext {
