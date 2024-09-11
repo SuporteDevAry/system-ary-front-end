@@ -47,7 +47,7 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
         ano2 +
         "-" +
         dia +
-        mesextenso +
+        mesExtenso +
         ano2 +
         ".pdf";
 
