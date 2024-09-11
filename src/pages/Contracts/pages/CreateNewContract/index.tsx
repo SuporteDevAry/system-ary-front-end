@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import { Step1 } from "./components/Step1";
 import { Step2 } from "./components/Step2";
@@ -17,12 +17,13 @@ import { ContractContext } from "../../../../contexts/ContractContext";
 import { FormDataToIContractDataDTO } from "../../../../helpers/DTO/FormDataToIcontractDataDTO";
 
 import { getDataUserFromToken } from "../../../../contexts/AuthProvider/util";
-import { formattedDate } from "../../../../helpers/dateFormat";
+import { formattedDate, formattedTime } from "../../../../helpers/dateFormat";
 import { IUserInfo } from "../../../../contexts/ContractContext/types";
 import { FormDataContract, StepType } from "./types";
 
 export const CreateNewContract: React.FC = () => {
   const { createContract } = ContractContext();
+  //const location = useLocation();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [activeStep, setActiveStep] = useState<number>(0);
@@ -84,9 +85,14 @@ export const CreateNewContract: React.FC = () => {
     const userInfo = getDataUserFromToken();
     if (userInfo) {
       setDataUserInfo(userInfo);
-      updateStatus("A Conferir");
     }
   }, []);
+
+  useEffect(() => {
+    if (dataUserInfo) {
+      updateStatus("A Conferir");
+    }
+  }, [dataUserInfo]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -106,11 +112,7 @@ export const CreateNewContract: React.FC = () => {
   };
   const updateStatus = (newStatus: string) => {
     const newDate = formattedDate();
-    const newTime = new Date().toLocaleTimeString("pt-BR", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
+    const newTime = formattedTime();
 
     if (formData.status.status_current !== newStatus) {
       const newStatusEntry = {
@@ -118,8 +120,8 @@ export const CreateNewContract: React.FC = () => {
         time: newTime,
         status: newStatus,
         owner_change: {
-          name: dataUserInfo?.name ?? "",
-          email: dataUserInfo?.email ?? "",
+          name: dataUserInfo?.name || "",
+          email: dataUserInfo?.email || "",
         },
       };
 

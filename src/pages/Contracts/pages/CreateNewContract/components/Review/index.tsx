@@ -13,7 +13,7 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
     const today = new Date();
     const ano4 = today.getFullYear();
     const ano2 = today.getFullYear().toString().substr(-2);
-    const mesextenso = today.toLocaleString("pt-BR", { month: "long" });
+    const mesExtenso = today.toLocaleString("pt-BR", { month: "long" });
     const dia = today.toLocaleString("pt-BR", { day: "2-digit" });
 
     // se forem 1.000 toneladas   = 1.000.000 quilos
@@ -85,7 +85,7 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
                             S&atilde;o Paulo,{" "}
                             <span>
                                 {" "}
-                                {dia} de {mesextenso} de {ano4}
+                                {dia} de {mesExtenso} de {ano4}
                             </span>
                         </p>
                         <p style={{ paddingLeft: "280px" }}>
