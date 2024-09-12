@@ -20,7 +20,6 @@ export function HistoryContracts() {
   const [listcontracts, setListContracts] = useState<IContractData[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [dataTable, setDataTable] = useState<TableDataProps[]>([]);
-  // const [timelineEvents, setTimelineEvents] = useState<any[]>([]);
 
   const fetchData = useCallback(async () => {
     try {
@@ -118,10 +117,6 @@ export function HistoryContracts() {
         columns={nameColumns}
         hasPagination
         collapsible
-        // onRowClick={(rowData) =>
-        //   setSelectedCustomer({ name: rowData.nome, type: selectionType })
-        // }
-        onRowClick={(row) => console.log(row)}
         renderChildren={(row) => <CustomTimeline events={row.history || []} />}
         dateFields={["created_at"]}
         actionButtons={renderActionButtons}

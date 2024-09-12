@@ -1,9 +1,9 @@
 import { IContractData } from "../../contexts/ContractContext/types";
 import { FormDataContract } from "../../pages/Contracts/pages/CreateNewContract/types";
 
-export const FormDataToIContractDataDTO = (
-  data: FormDataContract
-): IContractData => {
+export const IContractDataToFormDataDTO = (
+  data: IContractData
+): FormDataContract => {
   return {
     id: data.id,
     number_contract: data.number_contract,
@@ -16,14 +16,14 @@ export const FormDataToIContractDataDTO = (
     name_product: data.name_product,
     crop: data.crop,
     quality: data.quality,
-    quantity: parseFloat(data.quantity.replace(",", ".")),
+    quantity: data.quantity.toString(),
     type_currency: data.type_currency,
-    price: parseFloat(data.price.replace(",", ".")),
+    price: data.price.toString(),
     type_icms: data.type_icms,
     icms: data.icms,
     payment: data.payment,
-    commission_seller: parseFloat(data?.commission_seller ?? ""),
-    commission_buyer: parseFloat(data?.commission_buyer ?? ""),
+    commission_seller: data?.commission_seller?.toString(),
+    commission_buyer: data?.commission_buyer?.toString(),
     type_pickup: data.type_pickup,
     pickup: data.pickup,
     pickup_location: data.pickup_location,

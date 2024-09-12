@@ -1,8 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   BoxContainer,
   SBox,
-  SCardContainer,
   SCardInfo,
   SCardInfoActions,
   SCardInfoNumber,
@@ -30,15 +29,17 @@ export function ViewContract(): JSX.Element {
   useEffect(() => {
     const contractForView: IContractData = location.state?.contractForView;
     setDataClient(contractForView);
-    //Remover depois de fechar
-    console.log("testesss", dataClient);
   }, [location]);
 
   const handleEdit = () => {
-    // Navegar para a rota de criação de contrato com os dados do contrato
-    navigate("/caminho/para/criar/contrato", {
-      state: { contractData: dataClient },
+    navigate("/contratos/editar-contrato", {
+      state: { contractData: dataClient, isEditMode: true },
     });
+  };
+
+  const handleViewPDF = () => {
+    // pdfContract(document, "contrato", nomeArquivo, dataClient);
+    navigate("/review", { state: { formData: dataClient } });
   };
 
   const contractFields = [
@@ -92,7 +93,7 @@ export function ViewContract(): JSX.Element {
               <CustomButton
                 $variant="secondary"
                 width="90px"
-                onClick={() => console.log()}
+                onClick={handleViewPDF}
               >
                 Visualizar
               </CustomButton>

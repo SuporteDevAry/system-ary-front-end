@@ -1,16 +1,16 @@
 import jsPDF from "jspdf";
 
 const PdfGenerator = (
-    documentContent: Document,
-    elementId: string,
-    fileName: string
+  documentContent: Document,
+  elementId: string,
+  fileName: string
 ): void => {
-    const element = documentContent.getElementById(elementId);
-    if (element) {
-        const elemento = document.getElementById(elementId);
-        const htmlContent = elemento ? elemento.innerHTML : "";
+  const element = documentContent.getElementById(elementId);
+  if (element) {
+    const elemento = document.getElementById(elementId);
+    const htmlContent = elemento ? elemento.innerHTML : "";
 
-        const estilo = `
+    const estilo = `
             body, p, span {
                 font-family:  Roboto, sans-serif;
                 font-weight: 300;
@@ -20,21 +20,21 @@ const PdfGenerator = (
             }
         `;
 
-        const iframe = document.createElement("iframe");
-        iframe.style.position = "absolute";
-        iframe.style.border = "none";
+    const iframe = document.createElement("iframe");
+    iframe.style.position = "absolute";
+    iframe.style.border = "none";
 
-        document.body.appendChild(iframe);
+    document.body.appendChild(iframe);
 
-        const iframeWindow = iframe.contentWindow;
-        if (!iframeWindow) {
-            console.log("Falha ao acessar o contentWindow do iframe.");
-            return;
-        }
+    const iframeWindow = iframe.contentWindow;
+    if (!iframeWindow) {
+      console.log("Falha ao acessar o contentWindow do iframe.");
+      return;
+    }
 
-        const doc = iframeWindow.document;
-        doc.open();
-        doc.write(`
+    const doc = iframeWindow.document;
+    doc.open();
+    doc.write(`
             <html>
                 <head>
                     <style>
@@ -46,61 +46,57 @@ const PdfGenerator = (
                 </body>
             </html>
         `);
-        doc.close();
+    doc.close();
 
-        iframe.onload = () => {
-            const imgs = doc.getElementsByTagName("img");
-            let loadedImages = 0;
+    iframe.onload = () => {
+      const imgs = doc.getElementsByTagName("img");
+      let loadedImages = 0;
 
-            const checkAllImagesLoaded = () => {
-                if (loadedImages === imgs.length) {
-                    iframeWindow.focus();
-                    //iframeWindow.print(); // Imprimir pelo windows
+      const checkAllImagesLoaded = () => {
+        if (loadedImages === imgs.length) {
+          iframeWindow.focus();
+          //iframeWindow.print(); // Imprimir pelo windows
 
-                    const pdf = new jsPDF("p", "pt", "a4");
-                    const marginX = 20;
-                    const marginY = 20;
-                    const pageWidth =
-                        pdf.internal.pageSize.getWidth() - marginX * 2;
-                    const pageHeight =
-                        pdf.internal.pageSize.getHeight() - marginY * 2;
-                    const elementWidth = element.offsetWidth;
-                    const elementHeight = element.offsetHeight;
-                    const scaleX = pageWidth / elementWidth;
-                    const scaleY = pageHeight / elementHeight;
-                    const scale = Math.min(scaleX, scaleY);
+          const pdf = new jsPDF("p", "pt", "a4");
+          const marginX = 20;
+          const marginY = 20;
+          const pageWidth = pdf.internal.pageSize.getWidth() - marginX * 2;
+          const pageHeight = pdf.internal.pageSize.getHeight() - marginY * 2;
+          const elementWidth = element.offsetWidth;
+          const elementHeight = element.offsetHeight;
+          const scaleX = pageWidth / elementWidth;
+          const scaleY = pageHeight / elementHeight;
+          const scale = Math.min(scaleX, scaleY);
 
-                    pdf.html(element, {
-                        callback: function (pdf) {
-                            pdf.save(fileName);
-                        },
-                        x: marginX,
-                        y: marginY,
-                        html2canvas: {
-                            scale: scale,
-                        },
-                    });
+          pdf.html(element, {
+            callback: function (pdf) {
+              pdf.save(fileName);
+            },
+            x: marginX,
+            y: marginY,
+            html2canvas: {
+              scale: scale,
+            },
+          });
 
-                    document.body.removeChild(iframe);
-                }
-            };
+          document.body.removeChild(iframe);
+        }
+      };
 
-            if (imgs.length === 0) {
-                iframeWindow.focus();
-                document.body.removeChild(iframe);
-            } else {
-                for (let img of imgs) {
-                    img.src = img.src.replace("low-res", "high-res");
-                    loadedImages++;
-                    checkAllImagesLoaded();
-                }
-            }
-        };
-    } else {
-        console.error(
-            `PDFGenerator: Element with ID '${elementId}' not found.`
-        );
-    }
+      if (imgs.length === 0) {
+        iframeWindow.focus();
+        document.body.removeChild(iframe);
+      } else {
+        for (let img of imgs) {
+          img.src = img.src.replace("low-res", "high-res");
+          loadedImages++;
+          checkAllImagesLoaded();
+        }
+      }
+    };
+  } else {
+    console.error(`PDFGenerator: Element with ID '${elementId}' not found.`);
+  }
 };
 
 export default PdfGenerator;

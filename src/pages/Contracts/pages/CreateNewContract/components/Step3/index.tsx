@@ -17,9 +17,9 @@ export const Step3: React.FC<StepProps> = ({
     const info = fieldInfo[value as FieldType];
     updateFormData?.({
       ...formData,
-      typePickup: value,
+      type_pickup: value,
       pickup: info.pickup,
-      pickupLocation: info.pickupLocation,
+      pickup_location: info.pickupLocation,
     });
   };
 
@@ -29,12 +29,12 @@ export const Step3: React.FC<StepProps> = ({
   ) => {
     const { value } = event.target;
 
-    if (name === "typePickup") return handleFieldPickupChange(value);
+    if (name === "type_pickup") return handleFieldPickupChange(value);
 
-    if (name === "typeICMS") {
+    if (name === "type_icms") {
       updateFormData?.({
         ...formData,
-        typeICMS: value,
+        type_icms: value,
         icms: value,
       });
       return;
@@ -71,15 +71,17 @@ export const Step3: React.FC<StepProps> = ({
 
     const price = parseFloat(formData.price.replace(",", "."));
     const quantityToKG = Number(quantityWorked) * 1000;
-    const quantityToBag = quantityToKG / 60;
-    const totalContractValue = Math.round(price * quantityToBag).toFixed(2);
+    const quantityToBag = Math.round(Number(quantityToKG) / 60).toFixed(2);
+    const totalContractValue = Math.round(
+      price * Number(quantityToBag)
+    ).toFixed(2);
 
     if (totalContractValue) {
       updateFormData?.({
         ...formData,
         total_contract_value: parseFloat(totalContractValue),
         quantity_kg: quantityToKG,
-        quantity_bag: quantityToBag,
+        quantity_bag: Number(quantityToBag),
       });
     }
   }, [formData.price, formData.quantity]);
@@ -98,7 +100,7 @@ export const Step3: React.FC<StepProps> = ({
       <CustomInput
         type="text"
         name="price"
-        label={`Preço em ${formData.typeCurrency}:`}
+        label={`Preço em ${formData.type_currency}:`}
         $labelPosition="top"
         onChange={handleChange}
         onFocus={handlePriceFocus}
@@ -106,15 +108,15 @@ export const Step3: React.FC<StepProps> = ({
         value={
           isEditingPrice
             ? formData.price
-            : formatCurrency(formData.price, formData.typeCurrency)
+            : formatCurrency(formData.price, formData.type_currency)
         }
         radioOptions={[
           { label: "BRL", value: "Real" },
           { label: "USD", value: "Dólar" },
         ]}
         radioPosition="inline"
-        onRadioChange={(e) => handleRadioChange(e, "typeCurrency")}
-        selectedRadio={formData.typeCurrency}
+        onRadioChange={(e) => handleRadioChange(e, "type_currency")}
+        selectedRadio={formData.type_currency}
       />
 
       <CustomInput
@@ -130,8 +132,8 @@ export const Step3: React.FC<StepProps> = ({
           { label: "Diferido", value: "Diferido" },
         ]}
         radioPosition="inline"
-        onRadioChange={(e) => handleRadioChange(e, "typeICMS")}
-        selectedRadio={formData.typeICMS}
+        onRadioChange={(e) => handleRadioChange(e, "type_icms")}
+        selectedRadio={formData.type_icms}
       />
 
       <CustomInput
@@ -144,19 +146,19 @@ export const Step3: React.FC<StepProps> = ({
       />
       <CustomInput
         type="number"
-        name="commissionSeller"
+        name="commission_seller"
         label="Comissão Vendedor:"
         $labelPosition="top"
         onChange={handleChange}
-        value={formData.commissionSeller}
+        value={formData.commission_seller}
       />
       <CustomInput
         type="number"
-        name="commissionBuyer"
+        name="commission_buyer"
         label="Comissão Comprador:"
         $labelPosition="top"
         onChange={handleChange}
-        value={formData.commissionBuyer}
+        value={formData.commission_buyer}
       />
 
       <CustomInput
@@ -171,17 +173,17 @@ export const Step3: React.FC<StepProps> = ({
           { label: "Embarque", value: "Embarque" },
         ]}
         radioPosition="inline"
-        onRadioChange={(e) => handleRadioChange(e, "typePickup")}
-        selectedRadio={formData.typePickup}
+        onRadioChange={(e) => handleRadioChange(e, "type_pickup")}
+        selectedRadio={formData.type_pickup}
       />
 
       <CustomInput
         type="text"
-        name="pickupLocation"
-        label={`Local de ${formData.typePickup}:`}
+        name="pickup_location"
+        label={`Local de ${formData.type_pickup}:`}
         $labelPosition="top"
         onChange={handleChange}
-        value={formData.pickupLocation}
+        value={formData.pickup_location}
       />
 
       <SText>Conferência:</SText>

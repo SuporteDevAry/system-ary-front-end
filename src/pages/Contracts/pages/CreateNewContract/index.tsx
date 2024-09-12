@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -18,18 +18,25 @@ import { FormDataToIContractDataDTO } from "../../../../helpers/DTO/FormDataToIc
 
 import { getDataUserFromToken } from "../../../../contexts/AuthProvider/util";
 import { formattedDate, formattedTime } from "../../../../helpers/dateFormat";
-import { IUserInfo } from "../../../../contexts/ContractContext/types";
+import {
+  IContractData,
+  IUserInfo,
+} from "../../../../contexts/ContractContext/types";
 import { FormDataContract, StepType } from "./types";
+import { IContractDataToFormDataDTO } from "../../../../helpers/DTO/IcontractDataToFormDataDTO";
 
 export const CreateNewContract: React.FC = () => {
-  const { createContract } = ContractContext();
-  //const location = useLocation();
+  const { createContract, updateContract } = ContractContext();
   const navigate = useNavigate();
+  const location = useLocation();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [activeStep, setActiveStep] = useState<number>(0);
   const [dataUserInfo, setDataUserInfo] = useState<IUserInfo | null>(null);
+  const [isEditMode, setIsEditMode] = useState<boolean>(false);
   const [formData, setFormData] = React.useState<FormDataContract>({
-    numberBroker: "",
+    id: "",
+    number_contract: "",
+    number_broker: "",
     seller: {
       address: "",
       city: "",
@@ -52,23 +59,23 @@ export const CreateNewContract: React.FC = () => {
       state: "",
       complement: "",
     },
-    listEmailSeller: [],
-    listEmailBuyer: [],
+    list_email_seller: [],
+    list_email_buyer: [],
     product: "",
-    nameProduct: "",
+    name_product: "",
     crop: "",
     quality: "",
     quantity: "",
-    typeCurrency: "",
+    type_currency: "",
     price: "",
-    typeICMS: "",
+    type_icms: "",
     icms: "",
     payment: "",
-    commissionSeller: "",
-    commissionBuyer: "",
-    typePickup: "",
+    commission_seller: "",
+    commission_buyer: "",
+    type_pickup: "",
     pickup: "",
-    pickupLocation: "",
+    pickup_location: "",
     inspection: "",
     observation: "",
     owner_contract: "",
@@ -81,16 +88,51 @@ export const CreateNewContract: React.FC = () => {
     },
   });
 
+  // useEffect(() => {
+  //   if (location.state?.isEditMode) {
+  //     setIsEditMode(true);
+  //     const contractData = location.state.contractData as IContractData;
+  //     if (contractData) {
+  //       const dataForm = IContractDataToFormDataDTO(contractData);
+
+  //       setFormData({
+  //         ...dataForm,
+  //       });
+  //     }
+  //   }
+  // }, [location.state]);
+
+  // useEffect(() => {
+  //   const userInfo = getDataUserFromToken();
+  //   if (userInfo) {
+  //     setDataUserInfo(userInfo);
+  //   }
+  // }, []);
+
   useEffect(() => {
+    // Inicializa o estado de edição e carrega dados do contrato
+    if (location.state?.isEditMode) {
+      setIsEditMode(true);
+      const contractData = location.state.contractData as IContractData;
+      if (contractData) {
+        const dataForm = IContractDataToFormDataDTO(contractData);
+        setFormData({ ...dataForm });
+      }
+    }
+
+    // Obtém informações do usuário a partir do token
     const userInfo = getDataUserFromToken();
     if (userInfo) {
       setDataUserInfo(userInfo);
     }
-  }, []);
+  }, [location.state, isEditMode]);
 
   useEffect(() => {
-    if (dataUserInfo) {
+    if (dataUserInfo && !isEditMode) {
       updateStatus("A Conferir");
+    }
+    if (isEditMode) {
+      updateStatus("Editado");
     }
   }, [dataUserInfo]);
 
@@ -114,49 +156,65 @@ export const CreateNewContract: React.FC = () => {
     const newDate = formattedDate();
     const newTime = formattedTime();
 
-    if (formData.status.status_current !== newStatus) {
-      const newStatusEntry = {
-        date: newDate,
-        time: newTime,
-        status: newStatus,
-        owner_change: {
-          name: dataUserInfo?.name || "",
-          email: dataUserInfo?.email || "",
-        },
-      };
+    // if (formData.status.status_current !== newStatus) {
+    const newStatusEntry = {
+      date: newDate,
+      time: newTime,
+      status: newStatus,
+      owner_change: {
+        name: dataUserInfo?.name || "",
+        email: dataUserInfo?.email || "",
+      },
+    };
 
-      const updatedStatus = {
-        status_current: newStatus,
-        history: [...formData.status.history, newStatusEntry],
-      };
+    const updatedStatus = {
+      status_current: newStatus,
+      history: [...formData.status.history, newStatusEntry],
+    };
 
-      setFormData((prevFormData) => ({
-        ...prevFormData,
-        status: updatedStatus,
-      }));
-    }
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      status: updatedStatus,
+    }));
+    //}
   };
 
   const handleNext = async () => {
     if (activeStep === steps.length - 1) {
       // Se for o último step, cria o contrato
-
+      console.log("#######Edit", isEditMode, formData.id);
       setIsLoading(true);
       try {
         const contractData = FormDataToIContractDataDTO(formData);
-        const response = await createContract(contractData);
+        if (isEditMode && formData.id) {
+          console.log("#######Passei no edit", formData.id);
+          const response = await updateContract(formData.id, contractData);
+          toast.success("Contrato atualizado com sucesso!");
+          console.log("response", response);
+          // toast.success(
+          //   <div>
+          //     Contrato de Número:
+          //     <strong>{response?.data?.number_contract}</strong> atualizado com
+          //     sucesso!
+          //   </div>
+          // );
+        } else {
+          const response = await createContract(contractData); // Chama a função para criar o contrato
+          toast.success(
+            <div>
+              Contrato de Número:
+              <strong>{response?.data?.number_contract}</strong> criado com
+              sucesso!
+            </div>
+          );
+        }
 
-        toast.success(
-          <div>
-            Contrato de Número:
-            <strong>{response?.data?.number_contract}</strong> criado com
-            sucesso!
-          </div>
-        );
         navigate("/contratos/historico");
       } catch (error) {
         toast.error(
-          `Erro ao tentar criar contrato, contacte o administrador do sistema ${error}`
+          `Erro ao tentar ${
+            isEditMode ? "atualizar" : "criar"
+          } contrato, contacte o administrador do sistema ${error}`
         );
       } finally {
         setIsLoading(false);

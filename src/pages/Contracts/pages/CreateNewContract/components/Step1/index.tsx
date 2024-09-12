@@ -86,11 +86,11 @@ export const Step1: React.FC<StepProps> = ({
       <SContainer id={id}>
         <CustomInput
           type="text"
-          name="numberBroker"
+          name="number_broker"
           label="Nº Corretor:"
           $labelPosition="top"
           onChange={handleChange}
-          value={formData.numberBroker}
+          value={formData.number_broker}
         />
 
         <SContainerSeller>
@@ -114,9 +114,9 @@ export const Step1: React.FC<StepProps> = ({
         </SContainerSeller>
         <SText>Lista de Email Vendedor:</SText>
         <STextArea
-          name="listEmailSeller"
+          name="list_email_seller"
           onChange={handleChange}
-          value={formData.listEmailSeller}
+          value={formData.list_email_seller}
         />
         <SContainerBuyer>
           <Box>
@@ -139,9 +139,9 @@ export const Step1: React.FC<StepProps> = ({
         </SContainerBuyer>
         <SText>Lista de Email Comprador :</SText>
         <STextArea
-          name="listEmailBuyer"
+          name="list_email_buyer"
           onChange={handleChange}
-          value={formData.listEmailBuyer}
+          value={formData.list_email_buyer}
         />
       </SContainer>
 

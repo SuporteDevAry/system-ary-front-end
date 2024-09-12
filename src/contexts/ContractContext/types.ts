@@ -57,10 +57,12 @@ export interface IContractData {
   quantity_kg: number;
   quantity_bag: number;
   status: ContractStatus;
-  number_contract: string;
+  number_contract?: string;
+  id?: string;
 }
 
 export interface IContractContext {
   listContracts: () => Promise<any>;
   createContract: (contractData: IContractData) => Promise<any>;
+  updateContract: (contractId: string, contractData: IContractData) => void;
 }

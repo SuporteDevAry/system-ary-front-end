@@ -17,7 +17,7 @@ export const Step2: React.FC<StepProps> = ({
       [field]: value,
       quality: info.quality,
       observation: info.observation,
-      nameProduct: info.name,
+      name_product: info.name,
       inspection: info.inspection,
     });
   };
