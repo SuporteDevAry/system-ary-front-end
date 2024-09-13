@@ -151,6 +151,12 @@ export const Step3: React.FC<StepProps> = ({
         $labelPosition="top"
         onChange={handleChange}
         value={formData.commission_seller}
+        radioOptions={[
+          { label: "Percentual", value: "Percentual" },
+          { label: "Valor", value: "Valor" },
+        ]}
+        radioPosition="inline"
+        onRadioChange={(e) => handleRadioChange(e, "type_commission_seller")}
       />
       <CustomInput
         type="number"
@@ -159,6 +165,12 @@ export const Step3: React.FC<StepProps> = ({
         $labelPosition="top"
         onChange={handleChange}
         value={formData.commission_buyer}
+        radioOptions={[
+          { label: "Percentual", value: "Percentual" },
+          { label: "Valor", value: "Valor" },
+        ]}
+        radioPosition="inline"
+        onRadioChange={(e) => handleRadioChange(e, "type_commission_buyer")}
       />
 
       <CustomInput

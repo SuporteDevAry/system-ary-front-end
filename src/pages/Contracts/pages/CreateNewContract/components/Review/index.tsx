@@ -36,25 +36,21 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
     ? insertMaskInCnpj(formData.buyer.cnpj_cpf)
     : "";
 
-  let formattedCSeller = `${formData.commission_seller}%`;
+  let formattedCSeller = formData.commission_seller
+    ? `${formData.commission_seller}%`
+    : "";
 
-  let nomeArquivo =
-    "Contrato-" +
-    formData.product +
-    "-" +
-    formData.number_broker +
-    "-NNN-" +
-    ano2 +
-    "-" +
-    dia +
-    mesExtenso +
-    ano2 +
-    ".pdf";
+  // tipo commission
+  // let typeCommission = formData.type_commission_seller === "Valor" ?   `${formData.commission_buyer} por saca,` : `${formData.commission_buyer}%`
+  let formattedCBuyer = formData.commission_buyer
+    ? `${formData.commission_buyer}%`
+    : "";
 
   const numberContract = formData?.number_contract
     ? formData.number_contract
-    : ` ${formData.product}.${formData.number_broker}
-                -NNN/${ano2}`;
+    : `${formData.product}.${formData.number_broker}-NNN/${ano2}`;
+
+  let nomeArquivo = `Ctr-${numberContract}.pdf`;
 
   function formatObservationText(observation: string) {
     // Quebra o texto em linhas usando o caractere de nova linha como delimitador
@@ -283,25 +279,36 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
           </p>
           <br />
 
-          <p style={{ textAlign: "justify" }}>
-            <strong>===</strong>
-            <br></br>
-            <strong>
-              Comissão de <span>{formattedCSeller.replace(".", ",")}</span> por
-              conta do vendedor.
-            </strong>
-            <br></br>
-            <strong>===</strong>
-          </p>
-          {/* <p style={{ textAlign: "justify" }}>
-                        <strong>
-                            === Comissão de{" "}
-                            <span>
-                                {formData.commissionBuyer.replace(".", ",")}
-                            </span>{" "}
-                            por conta do comprador. ===
-                        </strong>
-                    </p> */}
+          {formattedCSeller ? (
+            <p style={{ textAlign: "justify" }}>
+              <strong>===</strong>
+              <br></br>
+              <strong>
+                Comissão de <span>{formattedCSeller.replace(".", ",")}</span>{" "}
+                por conta do vendedor.
+              </strong>
+              <br></br>
+              <strong>===</strong>
+            </p>
+          ) : (
+            ""
+          )}
+
+          {formattedCBuyer ? (
+            <p style={{ textAlign: "justify" }}>
+              <strong>===</strong>
+              <br></br>
+              <strong>
+                Comissão de <span>{formattedCBuyer.replace(".", ",")}</span> por
+                conta do comprador.
+              </strong>
+              <br></br>
+              <strong>===</strong>
+            </p>
+          ) : (
+            ""
+          )}
+
           <br />
           <br />
 

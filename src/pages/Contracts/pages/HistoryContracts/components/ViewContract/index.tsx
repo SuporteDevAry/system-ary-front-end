@@ -53,7 +53,7 @@ export function ViewContract(): JSX.Element {
 
   const handleOpenDeleteModal = () => {
     setModalContent(
-      `Tem certeza que deseja deletar o contato: ${dataClient?.number_contract}?`
+      `Tem certeza que deseja deletar o contrato: ${dataClient?.number_contract}?`
     );
 
     setDeleteModal(true);
