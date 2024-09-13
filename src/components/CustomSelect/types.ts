@@ -10,4 +10,5 @@ export interface CustomSelectProps {
   value: string;
   selectOptions?: { value: string; label: string }[];
   onSelectChange?: (value: string) => void;
+  readOnly?: boolean;
 }

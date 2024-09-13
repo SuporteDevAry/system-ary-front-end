@@ -6,6 +6,8 @@ import { AxiosError } from "axios";
 const newContext = createContext<IContractContext>({
   listContracts: () => Promise.resolve([]),
   createContract: () => Promise.resolve(),
+  updateContract: () => Promise.resolve(),
+  deleteContract: () => Promise.resolve(),
 });
 
 export const ContractProvider = ({ children }: IContractsProvider) => {
@@ -38,8 +40,52 @@ export const ContractProvider = ({ children }: IContractsProvider) => {
     }
   }
 
+  async function updateContract(
+    contractId: string,
+    contractData: IContractData
+  ): Promise<any> {
+    try {
+      const response = await Api.patch(
+        `/grain-contracts/${contractId}`,
+        contractData
+      );
+
+      return response;
+    } catch (error) {
+      const err = error as AxiosError;
+
+      if (err.response && err.response.data) {
+        const errorMessage = (err.response.data as { message: string }).message;
+        throw new Error(errorMessage);
+      }
+    }
+  }
+
+  async function deleteContract(
+    contractId: string,
+    contractData: IContractData
+  ): Promise<any> {
+    try {
+      const response = await Api.patch(
+        `/grain-contracts/${contractId}`,
+        contractData
+      );
+
+      return response;
+    } catch (error) {
+      const err = error as AxiosError;
+
+      if (err.response && err.response.data) {
+        const errorMessage = (err.response.data as { message: string }).message;
+        throw new Error(errorMessage);
+      }
+    }
+  }
+
   return (
-    <newContext.Provider value={{ listContracts, createContract }}>
+    <newContext.Provider
+      value={{ listContracts, createContract, updateContract, deleteContract }}
+    >
       {children}
     </newContext.Provider>
   );

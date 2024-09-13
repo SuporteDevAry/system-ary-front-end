@@ -9,6 +9,7 @@ export const Step2: React.FC<StepProps> = ({
   handleChange,
   formData,
   updateFormData,
+  isEditMode,
 }) => {
   const handleFieldChange = (field: string, value: string) => {
     const info = productInfo[value as ProductType];
@@ -17,7 +18,7 @@ export const Step2: React.FC<StepProps> = ({
       [field]: value,
       quality: info.quality,
       observation: info.observation,
-      nameProduct: info.name,
+      name_product: info.name,
       inspection: info.inspection,
     });
   };
@@ -36,6 +37,7 @@ export const Step2: React.FC<StepProps> = ({
         ]}
         onSelectChange={(value) => handleFieldChange("product", value)}
         value={formData.product}
+        readOnly={isEditMode}
       />
 
       <CustomInput

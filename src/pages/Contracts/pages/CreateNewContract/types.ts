@@ -9,26 +9,26 @@ export type StepType = {
 };
 
 export type FormDataContract = {
-  numberBroker: string;
+  number_broker: string;
   seller: CustomerInfo;
   buyer: CustomerInfo;
-  listEmailSeller: string[];
-  listEmailBuyer: string[];
+  list_email_seller: string[];
+  list_email_buyer: string[];
   product: string;
-  nameProduct: string;
+  name_product: string;
   crop: string;
   quality: string;
   quantity: string;
-  typeCurrency: "Real" | "Dólar" | string;
+  type_currency: "Real" | "Dólar" | string;
   price: string;
-  typeICMS: string;
+  type_icms: string;
   icms: string;
   payment: string;
-  commissionSeller?: string;
-  commissionBuyer?: string;
-  typePickup: string;
+  commission_seller?: string;
+  commission_buyer?: string;
+  type_pickup: string;
   pickup: string;
-  pickupLocation: string;
+  pickup_location: string;
   inspection: string;
   observation: string;
   owner_contract: string;
@@ -36,6 +36,8 @@ export type FormDataContract = {
   quantity_kg: number;
   quantity_bag: number;
   status: ContractStatus;
+  number_contract?: string;
+  id?: string;
 };
 
 export interface StepProps {
@@ -45,4 +47,5 @@ export interface StepProps {
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => void;
   updateFormData?: (data: Partial<FormDataContract>) => void;
+  isEditMode?: boolean;
 }

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -15,21 +15,24 @@ import { SButtonContainer, SContainer, SContent, SStepper } from "./styles";
 import CustomButton from "../../../../components/CustomButton";
 import { ContractContext } from "../../../../contexts/ContractContext";
 import { FormDataToIContractDataDTO } from "../../../../helpers/DTO/FormDataToIcontractDataDTO";
-
-import { getDataUserFromToken } from "../../../../contexts/AuthProvider/util";
 import { formattedDate, formattedTime } from "../../../../helpers/dateFormat";
-import { IUserInfo } from "../../../../contexts/ContractContext/types";
+import { IContractData } from "../../../../contexts/ContractContext/types";
 import { FormDataContract, StepType } from "./types";
+import { IContractDataToFormDataDTO } from "../../../../helpers/DTO/IcontractDataToFormDataDTO";
+import { useInfo } from "../../../../hooks";
 
 export const CreateNewContract: React.FC = () => {
-  const { createContract } = ContractContext();
-  //const location = useLocation();
+  const { createContract, updateContract } = ContractContext();
   const navigate = useNavigate();
+  const location = useLocation();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [activeStep, setActiveStep] = useState<number>(0);
-  const [dataUserInfo, setDataUserInfo] = useState<IUserInfo | null>(null);
+  const { dataUserInfo } = useInfo();
+  const [isEditMode, setIsEditMode] = useState<boolean>(false);
   const [formData, setFormData] = React.useState<FormDataContract>({
-    numberBroker: "",
+    id: "",
+    number_contract: "",
+    number_broker: "",
     seller: {
       address: "",
       city: "",
@@ -52,23 +55,23 @@ export const CreateNewContract: React.FC = () => {
       state: "",
       complement: "",
     },
-    listEmailSeller: [],
-    listEmailBuyer: [],
+    list_email_seller: [],
+    list_email_buyer: [],
     product: "",
-    nameProduct: "",
+    name_product: "",
     crop: "",
     quality: "",
     quantity: "",
-    typeCurrency: "",
+    type_currency: "",
     price: "",
-    typeICMS: "",
+    type_icms: "",
     icms: "",
     payment: "",
-    commissionSeller: "",
-    commissionBuyer: "",
-    typePickup: "",
+    commission_seller: "",
+    commission_buyer: "",
+    type_pickup: "",
     pickup: "",
-    pickupLocation: "",
+    pickup_location: "",
     inspection: "",
     observation: "",
     owner_contract: "",
@@ -82,15 +85,25 @@ export const CreateNewContract: React.FC = () => {
   });
 
   useEffect(() => {
-    const userInfo = getDataUserFromToken();
-    if (userInfo) {
-      setDataUserInfo(userInfo);
+    if (location.state?.isEditMode) {
+      setIsEditMode(true);
+      const contractDataForEdit = location.state.contractData as IContractData;
+      if (contractDataForEdit) {
+        const dataForm = IContractDataToFormDataDTO(contractDataForEdit);
+
+        setFormData({
+          ...dataForm,
+        });
+      }
     }
-  }, []);
+  }, [location.state]);
 
   useEffect(() => {
-    if (dataUserInfo) {
+    if (dataUserInfo && !isEditMode) {
       updateStatus("A Conferir");
+    }
+    if (isEditMode) {
+      updateStatus("Editado");
     }
   }, [dataUserInfo]);
 
@@ -110,31 +123,30 @@ export const CreateNewContract: React.FC = () => {
       ...data,
     }));
   };
+
   const updateStatus = (newStatus: string) => {
     const newDate = formattedDate();
     const newTime = formattedTime();
 
-    if (formData.status.status_current !== newStatus) {
-      const newStatusEntry = {
-        date: newDate,
-        time: newTime,
-        status: newStatus,
-        owner_change: {
-          name: dataUserInfo?.name || "",
-          email: dataUserInfo?.email || "",
-        },
-      };
+    const newStatusEntry = {
+      date: newDate,
+      time: newTime,
+      status: newStatus,
+      owner_change: {
+        name: dataUserInfo?.name || "",
+        email: dataUserInfo?.email || "",
+      },
+    };
 
-      const updatedStatus = {
-        status_current: newStatus,
-        history: [...formData.status.history, newStatusEntry],
-      };
+    const updatedStatus = {
+      status_current: newStatus,
+      history: [...formData.status.history, newStatusEntry],
+    };
 
-      setFormData((prevFormData) => ({
-        ...prevFormData,
-        status: updatedStatus,
-      }));
-    }
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      status: updatedStatus,
+    }));
   };
 
   const handleNext = async () => {
@@ -144,19 +156,38 @@ export const CreateNewContract: React.FC = () => {
       setIsLoading(true);
       try {
         const contractData = FormDataToIContractDataDTO(formData);
-        const response = await createContract(contractData);
 
-        toast.success(
-          <div>
-            Contrato de Número:
-            <strong>{response?.data?.number_contract}</strong> criado com
-            sucesso!
-          </div>
-        );
+        if (isEditMode && formData?.id) {
+          const response = await updateContract(formData.id, contractData);
+
+          toast.success(
+            <div>
+              Contrato de Número:
+              <strong>{response?.data?.number_contract}</strong> atualizado com
+              sucesso!
+            </div>
+          );
+        }
+        if (!isEditMode) {
+          const { id: _, ...contractToCreate } = contractData;
+
+          const response = await createContract(contractToCreate);
+
+          toast.success(
+            <div>
+              Contrato de Número:
+              <strong>{response?.data?.number_contract}</strong> criado com
+              sucesso!
+            </div>
+          );
+        }
+
         navigate("/contratos/historico");
       } catch (error) {
         toast.error(
-          `Erro ao tentar criar contrato, contacte o administrador do sistema ${error}`
+          `Erro ao tentar ${
+            isEditMode ? "atualizar" : "criar"
+          } contrato, contacte o administrador do sistema ${error}`
         );
       } finally {
         setIsLoading(false);
@@ -180,6 +211,7 @@ export const CreateNewContract: React.FC = () => {
           formData={formData}
           handleChange={handleChange}
           updateFormData={updateFormData}
+          isEditMode={isEditMode}
         />,
       ],
     },
@@ -191,6 +223,7 @@ export const CreateNewContract: React.FC = () => {
           formData={formData}
           handleChange={handleChange}
           updateFormData={updateFormData}
+          isEditMode={isEditMode}
         />,
       ],
     },

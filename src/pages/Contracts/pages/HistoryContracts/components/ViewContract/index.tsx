@@ -1,8 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   BoxContainer,
   SBox,
-  SCardContainer,
   SCardInfo,
   SCardInfoActions,
   SCardInfoNumber,
@@ -16,30 +15,102 @@ import {
 
 import { useLocation, useNavigate } from "react-router-dom";
 
-// import { toast } from "react-toastify";
-//import CardContent from "@mui/material/CardContent";
+import { toast } from "react-toastify";
 import { IContractData } from "../../../../../../contexts/ContractContext/types";
 import CustomButton from "../../../../../../components/CustomButton";
 import { formatCurrency } from "../../../../../../helpers/currencyFormat";
+import { useInfo } from "../../../../../../hooks";
+import { ContractContext } from "../../../../../../contexts/ContractContext";
+import {
+  formattedDate,
+  formattedTime,
+} from "../../../../../../helpers/dateFormat";
+import { ModalDelete } from "../../../../../../components/ModalDelete";
 
 export function ViewContract(): JSX.Element {
+  const { deleteContract } = ContractContext();
   const location = useLocation();
   const navigate = useNavigate();
+  const { dataUserInfo } = useInfo();
   const [dataClient, setDataClient] = useState<IContractData | null>(null);
+  const [modalContent, setModalContent] = useState<string>("");
+  const [isDeleteModal, setDeleteModal] = useState<boolean>(false);
 
   useEffect(() => {
     const contractForView: IContractData = location.state?.contractForView;
     setDataClient(contractForView);
-    //Remover depois de fechar
-    console.log("testesss", dataClient);
   }, [location]);
 
   const handleEdit = () => {
-    // Navegar para a rota de criação de contrato com os dados do contrato
-    navigate("/caminho/para/criar/contrato", {
-      state: { contractData: dataClient },
+    navigate("/contratos/editar-contrato", {
+      state: { contractData: dataClient, isEditMode: true },
     });
   };
+
+  const handleViewPDF = () => {
+    // pdfContract(document, "contrato", nomeArquivo, dataClient);
+  };
+
+  const handleOpenDeleteModal = () => {
+    setModalContent(
+      `Tem certeza que deseja deletar o contrato: ${dataClient?.number_contract}?`
+    );
+
+    setDeleteModal(true);
+  };
+
+  const handleCloseDeleteModal = () => {
+    setDeleteModal(false);
+  };
+
+  const handleContractDelete = async () => {
+    if (!dataClient || !dataClient.id) {
+      toast.error("Id do Contrato não encontrado.");
+      return;
+    }
+
+    const newDate = formattedDate();
+    const newTime = formattedTime();
+
+    const newStatusEntry = {
+      date: newDate,
+      time: newTime,
+      status: "Deletado",
+      owner_change: {
+        name: dataUserInfo?.name || "",
+        email: dataUserInfo?.email || "",
+      },
+    };
+
+    const updatedStatus = {
+      status_current: "Deletado",
+      history: [...dataClient.status.history, newStatusEntry],
+    };
+
+    const updatedContract = {
+      ...dataClient,
+      status: updatedStatus,
+    };
+
+    try {
+      await deleteContract(dataClient?.id, updatedContract);
+      toast.success(
+        <div>
+          Contrato de Número:
+          <strong>{dataClient.number_contract}</strong> deletado com sucesso!
+        </div>
+      );
+      navigate("/contratos/historico");
+    } catch (error) {
+      toast.error(
+        `Erro ao tentar deletar contrato: ${dataClient.number_contract}, contacte o administrador do sistema ${error}`
+      );
+    } finally {
+      setDeleteModal(false);
+    }
+  };
+
+  const forDisabled = dataClient?.status.status_current === "Deletado";
 
   const contractFields = [
     { label: "Produto", value: dataClient?.name_product },
@@ -92,7 +163,7 @@ export function ViewContract(): JSX.Element {
               <CustomButton
                 $variant="secondary"
                 width="90px"
-                onClick={() => console.log()}
+                onClick={handleViewPDF}
               >
                 Visualizar
               </CustomButton>
@@ -100,13 +171,15 @@ export function ViewContract(): JSX.Element {
                 $variant={"primary"}
                 width="70px"
                 onClick={handleEdit}
+                disabled={forDisabled}
               >
                 Editar
               </CustomButton>
               <CustomButton
                 $variant="danger"
                 width="70px"
-                onClick={() => console.log()}
+                onClick={handleOpenDeleteModal}
+                disabled={forDisabled}
               >
                 Deletar
               </CustomButton>
@@ -124,6 +197,12 @@ export function ViewContract(): JSX.Element {
           ))}
         </SCardInfo>
       </SContainer>
+      <ModalDelete
+        open={isDeleteModal}
+        onClose={handleCloseDeleteModal}
+        onConfirm={handleContractDelete}
+        content={modalContent}
+      />
     </>
   );
 }

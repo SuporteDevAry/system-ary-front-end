@@ -49,6 +49,16 @@ export function RoutesForPages() {
         }
       />
       <Route
+        path="/contratos/editar-contrato"
+        element={
+          <ProtectedLayout>
+            <Layout>
+              <CreateNewContract />
+            </Layout>
+          </ProtectedLayout>
+        }
+      />
+      <Route
         path="/contratos/historico"
         element={
           <ProtectedLayout>
