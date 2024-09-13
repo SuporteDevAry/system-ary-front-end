@@ -15,15 +15,11 @@ import { SButtonContainer, SContainer, SContent, SStepper } from "./styles";
 import CustomButton from "../../../../components/CustomButton";
 import { ContractContext } from "../../../../contexts/ContractContext";
 import { FormDataToIContractDataDTO } from "../../../../helpers/DTO/FormDataToIcontractDataDTO";
-
-import { getDataUserFromToken } from "../../../../contexts/AuthProvider/util";
 import { formattedDate, formattedTime } from "../../../../helpers/dateFormat";
-import {
-  IContractData,
-  IUserInfo,
-} from "../../../../contexts/ContractContext/types";
+import { IContractData } from "../../../../contexts/ContractContext/types";
 import { FormDataContract, StepType } from "./types";
 import { IContractDataToFormDataDTO } from "../../../../helpers/DTO/IcontractDataToFormDataDTO";
+import { useInfo } from "../../../../hooks";
 
 export const CreateNewContract: React.FC = () => {
   const { createContract, updateContract } = ContractContext();
@@ -31,7 +27,7 @@ export const CreateNewContract: React.FC = () => {
   const location = useLocation();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [activeStep, setActiveStep] = useState<number>(0);
-  const [dataUserInfo, setDataUserInfo] = useState<IUserInfo | null>(null);
+  const { dataUserInfo } = useInfo();
   const [isEditMode, setIsEditMode] = useState<boolean>(false);
   const [formData, setFormData] = React.useState<FormDataContract>({
     id: "",
@@ -88,44 +84,19 @@ export const CreateNewContract: React.FC = () => {
     },
   });
 
-  // useEffect(() => {
-  //   if (location.state?.isEditMode) {
-  //     setIsEditMode(true);
-  //     const contractData = location.state.contractData as IContractData;
-  //     if (contractData) {
-  //       const dataForm = IContractDataToFormDataDTO(contractData);
-
-  //       setFormData({
-  //         ...dataForm,
-  //       });
-  //     }
-  //   }
-  // }, [location.state]);
-
-  // useEffect(() => {
-  //   const userInfo = getDataUserFromToken();
-  //   if (userInfo) {
-  //     setDataUserInfo(userInfo);
-  //   }
-  // }, []);
-
   useEffect(() => {
-    // Inicializa o estado de edição e carrega dados do contrato
     if (location.state?.isEditMode) {
       setIsEditMode(true);
-      const contractData = location.state.contractData as IContractData;
-      if (contractData) {
-        const dataForm = IContractDataToFormDataDTO(contractData);
-        setFormData({ ...dataForm });
+      const contractDataForEdit = location.state.contractData as IContractData;
+      if (contractDataForEdit) {
+        const dataForm = IContractDataToFormDataDTO(contractDataForEdit);
+
+        setFormData({
+          ...dataForm,
+        });
       }
     }
-
-    // Obtém informações do usuário a partir do token
-    const userInfo = getDataUserFromToken();
-    if (userInfo) {
-      setDataUserInfo(userInfo);
-    }
-  }, [location.state, isEditMode]);
+  }, [location.state]);
 
   useEffect(() => {
     if (dataUserInfo && !isEditMode) {
@@ -152,11 +123,11 @@ export const CreateNewContract: React.FC = () => {
       ...data,
     }));
   };
+
   const updateStatus = (newStatus: string) => {
     const newDate = formattedDate();
     const newTime = formattedTime();
 
-    // if (formData.status.status_current !== newStatus) {
     const newStatusEntry = {
       date: newDate,
       time: newTime,
@@ -176,30 +147,32 @@ export const CreateNewContract: React.FC = () => {
       ...prevFormData,
       status: updatedStatus,
     }));
-    //}
   };
 
   const handleNext = async () => {
     if (activeStep === steps.length - 1) {
       // Se for o último step, cria o contrato
-      console.log("#######Edit", isEditMode, formData.id);
+
       setIsLoading(true);
       try {
         const contractData = FormDataToIContractDataDTO(formData);
-        if (isEditMode && formData.id) {
-          console.log("#######Passei no edit", formData.id);
+
+        if (isEditMode && formData?.id) {
           const response = await updateContract(formData.id, contractData);
-          toast.success("Contrato atualizado com sucesso!");
-          console.log("response", response);
-          // toast.success(
-          //   <div>
-          //     Contrato de Número:
-          //     <strong>{response?.data?.number_contract}</strong> atualizado com
-          //     sucesso!
-          //   </div>
-          // );
-        } else {
-          const response = await createContract(contractData); // Chama a função para criar o contrato
+
+          toast.success(
+            <div>
+              Contrato de Número:
+              <strong>{response?.data?.number_contract}</strong> atualizado com
+              sucesso!
+            </div>
+          );
+        }
+        if (!isEditMode) {
+          const { id: _, ...contractToCreate } = contractData;
+
+          const response = await createContract(contractToCreate);
+
           toast.success(
             <div>
               Contrato de Número:
@@ -238,6 +211,7 @@ export const CreateNewContract: React.FC = () => {
           formData={formData}
           handleChange={handleChange}
           updateFormData={updateFormData}
+          isEditMode={isEditMode}
         />,
       ],
     },
@@ -249,6 +223,7 @@ export const CreateNewContract: React.FC = () => {
           formData={formData}
           handleChange={handleChange}
           updateFormData={updateFormData}
+          isEditMode={isEditMode}
         />,
       ],
     },

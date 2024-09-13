@@ -64,5 +64,12 @@ export interface IContractData {
 export interface IContractContext {
   listContracts: () => Promise<any>;
   createContract: (contractData: IContractData) => Promise<any>;
-  updateContract: (contractId: string, contractData: IContractData) => void;
+  updateContract: (
+    contractId: string,
+    contractData: IContractData
+  ) => Promise<any>;
+  deleteContract: (
+    contractId: string,
+    contractData: IContractData
+  ) => Promise<any>;
 }

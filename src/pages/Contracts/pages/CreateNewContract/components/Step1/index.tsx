@@ -18,6 +18,7 @@ export const Step1: React.FC<StepProps> = ({
   handleChange,
   formData,
   updateFormData,
+  isEditMode,
 }) => {
   const [isCustomerModalOpen, setCustomerModalOpen] = useState<boolean>(false);
   const [selectionType, setSelectionType] = useState<"buyer" | "seller">(
@@ -91,6 +92,7 @@ export const Step1: React.FC<StepProps> = ({
           $labelPosition="top"
           onChange={handleChange}
           value={formData.number_broker}
+          readOnly={isEditMode}
         />
 
         <SContainerSeller>

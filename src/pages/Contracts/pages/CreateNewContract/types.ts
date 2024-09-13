@@ -47,4 +47,5 @@ export interface StepProps {
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => void;
   updateFormData?: (data: Partial<FormDataContract>) => void;
+  isEditMode?: boolean;
 }
