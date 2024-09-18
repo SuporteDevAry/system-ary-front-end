@@ -40,6 +40,22 @@ export const Step3: React.FC<StepProps> = ({
       return;
     }
 
+    if (name === "type_commission_seller") {
+      updateFormData?.({
+        ...formData,
+        type_commission_seller: value,
+      });
+      return;
+    }
+
+    if (name === "type_commission_buyer") {
+      updateFormData?.({
+        ...formData,
+        type_commission_buyer: value,
+      });
+      return;
+    }
+
     handleChange?.({
       ...event,
       target: {
@@ -157,6 +173,7 @@ export const Step3: React.FC<StepProps> = ({
         ]}
         radioPosition="inline"
         onRadioChange={(e) => handleRadioChange(e, "type_commission_seller")}
+        selectedRadio={formData.type_commission_seller}
       />
       <CustomInput
         type="number"
@@ -171,6 +188,7 @@ export const Step3: React.FC<StepProps> = ({
         ]}
         radioPosition="inline"
         onRadioChange={(e) => handleRadioChange(e, "type_commission_buyer")}
+        selectedRadio={formData.type_commission_buyer}
       />
 
       <CustomInput

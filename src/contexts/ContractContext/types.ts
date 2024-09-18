@@ -45,7 +45,9 @@ export interface IContractData {
   type_icms: string;
   icms: string;
   payment: string;
+  type_commission_seller?: string;
   commission_seller?: number;
+  type_commission_buyer?: string;
   commission_buyer?: number;
   type_pickup: string;
   pickup: string;

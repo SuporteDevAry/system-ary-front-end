@@ -27,22 +27,9 @@ export function HistoryContracts() {
       const response = await contractContext.listContracts();
       setListContracts(response.data);
       setDataTable(response.data);
-      const contracts: IContractData[] = response.data;
-
-      const formattedData: TableDataProps[] = contracts.map((contract) => ({
-        ...contract,
-        status_current: contract.status.status_current,
-        history: contract.status.history.map((entry) => ({
-          date: entry.date,
-          time: entry.time,
-          status: entry.status,
-          owner_change: entry.owner_change,
-        })),
-      }));
-      setDataTable(formattedData);
     } catch (error) {
       toast.error(
-        `Erro ao tentar ler contratos, contacte o administrador do sistema ${error}`
+        `Erro ao tentar ler contratos, contacte o administrador do sistema: ${error}`
       );
     } finally {
       setIsLoading(false);
@@ -53,22 +40,32 @@ export function HistoryContracts() {
     fetchData();
   }, [fetchData]);
 
-  const handleSearch = () => {
+  const handleSearch = useCallback(() => {
     if (searchTerm.trim() === "") {
       setDataTable(listcontracts);
     } else {
-      const filteredData = listcontracts.filter((item) =>
-        Object.values(item).some((value) =>
-          value.toString().toLowerCase().includes(searchTerm.toLowerCase())
-        )
-      );
+      const filteredData = listcontracts.filter((item) => {
+        const searchableFields = [
+          item.status?.status_current || "",
+          item.seller?.name || "",
+          item.buyer?.name || "",
+          item.number_contract?.toString() || "",
+          item.owner_contract?.toString() || "",
+          // Adicione outros campos que deseja filtrar, se necessário
+        ];
+
+        return searchableFields.some((field) =>
+          field.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      });
+
       setDataTable(filteredData);
     }
-  };
+  }, [searchTerm, listcontracts]);
 
   useEffect(() => {
     handleSearch();
-  }, [searchTerm]);
+  }, [searchTerm, handleSearch]);
 
   const handleViewContract = (contract: IContractData) => {
     navigate("/visualizar-contrato", {
@@ -77,23 +74,22 @@ export function HistoryContracts() {
   };
 
   const nameColumns: IColumn[] = [
-    { field: "status_current", header: "Status" },
+    { field: "status.status_current", header: "Status" },
     { field: "number_contract", header: "Nº Contrato" },
     { field: "created_at", header: "Data" },
     { field: "owner_contract", header: "Criado por" },
+    { field: "seller.name", header: "Vendedor" },
+    { field: "buyer.name", header: "Comprador" },
   ];
 
-  const renderActionButtons = useCallback(
-    (row: any) => (
-      <CustomButton
-        $variant="secondary"
-        width="180px"
-        onClick={() => handleViewContract(row)}
-      >
-        Detalhes do contrato
-      </CustomButton>
-    ),
-    []
+  const renderActionButtons = (row: any) => (
+    <CustomButton
+      $variant="secondary"
+      width="75px"
+      onClick={() => handleViewContract(row)}
+    >
+      Detalhes
+    </CustomButton>
   );
 
   return (

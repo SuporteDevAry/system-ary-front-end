@@ -50,7 +50,7 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
     ? formData.number_contract
     : `${formData.product}.${formData.number_broker}-NNN/${ano2}`;
 
-  let nomeArquivo = `Ctr-${numberContract}.pdf`;
+  let nomeArquivo = `${numberContract}.pdf`;
 
   function formatObservationText(observation: string) {
     // Quebra o texto em linhas usando o caractere de nova linha como delimitador

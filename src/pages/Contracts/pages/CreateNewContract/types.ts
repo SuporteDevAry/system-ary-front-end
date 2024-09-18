@@ -24,7 +24,9 @@ export type FormDataContract = {
   type_icms: string;
   icms: string;
   payment: string;
+  type_commission_seller?: string;
   commission_seller?: string;
+  type_commission_buyer?: string;
   commission_buyer?: string;
   type_pickup: string;
   pickup: string;
