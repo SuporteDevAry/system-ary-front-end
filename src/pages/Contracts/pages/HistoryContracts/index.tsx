@@ -51,7 +51,7 @@ export function HistoryContracts() {
           item.buyer?.name || "",
           item.number_contract?.toString() || "",
           item.owner_contract?.toString() || "",
-          // Adicione outros campos que deseja filtrar, se necessário
+          // Adicione outros campos que deseja filtrar, se necessário (created_at)
         ];
 
         return searchableFields.some((field) =>
@@ -113,7 +113,9 @@ export function HistoryContracts() {
         columns={nameColumns}
         hasPagination
         collapsible
-        renderChildren={(row) => <CustomTimeline events={row.history || []} />}
+        renderChildren={(row) => (
+          <CustomTimeline events={row.status.history || []} />
+        )}
         dateFields={["created_at"]}
         actionButtons={renderActionButtons}
       />
