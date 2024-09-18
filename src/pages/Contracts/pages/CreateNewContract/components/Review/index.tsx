@@ -4,7 +4,7 @@ import CustomButton from "../../../../../../components/CustomButton";
 import { Extenso } from "../../../../../../helpers/Extenso";
 import { insertMaskInCnpj } from "../../../../../../helpers/front-end/insertMaskInCnpj";
 import PdfGenerator from "../../../../../../helpers/PDFGenerator";
-
+import LogoContract from "../../../../../../assets/img/Logo_Ary_Completo.jpg";
 export const Review: React.FC<StepProps> = ({ formData }) => {
   const handleImprimir = () => {
     PdfGenerator(document, "contrato", nomeArquivo);
@@ -74,11 +74,7 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
       <div style={{ width: 900 }}>
         <div id="contrato">
           <div style={{ margin: 0, textAlign: "center" }}>
-            <img
-              src="/src/assets/img/Logo_Ary_Completo.jpg"
-              alt="logo ary completo jpg"
-              width={330}
-            />
+            <img src={LogoContract} alt="logo ary completo jpg" width={330} />
           </div>
           <br />
           <h3>
