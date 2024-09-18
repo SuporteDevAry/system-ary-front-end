@@ -1,6 +1,8 @@
 import { formatCurrency } from "../helpers/currencyFormat";
 import { Extenso } from "../helpers/Extenso";
 import { insertMaskInCnpj } from "../helpers/front-end/insertMaskInCnpj";
+// src/assets/img/Logo_Ary_Completo.jpg
+import logoContrato from "../assets/img/Logo_Ary_Completo.jpg";
 
 interface ContratoTemplateProps {
     formData: any;
@@ -61,7 +63,7 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({ formData }) => {
             <div id="contrato">
                 <div style={{ margin: 0, textAlign: "center" }}>
                     <img
-                        src="/src/assets/img/Logo_Ary_Completo.jpg"
+                        src={logoContrato}
                         alt="logo ary completo jpg"
                         width={330}
                     />
