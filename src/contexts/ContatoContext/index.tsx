@@ -1,21 +1,12 @@
 import { createContext, useContext } from "react";
 import {
+  IContatosContext,
   IContatosProvider,
   ICreateContatosData,
   IUpdateContatosData,
 } from "./types";
 import { Api } from "../../services/api";
-
-interface IContatosContext {
-  listContatos: () => Promise<any>;
-  createContato: (contatoData: ICreateContatosData) => Promise<any>;
-  updateContato: (
-    contactId: string,
-    updateContatoData: IUpdateContatosData
-  ) => void;
-  deleteContato: (contactId: string) => void;
-  getContactsByClient: (clientId: string) => Promise<any>;
-}
+import { AxiosError } from "axios";
 
 const newContext = createContext<IContatosContext>({
   listContatos: () => Promise.resolve(),
@@ -31,8 +22,12 @@ export const ContatosProvider = ({ children }: IContatosProvider) => {
       const response = await Api.get("/contatos");
       return response;
     } catch (error) {
-      console.error("Erro listando Contatos:", error);
-      throw error;
+      const err = error as AxiosError;
+
+      if (err.response && err.response.data) {
+        const errorMessage = (err.response.data as { message: string }).message;
+        throw new Error(errorMessage);
+      }
     }
   }
 
@@ -42,7 +37,12 @@ export const ContatosProvider = ({ children }: IContatosProvider) => {
 
       return response;
     } catch (error) {
-      console.error("Error ao buscar Contatos por Cliente:", error);
+      const err = error as AxiosError;
+
+      if (err.response && err.response.data) {
+        const errorMessage = (err.response.data as { message: string }).message;
+        throw new Error(errorMessage);
+      }
     }
   }
 
@@ -52,7 +52,12 @@ export const ContatosProvider = ({ children }: IContatosProvider) => {
 
       return response;
     } catch (error) {
-      throw new Error(`${error}`);
+      const err = error as AxiosError;
+
+      if (err.response && err.response.data) {
+        const errorMessage = (err.response.data as { message: string }).message;
+        throw new Error(errorMessage);
+      }
     }
   }
 
@@ -67,7 +72,12 @@ export const ContatosProvider = ({ children }: IContatosProvider) => {
       );
       return response;
     } catch (error) {
-      console.error("Erro gravando dados do Contato:", error);
+      const err = error as AxiosError;
+
+      if (err.response && err.response.data) {
+        const errorMessage = (err.response.data as { message: string }).message;
+        throw new Error(errorMessage);
+      }
     }
   }
 
@@ -77,7 +87,12 @@ export const ContatosProvider = ({ children }: IContatosProvider) => {
 
       return response;
     } catch (error) {
-      console.error("Error excluindo Contato:", error);
+      const err = error as AxiosError;
+
+      if (err.response && err.response.data) {
+        const errorMessage = (err.response.data as { message: string }).message;
+        throw new Error(errorMessage);
+      }
     }
   }
 

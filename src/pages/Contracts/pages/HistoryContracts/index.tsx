@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import CustomButton from "../../../../components/CustomButton";
 import { CustomSearch } from "../../../../components/CustomSearch";
 import CustomTable from "../../../../components/CustomTable";
@@ -7,63 +7,90 @@ import {
   IColumn,
   TableDataProps,
 } from "../../../../components/CustomTable/types";
-import { CustomTimeline } from "../../../../components/CustomTimeline";
+import { CustomTimeline } from "./components/CustomTimeline";
+import { ContractContext } from "../../../../contexts/ContractContext";
+import { toast } from "react-toastify";
+import { IContractData } from "../../../../contexts/ContractContext/types";
+import { useNavigate } from "react-router-dom";
 
 export function HistoryContracts() {
+  const contractContext = ContractContext();
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [listcontracts, setListContracts] = useState<IContractData[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [dataTable, setDataTable] = useState<TableDataProps[]>([]);
 
-  const data = [
-    { nr_contrato: "001", status: "Ativo", produto: "Soja" },
-    { nr_contrato: "002", status: "Pendente", produto: "Milho" },
-    { nr_contrato: "003", status: "Finalizado", produto: "Trigo" },
-    { nr_contrato: "004", status: "Cancelado", produto: "Arroz" },
-    { nr_contrato: "005", status: "Ativo", produto: "Cevada" },
-    { nr_contrato: "006", status: "Pendente", produto: "Sorgo" },
-    { nr_contrato: "007", status: "Finalizado", produto: "Aveia" },
-    { nr_contrato: "008", status: "Cancelado", produto: "Centeio" },
-    { nr_contrato: "009", status: "Ativo", produto: "Lentilha" },
-    { nr_contrato: "010", status: "Pendente", produto: "Grão-de-bico" },
-  ];
-
-  const timelineEvents = [
-    { date: "07/06/2024", time: "09:30 am", status: "A Conferir" },
-    { date: "08/06/2024", time: "10:00 am", status: "Validado" },
-    { date: "09/06/2024", time: "12:00 am", status: "Conferido" },
-    { date: "10/06/2024", time: "9:00 am", status: "Enviado" },
-  ];
-
-  //   useEffect(() => {
-  //     if (data) {
-  //       setDataTable(data);
-  //     }
-  //   }, [data]);
-
-  const handleSearch = () => {
-    if (searchTerm.trim() === "") {
-      setDataTable(data);
-    } else {
-      const filteredData = data.filter((item) =>
-        Object.values(item).some((value) =>
-          value.toString().toLowerCase().includes(searchTerm.toLowerCase())
-        )
+  const fetchData = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const response = await contractContext.listContracts();
+      setListContracts(response.data);
+      setDataTable(response.data);
+    } catch (error) {
+      toast.error(
+        `Erro ao tentar ler contratos, contacte o administrador do sistema: ${error}`
       );
+    } finally {
+      setIsLoading(false);
+    }
+  }, [contractContext]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  const handleSearch = useCallback(() => {
+    if (searchTerm.trim() === "") {
+      setDataTable(listcontracts);
+    } else {
+      const filteredData = listcontracts.filter((item) => {
+        const searchableFields = [
+          item.status?.status_current || "",
+          item.seller?.name || "",
+          item.buyer?.name || "",
+          item.number_contract?.toString() || "",
+          item.owner_contract?.toString() || "",
+          // Adicione outros campos que deseja filtrar, se necessário
+        ];
+
+        return searchableFields.some((field) =>
+          field.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      });
+
       setDataTable(filteredData);
     }
-  };
+  }, [searchTerm, listcontracts]);
 
   useEffect(() => {
     handleSearch();
-  }, [searchTerm]);
+  }, [searchTerm, handleSearch]);
+
+  const handleViewContract = (contract: IContractData) => {
+    navigate("/visualizar-contrato", {
+      state: { contractForView: contract },
+    });
+  };
 
   const nameColumns: IColumn[] = [
-    { field: "status", header: "Status" },
-    { field: "last_to_use", header: "Em uso" },
-    { field: "nr_contrato", header: "Nº Contrato" },
-    { field: "produto", header: "Produto" },
-    { field: "contract_details", header: "Detalhes do Contrato" },
-    { field: "created_by", header: "Criado por" },
+    { field: "status.status_current", header: "Status" },
+    { field: "number_contract", header: "Nº Contrato" },
+    { field: "created_at", header: "Data" },
+    { field: "owner_contract", header: "Criado por" },
+    { field: "seller.name", header: "Vendedor" },
+    { field: "buyer.name", header: "Comprador" },
   ];
+
+  const renderActionButtons = (row: any) => (
+    <CustomButton
+      $variant="secondary"
+      width="75px"
+      onClick={() => handleViewContract(row)}
+    >
+      Detalhes
+    </CustomButton>
+  );
 
   return (
     <SContainer>
@@ -81,17 +108,14 @@ export function HistoryContracts() {
         </CustomButton>
       </SContainerSearchAndButton>
       <CustomTable
-        //isLoading={loading}
+        isLoading={isLoading}
         data={dataTable}
         columns={nameColumns}
-        //hasCheckbox
         hasPagination
         collapsible
-        // onRowClick={(rowData) =>
-        //   setSelectedCustomer({ name: rowData.nome, type: selectionType })
-        // }
-        onRowClick={(row) => console.log(row)}
-        renderChildren={() => <CustomTimeline events={timelineEvents} />}
+        renderChildren={(row) => <CustomTimeline events={row.history || []} />}
+        dateFields={["created_at"]}
+        actionButtons={renderActionButtons}
       />
     </SContainer>
   );

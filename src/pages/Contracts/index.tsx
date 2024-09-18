@@ -7,7 +7,7 @@ import { RxFileText } from "react-icons/rx";
 export function Contract() {
   const cardLinks = [
     {
-      label: "Criar Novo Contrato",
+      label: "Novo Contrato",
       icon: <RxFileText size={64} />,
       to: "/contratos/novo-contrato",
     },

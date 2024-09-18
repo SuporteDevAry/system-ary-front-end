@@ -28,7 +28,10 @@ export function ModalClientes({
 
   const handleConfirm = () => {
     if (selectedCustomer) {
-      onConfirm(selectedCustomer);
+      onConfirm({
+        ...selectedCustomer,
+        type: selectionType,
+      });
       onClose();
     }
   };
@@ -104,7 +107,11 @@ export function ModalClientes({
           hasCheckbox
           hasPagination
           onRowClick={(rowData) =>
-            setSelectedCustomer({ name: rowData.name, type: selectionType })
+            setSelectedCustomer({
+              ...rowData,
+              name: rowData.name,
+              type: selectionType,
+            })
           }
         />
       </Modal>

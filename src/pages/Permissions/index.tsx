@@ -111,7 +111,7 @@ export function Permissions() {
         setPermissionsToken(response.data.rules);
       }
     } catch (error) {
-      toast.error(`Error fetching permissions by email:  ${error}`);
+      toast.error(`Erro ao tentar ler permissões por email:  ${error}`);
     }
   }, [formData.email, userContext]);
 

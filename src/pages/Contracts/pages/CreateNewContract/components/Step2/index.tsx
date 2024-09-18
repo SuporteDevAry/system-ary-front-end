@@ -5,9 +5,11 @@ import { CustomSelect } from "../../../../../../components/CustomSelect";
 import { ProductType, productInfo } from "./types";
 
 export const Step2: React.FC<StepProps> = ({
+  id,
   handleChange,
   formData,
   updateFormData,
+  isEditMode,
 }) => {
   const handleFieldChange = (field: string, value: string) => {
     const info = productInfo[value as ProductType];
@@ -16,25 +18,26 @@ export const Step2: React.FC<StepProps> = ({
       [field]: value,
       quality: info.quality,
       observation: info.observation,
-      nameProduct: info.name,
+      name_product: info.name,
       inspection: info.inspection,
     });
   };
 
   return (
-    <SContainer>
+    <SContainer id={id}>
       <CustomSelect
         name="product"
         label="Mercadoria: "
         $labelPosition="top"
         selectOptions={[
-          { value: "S", label: "SOJA em Grão" },
+          { value: "S", label: "SOJA em Grãos" },
           { value: "CN", label: "MILHO" },
           { value: "T", label: "TRIGO" },
           { value: "SG", label: "SORGO" },
         ]}
         onSelectChange={(value) => handleFieldChange("product", value)}
         value={formData.product}
+        readOnly={isEditMode}
       />
 
       <CustomInput

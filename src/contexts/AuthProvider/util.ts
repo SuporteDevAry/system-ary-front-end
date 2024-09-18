@@ -58,3 +58,7 @@ export function getDataUserFromToken(): IUserDataFromToken | null {
 
   return null;
 }
+
+export function deleteUserLocalStorage() {
+  localStorage.removeItem("#u");
+}

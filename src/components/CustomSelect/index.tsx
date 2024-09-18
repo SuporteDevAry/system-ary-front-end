@@ -11,6 +11,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
   selectOptions,
   onSelectChange,
   value,
+  readOnly,
   ...rest
 }) => {
   const [option, setOption] = React.useState<string>(value);
@@ -29,6 +30,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
         value={option}
         onChange={handleSelectChange}
         sx={{ width: width, height: height }}
+        readOnly={readOnly}
         {...rest}
       >
         {selectOptions?.map((option) => (

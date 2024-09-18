@@ -22,8 +22,8 @@ import { FaUserCircle } from "react-icons/fa";
 import { FaEye, FaLock } from "react-icons/fa";
 import { RiEyeCloseLine } from "react-icons/ri";
 
-import { useAuth } from "../../contexts/AuthProvider/useAuth";
 import { isEmailValid } from "../../helpers/back-end/utils";
+import { useAuth } from "../../contexts/AuthProvider";
 
 export function Login() {
   const auth = useAuth();

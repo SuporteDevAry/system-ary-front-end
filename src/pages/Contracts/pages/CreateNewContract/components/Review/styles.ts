@@ -19,3 +19,5 @@ export const SBox = styled.div`
   flex-direction: column;
   gap: 8px;
 `;
+
+

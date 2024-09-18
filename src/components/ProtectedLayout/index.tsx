@@ -1,13 +1,15 @@
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../contexts/AuthProvider/useAuth";
 import CustomButton from "../CustomButton";
 import { SCardInfo, SContainer, SMain } from "./styles";
+import { deleteUserLocalStorage } from "../../contexts/AuthProvider/util";
+import { useAuth } from "../../contexts/AuthProvider";
 
 export const ProtectedLayout = ({ children }: { children: JSX.Element }) => {
   const auth = useAuth();
   const navigate = useNavigate();
 
   const handleSendLogin = () => {
+    deleteUserLocalStorage();
     navigate("/login");
   };
 
@@ -17,7 +19,7 @@ export const ProtectedLayout = ({ children }: { children: JSX.Element }) => {
         <SCardInfo>
           <SMain>
             <h1>Que pena! Você não tem acesso a essa página!</h1>
-            <p>Clique no botão abaixo para ir para o Login.</p>
+            <div>Clique no botão abaixo para ir para o Login.</div>
             <CustomButton
               $variant={"primary"}
               width="180px"

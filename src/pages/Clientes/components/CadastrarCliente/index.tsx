@@ -3,6 +3,7 @@ import { ClienteContext } from "../../../../contexts/ClienteContext";
 import { toast } from "react-toastify";
 import { FormularioCliente } from "../../../../components/FormularioCliente";
 import { useNavigate } from "react-router-dom";
+import ValidatorDocto from "../../../../helpers/validatorDocto";
 
 export function CadastrarCliente() {
   const clienteContext = ClienteContext();
@@ -54,6 +55,21 @@ export function CadastrarCliente() {
   };
 
   const handleCreate = async () => {
+    if (
+      formData.kind == "F" &&
+      !ValidatorDocto.isFormattedCPF(formData.cnpj_cpf)
+    ) {
+      toast.error("Digito verificador do CPF está incorreto.");
+      return;
+    }
+    if (
+      formData.kind == "J" &&
+      !ValidatorDocto.isFormattedCNPJ(formData.cnpj_cpf)
+    ) {
+      toast.error("Digito verificador do CNPJ está incorreto.");
+      return;
+    }
+
     if (!formData.name || !formData.zip_code || !formData.cnpj_cpf) {
       toast.error("Por favor, preencha todos os campos.");
       return;

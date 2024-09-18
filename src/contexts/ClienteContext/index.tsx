@@ -31,7 +31,12 @@ export const ClientesProvider = ({ children }: IClientesProvider) => {
       return response;
     } catch (error) {
       console.error("Erro incluindo Cliente:", error);
-      throw error;
+      const err = error as AxiosError;
+
+      if (err.response && err.response.data) {
+        const errorMessage = (err.response.data as { message: string }).message;
+        throw new Error(errorMessage);
+      }
     }
   }
 
@@ -61,7 +66,12 @@ export const ClientesProvider = ({ children }: IClientesProvider) => {
       );
       return response;
     } catch (error) {
-      console.error("Erro ao salvar dados do Cliente:", error);
+      const err = error as AxiosError;
+
+      if (err.response && err.response.data) {
+        const errorMessage = (err.response.data as { message: string }).message;
+        throw new Error(errorMessage);
+      }
     }
   }
 
@@ -71,7 +81,12 @@ export const ClientesProvider = ({ children }: IClientesProvider) => {
 
       return response;
     } catch (error) {
-      console.error("Error ao excluir Cliente:", error);
+      const err = error as AxiosError;
+
+      if (err.response && err.response.data) {
+        const errorMessage = (err.response.data as { message: string }).message;
+        throw new Error(errorMessage);
+      }
     }
   }
 
@@ -81,7 +96,12 @@ export const ClientesProvider = ({ children }: IClientesProvider) => {
 
       return response;
     } catch (error) {
-      console.error("Error ao buscar Cliente:", error);
+      const err = error as AxiosError;
+
+      if (err.response && err.response.data) {
+        const errorMessage = (err.response.data as { message: string }).message;
+        throw new Error(errorMessage);
+      }
     }
   }
 

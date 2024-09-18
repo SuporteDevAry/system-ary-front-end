@@ -6,6 +6,7 @@ import {
   IUserProvider,
 } from "./types";
 import { Api } from "../../services/api";
+import { AxiosError } from "axios";
 
 const newContext = createContext<IUserContext>({
   listUsers: () => Promise.resolve([]),
@@ -22,8 +23,12 @@ export const UserProvider = ({ children }: IUserProvider) => {
       const response = await Api.get("/users");
       return response;
     } catch (error) {
-      console.error("Error adding user:", error);
-      throw error;
+      const err = error as AxiosError;
+
+      if (err.response && err.response.data) {
+        const errorMessage = (err.response.data as { message: string }).message;
+        throw new Error(errorMessage);
+      }
     }
   }
 
@@ -33,7 +38,12 @@ export const UserProvider = ({ children }: IUserProvider) => {
 
       return response;
     } catch (error) {
-      throw new Error(`${error}`);
+      const err = error as AxiosError;
+
+      if (err.response && err.response.data) {
+        const errorMessage = (err.response.data as { message: string }).message;
+        throw new Error(errorMessage);
+      }
     }
   }
 
@@ -42,7 +52,12 @@ export const UserProvider = ({ children }: IUserProvider) => {
       const response = await Api.patch(`/user/${userId}`, updateUserData);
       return response;
     } catch (error) {
-      console.error("Error updating user:", error);
+      const err = error as AxiosError;
+
+      if (err.response && err.response.data) {
+        const errorMessage = (err.response.data as { message: string }).message;
+        throw new Error(errorMessage);
+      }
     }
   }
 
@@ -52,7 +67,12 @@ export const UserProvider = ({ children }: IUserProvider) => {
 
       return response;
     } catch (error) {
-      console.error("Error updating user:", error);
+      const err = error as AxiosError;
+
+      if (err.response && err.response.data) {
+        const errorMessage = (err.response.data as { message: string }).message;
+        throw new Error(errorMessage);
+      }
     }
   }
 
@@ -64,7 +84,12 @@ export const UserProvider = ({ children }: IUserProvider) => {
 
       return response;
     } catch (error) {
-      console.error("Error updating user:", error);
+      const err = error as AxiosError;
+
+      if (err.response && err.response.data) {
+        const errorMessage = (err.response.data as { message: string }).message;
+        throw new Error(errorMessage);
+      }
     }
   }
 
@@ -84,7 +109,12 @@ export const UserProvider = ({ children }: IUserProvider) => {
       );
       return response;
     } catch (error) {
-      console.error("Error updating permissions:", error);
+      const err = error as AxiosError;
+
+      if (err.response && err.response.data) {
+        const errorMessage = (err.response.data as { message: string }).message;
+        throw new Error(errorMessage);
+      }
     }
   }
 

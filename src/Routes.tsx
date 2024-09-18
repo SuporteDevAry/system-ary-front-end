@@ -15,6 +15,7 @@ import { HistoryContracts } from "./pages/Contracts/pages/HistoryContracts";
 import { CreateNewContract } from "./pages/Contracts/pages/CreateNewContract";
 import { MyAccount } from "./pages/MyAccount";
 import { ViewCustomer } from "./pages/Clientes/components/ViewCustomer";
+import { ViewContract } from "./pages/Contracts/pages/HistoryContracts/components/ViewContract";
 
 export function RoutesForPages() {
   return (
@@ -48,11 +49,31 @@ export function RoutesForPages() {
         }
       />
       <Route
+        path="/contratos/editar-contrato"
+        element={
+          <ProtectedLayout>
+            <Layout>
+              <CreateNewContract />
+            </Layout>
+          </ProtectedLayout>
+        }
+      />
+      <Route
         path="/contratos/historico"
         element={
           <ProtectedLayout>
             <Layout>
               <HistoryContracts />
+            </Layout>
+          </ProtectedLayout>
+        }
+      />
+      <Route
+        path="/visualizar-contrato"
+        element={
+          <ProtectedLayout>
+            <Layout>
+              <ViewContract />
             </Layout>
           </ProtectedLayout>
         }

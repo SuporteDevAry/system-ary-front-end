@@ -18,6 +18,7 @@ import { insertMaskInCnpj } from "../../helpers/front-end/insertMaskInCnpj";
 import Loading from "../Loading";
 import { insertMaskInTelefone } from "../../helpers/front-end/insertMaskInFone";
 import { insertMaskInCelular } from "../../helpers/front-end/insertMaskInCelular";
+import { getNestedValue } from "../../helpers/getNestedValue";
 // import { KeyboardArrowDown, KeyboardArrowUp } from "@mui/icons-material";
 
 const locale = "pt-BR";
@@ -66,21 +67,22 @@ const CustomTable: React.FC<ICustomTableProps> = ({
   };
 
   const formatCellValue = (row: any, column: { field: string }): string => {
+    const value = getNestedValue(row, column.field);
+
     if (column.field === "cnpj_cpf") {
       return row.kind === "F"
-        ? insertMaskInCpf(row.cnpj_cpf)
-        : insertMaskInCnpj(row.cnpj_cpf);
+        ? insertMaskInCpf(value)
+        : insertMaskInCnpj(value);
     }
     if (dateFields?.includes(column.field)) {
-      return convertToCustomFormat(row[column.field], locale);
+      return convertToCustomFormat(value, locale);
     }
 
-    if (column.field === "telephone")
-      return insertMaskInTelefone(row.telephone);
+    if (column.field === "telephone") return insertMaskInTelefone(value);
 
-    if (column.field === "cellphone") return insertMaskInCelular(row.cellphone);
+    if (column.field === "cellphone") return insertMaskInCelular(value);
 
-    return row[column.field];
+    return value ?? "-";
   };
 
   return (

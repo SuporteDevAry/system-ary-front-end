@@ -43,13 +43,42 @@ export function FormularioCliente({
         onChange={onChange}
       />
 
+      <div>
+        <label>Natureza:</label>
+        <RadioGroup
+          row
+          aria-labelledby="natureza"
+          name="kind"
+          value={data.kind}
+          onChange={onChange}
+        >
+          <FormControlLabel
+            value="F"
+            control={<Radio />}
+            label="Pessoa Fisica"
+          />
+          <FormControlLabel
+            value="J"
+            control={<Radio />}
+            label="Pessoa Juridica"
+          />
+          <FormControlLabel
+            value="E"
+            control={<Radio />}
+            label="Pessoa Estrangeira"
+          />
+        </RadioGroup>
+      </div>
+
       <CustomInput
         type="text"
         label="CEP:"
         $labelPosition="top"
         name="zip_code"
-        maxLength={9}
-        value={insertMaskInCEP(data.zip_code)}
+        maxLength={data.kind == "E" ? 15 : 9}
+        value={
+          data.kind == "E" ? data.zip_code : insertMaskInCEP(data.zip_code)
+        }
         onChange={onChange}
         onBlur={onCheckCEP}
       />
@@ -65,7 +94,7 @@ export function FormularioCliente({
       />
 
       <CustomInput
-        type="number"
+        type="text"
         name="number"
         label="Nº:"
         $labelPosition="top"
@@ -111,33 +140,6 @@ export function FormularioCliente({
         onChange={onChange}
       />
 
-      <div>
-        <label>Natureza:</label>
-        <RadioGroup
-          row
-          aria-labelledby="natureza"
-          name="kind"
-          value={data.kind}
-          onChange={onChange}
-        >
-          <FormControlLabel
-            value="F"
-            control={<Radio />}
-            label="Pessoa Fisica"
-          />
-          <FormControlLabel
-            value="J"
-            control={<Radio />}
-            label="Pessoa Juridica"
-          />
-          <FormControlLabel
-            value="E"
-            control={<Radio />}
-            label="Pessoa Estrangeira"
-          />
-        </RadioGroup>
-      </div>
-
       <CustomInput
         type="text"
         name="cnpj_cpf"
@@ -175,8 +177,12 @@ export function FormularioCliente({
         name="telephone"
         label="Telefone:"
         $labelPosition="top"
-        maxLength={15}
-        value={insertMaskInTelefone(data.telephone)}
+        maxLength={25}
+        value={
+          data.kind == "E"
+            ? data.telephone
+            : insertMaskInTelefone(data.telephone)
+        }
         onChange={onChange}
       />
 
@@ -185,8 +191,12 @@ export function FormularioCliente({
         name="cellphone"
         label="Celular:"
         $labelPosition="top"
-        maxLength={15}
-        value={insertMaskInCelular(data.cellphone)}
+        maxLength={25}
+        value={
+          data.kind == "E"
+            ? data.cellphone
+            : insertMaskInCelular(data.cellphone)
+        }
         onChange={onChange}
       />
 

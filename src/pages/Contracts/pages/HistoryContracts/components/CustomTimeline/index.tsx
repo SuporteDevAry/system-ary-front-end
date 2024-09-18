@@ -3,18 +3,10 @@ import TimelineItem from "@mui/lab/TimelineItem";
 import TimelineSeparator from "@mui/lab/TimelineSeparator";
 import TimelineConnector from "@mui/lab/TimelineConnector";
 import TimelineContent from "@mui/lab/TimelineContent";
-import TimelineDot from "@mui/lab/TimelineDot";
 import TimelineOppositeContent from "@mui/lab/TimelineOppositeContent";
-
-interface ITimelineEvent {
-  date: string;
-  time: string;
-  status: string;
-}
-
-interface ITimelineProps {
-  events: ITimelineEvent[];
-}
+import Avatar from "@mui/material/Avatar";
+import Tooltip from "@mui/material/Tooltip";
+import { ITimelineProps } from "./types";
 
 export function CustomTimeline({ events }: ITimelineProps): JSX.Element {
   return (
@@ -25,7 +17,12 @@ export function CustomTimeline({ events }: ITimelineProps): JSX.Element {
             {event.date} - {event.time}
           </TimelineOppositeContent>
           <TimelineSeparator>
-            <TimelineDot />
+            <Tooltip
+              title={`Alterado por: ${event.owner_change.name} - ${event.owner_change.email}`}
+              arrow
+            >
+              <Avatar>{event.owner_change.name.charAt(0)}</Avatar>
+            </Tooltip>
             {index < events.length - 1 && <TimelineConnector />}
           </TimelineSeparator>
           <TimelineContent>{event.status}</TimelineContent>

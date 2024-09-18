@@ -1,6 +1,8 @@
+import { IUserInfo } from "../../../../contexts/ContractContext/types";
 
-export interface IProduct {
-    nr_contrato: string;
-    status: string;
-    produto: string;
-  }
+export type ITimelineEvent = {
+  date: string;
+  time: string;
+  status: string;
+  owner_change: IUserInfo;
+};

@@ -4,6 +4,7 @@ import { toast } from "react-toastify";
 import { FormularioCliente } from "../../../../components/FormularioCliente";
 import { useLocation, useNavigate } from "react-router-dom";
 import { IListCliente } from "../../../../contexts/ClienteContext/types";
+import ValidatorDocto from "../../../../helpers/validatorDocto";
 
 export function EditarCliente() {
   const navigate = useNavigate();
@@ -38,24 +39,20 @@ export function EditarCliente() {
   };
 
   const handleCreate = async () => {
-    // if (
-    //   !formData.cli_codigo ||
-    //   !formData.nome ||
-    //   !formData.endereco ||
-    //   !formData.numero ||
-    //   !formData.bairro ||
-    //   !formData.cidade ||
-    //   !formData.uf ||
-    //   !formData.cep ||
-    //   !formData.natureza ||
-    //   !formData.cnpj ||
-    //   !formData.email ||
-    //   !formData.telefone ||
-    //   !formData.celular
-    // ) {
-    //   toast.error("Por favor, preencha todos os campos.");
-    //   return;
-    // }
+    if (
+      formData.kind == "F" &&
+      !ValidatorDocto.isFormattedCPF(formData.cnpj_cpf)
+    ) {
+      toast.error("Digito verificador do CPF está incorreto.");
+      return;
+    }
+    if (
+      formData.kind == "J" &&
+      !ValidatorDocto.isFormattedCNPJ(formData.cnpj_cpf)
+    ) {
+      toast.error("Digito verificador do CNPJ está incorreto.");
+      return;
+    }
 
     try {
       clienteContext.updateCliente(clienteForUpdate.id, {
@@ -78,7 +75,8 @@ export function EditarCliente() {
       });
 
       toast.success(`Cliente ${formData.name}, foi alterado com sucesso!`);
-      navigate("/clientes");
+      // Colocando um estado para atualizar a tabela depois que fizermos qualquer atualização no clientes
+      navigate("/clientes", { state: { updated: true } });
     } catch (error) {
       toast.error(`Erro ao tentar alterar o Cliente, ${error}`);
     }

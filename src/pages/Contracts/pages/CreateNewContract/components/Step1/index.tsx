@@ -6,12 +6,20 @@ import CustomButton from "../../../../../../components/CustomButton";
 import { SContainer, SContainerBuyer, SContainerSeller } from "./styles";
 import { ModalClientes } from "./components/ModalClientes";
 import { ClienteContext } from "../../../../../../contexts/ClienteContext";
-
 import { IListCliente } from "../../../../../../contexts/ClienteContext/types";
 import { StepProps } from "../../types";
 import { SText, STextArea } from "../Step2/styles";
+import { CustomerInfo } from "../../../../../../contexts/ContractContext/types";
+import { getDataUserFromToken } from "../../../../../../contexts/AuthProvider/util";
+import { toast } from "react-toastify";
 
-export const Step1: React.FC<StepProps> = ({ handleChange, formData }) => {
+export const Step1: React.FC<StepProps> = ({
+  id,
+  handleChange,
+  formData,
+  updateFormData,
+  isEditMode,
+}) => {
   const [isCustomerModalOpen, setCustomerModalOpen] = useState<boolean>(false);
   const [selectionType, setSelectionType] = useState<"buyer" | "seller">(
     "buyer"
@@ -28,7 +36,9 @@ export const Step1: React.FC<StepProps> = ({ handleChange, formData }) => {
       const response = await clienteContext.listClientes();
       setClientes(response.data);
     } catch (error) {
-      console.error("Erro lendo clientes:", error);
+      toast.error(
+        `Erro ao tentar ler clientes, contacte o administrador do sistema ${error}`
+      );
     } finally {
       setIsLoading(false);
     }
@@ -36,43 +46,53 @@ export const Step1: React.FC<StepProps> = ({ handleChange, formData }) => {
 
   useEffect(() => {
     fetchData();
+    const userInfo = getDataUserFromToken();
+    if (userInfo?.email) {
+      updateFormData?.({ owner_contract: userInfo.email });
+    }
   }, []);
 
-  const handleOpenCustomerModal = (type: "buyer" | "seller") => {
+  const handleOpenCustomerModal = useCallback((type: "buyer" | "seller") => {
     setSelectionType(type);
     setCustomerModalOpen(true);
-  };
+  }, []);
 
-  const handleCloseCustomerModal = () => {
+  const handleCloseCustomerModal = useCallback(() => {
     setCustomerModalOpen(false);
-  };
+  }, []);
 
-  const handleSelected = (selectCustomerData: {
-    name: string;
-    type: string;
-  }) => {
-    if (handleChange) {
-      const event = {
-        target: {
-          name: selectCustomerData.type,
-          value: selectCustomerData.name,
-        } as EventTarget & HTMLInputElement,
-      } as React.ChangeEvent<HTMLInputElement>;
-
-      handleChange(event);
-    }
-  };
+  const handleSelected = useCallback(
+    (selectCustomerData: CustomerInfo & { type: "seller" | "buyer" }) => {
+      if (updateFormData) {
+        updateFormData({
+          [selectCustomerData.type]: {
+            name: selectCustomerData.name,
+            address: selectCustomerData.address,
+            number: selectCustomerData.number,
+            complement: selectCustomerData.complement,
+            district: selectCustomerData.district,
+            city: selectCustomerData.city,
+            state: selectCustomerData.state,
+            cnpj_cpf: selectCustomerData.cnpj_cpf,
+            ins_est: selectCustomerData.ins_est,
+          },
+        });
+      }
+    },
+    [formData, updateFormData, handleCloseCustomerModal]
+  );
 
   return (
     <>
-      <SContainer>
+      <SContainer id={id}>
         <CustomInput
           type="text"
-          name="numberBroker"
+          name="number_broker"
           label="Nº Corretor:"
           $labelPosition="top"
           onChange={handleChange}
-          value={formData.numberBroker}
+          value={formData.number_broker}
+          readOnly={isEditMode}
         />
 
         <SContainerSeller>
@@ -83,7 +103,7 @@ export const Step1: React.FC<StepProps> = ({ handleChange, formData }) => {
               label="Vendedor: "
               $labelPosition="top"
               onChange={handleChange}
-              value={formData.seller}
+              value={formData?.seller?.name}
             />
           </Box>
           <CustomButton
@@ -96,9 +116,9 @@ export const Step1: React.FC<StepProps> = ({ handleChange, formData }) => {
         </SContainerSeller>
         <SText>Lista de Email Vendedor:</SText>
         <STextArea
-          name="listEmailSeller"
+          name="list_email_seller"
           onChange={handleChange}
-          value={formData.listEmailSeller}
+          value={formData.list_email_seller}
         />
         <SContainerBuyer>
           <Box>
@@ -108,7 +128,7 @@ export const Step1: React.FC<StepProps> = ({ handleChange, formData }) => {
               label="Comprador:"
               $labelPosition="top"
               onChange={handleChange}
-              value={formData.buyer}
+              value={formData?.buyer?.name}
             />
           </Box>
           <CustomButton
@@ -121,9 +141,9 @@ export const Step1: React.FC<StepProps> = ({ handleChange, formData }) => {
         </SContainerBuyer>
         <SText>Lista de Email Comprador :</SText>
         <STextArea
-          name="listEmailBuyer"
+          name="list_email_buyer"
           onChange={handleChange}
-          value={formData.listEmailBuyer}
+          value={formData.list_email_buyer}
         />
       </SContainer>
 
