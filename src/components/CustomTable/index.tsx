@@ -19,6 +19,7 @@ import Loading from "../Loading";
 import { insertMaskInTelefone } from "../../helpers/front-end/insertMaskInFone";
 import { insertMaskInCelular } from "../../helpers/front-end/insertMaskInCelular";
 import { getNestedValue } from "../../helpers/getNestedValue";
+import { CustomTruncateText } from "../CustomTruncateText";
 // import { KeyboardArrowDown, KeyboardArrowUp } from "@mui/icons-material";
 
 const locale = "pt-BR";
@@ -31,6 +32,7 @@ const CustomTable: React.FC<ICustomTableProps> = ({
   hasCheckbox = false,
   collapsible = false,
   dateFields,
+  maxChars = 36,
   renderChildren,
   onRowClick,
   actionButtons,
@@ -66,7 +68,10 @@ const CustomTable: React.FC<ICustomTableProps> = ({
     setPage(0);
   };
 
-  const formatCellValue = (row: any, column: { field: string }): string => {
+  const formatCellValue = (
+    row: any,
+    column: { field: string }
+  ): React.ReactNode => {
     const value = getNestedValue(row, column.field);
 
     if (column.field === "cnpj_cpf") {
@@ -82,7 +87,12 @@ const CustomTable: React.FC<ICustomTableProps> = ({
 
     if (column.field === "cellphone") return insertMaskInCelular(value);
 
-    return value ?? "-";
+    const stringValue = value?.toString() ?? "-";
+    return value ? (
+      <CustomTruncateText text={stringValue} maxChars={maxChars} />
+    ) : (
+      "-"
+    );
   };
 
   return (
