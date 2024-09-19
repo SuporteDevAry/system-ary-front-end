@@ -32,7 +32,7 @@ const CustomTable: React.FC<ICustomTableProps> = ({
   hasCheckbox = false,
   collapsible = false,
   dateFields,
-  maxChars = 36,
+  maxChars = 18,
   renderChildren,
   onRowClick,
   actionButtons,
