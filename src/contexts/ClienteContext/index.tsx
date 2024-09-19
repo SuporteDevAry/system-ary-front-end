@@ -30,7 +30,6 @@ export const ClientesProvider = ({ children }: IClientesProvider) => {
 
       return response;
     } catch (error) {
-      console.error("Erro incluindo Cliente:", error);
       const err = error as AxiosError;
 
       if (err.response && err.response.data) {

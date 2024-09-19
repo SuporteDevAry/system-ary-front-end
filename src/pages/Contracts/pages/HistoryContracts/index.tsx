@@ -118,6 +118,7 @@ export function HistoryContracts() {
         )}
         dateFields={["created_at"]}
         actionButtons={renderActionButtons}
+        maxChars={15}
       />
     </SContainer>
   );

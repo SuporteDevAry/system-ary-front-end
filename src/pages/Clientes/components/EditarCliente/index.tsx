@@ -39,17 +39,11 @@ export function EditarCliente() {
   };
 
   const handleCreate = async () => {
-    if (
-      formData.kind == "F" &&
-      !ValidatorDocto.isFormattedCPF(formData.cnpj_cpf)
-    ) {
+    if (formData.kind == "F" && !ValidatorDocto.isCPF(formData.cnpj_cpf)) {
       toast.error("Digito verificador do CPF está incorreto.");
       return;
     }
-    if (
-      formData.kind == "J" &&
-      !ValidatorDocto.isFormattedCNPJ(formData.cnpj_cpf)
-    ) {
+    if (formData.kind == "J" && !ValidatorDocto.isCNPJ(formData.cnpj_cpf)) {
       toast.error("Digito verificador do CNPJ está incorreto.");
       return;
     }
