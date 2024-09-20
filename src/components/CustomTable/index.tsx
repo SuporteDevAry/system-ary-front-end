@@ -36,7 +36,7 @@ const CustomTable: React.FC<ICustomTableProps> = ({
   hasCheckbox = false,
   collapsible = false,
   dateFields,
-  maxChars = 16,
+  maxChars = 18,
   page = 0,
   setPage,
   renderChildren,
@@ -45,7 +45,6 @@ const CustomTable: React.FC<ICustomTableProps> = ({
 }) => {
   const [openRows, setOpenRows] = useState<number[]>([]);
   const [selectedRowId, setSelectedRowId] = useState<number | null>(null);
-  //const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [order, setOrder] = useState<"asc" | "desc">("asc");
   const [orderBy, setOrderBy] = useState<string>("id");
@@ -75,7 +74,6 @@ const CustomTable: React.FC<ICustomTableProps> = ({
     _event: React.MouseEvent<HTMLButtonElement> | null,
     newPage: number
   ) => {
-    //setPage(newPage);
     if (setPage) {
       setPage(newPage);
     }
@@ -85,7 +83,7 @@ const CustomTable: React.FC<ICustomTableProps> = ({
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     setRowsPerPage(parseInt(event.target.value, 10));
-    //setPage?(0);
+
     if (setPage) {
       setPage(0);
     }
@@ -148,7 +146,7 @@ const CustomTable: React.FC<ICustomTableProps> = ({
             {columns.map((column) => (
               <TableCell
                 key={column.field}
-                style={{ width: column.width || "auto" }}
+                style={{ width: column.width || "auto", whiteSpace: "nowrap" }}
               >
                 {column.sortable ? (
                   <CustomTableSortLabel
