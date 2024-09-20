@@ -96,9 +96,13 @@ export function Users() {
 
   const nameColumns = useMemo(
     () => [
-      { field: "name", header: "Nome" },
-      { field: "email", header: "E-mail" },
-      { field: "created_at", header: "Data de Criação" },
+      { field: "name", header: "Nome", width: "150px", sortable: true },
+      { field: "email", header: "E-mail", width: "150px", sortable: true },
+      {
+        field: "created_at",
+        header: "Data de Criação",
+        width: "150px",
+      },
     ],
     []
   );

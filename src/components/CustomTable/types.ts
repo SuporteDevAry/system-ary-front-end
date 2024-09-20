@@ -3,6 +3,8 @@ import { ReactNode } from "react";
 export interface IColumn {
   header: string;
   field: string;
+  width?: string;
+  sortable?: boolean;
 }
 
 export interface TableDataProps {
@@ -22,4 +24,6 @@ export interface ICustomTableProps {
   onRowClick?: (row: TableDataProps) => void;
   actionButtons?: (row: TableDataProps) => ReactNode;
   maxChars?: number;
+  page?: number; // Adicionar a propriedade `page`
+  setPage?: (page: number) => void;
 }

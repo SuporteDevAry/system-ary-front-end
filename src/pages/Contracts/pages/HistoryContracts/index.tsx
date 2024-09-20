@@ -74,12 +74,37 @@ export function HistoryContracts() {
   };
 
   const nameColumns: IColumn[] = [
-    { field: "status.status_current", header: "Status" },
-    { field: "number_contract", header: "Nº Contrato" },
-    { field: "created_at", header: "Data" },
-    { field: "owner_contract", header: "Criado por" },
-    { field: "seller.name", header: "Vendedor" },
-    { field: "buyer.name", header: "Comprador" },
+    {
+      field: "status.status_current",
+      header: "Status",
+      width: "100px",
+      sortable: true,
+    },
+    {
+      field: "number_contract",
+      header: "Nº Contrato",
+      width: "190px",
+      sortable: true,
+    },
+    { field: "created_at", header: "Data", width: "50px", sortable: true },
+    {
+      field: "owner_contract",
+      header: "Criado por",
+      width: "100px",
+      sortable: true,
+    },
+    {
+      field: "seller.name",
+      header: "Vendedor",
+      width: "150px",
+      sortable: true,
+    },
+    {
+      field: "buyer.name",
+      header: "Comprador",
+      width: "150px",
+      sortable: true,
+    },
   ];
 
   const renderActionButtons = (row: any) => (
@@ -103,9 +128,9 @@ export function HistoryContracts() {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-        <CustomButton $variant="primary" width="70px" onClick={handleSearch}>
-          Search
-        </CustomButton>
+        {/* <CustomButton $variant="primary" width="90px" onClick={handleSearch}>
+          Pesquisar
+        </CustomButton> */}
       </SContainerSearchAndButton>
       <CustomTable
         isLoading={isLoading}
