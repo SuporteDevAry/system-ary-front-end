@@ -10,6 +10,7 @@ import { CustomSearch } from "../../components/CustomSearch";
 import CustomButton from "../../components/CustomButton";
 import { toast } from "react-toastify";
 import { ModalDelete } from "../../components/ModalDelete";
+import useTableSearch from "../../hooks/useTableSearch";
 
 export function Clientes() {
   const clienteContext = ClienteContext();
@@ -17,20 +18,19 @@ export function Clientes() {
   const location = useLocation();
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [clientes, setClientes] = useState<IListCliente[]>([]);
-  const [dataTable, setDataTable] = useState<IListCliente[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isDeleteModal, setDeleteModal] = useState<boolean>(false);
   const [selectedClient, setSelectedClient] = useState<IListCliente | null>(
     null
   );
   const [modalContent, setModalContent] = useState<string>("");
+  const [page, setPage] = useState(0);
 
   const fetchData = useCallback(async () => {
     try {
       setIsLoading(true);
       const response = await clienteContext.listClientes();
       setClientes(response.data);
-      setDataTable(response.data);
     } catch (error) {
       toast.error(
         `Erro ao tentar ler clientes, contacte o administrador do sistema ${error}`
@@ -102,18 +102,11 @@ export function Clientes() {
     fetchData();
   };
 
-  const handleSearch = useCallback(() => {
-    if (searchTerm.trim() === "") {
-      setDataTable(clientes);
-    } else {
-      const filteredData = clientes.filter((item) =>
-        Object.values(item).some((value) =>
-          value.toString().toLowerCase().includes(searchTerm.toLowerCase())
-        )
-      );
-      setDataTable(filteredData);
-    }
-  }, [searchTerm, clientes]);
+  const { filteredData, handleSearch } = useTableSearch({
+    data: clientes,
+    searchTerm,
+    setPage,
+  });
 
   useEffect(() => {
     handleSearch();
@@ -121,11 +114,16 @@ export function Clientes() {
 
   const nameColumns = useMemo(
     () => [
-      { field: "code_client", header: "Código" },
-      { field: "nickname", header: "Nome Fantasia" },
-      { field: "cnpj_cpf", header: "CNPJ/CPF" },
-      { field: "city", header: "Cidade" },
-      { field: "state", header: "UF" },
+      { field: "code_client", header: "Código", width: "60px" },
+      {
+        field: "nickname",
+        header: "Nome Fantasia",
+        width: "190px",
+        sortable: true,
+      },
+      { field: "cnpj_cpf", header: "CNPJ/CPF", width: "150px", sortable: true },
+      { field: "city", header: "Cidade", width: "150px" },
+      { field: "state", header: "UF", width: "80px" },
     ],
     []
   );
@@ -180,11 +178,13 @@ export function Clientes() {
 
       <CardContent>
         <CustomTable
-          data={dataTable}
+          data={filteredData}
           columns={nameColumns}
           isLoading={isLoading}
           hasPagination={true}
           actionButtons={renderActionButtons}
+          page={page}
+          setPage={setPage}
         />
       </CardContent>
       {selectedClient && (

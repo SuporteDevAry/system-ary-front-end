@@ -1,1 +1,3 @@
 export { default as useInfo } from "./userInfo";
+
+export { default as useTableSearch } from "./useTableSearch";

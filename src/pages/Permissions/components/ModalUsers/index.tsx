@@ -62,8 +62,8 @@ export function ModalUsers({ open, onClose, onConfirm }: ModalUsersProps) {
   }, [searchTerm, handleSearch]);
 
   const nameColumns: IColumn[] = [
-    { field: "name", header: "Nome" },
-    { field: "email", header: "E-mail" },
+    { field: "name", header: "Nome", width: "200px", sortable: true },
+    { field: "email", header: "E-mail", width: "800px", sortable: true },
   ];
 
   return (

@@ -26,6 +26,7 @@ import { ModalDelete } from "../../../../components/ModalDelete";
 import { toast } from "react-toastify";
 import { insertMaskInTelefone } from "../../../../helpers/front-end/insertMaskInFone";
 import { insertMaskInCelular } from "../../../../helpers/front-end/insertMaskInCelular";
+import useTableSearch from "../../../../hooks/useTableSearch";
 
 export function ViewCustomer(): JSX.Element {
   const location = useLocation();
@@ -37,20 +38,18 @@ export function ViewCustomer(): JSX.Element {
   const [customerContactsList, setCustomerContactsList] = useState<
     IListContatos[]
   >([]);
-  const [dataTable, setDataTable] = useState<IListContatos[]>([]);
   const [isNewContactModal, setNewContactModal] = useState<boolean>(false);
   const [isUpdateContactModal, setUpdateContactModal] =
     useState<boolean>(false);
-
   const [contactForUpdate, setContactForUpdate] = useState<IListContatos>(
     {} as IListContatos
   );
-
   const [isDeleteModal, setDeleteModal] = useState<boolean>(false);
   const [selectedContact, setSelectedContact] = useState<IListContatos | null>(
     null
   );
   const [modalContent, setModalContent] = useState<string>("");
+  const [page, setPage] = useState(0);
 
   useEffect(() => {
     const clientForView: IListCliente = location.state?.clientForView;
@@ -65,7 +64,6 @@ export function ViewCustomer(): JSX.Element {
         dataClient.code_client
       );
       setCustomerContactsList(response.data);
-      setDataTable(response.data);
     } catch (error) {
       toast.error(
         `Erro ao tentar ler clientes, contacte o administrador do sistema ${error}`
@@ -132,18 +130,11 @@ export function ViewCustomer(): JSX.Element {
     fetchData();
   };
 
-  const handleSearch = useCallback(() => {
-    if (searchTerm.trim() === "") {
-      setDataTable(customerContactsList);
-    } else {
-      const filteredData = customerContactsList.filter((item) =>
-        Object.values(item).some((value) =>
-          value.toString().toLowerCase().includes(searchTerm.toLowerCase())
-        )
-      );
-      setDataTable(filteredData);
-    }
-  }, [searchTerm, customerContactsList]);
+  const { filteredData, handleSearch } = useTableSearch({
+    data: customerContactsList,
+    searchTerm,
+    setPage,
+  });
 
   useEffect(() => {
     handleSearch();
@@ -184,9 +175,9 @@ export function ViewCustomer(): JSX.Element {
 
   const nameColumnsFromContacts = useMemo(
     () => [
-      { field: "name", header: "Nome" },
-      { field: "email", header: "E-mail" },
-      { field: "sector", header: "Setor" },
+      { field: "name", header: "Nome", sortable: true },
+      { field: "email", header: "E-mail", sortable: true },
+      { field: "sector", header: "Setor", sortable: true },
       { field: "telephone", header: "Telefone" },
       { field: "cellphone", header: "Celular" },
     ],
@@ -273,11 +264,13 @@ export function ViewCustomer(): JSX.Element {
           </BoxContainer>
           <CardContent>
             <CustomTable
-              data={dataTable}
+              data={filteredData}
               columns={nameColumnsFromContacts}
               isLoading={isLoading}
               hasPagination={true}
               actionButtons={renderActionButtons}
+              page={page}
+              setPage={setPage}
             />
           </CardContent>
         </SCardInfo>

@@ -2,14 +2,12 @@ import { useEffect, useMemo, useState } from "react";
 import { Modal } from "../../../../../../../../components/Modal";
 import { ISelectedCustomer, ModalClientesProps } from "./types";
 import CustomTable from "../../../../../../../../components/CustomTable";
-import {
-  IColumn,
-  TableDataProps,
-} from "../../../../../../../../components/CustomTable/types";
+import { IColumn } from "../../../../../../../../components/CustomTable/types";
 import { CustomSearch } from "../../../../../../../../components/CustomSearch";
 import CustomButton from "../../../../../../../../components/CustomButton";
 
 import { SContainerSearchAndButton } from "./styles";
+import useTableSearch from "../../../../../../../../hooks/useTableSearch";
 
 export function ModalClientes({
   onClose,
@@ -24,8 +22,7 @@ export function ModalClientes({
 
   const [searchTerm, setSearchTerm] = useState("");
 
-  const [dataTable, setDataTable] = useState<TableDataProps[]>([]);
-
+  const [page, setPage] = useState(0);
   const handleConfirm = () => {
     if (selectedCustomer) {
       onConfirm({
@@ -40,24 +37,18 @@ export function ModalClientes({
     onClose();
   };
 
-  useEffect(() => {
-    if (data) {
-      setDataTable(data);
-    }
-  }, [data]);
+  // Remover Depois Andre
+  // useEffect(() => {
+  //   if (data) {
+  //     setDataTable(data);
+  //   }
+  // }, [data]);
 
-  const handleSearch = () => {
-    if (searchTerm.trim() === "") {
-      setDataTable(data);
-    } else {
-      const filteredData = data.filter((item) =>
-        Object.values(item).some((value) =>
-          value.toString().toLowerCase().includes(searchTerm.toLowerCase())
-        )
-      );
-      setDataTable(filteredData);
-    }
-  };
+  const { filteredData, handleSearch } = useTableSearch({
+    data: data,
+    searchTerm,
+    setPage,
+  });
 
   useEffect(() => {
     handleSearch();
@@ -65,8 +56,8 @@ export function ModalClientes({
 
   const nameColumns: IColumn[] = useMemo(
     () => [
-      { field: "name", header: "Nome" },
-      { field: "cnpj_cpf", header: "CNPJ/CPF" },
+      { field: "name", header: "Nome", sortable: true },
+      { field: "cnpj_cpf", header: "CNPJ/CPF", sortable: true },
       { field: "city", header: "Cidade" },
       { field: "state", header: "UF" },
     ],
@@ -102,10 +93,12 @@ export function ModalClientes({
         </SContainerSearchAndButton>
         <CustomTable
           isLoading={loading}
-          data={dataTable}
+          data={filteredData}
           columns={nameColumns}
           hasCheckbox
           hasPagination
+          page={page}
+          setPage={setPage}
           onRowClick={(rowData) =>
             setSelectedCustomer({
               ...rowData,
