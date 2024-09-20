@@ -3,7 +3,7 @@ import CustomButton from "../../../../../../components/CustomButton";
 import PdfGenerator from "../../../../../../helpers/PDFGenerator";
 import ContratoTemplate from "../../../../../../templates/contrato";
 
-export const Review: React.FC<StepProps> = ({ formData }) => {
+export const Review: React.FC<StepProps> = ({ formData, isEditMode }) => {
     const handleImprimir = () => {
         PdfGenerator(document, "contrato", nomeArquivo, "pdf");
     };
@@ -17,12 +17,15 @@ export const Review: React.FC<StepProps> = ({ formData }) => {
 
     let nomeArquivo = `${numberContract}.pdf`;
 
+    const modeSave = isEditMode ? false : true;
+
     return (
         <>
             <div style={{ width: 900 }}>
                 <ContratoTemplate
                     formData={formData}
                     nomeArquivo={nomeArquivo}
+                    modeSave={modeSave}
                 />
                 <div style={{ textAlign: "right" }}>
                     <CustomButton onClick={handleImprimir} $variant={"primary"}>

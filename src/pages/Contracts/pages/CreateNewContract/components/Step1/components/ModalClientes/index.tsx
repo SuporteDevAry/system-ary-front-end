@@ -19,7 +19,6 @@ export function ModalClientes({
 }: ModalClientesProps) {
   const [selectedCustomer, setSelectedCustomer] =
     useState<ISelectedCustomer | null>(null);
-
   const [searchTerm, setSearchTerm] = useState("");
 
   const [page, setPage] = useState(0);
@@ -37,12 +36,11 @@ export function ModalClientes({
     onClose();
   };
 
-  // Remover Depois Andre
-  // useEffect(() => {
-  //   if (data) {
-  //     setDataTable(data);
-  //   }
-  // }, [data]);
+  useEffect(() => {
+    if (data) {
+      handleSearch();
+    }
+  }, [data]);
 
   const { filteredData, handleSearch } = useTableSearch({
     data: data,
