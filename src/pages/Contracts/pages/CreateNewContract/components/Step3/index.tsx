@@ -10,8 +10,11 @@ export const Step3: React.FC<StepProps> = ({
   handleChange,
   formData,
   updateFormData,
+  isEditMode,
 }) => {
   const [isEditingPrice, setIsEditingPrice] = useState<boolean>(false);
+
+  const modeSave = isEditMode ? false : true;
 
   const handleFieldPickupChange = (value: string) => {
     const info = fieldInfo[value as FieldType];
@@ -124,7 +127,7 @@ export const Step3: React.FC<StepProps> = ({
         value={
           isEditingPrice
             ? formData.price
-            : formatCurrency(formData.price, formData.type_currency)
+            : formatCurrency(formData.price, formData.type_currency, modeSave)
         }
         radioOptions={[
           { label: "BRL", value: "Real" },

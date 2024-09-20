@@ -237,6 +237,7 @@ export const CreateNewContract: React.FC = () => {
           formData={formData}
           handleChange={handleChange}
           updateFormData={updateFormData}
+          isEditMode={isEditMode}
         />,
       ],
     },
@@ -248,7 +249,9 @@ export const CreateNewContract: React.FC = () => {
     },
     {
       label: "Review",
-      elements: [<Review id="review" formData={formData} />],
+      elements: [
+        <Review id="review" formData={formData} isEditMode={isEditMode} />,
+      ],
     },
   ];
 

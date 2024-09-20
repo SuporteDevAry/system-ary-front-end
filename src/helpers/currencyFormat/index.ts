@@ -1,11 +1,14 @@
 export const formatCurrency = (
   value: string,
-  currency: "Real" | "Dólar" | string
+  currency: "Real" | "Dólar" | string,
+  modeSave?: boolean
 ): string => {
   // Remove todos os caracteres que não sejam números, ponto ou hífen.
-  const numberValue = parseFloat(
-    value.replace(/[^\d,-]/g, "").replace(",", ".")
-  );
+
+  let numberValue = parseFloat(value);
+  if (modeSave) {
+    numberValue = parseFloat(value.replace(/[^\d,-]/g, "").replace(",", "."));
+  }
 
   const locale = currency === "Real" ? "pt-BR" : "en-US";
 
