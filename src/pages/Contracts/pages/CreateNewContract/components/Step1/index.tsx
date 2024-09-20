@@ -82,6 +82,22 @@ export const Step1: React.FC<StepProps> = ({
     [formData, updateFormData, handleCloseCustomerModal]
   );
 
+  const handleInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>, type: "seller" | "buyer") => {
+      const { value } = e.target;
+
+      if (updateFormData) {
+        updateFormData({
+          [type]: {
+            ...formData[type],
+            name: value, // Atualiza apenas o campo name
+          },
+        });
+      }
+    },
+    [updateFormData, formData]
+  );
+
   return (
     <>
       <SContainer id={id}>
@@ -102,7 +118,7 @@ export const Step1: React.FC<StepProps> = ({
               name="seller"
               label="Vendedor: "
               $labelPosition="top"
-              onChange={handleChange}
+              onChange={(e) => handleInputChange(e, "seller")}
               value={formData?.seller?.name}
             />
           </Box>
@@ -127,7 +143,7 @@ export const Step1: React.FC<StepProps> = ({
               name="buyer"
               label="Comprador:"
               $labelPosition="top"
-              onChange={handleChange}
+              onChange={(e) => handleInputChange(e, "buyer")}
               value={formData?.buyer?.name}
             />
           </Box>
