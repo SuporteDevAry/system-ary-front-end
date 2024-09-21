@@ -3,10 +3,7 @@ import CustomButton from "../../../../components/CustomButton";
 import { CustomSearch } from "../../../../components/CustomSearch";
 import CustomTable from "../../../../components/CustomTable";
 import { SContainer, SContainerSearchAndButton, STitle } from "./styles";
-import {
-  IColumn,
-  TableDataProps,
-} from "../../../../components/CustomTable/types";
+import { IColumn } from "../../../../components/CustomTable/types";
 import { CustomTimeline } from "./components/CustomTimeline";
 import { ContractContext } from "../../../../contexts/ContractContext";
 import { toast } from "react-toastify";
@@ -20,7 +17,6 @@ export function HistoryContracts() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [listcontracts, setListContracts] = useState<IContractData[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  //const [dataTable, setDataTable] = useState<TableDataProps[]>([]);
   const [page, setPage] = useState(0);
 
   const fetchData = useCallback(async () => {
@@ -41,29 +37,6 @@ export function HistoryContracts() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
-
-  // const handleSearch = useCallback(() => {
-  //   if (searchTerm.trim() === "") {
-  //     setDataTable(listcontracts);
-  //   } else {
-  //     const filteredData = listcontracts.filter((item) => {
-  //       const searchableFields = [
-  //         item.status?.status_current || "",
-  //         item.seller?.name || "",
-  //         item.buyer?.name || "",
-  //         item.number_contract?.toString() || "",
-  //         item.owner_contract?.toString() || "",
-  //         // Adicione outros campos que deseja filtrar, se necessário (created_at)
-  //       ];
-
-  //       return searchableFields.some((field) =>
-  //         field.toLowerCase().includes(searchTerm.toLowerCase())
-  //       );
-  //     });
-
-  //     setDataTable(filteredData);
-  //   }
-  // }, [searchTerm, listcontracts]);
 
   const { filteredData, handleSearch } = useTableSearch({
     data: listcontracts,
