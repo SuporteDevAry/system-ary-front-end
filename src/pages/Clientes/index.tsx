@@ -11,6 +11,7 @@ import CustomButton from "../../components/CustomButton";
 import { toast } from "react-toastify";
 import { ModalDelete } from "../../components/ModalDelete";
 import useTableSearch from "../../hooks/useTableSearch";
+import { IColumn } from "../../components/CustomTable/types";
 
 export function Clientes() {
   const clienteContext = ClienteContext();
@@ -112,7 +113,7 @@ export function Clientes() {
     handleSearch();
   }, [searchTerm, handleSearch]);
 
-  const nameColumns = useMemo(
+  const nameColumns:  IColumn[] = useMemo(
     () => [
       { field: "code_client", header: "Código", width: "60px" },
       {
@@ -121,7 +122,7 @@ export function Clientes() {
         width: "190px",
         sortable: true,
       },
-      { field: "cnpj_cpf", header: "CNPJ/CPF", width: "150px", sortable: true },
+      { field: "cnpj_cpf", header: "CNPJ/CPF", width: "190px", sortable: true },
       { field: "city", header: "Cidade", width: "150px" },
       { field: "state", header: "UF", width: "80px" },
     ],
