@@ -173,6 +173,11 @@ export const CreateNewContract: React.FC = () => {
         if (!isEditMode) {
           const { id: _, ...contractToCreate } = contractData;
 
+          if (!contractToCreate.quantity || !contractToCreate.price) {
+            toast.error(`Obrigatório informar quantidade e preço!`);
+            return;
+          }
+
           const response = await createContract(contractToCreate);
 
           toast.success(
