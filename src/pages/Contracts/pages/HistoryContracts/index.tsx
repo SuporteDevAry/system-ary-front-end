@@ -18,13 +18,15 @@ export function HistoryContracts() {
   const [listcontracts, setListContracts] = useState<IContractData[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(0);
+  const [order, setOrder] = useState<"asc" | "desc">("desc");
+  const [orderBy, setOrderBy] = useState<string>("updated_at");
 
   const fetchData = useCallback(async () => {
     try {
       setIsLoading(true);
       const response = await contractContext.listContracts();
+
       setListContracts(response.data);
-      //setDataTable(response.data);
     } catch (error) {
       toast.error(
         `Erro ao tentar ler contratos, contacte o administrador do sistema: ${error}`
@@ -112,9 +114,6 @@ export function HistoryContracts() {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-        {/* <CustomButton $variant="primary" width="90px" onClick={handleSearch}>
-          Pesquisar
-        </CustomButton> */}
       </SContainerSearchAndButton>
       <CustomTable
         isLoading={isLoading}
@@ -130,6 +129,10 @@ export function HistoryContracts() {
         maxChars={15}
         page={page}
         setPage={setPage}
+        order={order}
+        orderBy={orderBy}
+        setOrder={setOrder}
+        setOrderBy={setOrderBy}
       />
     </SContainer>
   );

@@ -21,6 +21,8 @@ export function Users() {
   );
   const [dataTable, setDataTable] = useState<IListUser[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [order, setOrder] = useState<"asc" | "desc">("asc");
+  const [orderBy, setOrderBy] = useState<string>("name");
 
   const fetchData = useCallback(async () => {
     try {
@@ -153,6 +155,10 @@ export function Users() {
           hasPagination={true}
           actionButtons={renderActionButtons}
           dateFields={["created_at"]}
+          order={order}
+          orderBy={orderBy}
+          setOrder={setOrder}
+          setOrderBy={setOrderBy}
         />
       </CardContent>
 

@@ -84,6 +84,12 @@ export const Step3: React.FC<StepProps> = ({
   };
 
   useEffect(() => {
+    if (isEditMode && formData.quantity) {
+      console.log("", formData);
+    }
+  }, []);
+  
+  useEffect(() => {
     const quantityWorked = !formData.quantity.match(/,/g)
       ? formData.quantity.replace(/[.]/g, "")
       : formData.quantity.replace(/[,]/g, ".");

@@ -42,12 +42,16 @@ const CustomTable: React.FC<ICustomTableProps> = ({
   renderChildren,
   onRowClick,
   actionButtons,
+  order,
+  orderBy,
+  setOrder,
+  setOrderBy,
 }) => {
   const [openRows, setOpenRows] = useState<number[]>([]);
   const [selectedRowId, setSelectedRowId] = useState<number | null>(null);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [order, setOrder] = useState<"asc" | "desc">("asc");
-  const [orderBy, setOrderBy] = useState<string>("id");
+  // const [order, setOrder] = useState<"asc" | "desc">("desc");
+  // const [orderBy, setOrderBy] = useState<string>("updated_at");
 
   const handleRequestSort = (property: string) => {
     const column = columns.find((col) => col.field === property);
@@ -201,7 +205,10 @@ const CustomTable: React.FC<ICustomTableProps> = ({
                   {columns.map((column) => (
                     <TableCell
                       key={column.field}
-                      style={{ width: column.width || "auto" }}
+                      style={{
+                        width: column.width || "auto",
+                        whiteSpace: "nowrap",
+                      }}
                     >
                       {formatCellValue(row, column)}
                     </TableCell>

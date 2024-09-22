@@ -50,6 +50,8 @@ export function ViewCustomer(): JSX.Element {
   );
   const [modalContent, setModalContent] = useState<string>("");
   const [page, setPage] = useState(0);
+  const [order, setOrder] = useState<"asc" | "desc">("asc");
+  const [orderBy, setOrderBy] = useState<string>("name");
 
   useEffect(() => {
     const clientForView: IListCliente = location.state?.clientForView;
@@ -271,6 +273,10 @@ export function ViewCustomer(): JSX.Element {
               actionButtons={renderActionButtons}
               page={page}
               setPage={setPage}
+              order={order}
+              orderBy={orderBy}
+              setOrder={setOrder}
+              setOrderBy={setOrderBy}
             />
           </CardContent>
         </SCardInfo>

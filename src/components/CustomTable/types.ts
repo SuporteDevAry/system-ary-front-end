@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { Dispatch, ReactNode, SetStateAction } from "react";
 
 export interface IColumn {
   header: string;
@@ -24,6 +24,10 @@ export interface ICustomTableProps {
   onRowClick?: (row: TableDataProps) => void;
   actionButtons?: (row: TableDataProps) => ReactNode;
   maxChars?: number;
-  page?: number; // Adicionar a propriedade `page`
-  setPage?: (page: number) => void;
+  page?: number;
+  setPage?: Dispatch<SetStateAction<number>>;
+  order: "asc" | "desc";
+  orderBy: string;
+  setOrder: Dispatch<SetStateAction<"asc" | "desc">>;
+  setOrderBy: Dispatch<SetStateAction<string>>;
 }
