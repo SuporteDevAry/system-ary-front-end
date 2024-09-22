@@ -40,6 +40,7 @@ export type FormDataContract = {
   status: ContractStatus;
   number_contract?: string;
   id?: string;
+  updated_at?: string;
 };
 
 export interface StepProps {

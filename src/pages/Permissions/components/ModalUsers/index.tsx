@@ -16,6 +16,8 @@ export function ModalUsers({ open, onClose, onConfirm }: ModalUsersProps) {
   const [selectedUser, setSelectedUser] = useState<ISelectedUser | null>(null);
   const [dataTable, setDataTable] = useState<IListUser[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [order, setOrder] = useState<"asc" | "desc">("asc");
+  const [orderBy, setOrderBy] = useState<string>("name");
 
   const fetchData = useCallback(async () => {
     try {
@@ -96,6 +98,10 @@ export function ModalUsers({ open, onClose, onConfirm }: ModalUsersProps) {
           onRowClick={(rowData) =>
             setSelectedUser({ name: rowData.name, email: rowData.email })
           }
+          order={order}
+          orderBy={orderBy}
+          setOrder={setOrder}
+          setOrderBy={setOrderBy}
         />
       </Modal>
     </>

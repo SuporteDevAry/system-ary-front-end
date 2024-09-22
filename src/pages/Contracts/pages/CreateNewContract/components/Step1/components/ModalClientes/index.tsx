@@ -20,6 +20,8 @@ export function ModalClientes({
   const [selectedCustomer, setSelectedCustomer] =
     useState<ISelectedCustomer | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [order, setOrder] = useState<"asc" | "desc">("asc");
+  const [orderBy, setOrderBy] = useState<string>("name");
 
   const [page, setPage] = useState(0);
   const handleConfirm = () => {
@@ -104,6 +106,10 @@ export function ModalClientes({
               type: selectionType,
             })
           }
+          order={order}
+          orderBy={orderBy}
+          setOrder={setOrder}
+          setOrderBy={setOrderBy}
         />
       </Modal>
     </>
