@@ -4,7 +4,7 @@ import { V } from "../../../../styles/variables";
 export const STitle = styled.h2``;
 
 export const SContainer = styled.div`
-  width: 900px;
+  width: 100%;
 `;
 
 export const SContainerSearchAndButton = styled.div`

@@ -170,7 +170,7 @@ export function Permissions() {
     } catch (error) {
       toast.error(`Erro ao atualizar permissões: ${error}`);
     }
-  }, []);
+  }, [permissionId, permissions]);
 
   const handleClearInput = useCallback(() => {
     setFormData({
