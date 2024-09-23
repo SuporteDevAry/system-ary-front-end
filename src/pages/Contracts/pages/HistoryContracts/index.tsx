@@ -19,7 +19,7 @@ export function HistoryContracts() {
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(0);
   const [order, setOrder] = useState<"asc" | "desc">("desc");
-  const [orderBy, setOrderBy] = useState<string>("updated_at");
+  const [orderBy, setOrderBy] = useState<string>("created_at");
 
   const fetchData = useCallback(async () => {
     try {

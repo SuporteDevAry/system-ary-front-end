@@ -22,7 +22,7 @@ export const IContractDataToFormDataDTO = (
     type_icms: data.type_icms,
     icms: data.icms,
     payment: data.payment,
-    type_commission_seller:data?.type_commission_seller,
+    type_commission_seller: data?.type_commission_seller,
     commission_seller: data?.commission_seller?.toString(),
     type_commission_buyer: data?.type_commission_buyer,
     commission_buyer: data?.commission_buyer?.toString(),

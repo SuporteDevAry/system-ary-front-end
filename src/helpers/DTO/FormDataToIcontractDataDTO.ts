@@ -39,6 +39,5 @@ export const FormDataToIContractDataDTO = (
       status_current: data.status.status_current || "",
       history: data.status.history || [],
     },
-    updated_at: data.updated_at || "",
   };
 };
