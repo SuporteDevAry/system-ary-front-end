@@ -3,7 +3,7 @@ import styled from "styled-components";
 import { V } from "../../styles/variables";
 
 export const SContainer = styled.div`
-  width: 100%;
+  width: 960px;
 `;
 
 export const STitle = styled.h2`
