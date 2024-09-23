@@ -2,6 +2,10 @@ import styled from "styled-components";
 
 import { V } from "../../styles/variables";
 
+export const SContainer = styled.div`
+  width: 100%;
+`;
+
 export const STitle = styled.h2`
   padding-left: ${V.mdSpacing};
 `;

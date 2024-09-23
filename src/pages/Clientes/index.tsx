@@ -1,6 +1,6 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { BoxContainer, SButtonContainer, STitle } from "./styles";
+import { BoxContainer, SButtonContainer, SContainer, STitle } from "./styles";
 
 import CardContent from "@mui/material/CardContent";
 import { ClienteContext } from "../../contexts/ClienteContext";
@@ -161,7 +161,7 @@ export function Clientes() {
   );
 
   return (
-    <>
+    <SContainer>
       <STitle>Clientes</STitle>
       <BoxContainer>
         <CustomSearch
@@ -202,6 +202,6 @@ export function Clientes() {
           onConfirm={handleDeleteCliente}
         />
       )}
-    </>
+    </SContainer>
   );
 }
