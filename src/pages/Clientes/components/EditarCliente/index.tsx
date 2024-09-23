@@ -50,14 +50,14 @@ export function EditarCliente() {
 
     try {
       clienteContext.updateCliente(clienteForUpdate.id, {
-        nickname: formData.nickname,
-        name: formData.name,
-        address: formData.address,
+        nickname: formData.nickname.toUpperCase(),
+        name: formData.name.toUpperCase(),
+        address: formData.address.toUpperCase(),
         number: formData.number,
-        complement: formData.complement,
-        district: formData.district,
-        city: formData.city,
-        state: formData.state,
+        complement: formData.complement.toUpperCase(),
+        district: formData.district.toUpperCase(),
+        city: formData.city.toUpperCase(),
+        state: formData.state.toUpperCase(),
         zip_code: formData.zip_code,
         kind: formData.kind,
         cnpj_cpf: formData.cnpj_cpf,
