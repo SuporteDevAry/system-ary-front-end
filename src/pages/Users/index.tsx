@@ -23,6 +23,7 @@ export function Users() {
   const [searchTerm, setSearchTerm] = useState("");
   const [order, setOrder] = useState<"asc" | "desc">("asc");
   const [orderBy, setOrderBy] = useState<string>("name");
+  const [page, setPage] = useState(0);
 
   const fetchData = useCallback(async () => {
     try {
@@ -155,6 +156,8 @@ export function Users() {
           hasPagination={true}
           actionButtons={renderActionButtons}
           dateFields={["created_at"]}
+          page={page}
+          setPage={setPage}
           order={order}
           orderBy={orderBy}
           setOrder={setOrder}
