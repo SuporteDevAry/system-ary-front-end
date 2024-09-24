@@ -5,6 +5,7 @@ export interface IContractsProvider {
 export type IUserInfo = {
   name: string;
   email: string;
+  permissions?: string[];
 };
 
 export type CustomerInfo = {

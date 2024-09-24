@@ -87,16 +87,13 @@ export const Step3: React.FC<StepProps> = ({
   useEffect(() => {
     const price = parseFloat(formData.price.replace(",", "."));
     const quantityToKG = Number(formData.quantity.replace(",", ".")) * 1000;
-    const quantityToBag = Math.round(Number(quantityToKG) / 60).toFixed(2);
-    const totalContractValue = Math.round(
-      price * Number(quantityToBag)
-    ).toFixed(2);
+    const quantityToBag = (Number(quantityToKG) / 60).toFixed(3);
+    const totalContractValue = Number(price * Number(quantityToBag)).toFixed(3);
 
     if (totalContractValue) {
       updateFormData?.({
         ...formData,
         total_contract_value: parseFloat(totalContractValue),
-        //quantity: formData.quantity,
         quantity_kg: quantityToKG,
         quantity_bag: Number(quantityToBag),
       });
