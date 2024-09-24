@@ -19,7 +19,7 @@ import { formattedDate, formattedTime } from "../../../../helpers/dateFormat";
 import { IContractData } from "../../../../contexts/ContractContext/types";
 import { FormDataContract, StepType } from "./types";
 import { IContractDataToFormDataDTO } from "../../../../helpers/DTO/IcontractDataToFormDataDTO";
-import { useInfo } from "../../../../hooks";
+import { useInfo, useUserPermissions } from "../../../../hooks";
 
 export const CreateNewContract: React.FC = () => {
   const { createContract, updateContract } = ContractContext();
@@ -85,6 +85,8 @@ export const CreateNewContract: React.FC = () => {
       history: [],
     },
   });
+  const { canConsult } = useUserPermissions();
+  //const profileConsultant =  dataUserInfo?.permissions?.includes("CONSULTA");
 
   useEffect(() => {
     if (location.state?.isEditMode) {
@@ -280,15 +282,22 @@ export const CreateNewContract: React.FC = () => {
             Voltar
           </CustomButton>
         )}
-        <CustomButton onClick={handleNext} $variant={"success"}>
-          {isLoading ? (
-            <CircularProgress size={24} />
-          ) : activeStep === steps.length - 1 ? (
-            "Salvar"
-          ) : (
-            "Avançar"
-          )}
-        </CustomButton>
+
+        {isLoading ? (
+          <CircularProgress size={24} />
+        ) : activeStep === steps.length - 1 ? (
+          <CustomButton
+            onClick={handleNext}
+            $variant={"success"}
+            disabled={canConsult}
+          >
+            Salvar
+          </CustomButton>
+        ) : (
+          <CustomButton onClick={handleNext} $variant={"success"}>
+            Avançar
+          </CustomButton>
+        )}
       </SButtonContainer>
     </SContainer>
   );

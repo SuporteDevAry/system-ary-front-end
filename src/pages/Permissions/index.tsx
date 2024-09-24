@@ -28,6 +28,7 @@ import {
   AiOutlineSetting,
 } from "react-icons/ai";
 import { LiaUserShieldSolid, LiaFileContractSolid } from "react-icons/lia";
+import { BiSearchAlt2 } from "react-icons/bi";
 import { toast } from "react-toastify";
 
 interface IPermissions {
@@ -45,7 +46,9 @@ export function Permissions() {
   const [permissionsToken, setPermissionsToken] = useState([]);
   const [permissionId, setPermissionId] = useState<string>();
 
-  //Para inserir um novo card na tela permissão: src/components/Sidebar/index.tsx
+  /*Para inserir um novo icone/menu de acordo com a tela de permissão: src/components/Sidebar/index.tsx
+   * Para inserir um novo card apenas na tela permissão: add no permissionLinks
+   */
   const permissionsLinks = useMemo(
     () => [
       {
@@ -72,6 +75,11 @@ export function Permissions() {
         label: "Admin",
         icon: <AiOutlineSetting size={40} />,
         key: "ADMIN",
+      },
+      {
+        label: "Consulta",
+        icon: <BiSearchAlt2 size={40} />,
+        key: "CONSULTA",
       },
     ],
     []

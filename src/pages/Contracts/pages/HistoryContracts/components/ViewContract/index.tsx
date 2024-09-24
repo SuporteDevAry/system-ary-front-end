@@ -19,7 +19,7 @@ import { toast } from "react-toastify";
 import { IContractData } from "../../../../../../contexts/ContractContext/types";
 import CustomButton from "../../../../../../components/CustomButton";
 import { formatCurrency } from "../../../../../../helpers/currencyFormat";
-import { useInfo } from "../../../../../../hooks";
+import { useInfo, useUserPermissions } from "../../../../../../hooks";
 import { ContractContext } from "../../../../../../contexts/ContractContext";
 import {
   formattedDate,
@@ -35,9 +35,12 @@ export function ViewContract(): JSX.Element {
   const location = useLocation();
   const navigate = useNavigate();
   const { dataUserInfo } = useInfo();
+  const { canConsult } = useUserPermissions();
   const [dataClient, setDataClient] = useState<IContractData | null>(null);
   const [modalContent, setModalContent] = useState<string>("");
   const [isDeleteModal, setDeleteModal] = useState<boolean>(false);
+
+  const forDisabled = dataClient?.status.status_current === "Deletado";
 
   useEffect(() => {
     const contractForView: IContractData = location.state?.contractForView;
@@ -135,8 +138,6 @@ export function ViewContract(): JSX.Element {
     }
   };
 
-  const forDisabled = dataClient?.status.status_current === "Deletado";
-
   const contractFields = [
     { label: "Produto", value: dataClient?.name_product },
     { label: "Vendedor", value: dataClient?.seller.name },
@@ -149,7 +150,7 @@ export function ViewContract(): JSX.Element {
       ),
     },
     {
-      label: "Quantidade por Saca",
+      label: "Quantidade de saca",
       value:
         dataClient?.quantity_bag && dataClient?.type_currency
           ? Number(dataClient.quantity_bag).toFixed(2)
@@ -204,7 +205,7 @@ export function ViewContract(): JSX.Element {
                 $variant="danger"
                 width="70px"
                 onClick={handleOpenDeleteModal}
-                disabled={forDisabled}
+                disabled={forDisabled || canConsult}
               >
                 Deletar
               </CustomButton>

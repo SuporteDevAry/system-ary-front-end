@@ -12,11 +12,13 @@ import { toast } from "react-toastify";
 import { ModalDelete } from "../../components/ModalDelete";
 import useTableSearch from "../../hooks/useTableSearch";
 import { IColumn } from "../../components/CustomTable/types";
+import { useUserPermissions } from "../../hooks";
 
 export function Clientes() {
   const clienteContext = ClienteContext();
   const navigate = useNavigate();
   const location = useLocation();
+  const { canConsult } = useUserPermissions();
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [clientes, setClientes] = useState<IListCliente[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -145,6 +147,7 @@ export function Clientes() {
           $variant="primary"
           width="60px"
           onClick={() => handleUpdateCliente(row)}
+          disabled={canConsult}
         >
           Editar
         </CustomButton>
@@ -152,6 +155,7 @@ export function Clientes() {
           $variant="danger"
           width="60px"
           onClick={() => handleOpenDeleteModal(row)}
+          disabled={canConsult}
         >
           Deletar
         </CustomButton>
@@ -174,6 +178,7 @@ export function Clientes() {
           $variant="success"
           width="180px"
           onClick={handleCreateCliente}
+          disabled={canConsult}
         >
           Criar Novo Cliente
         </CustomButton>

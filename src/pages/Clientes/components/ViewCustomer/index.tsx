@@ -27,9 +27,11 @@ import { toast } from "react-toastify";
 import { insertMaskInTelefone } from "../../../../helpers/front-end/insertMaskInFone";
 import { insertMaskInCelular } from "../../../../helpers/front-end/insertMaskInCelular";
 import useTableSearch from "../../../../hooks/useTableSearch";
+import { useUserPermissions } from "../../../../hooks";
 
 export function ViewCustomer(): JSX.Element {
   const location = useLocation();
+  const { canConsult } = useUserPermissions();
 
   const [dataClient, setDataClient] = useState<IListCliente | null>(null);
   const contactContext = ContatoContext();
@@ -193,6 +195,7 @@ export function ViewCustomer(): JSX.Element {
           $variant={"primary"}
           width="80px"
           onClick={() => handleUpdateCustomerContact(row)}
+          disabled={canConsult}
         >
           Editar
         </CustomButton>
@@ -200,6 +203,7 @@ export function ViewCustomer(): JSX.Element {
           $variant={"danger"}
           width="80px"
           onClick={() => handleOpenDeleteModal(row)}
+          disabled={canConsult}
         >
           Deletar
         </CustomButton>
@@ -260,6 +264,7 @@ export function ViewCustomer(): JSX.Element {
               onClick={handleCreateNewContact}
               $variant={"success"}
               width="180px"
+              disabled={canConsult}
             >
               Criar Novo Contato
             </CustomButton>
