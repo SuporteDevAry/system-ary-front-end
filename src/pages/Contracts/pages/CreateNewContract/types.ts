@@ -40,6 +40,7 @@ export type FormDataContract = {
   status: ContractStatus;
   number_contract?: string;
   id?: string;
+  contract_emission_date: string;
   //updated_at?: string;
 };
 

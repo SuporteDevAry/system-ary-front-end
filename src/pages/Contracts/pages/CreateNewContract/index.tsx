@@ -84,6 +84,7 @@ export const CreateNewContract: React.FC = () => {
       status_current: "",
       history: [],
     },
+    contract_emission_date: "",
   });
   const { canConsult } = useUserPermissions();
   //const profileConsultant =  dataUserInfo?.permissions?.includes("CONSULTA");
