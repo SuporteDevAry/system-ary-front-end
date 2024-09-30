@@ -10,6 +10,12 @@ import "dayjs/locale/pt-br";
 dayjs.extend(localizedFormat);
 dayjs.locale("pt-br");
 
+const shouldDisableDate = (date: dayjs.Dayjs, disableWeekends: boolean) => {
+  if (!disableWeekends) return false;
+  // 0 = domingo, 6 = sábado
+  return date.day() === 0 || date.day() === 6;
+};
+
 export const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
   width,
   height,
@@ -17,6 +23,7 @@ export const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
   $labelPosition,
   value,
   onChange,
+  disableWeekends = false,
 }) => {
   const currentDate = dayjs();
 
@@ -34,6 +41,7 @@ export const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
         <DatePicker
           value={value ? dayjs(value, "DD/MM/YYYY") : currentDate}
           onChange={handleDateChange}
+          shouldDisableDate={(date) => shouldDisableDate(date, disableWeekends)}
           slotProps={{
             textField: {
               variant: "outlined",

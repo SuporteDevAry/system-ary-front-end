@@ -85,6 +85,15 @@ export const CreateNewContract: React.FC = () => {
       history: [],
     },
     contract_emission_date: "",
+    destination: "",
+    number_external_contract_seller: "",
+    number_external_contract_buyer: "",
+    day_exchange_rate: 0,
+    payment_date: "",
+    farm_direct: "",
+    initial_pickup_date: "",
+    final_pickup_date: "",
+    internal_communication: "",
   });
   const { canConsult } = useUserPermissions();
   //const profileConsultant =  dataUserInfo?.permissions?.includes("CONSULTA");
