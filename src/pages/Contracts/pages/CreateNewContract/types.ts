@@ -44,7 +44,7 @@ export type FormDataContract = {
   destination: string;
   number_external_contract_buyer: string;
   number_external_contract_seller: string;
-  day_exchange_rate: number;
+  day_exchange_rate: string;
   payment_date: string;
   farm_direct: string;
   initial_pickup_date: string;

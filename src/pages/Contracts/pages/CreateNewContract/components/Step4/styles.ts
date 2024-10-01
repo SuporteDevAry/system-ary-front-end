@@ -6,7 +6,12 @@ export const SContainer = styled.div`
   gap: 8px;
 `;
 
-export const SText = styled.h4``;
+export const SText = styled.h4`
+  font-family: "Roboto", sans-serif;
+  font-weight: 400;
+  font-size: 1rem;
+  letter-spacing: 0.6px;
+`;
 
 export const STextArea = styled.textarea`
   color: ${(props) => props.theme["gray-600"]};

@@ -9,7 +9,6 @@ export const Step2: React.FC<StepProps> = ({
   handleChange,
   formData,
   updateFormData,
-  isEditMode,
 }) => {
   const handleFieldChange = (field: string, value: string) => {
     const info = productInfo[value as ProductType];
@@ -30,13 +29,13 @@ export const Step2: React.FC<StepProps> = ({
         $labelPosition="top"
         selectOptions={[
           { value: "S", label: "SOJA em Grãos" },
-          { value: "CN", label: "MILHO" },
+          { value: "CN", label: "MILHO em Grãos" },
           { value: "T", label: "TRIGO" },
           { value: "SG", label: "SORGO" },
         ]}
         onSelectChange={(value) => handleFieldChange("product", value)}
         value={formData.product}
-        readOnly={isEditMode}
+        //readOnly={isEditMode}  permitindo editar o produto
       />
 
       <CustomInput
@@ -46,6 +45,23 @@ export const Step2: React.FC<StepProps> = ({
         $labelPosition="top"
         onChange={handleChange}
         value={formData.crop}
+      />
+
+      <CustomSelect
+        name="destination"
+        label="Destinação: "
+        $labelPosition="top"
+        selectOptions={[
+          { value: "+D.U.E", label: "+D.U.E" },
+          { value: "Comercialização", label: "Comercialização" },
+          {
+            value: "Industrialização Ração Animal - Suspenso de Pis/Cofins",
+            label: "Industrialização Ração Animal - Suspenso de Pis/Cofins",
+          },
+          { value: "", label: "Nenhum" },
+        ]}
+        onSelectChange={(value) => handleFieldChange("destination", value)}
+        value={formData.destination}
       />
 
       <SText>Qualidade:</SText>

@@ -13,14 +13,12 @@ import { CustomerInfo } from "../../../../../../contexts/ContractContext/types";
 import { getDataUserFromToken } from "../../../../../../contexts/AuthProvider/util";
 import { toast } from "react-toastify";
 import { CustomDatePicker } from "../../../../../../components/CustomDatePicker";
-import dayjs from "dayjs";
 
 export const Step1: React.FC<StepProps> = ({
   id,
   handleChange,
   formData,
   updateFormData,
-  isEditMode,
 }) => {
   const [isCustomerModalOpen, setCustomerModalOpen] = useState<boolean>(false);
   const [selectionType, setSelectionType] = useState<"buyer" | "seller">(

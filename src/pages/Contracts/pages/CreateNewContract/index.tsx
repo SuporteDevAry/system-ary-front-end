@@ -88,7 +88,7 @@ export const CreateNewContract: React.FC = () => {
     destination: "",
     number_external_contract_seller: "",
     number_external_contract_buyer: "",
-    day_exchange_rate: 0,
+    day_exchange_rate: "",
     payment_date: "",
     farm_direct: "",
     initial_pickup_date: "",

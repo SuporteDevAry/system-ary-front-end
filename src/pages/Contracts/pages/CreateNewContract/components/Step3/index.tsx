@@ -13,6 +13,8 @@ export const Step3: React.FC<StepProps> = ({
   isEditMode,
 }) => {
   const [isEditingPrice, setIsEditingPrice] = useState<boolean>(false);
+  const [isEditingExchangeRate, setIsEditingExchangeRate] =
+    useState<boolean>(false);
 
   const modeSave = isEditMode ? false : true;
 
@@ -100,6 +102,34 @@ export const Step3: React.FC<StepProps> = ({
     }
   }, [formData.price, formData.quantity]);
 
+  const handleExchangeRateFocus = () => {
+    setIsEditingExchangeRate(true);
+  };
+
+  const handleExchangeRateBlur = () => {
+    setIsEditingExchangeRate(false);
+  };
+
+  const handleNumericInputChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const { name, value } = event.target;
+
+    // Permitir apenas números, vírgula e ponto
+    const regex = /^[0-9]*[.,]?[0-9]*$/;
+
+    if (regex.test(value)) {
+      handleChange?.({
+        ...event,
+        target: {
+          ...event.target,
+          name,
+          value,
+        },
+      });
+    }
+  };
+
   return (
     <SContainer id={id}>
       <CustomInput
@@ -132,6 +162,23 @@ export const Step3: React.FC<StepProps> = ({
         onRadioChange={(e) => handleRadioChange(e, "type_currency")}
         selectedRadio={formData.type_currency}
       />
+
+      {formData.type_currency === "Dólar" && (
+        <CustomInput
+          type="text"
+          name="day_exchange_rate"
+          label="Câmbio do Dia:"
+          $labelPosition="top"
+          onChange={handleNumericInputChange}
+          onFocus={handleExchangeRateFocus}
+          onBlur={handleExchangeRateBlur}
+          value={
+            isEditingExchangeRate
+              ? formData.day_exchange_rate
+              : formatCurrency(formData.day_exchange_rate, "Real", modeSave)
+          }
+        />
+      )}
 
       <CustomInput
         type="text"
