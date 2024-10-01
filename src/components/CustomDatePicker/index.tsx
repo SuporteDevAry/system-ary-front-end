@@ -9,12 +9,7 @@ import "dayjs/locale/pt-br";
 
 dayjs.extend(localizedFormat);
 dayjs.locale("pt-br");
-
-const shouldDisableDate = (date: dayjs.Dayjs, disableWeekends: boolean) => {
-  if (!disableWeekends) return false;
-  // 0 = domingo, 6 = sábado
-  return date.day() === 0 || date.day() === 6;
-};
+const dayOfWeekLetters = ["D", "S", "T", "Q", "Q", "S", "S"];
 
 export const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
   width,
@@ -34,6 +29,15 @@ export const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
     onChange(finalDate);
   };
 
+  const shouldDisableDate = (date: dayjs.Dayjs) => {
+    // 0 = domingo, 6 = sábado
+    const sunday = 0;
+    const saturday = 6;
+    return (
+      disableWeekends && (date.day() === sunday || date.day() === saturday)
+    );
+  };
+
   return (
     <SContainer $labelPosition={$labelPosition}>
       <SLabel>{label}</SLabel>
@@ -41,7 +45,8 @@ export const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
         <DatePicker
           value={value ? dayjs(value, "DD/MM/YYYY") : currentDate}
           onChange={handleDateChange}
-          shouldDisableDate={(date) => shouldDisableDate(date, disableWeekends)}
+          shouldDisableDate={shouldDisableDate}
+          dayOfWeekFormatter={(day) => dayOfWeekLetters[day.day()]}
           slotProps={{
             textField: {
               variant: "outlined",

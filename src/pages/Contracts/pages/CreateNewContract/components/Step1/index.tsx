@@ -120,6 +120,7 @@ export const Step1: React.FC<StepProps> = ({
           $labelPosition="top"
           onChange={handleDateChange}
           value={formData.contract_emission_date}
+          //disableWeekends
         />
 
         <CustomInput
