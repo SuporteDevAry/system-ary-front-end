@@ -1,9 +1,11 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { CustomInput } from "../../../../../../components/CustomInput";
 import { formatCurrency } from "../../../../../../helpers/currencyFormat";
 import { StepProps } from "../../types";
 import { SContainer, SText, STextArea } from "./styles";
 import { fieldInfo, FieldType } from "./types";
+import CustomDatePicker from "../../../../../../components/CustomDatePicker";
+import { insertMaskInCnpj } from "../../../../../../helpers/front-end/insertMaskInCnpj";
 
 export const Step3: React.FC<StepProps> = ({
   id,
@@ -130,6 +132,33 @@ export const Step3: React.FC<StepProps> = ({
     }
   };
 
+  const formatPaymentText = (
+    date: string,
+    sellerName: string,
+    cpf_cnpj: string
+  ) => {
+    return `No dia ${date}, via Banco ...., Ag. nr. ....., c/c nr. ......, no CNPJ: ${cpf_cnpj} em nome de ${sellerName}.`;
+  };
+
+  const handleDateChange = useCallback(
+    (newDate: string) => {
+      if (updateFormData) {
+        console.log(formData.seller?.name);
+        const sellerName = formData.seller?.name || "vendedor";
+        const cpf_cnpj = formData.seller?.cnpj_cpf
+          ? insertMaskInCnpj(formData.seller.cnpj_cpf)
+          : "00.000.000/0000-00";
+        const paymentText = formatPaymentText(newDate, sellerName, cpf_cnpj);
+
+        updateFormData({
+          payment_date: newDate,
+          payment: paymentText,
+        });
+      }
+    },
+    [updateFormData, formData.seller]
+  );
+
   return (
     <SContainer id={id}>
       <CustomInput
@@ -196,12 +225,19 @@ export const Step3: React.FC<StepProps> = ({
         onRadioChange={(e) => handleRadioChange(e, "type_icms")}
         selectedRadio={formData.type_icms}
       />
-
-      <CustomInput
-        type="text"
-        name="payment"
-        label="Pagamento:"
+      <CustomDatePicker
+        width="260px"
+        height="38x"
+        name="payment_date"
+        label="Data do Pagamento:"
         $labelPosition="top"
+        onChange={handleDateChange}
+        value={formData.payment_date}
+        disableWeekends
+      />
+      <SText>Pagamento:</SText>
+      <STextArea
+        name="payment"
         onChange={handleChange}
         value={formData.payment}
       />
@@ -261,9 +297,11 @@ export const Step3: React.FC<StepProps> = ({
         value={formData.pickup_location}
       />
 
-      <SText>Conferência:</SText>
-      <STextArea
+      <CustomInput
+        type="text"
         name="inspection"
+        label="Conferência:"
+        $labelPosition="top"
         onChange={handleChange}
         value={formData.inspection}
       />

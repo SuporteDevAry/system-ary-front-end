@@ -132,6 +132,7 @@ export const CreateNewContract: React.FC = () => {
   };
 
   const updateFormData = (data: Partial<FormDataContract>) => {
+    console.log("####Brota", formData);
     setFormData((prevFormData) => ({
       ...prevFormData,
       ...data,

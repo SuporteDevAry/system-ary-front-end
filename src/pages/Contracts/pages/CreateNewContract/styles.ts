@@ -2,7 +2,7 @@ import styled from "styled-components";
 import Stepper from "@mui/material/Stepper";
 export const SContainer = styled.div`
   padding: 16px;
-  width: 980px;
+  min-width: 900px;
 `;
 
 export const SContent = styled.div`

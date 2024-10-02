@@ -25,3 +25,9 @@ export const SContainer = styled.div<SContainerProps>`
 export const SLabel = styled.span`
   padding-right: 10px;
 `;
+
+export const SBoxContent = styled.div`
+  display: flex;
+  gap: 16px;
+  padding-top: 8px;
+`;
