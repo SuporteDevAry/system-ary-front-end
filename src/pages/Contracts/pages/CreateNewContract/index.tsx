@@ -96,7 +96,6 @@ export const CreateNewContract: React.FC = () => {
     internal_communication: "",
   });
   const { canConsult } = useUserPermissions();
-  //const profileConsultant =  dataUserInfo?.permissions?.includes("CONSULTA");
 
   useEffect(() => {
     if (location.state?.isEditMode) {
@@ -132,7 +131,6 @@ export const CreateNewContract: React.FC = () => {
   };
 
   const updateFormData = (data: Partial<FormDataContract>) => {
-    console.log("####Brota", formData);
     setFormData((prevFormData) => ({
       ...prevFormData,
       ...data,
@@ -191,6 +189,7 @@ export const CreateNewContract: React.FC = () => {
             return;
           }
 
+          console.log("####Salvar Contrato", contractToCreate);
           const response = await createContract(contractToCreate);
 
           toast.success(

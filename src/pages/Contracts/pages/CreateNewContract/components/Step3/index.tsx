@@ -135,7 +135,6 @@ export const Step3: React.FC<StepProps> = ({
   const handleDateChange = useCallback(
     (newDate: string) => {
       if (updateFormData) {
-        console.log(formData.seller?.name);
         const sellerName = formData.seller?.name || "vendedor";
         const cpf_cnpj = formData.seller?.cnpj_cpf
           ? insertMaskInCnpj(formData.seller.cnpj_cpf)
@@ -151,6 +150,10 @@ export const Step3: React.FC<StepProps> = ({
     [updateFormData, formData.seller]
   );
 
+  useEffect(() => {
+    console.log(formData.commission_seller);
+    console.log(formData.commission_buyer);
+  }, []);
   return (
     <SContainer id={id}>
       <CustomInput
@@ -196,7 +199,7 @@ export const Step3: React.FC<StepProps> = ({
           value={
             isEditingExchangeRate
               ? formData.day_exchange_rate
-              : formatCurrency(formData.day_exchange_rate, "Real", modeSave)
+              : formatCurrency(formData.day_exchange_rate, "Real", false, true)
           }
         />
       )}

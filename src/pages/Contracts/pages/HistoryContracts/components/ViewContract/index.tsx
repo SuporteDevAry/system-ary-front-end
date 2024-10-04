@@ -47,6 +47,8 @@ export function ViewContract(): JSX.Element {
     setDataClient(contractForView);
   }, [location]);
 
+  console.log("opaaaa", dataClient);
+
   const handleEdit = () => {
     navigate("/contratos/editar-contrato", {
       state: { contractData: dataClient, isEditMode: true },

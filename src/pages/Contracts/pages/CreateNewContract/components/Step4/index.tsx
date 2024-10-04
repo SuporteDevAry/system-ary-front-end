@@ -18,7 +18,7 @@ export const Step4: React.FC<StepProps> = ({ id, handleChange, formData }) => {
         <SText>Comunicado interno:</SText>
       </CustomTooltipLabel>
       <STextArea
-        name="observation"
+        name="internal_communication"
         onChange={handleChange}
         value={formData.internal_communication}
       />

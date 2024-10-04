@@ -41,7 +41,9 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
       ? `${formData.commission_seller}%`
       : `${formatCurrency(
           formData.commission_seller,
-          formData.type_currency
+          formData.type_currency,
+          true,
+          false
         )} por saca,`
     : "";
 
@@ -50,7 +52,9 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
       ? `${formData.commission_buyer}%`
       : `${formatCurrency(
           formData.commission_buyer,
-          formData.type_currency
+          formData.type_currency,
+          true,
+          false
         )} por saca,`
     : "";
 
