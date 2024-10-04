@@ -9,5 +9,4 @@ export interface CustomDatePickerProps {
   onChange: (newDate: string) => void;
   [x: string]: any;
   disableWeekends?: boolean;
-  isARange?: boolean;
 }

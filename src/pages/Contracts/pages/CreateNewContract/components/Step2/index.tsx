@@ -12,6 +12,15 @@ export const Step2: React.FC<StepProps> = ({
 }) => {
   const handleFieldChange = (field: string, value: string) => {
     const info = productInfo[value as ProductType];
+
+    if (field === "destination") {
+      updateFormData?.({
+        ...formData,
+        destination: value,
+      });
+      return;
+    }
+
     updateFormData?.({
       ...formData,
       [field]: value,

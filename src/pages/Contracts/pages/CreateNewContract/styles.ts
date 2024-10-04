@@ -3,6 +3,7 @@ import Stepper from "@mui/material/Stepper";
 export const SContainer = styled.div`
   padding: 16px;
   min-width: 900px;
+  overflow: auto;
 `;
 
 export const SContent = styled.div`

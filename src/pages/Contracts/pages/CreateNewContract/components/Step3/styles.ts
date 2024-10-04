@@ -19,7 +19,7 @@ export const STextArea = styled.textarea`
   border-radius: 8px;
   max-width: 800px;
   width: 260px;
-  height: 160px;
+  height: 200px;
   border-width: 2px;
   padding: 16px 16px 0;
 
@@ -31,4 +31,9 @@ export const STextArea = styled.textarea`
   &::placeholder {
     color: ${(props) => props.theme["gray-500"]};
   }
+`;
+
+export const SContentBox = styled.div`
+  display: flex;
+  gap: 8px;
 `;

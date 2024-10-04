@@ -20,7 +20,7 @@ Bill of Lading (BL).
 3-CBOT referência = CU... ......... / .......... spot.`,
   },
   CN: {
-    name: `MILHO`,
+    name: `MILHO em Grãos`,
     quality: `Padrão exportação conforme contrato ANEC nr. 43.`,
     observation: `1-Mercadoria destinada à exportação.
 2-O comprador se compromete a apresentar os documentos de exportação no prazo determinado por lei, tais como:

@@ -189,7 +189,6 @@ export const CreateNewContract: React.FC = () => {
             return;
           }
 
-          console.log("####Salvar Contrato", contractToCreate);
           const response = await createContract(contractToCreate);
 
           toast.success(

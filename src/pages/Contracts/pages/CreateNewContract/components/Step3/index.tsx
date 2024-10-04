@@ -2,7 +2,7 @@ import { useCallback, useEffect } from "react";
 import { CustomInput } from "../../../../../../components/CustomInput";
 import { formatCurrency } from "../../../../../../helpers/currencyFormat";
 import { StepProps } from "../../types";
-import { SContainer, SText, STextArea } from "./styles";
+import { SContainer, SContentBox, SText, STextArea } from "./styles";
 import { fieldInfo, FieldType } from "./types";
 import CustomDatePicker from "../../../../../../components/CustomDatePicker";
 import { insertMaskInCnpj } from "../../../../../../helpers/front-end/insertMaskInCnpj";
@@ -78,6 +78,14 @@ export const Step3: React.FC<StepProps> = ({
       return;
     }
 
+    if (name === "farm_direct") {
+      updateFormData?.({
+        ...formData,
+        farm_direct: value,
+      });
+      return;
+    }
+
     handleChange?.({
       ...event,
       target: {
@@ -132,7 +140,7 @@ export const Step3: React.FC<StepProps> = ({
     return `No dia ${date}, via Banco ...., Ag. nr. ....., c/c nr. ......, no CNPJ: ${cpf_cnpj} em nome de ${sellerName}.`;
   };
 
-  const handleDateChange = useCallback(
+  const handleDateForPaymentChange = useCallback(
     (newDate: string) => {
       if (updateFormData) {
         const sellerName = formData.seller?.name || "vendedor";
@@ -150,10 +158,23 @@ export const Step3: React.FC<StepProps> = ({
     [updateFormData, formData.seller]
   );
 
-  useEffect(() => {
-    console.log(formData.commission_seller);
-    console.log(formData.commission_buyer);
-  }, []);
+  const handleDateChange = useCallback(
+    (newDate: string, name: string) => {
+      if (name === "initial_pickup_date") {
+        updateFormData?.({
+          ...formData,
+          initial_pickup_date: newDate,
+        });
+      } else if (name === "final_pickup_date") {
+        updateFormData?.({
+          ...formData,
+          final_pickup_date: newDate,
+        });
+      }
+    },
+    [updateFormData, formData]
+  );
+
   return (
     <SContainer id={id}>
       <CustomInput
@@ -199,7 +220,7 @@ export const Step3: React.FC<StepProps> = ({
           value={
             isEditingExchangeRate
               ? formData.day_exchange_rate
-              : formatCurrency(formData.day_exchange_rate, "Real", false, true)
+              : formData.day_exchange_rate
           }
         />
       )}
@@ -226,7 +247,7 @@ export const Step3: React.FC<StepProps> = ({
         name="payment_date"
         label="Data do Pagamento:"
         $labelPosition="top"
-        onChange={handleDateChange}
+        onChange={handleDateForPaymentChange}
         value={formData.payment_date}
         disableWeekends
       />
@@ -244,9 +265,13 @@ export const Step3: React.FC<StepProps> = ({
         value={
           isEditingCommission.seller
             ? formData.commission_seller
-            : `${getCommissionFormat(formData.type_commission_seller || "")}${
+            : formData.type_commission_seller === "Valor"
+            ? `${getCommissionFormat(formData.type_commission_seller || "")}${
                 formData.commission_seller
               }`
+            : `${formData.commission_seller}${getCommissionFormat(
+                formData.type_commission_seller || ""
+              )}`
         }
         radioOptions={[
           { label: "Percentual", value: "Percentual" },
@@ -266,9 +291,13 @@ export const Step3: React.FC<StepProps> = ({
         value={
           isEditingCommission.buyer
             ? formData.commission_buyer
-            : `${getCommissionFormat(formData.type_commission_buyer || "")}${
+            : formData.type_commission_buyer === "Valor"
+            ? `${getCommissionFormat(formData.type_commission_buyer || "")}${
                 formData.commission_buyer
               }`
+            : `${formData.commission_buyer}${getCommissionFormat(
+                formData.type_commission_buyer || ""
+              )}`
         }
         onFocus={() => handleCommissionFocus("buyer")}
         onBlur={() => handleCommissionBlur("buyer")}
@@ -282,22 +311,63 @@ export const Step3: React.FC<StepProps> = ({
       />
 
       <CustomInput
-        type="text"
-        name="pickup"
-        $labelPosition="top"
-        onChange={handleChange}
-        value={formData.pickup}
+        name="type_pickup"
+        radioPosition="only"
         radioOptions={[
-          { label: "Entrega", value: "Entrega" },
-          { label: "Retirada", value: "Retirada" },
-          { label: "Embarque", value: "Embarque" },
+          { label: "CIF", value: "Entrega" },
+          { label: "FOB", value: "Embarque" },
+          { label: "CIF Porto/Ferrovia", value: "Retirada" },
         ]}
-        radioPosition="inline"
         onRadioChange={(e) => handleRadioChange(e, "type_pickup")}
         selectedRadio={formData.type_pickup}
       />
 
       <CustomInput
+        name="farm_direct"
+        label="Direto da Lavoura:"
+        $labelPosition="top"
+        radioPosition="only"
+        radioOptions={[
+          { label: "Sim", value: "Direto da Lavoura" },
+          { label: "Não", value: "Não" },
+        ]}
+        onRadioChange={(e) => handleRadioChange(e, "farm_direct")}
+        selectedRadio={formData.farm_direct}
+      />
+
+      <SContentBox>
+        <CustomDatePicker
+          width="150px"
+          height="38x"
+          name="initial_pickup_date"
+          label="De:"
+          $labelPosition="top"
+          onChange={(date) => handleDateChange(date, "initial_pickup_date")}
+          value={formData.initial_pickup_date}
+          disableWeekends
+        />
+        <CustomDatePicker
+          width="150px"
+          height="38x"
+          name="final_pickup_date"
+          label="Até:"
+          $labelPosition="top"
+          onChange={(date) => handleDateChange(date, "final_pickup_date")}
+          value={formData.final_pickup_date}
+          disableWeekends
+        />
+      </SContentBox>
+
+      <CustomInput
+        // width="328px"
+        type="text"
+        name="pickup"
+        $labelPosition="top"
+        onChange={handleChange}
+        value={formData.pickup}
+      />
+      <CustomInput
+        // width="328px"
         type="text"
         name="pickup_location"
         label={`Local de ${formData.type_pickup}:`}
@@ -307,6 +377,7 @@ export const Step3: React.FC<StepProps> = ({
       />
 
       <CustomInput
+        // width="328px"
         type="text"
         name="inspection"
         label="Conferência:"

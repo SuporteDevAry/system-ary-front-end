@@ -42,8 +42,7 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
       : `${formatCurrency(
           formData.commission_seller,
           formData.type_currency,
-          true,
-          false
+          true
         )} por saca,`
     : "";
 
@@ -53,8 +52,7 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
       : `${formatCurrency(
           formData.commission_buyer,
           formData.type_currency,
-          true,
-          false
+          true
         )} por saca,`
     : "";
 
@@ -211,7 +209,8 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
           <strong>
             {formatCurrency(formData.price, formData.type_currency, modeSave)}
           </strong>{" "}
-          por saca de 60(sessenta) quilos, (+D.U.E.).
+          por saca de 60(sessenta) quilos,{" "}
+          <strong>({formData.destination})</strong>.
         </p>
         <br />
 
