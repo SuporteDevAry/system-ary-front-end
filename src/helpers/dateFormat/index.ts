@@ -52,3 +52,33 @@ export function formattedTime(): string {
 
   return formatTime;
 }
+
+export const formatDateWithLongMonth = (dateString: string): string => {
+  const months = [
+    "janeiro",
+    "fevereiro",
+    "março",
+    "abril",
+    "maio",
+    "junho",
+    "julho",
+    "agosto",
+    "setembro",
+    "outubro",
+    "novembro",
+    "dezembro",
+  ];
+
+  // Separar dia, mês e ano da data fornecida (formato DD/MM/YYYY)
+  const [day, month, year] = dateString.split("/");
+
+  // Obter o nome do mês a partir do índice (mês - 1 porque os meses são baseados em zero)
+  const monthName = months[parseInt(month) - 1];
+
+  // Retornar a data no formato desejado
+  return `${day} de ${monthName} de ${year}`;
+};
+
+// // Exemplo de uso
+// const formattedDate = formatDate("01/10/2024");
+// console.log(formattedDate); // Saída: "01 de outubro de 2024"

@@ -2,7 +2,7 @@ export type labelPositionVariant = "left" | "top";
 export interface CustomDatePickerProps {
   width?: string;
   height?: string;
-  label?: string;
+  label?: string | React.ReactNode;
   $labelPosition?: labelPositionVariant;
   name?: string;
   value?: string;

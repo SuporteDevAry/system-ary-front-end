@@ -2,6 +2,7 @@ import { formatCurrency } from "../helpers/currencyFormat";
 import { Extenso } from "../helpers/Extenso";
 import { insertMaskInCnpj } from "../helpers/front-end/insertMaskInCnpj";
 import logoContrato from "../assets/img/Logo_Ary_Completo.jpg";
+import { formatDateWithLongMonth } from "../helpers/dateFormat";
 
 interface ContratoTemplateProps {
   formData: any;
@@ -14,10 +15,7 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
   modeSave,
 }) => {
   const today = new Date();
-  const ano4 = today.getFullYear();
-  const ano2 = today.getFullYear().toString().substr(-2);
-  const mesExtenso = today.toLocaleString("pt-BR", { month: "long" });
-  const dia = today.toLocaleString("pt-BR", { day: "2-digit" });
+  const currentYear = today.getFullYear().toString().substr(-2);
 
   let quantity_aux = modeSave
     ? !formData.quantity.match(/,/g)
@@ -58,7 +56,7 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
 
   const numberContract = formData?.number_contract
     ? formData.number_contract
-    : `${formData.product}.${formData.number_broker}-NNN/${ano2}`;
+    : `${formData.product}.${formData.number_broker}-NNN/${currentYear}`;
 
   function formatObservationText(observation: string) {
     const lines = observation.split("\n");
@@ -84,8 +82,7 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
           <p style={{ paddingLeft: "280px" }}>
             S&atilde;o Paulo,{" "}
             <span>
-              {formData.contract_emission_date}
-              {dia} de {mesExtenso} de {ano4}
+              {formatDateWithLongMonth(formData.contract_emission_date)}
             </span>
           </p>
           <p style={{ paddingLeft: "280px" }}>

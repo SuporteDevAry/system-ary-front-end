@@ -13,6 +13,7 @@ import { CustomerInfo } from "../../../../../../contexts/ContractContext/types";
 import { getDataUserFromToken } from "../../../../../../contexts/AuthProvider/util";
 import { toast } from "react-toastify";
 import { CustomDatePicker } from "../../../../../../components/CustomDatePicker";
+import CustomTooltipLabel from "../../../../../../components/CustomTooltipLabel";
 
 export const Step1: React.FC<StepProps> = ({
   id,
@@ -114,7 +115,13 @@ export const Step1: React.FC<StepProps> = ({
           width="260px"
           height="38x"
           name="contract_emission_date"
-          label="Data de Emissão do Contrato:"
+          label={
+            <CustomTooltipLabel
+              title={`Defina uma data, por mais que ela seja o dia atual.`}
+            >
+              Data de Emissão do Contrato:
+            </CustomTooltipLabel>
+          }
           $labelPosition="top"
           onChange={handleDateChange}
           value={formData.contract_emission_date}
