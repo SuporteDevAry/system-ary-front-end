@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect } from "react";
 import { CustomInput } from "../../../../../../components/CustomInput";
 import { formatCurrency } from "../../../../../../helpers/currencyFormat";
 import { StepProps } from "../../types";
@@ -6,6 +6,12 @@ import { SContainer, SText, STextArea } from "./styles";
 import { fieldInfo, FieldType } from "./types";
 import CustomDatePicker from "../../../../../../components/CustomDatePicker";
 import { insertMaskInCnpj } from "../../../../../../helpers/front-end/insertMaskInCnpj";
+import { getCommissionFormat } from "./helpers";
+import {
+  usePriceHandlers,
+  useExchangeRateHandlers,
+  useCommissionHandlers,
+} from "./hooks";
 
 export const Step3: React.FC<StepProps> = ({
   id,
@@ -14,9 +20,17 @@ export const Step3: React.FC<StepProps> = ({
   updateFormData,
   isEditMode,
 }) => {
-  const [isEditingPrice, setIsEditingPrice] = useState<boolean>(false);
-  const [isEditingExchangeRate, setIsEditingExchangeRate] =
-    useState<boolean>(false);
+  const { isEditingPrice, handlePriceFocus, handlePriceBlur } =
+    usePriceHandlers(formData, updateFormData);
+
+  const {
+    isEditingExchangeRate,
+    handleExchangeRateFocus,
+    handleExchangeRateBlur,
+  } = useExchangeRateHandlers();
+
+  const { isEditingCommission, handleCommissionFocus, handleCommissionBlur } =
+    useCommissionHandlers();
 
   const modeSave = isEditMode ? false : true;
 
@@ -74,20 +88,6 @@ export const Step3: React.FC<StepProps> = ({
     });
   };
 
-  const handlePriceFocus = () => {
-    setIsEditingPrice(true);
-  };
-
-  const handlePriceBlur = () => {
-    setIsEditingPrice(false);
-
-    const rawPrice = formData.price;
-    updateFormData?.({
-      ...formData,
-      price: rawPrice.toString(),
-    });
-  };
-
   useEffect(() => {
     const price = parseFloat(formData.price.replace(",", "."));
     const quantityToKG = Number(formData.quantity.replace(",", ".")) * 1000;
@@ -103,14 +103,6 @@ export const Step3: React.FC<StepProps> = ({
       });
     }
   }, [formData.price, formData.quantity]);
-
-  const handleExchangeRateFocus = () => {
-    setIsEditingExchangeRate(true);
-  };
-
-  const handleExchangeRateBlur = () => {
-    setIsEditingExchangeRate(false);
-  };
 
   const handleNumericInputChange = (
     event: React.ChangeEvent<HTMLInputElement>
@@ -242,27 +234,41 @@ export const Step3: React.FC<StepProps> = ({
         value={formData.payment}
       />
       <CustomInput
-        type="number"
         name="commission_seller"
         label="Comissão Vendedor:"
         $labelPosition="top"
-        onChange={handleChange}
-        value={formData.commission_seller}
+        onChange={handleNumericInputChange}
+        value={
+          isEditingCommission.seller
+            ? formData.commission_seller
+            : `${getCommissionFormat(formData.type_commission_seller || "")}${
+                formData.commission_seller
+              }`
+        }
         radioOptions={[
           { label: "Percentual", value: "Percentual" },
           { label: "Valor", value: "Valor" },
         ]}
+        onFocus={() => handleCommissionFocus("seller")}
+        onBlur={() => handleCommissionBlur("seller")}
         radioPosition="inline"
         onRadioChange={(e) => handleRadioChange(e, "type_commission_seller")}
         selectedRadio={formData.type_commission_seller}
       />
       <CustomInput
-        type="number"
         name="commission_buyer"
         label="Comissão Comprador:"
         $labelPosition="top"
-        onChange={handleChange}
-        value={formData.commission_buyer}
+        onChange={handleNumericInputChange}
+        value={
+          isEditingCommission.buyer
+            ? formData.commission_buyer
+            : `${getCommissionFormat(formData.type_commission_buyer || "")}${
+                formData.commission_buyer
+              }`
+        }
+        onFocus={() => handleCommissionFocus("buyer")}
+        onBlur={() => handleCommissionBlur("buyer")}
         radioOptions={[
           { label: "Percentual", value: "Percentual" },
           { label: "Valor", value: "Valor" },
