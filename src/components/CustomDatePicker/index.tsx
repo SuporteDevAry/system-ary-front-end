@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { SBoxContent, SContainer, SLabel } from "./styles";
+import React from "react";
+import { SContainer, SLabel } from "./styles";
 import { CustomDatePickerProps } from "./types";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";

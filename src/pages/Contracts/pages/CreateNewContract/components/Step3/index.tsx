@@ -344,7 +344,6 @@ export const Step3: React.FC<StepProps> = ({
           $labelPosition="top"
           onChange={(date) => handleDateChange(date, "initial_pickup_date")}
           value={formData.initial_pickup_date}
-          disableWeekends
         />
         <CustomDatePicker
           width="150px"
@@ -354,7 +353,6 @@ export const Step3: React.FC<StepProps> = ({
           $labelPosition="top"
           onChange={(date) => handleDateChange(date, "final_pickup_date")}
           value={formData.final_pickup_date}
-          disableWeekends
         />
       </SContentBox>
 

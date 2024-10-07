@@ -8,6 +8,7 @@ import { Step3 } from "./components/Step3";
 import { Step4 } from "./components/Step4";
 import { Review } from "./components/Review";
 
+import dayjs from "dayjs";
 import Step from "@mui/material/Step";
 import StepLabel from "@mui/material/StepLabel";
 import CircularProgress from "@mui/material/CircularProgress";
@@ -25,12 +26,14 @@ export const CreateNewContract: React.FC = () => {
   const { createContract, updateContract } = ContractContext();
   const navigate = useNavigate();
   const location = useLocation();
+  const currentDate = dayjs().format("DD/MM/YYYY");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [activeStep, setActiveStep] = useState<number>(0);
   const { dataUserInfo } = useInfo();
   const [isEditMode, setIsEditMode] = useState<boolean>(false);
   const [formData, setFormData] = React.useState<FormDataContract>({
     id: "",
+    contract_emission_date: currentDate,
     number_contract: "",
     number_broker: "",
     seller: {
@@ -66,6 +69,7 @@ export const CreateNewContract: React.FC = () => {
     price: "",
     type_icms: "",
     icms: "",
+    payment_date: currentDate,
     payment: "",
     type_commission_seller: "",
     commission_seller: "",
@@ -84,15 +88,13 @@ export const CreateNewContract: React.FC = () => {
       status_current: "",
       history: [],
     },
-    contract_emission_date: "",
     destination: "",
     number_external_contract_seller: "",
     number_external_contract_buyer: "",
     day_exchange_rate: "",
-    payment_date: "",
     farm_direct: "",
-    initial_pickup_date: "",
-    final_pickup_date: "",
+    initial_pickup_date: currentDate,
+    final_pickup_date: currentDate,
     internal_communication: "",
   });
   const { canConsult } = useUserPermissions();
