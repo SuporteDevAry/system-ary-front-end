@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { CustomInput } from "../../../../../../components/CustomInput";
 import { formatCurrency } from "../../../../../../helpers/currencyFormat";
 import { StepProps } from "../../types";
@@ -34,67 +34,80 @@ export const Step3: React.FC<StepProps> = ({
 
   const modeSave = isEditMode ? false : true;
 
-  const handleFieldPickupChange = (value: string) => {
+  const [initialPickupDate, SetInitialPickupDate] = useState<string>(
+    formData.initial_pickup_date
+  );
+  const [finalPickupDate, SetFinalPickupDate] = useState<string>(
+    formData.final_pickup_date
+  );
+
+  const concatenatedPickupText = `De: ${initialPickupDate} Até: ${finalPickupDate}`;
+
+  const handleFieldPickupChange = (
+    value: string,
+    concatenatedPickupText: string
+  ) => {
     const info = fieldInfo[value as FieldType];
     updateFormData?.({
       ...formData,
       type_pickup: value,
-      pickup: info.pickup,
+      pickup: info.pickup(concatenatedPickupText),
       pickup_location: info.pickupLocation,
       inspection: info.inspection,
     });
   };
 
-  const handleRadioChange = (
-    event: React.ChangeEvent<HTMLInputElement>,
-    name: string
-  ) => {
-    const { value } = event.target;
+  const handleRadioChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>, name: string) => {
+      const { value } = event.target;
 
-    if (name === "type_pickup") return handleFieldPickupChange(value);
+      if (name === "type_pickup")
+        return handleFieldPickupChange(value, concatenatedPickupText);
 
-    if (name === "type_icms") {
-      updateFormData?.({
-        ...formData,
-        type_icms: value,
-        icms: value,
+      if (name === "type_icms") {
+        updateFormData?.({
+          ...formData,
+          type_icms: value,
+          icms: value,
+        });
+        return;
+      }
+
+      if (name === "type_commission_seller") {
+        updateFormData?.({
+          ...formData,
+          type_commission_seller: value,
+        });
+        return;
+      }
+
+      if (name === "type_commission_buyer") {
+        updateFormData?.({
+          ...formData,
+          type_commission_buyer: value,
+        });
+        return;
+      }
+
+      if (name === "farm_direct") {
+        updateFormData?.({
+          ...formData,
+          farm_direct: value,
+        });
+        return;
+      }
+
+      handleChange?.({
+        ...event,
+        target: {
+          ...event.target,
+          name,
+          value,
+        },
       });
-      return;
-    }
-
-    if (name === "type_commission_seller") {
-      updateFormData?.({
-        ...formData,
-        type_commission_seller: value,
-      });
-      return;
-    }
-
-    if (name === "type_commission_buyer") {
-      updateFormData?.({
-        ...formData,
-        type_commission_buyer: value,
-      });
-      return;
-    }
-
-    if (name === "farm_direct") {
-      updateFormData?.({
-        ...formData,
-        farm_direct: value,
-      });
-      return;
-    }
-
-    handleChange?.({
-      ...event,
-      target: {
-        ...event.target,
-        name,
-        value,
-      },
-    });
-  };
+    },
+    [formData, updateFormData, handleChange, handleFieldPickupChange]
+  );
 
   useEffect(() => {
     const price = parseFloat(formData.price.replace(",", "."));
@@ -158,6 +171,14 @@ export const Step3: React.FC<StepProps> = ({
     [updateFormData, formData.seller]
   );
 
+  useEffect(() => {
+    const updatedPickupText = `De: ${initialPickupDate} Até: ${finalPickupDate}`;
+
+    if (formData.type_pickup) {
+      handleFieldPickupChange(formData.type_pickup, updatedPickupText);
+    }
+  }, [initialPickupDate, finalPickupDate, formData.type_pickup]);
+
   const handleDateChange = useCallback(
     (newDate: string, name: string) => {
       if (name === "initial_pickup_date") {
@@ -165,11 +186,13 @@ export const Step3: React.FC<StepProps> = ({
           ...formData,
           initial_pickup_date: newDate,
         });
+        SetInitialPickupDate(newDate);
       } else if (name === "final_pickup_date") {
         updateFormData?.({
           ...formData,
           final_pickup_date: newDate,
         });
+        SetFinalPickupDate(newDate);
       }
     },
     [updateFormData, formData]
@@ -357,7 +380,6 @@ export const Step3: React.FC<StepProps> = ({
       </SContentBox>
 
       <CustomInput
-        // width="328px"
         type="text"
         name="pickup"
         $labelPosition="top"
@@ -365,7 +387,6 @@ export const Step3: React.FC<StepProps> = ({
         value={formData.pickup}
       />
       <CustomInput
-        // width="328px"
         type="text"
         name="pickup_location"
         label={`Local de ${formData.type_pickup}:`}
@@ -375,7 +396,6 @@ export const Step3: React.FC<StepProps> = ({
       />
 
       <CustomInput
-        // width="328px"
         type="text"
         name="inspection"
         label="Conferência:"
