@@ -65,3 +65,37 @@ export const useCommissionHandlers = () => {
     handleCommissionBlur,
   };
 };
+
+const formatQuantity = (value: string): string => {
+  const numericValue = value.replace(/\D/g, ""); // Remove qualquer caractere não numérico
+  return numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, "."); // Adiciona o separador de milhares
+};
+
+export const useQuantityHandlers = (
+  formData: FormDataContract,
+  updateFormData?: (data: Partial<FormDataContract>) => void
+) => {
+  const [isEditingQuantity, setIsEditingQuantity] = useState<boolean>(false);
+
+  const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawValue = e.target.value;
+    const formattedValue = formatQuantity(rawValue);
+
+    updateFormData?.({ ...formData, quantity: formattedValue });
+  };
+
+  const handleQuantityFocus = () => {
+    setIsEditingQuantity(true);
+  };
+
+  const handleQuantityBlur = () => {
+    setIsEditingQuantity(false);
+  };
+
+  return {
+    isEditingQuantity,
+    handleQuantityChange,
+    handleQuantityFocus,
+    handleQuantityBlur,
+  };
+};

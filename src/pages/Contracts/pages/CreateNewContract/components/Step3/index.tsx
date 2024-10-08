@@ -11,6 +11,7 @@ import {
   usePriceHandlers,
   useExchangeRateHandlers,
   useCommissionHandlers,
+  useQuantityHandlers,
 } from "./hooks";
 import { CustomTextArea } from "../../../../../../components/CustomTextArea";
 
@@ -32,6 +33,13 @@ export const Step3: React.FC<StepProps> = ({
 
   const { isEditingCommission, handleCommissionFocus, handleCommissionBlur } =
     useCommissionHandlers();
+
+  const {
+    isEditingQuantity,
+    handleQuantityChange,
+    handleQuantityFocus,
+    handleQuantityBlur,
+  } = useQuantityHandlers(formData, updateFormData);
 
   const modeSave = isEditMode ? false : true;
 
@@ -115,7 +123,10 @@ export const Step3: React.FC<StepProps> = ({
 
   useEffect(() => {
     const price = parseFloat(formData.price.replace(",", "."));
-    const quantityToKG = Number(formData.quantity.replace(",", ".")) * 1000;
+    /*Todo:Esse código abaixo, poderá ser utilizado no futuro!
+     *Number(formData.quantity.replace(",", ".")) * 1000;
+     */
+    const quantityToKG = Number(formData.quantity.replace(".", ""));
     const quantityToBag = (Number(quantityToKG) / 60).toFixed(3);
     const totalContractValue = Number(price * Number(quantityToBag)).toFixed(3);
 
@@ -207,8 +218,11 @@ export const Step3: React.FC<StepProps> = ({
         name="quantity"
         label="Quantidade:"
         $labelPosition="top"
-        onChange={handleChange}
-        value={formData.quantity}
+        // onChange={handleChange}
+        onChange={handleQuantityChange} // Formatação é aplicada aqui
+        onFocus={handleQuantityFocus}
+        onBlur={handleQuantityBlur}
+        value={isEditingQuantity ? formData.quantity : formData.quantity}
       />
 
       <CustomInput

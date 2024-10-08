@@ -23,7 +23,7 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
       : formData.quantity.replace(/[,]/g, ".")
     : formData.quantity;
 
-  let qtd_informada = Number(quantity_aux) * 1000;
+  let qtd_informada = Number(quantity_aux);
   let formattedQtd = qtd_informada.toLocaleString();
 
   const qtde_extenso = Extenso(qtd_informada);
