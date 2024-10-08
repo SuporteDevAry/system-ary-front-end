@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { CustomInput } from "../../../../../../components/CustomInput";
 import { formatCurrency } from "../../../../../../helpers/currencyFormat";
 import { StepProps } from "../../types";
-import { SContainer, SContentBox, SText, STextArea } from "./styles";
+import { SContainer, SContentBox } from "./styles";
 import { fieldInfo, FieldType } from "./types";
 import CustomDatePicker from "../../../../../../components/CustomDatePicker";
 import { insertMaskInCnpj } from "../../../../../../helpers/front-end/insertMaskInCnpj";
@@ -12,6 +12,7 @@ import {
   useExchangeRateHandlers,
   useCommissionHandlers,
 } from "./hooks";
+import { CustomTextArea } from "../../../../../../components/CustomTextArea";
 
 export const Step3: React.FC<StepProps> = ({
   id,
@@ -41,7 +42,10 @@ export const Step3: React.FC<StepProps> = ({
     formData.final_pickup_date
   );
 
-  const concatenatedPickupText = `De: ${initialPickupDate} Até: ${finalPickupDate}`;
+  const concatenatedPickupText =
+    initialPickupDate === finalPickupDate
+      ? `Até o dia ${initialPickupDate}`
+      : `De ${initialPickupDate} até ${finalPickupDate}`;
 
   const handleFieldPickupChange = (
     value: string,
@@ -172,10 +176,8 @@ export const Step3: React.FC<StepProps> = ({
   );
 
   useEffect(() => {
-    const updatedPickupText = `De: ${initialPickupDate} Até: ${finalPickupDate}`;
-
     if (formData.type_pickup) {
-      handleFieldPickupChange(formData.type_pickup, updatedPickupText);
+      handleFieldPickupChange(formData.type_pickup, concatenatedPickupText);
     }
   }, [initialPickupDate, finalPickupDate, formData.type_pickup]);
 
@@ -274,8 +276,9 @@ export const Step3: React.FC<StepProps> = ({
         value={formData.payment_date}
         disableWeekends
       />
-      <SText>Pagamento:</SText>
-      <STextArea
+
+      <CustomTextArea
+        label="Pagamento:"
         name="payment"
         onChange={handleChange}
         value={formData.payment}
@@ -345,19 +348,6 @@ export const Step3: React.FC<StepProps> = ({
         selectedRadio={formData.type_pickup}
       />
 
-      <CustomInput
-        name="farm_direct"
-        label="Direto da Lavoura:"
-        $labelPosition="top"
-        radioPosition="only"
-        radioOptions={[
-          { label: "Sim", value: "Direto da Lavoura" },
-          { label: "Não", value: "Não" },
-        ]}
-        onRadioChange={(e) => handleRadioChange(e, "farm_direct")}
-        selectedRadio={formData.farm_direct}
-      />
-
       <SContentBox>
         <CustomDatePicker
           width="150px"
@@ -379,27 +369,41 @@ export const Step3: React.FC<StepProps> = ({
         />
       </SContentBox>
 
-      <CustomInput
-        type="text"
+      <CustomTextArea
+        width="308px"
+        height="70px"
         name="pickup"
-        $labelPosition="top"
         onChange={handleChange}
         value={formData.pickup}
       />
+
       <CustomInput
-        type="text"
+        name="farm_direct"
+        label="Direto da Lavoura:"
+        $labelPosition="left"
+        radioPosition="only"
+        radioOptions={[
+          { label: "Sim", value: "Direto da Lavoura" },
+          { label: "Não", value: "Não" },
+        ]}
+        onRadioChange={(e) => handleRadioChange(e, "farm_direct")}
+        selectedRadio={formData.farm_direct}
+      />
+
+      <CustomTextArea
+        width="308px"
+        height="70px"
         name="pickup_location"
         label={`Local de ${formData.type_pickup}:`}
-        $labelPosition="top"
         onChange={handleChange}
         value={formData.pickup_location}
       />
 
-      <CustomInput
-        type="text"
+      <CustomTextArea
+        width="308px"
+        height="70px"
         name="inspection"
         label="Conferência:"
-        $labelPosition="top"
         onChange={handleChange}
         value={formData.inspection}
       />
