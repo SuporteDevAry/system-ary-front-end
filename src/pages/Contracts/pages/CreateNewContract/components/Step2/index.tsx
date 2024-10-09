@@ -75,6 +75,10 @@ export const Step2: React.FC<StepProps> = ({
           { value: "+D.U.E", label: "+D.U.E" },
           { value: "Comercialização", label: "Comercialização" },
           {
+            value: "Industrialização",
+            label: "Industrialização",
+          },
+          {
             value: "Industrialização Ração Animal - Suspenso de Pis/Cofins",
             label: "Industrialização Ração Animal - Suspenso de Pis/Cofins",
           },

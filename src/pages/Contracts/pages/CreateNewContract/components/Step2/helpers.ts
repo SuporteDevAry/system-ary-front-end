@@ -9,6 +9,13 @@ export const generateCropYears = () => {
   for (let i = -2; i <= 5; i++) {
     const year = currentYear + i;
     listYears.push({ label: `${year}`, value: `${year}` });
+
+    // Adiciona ano simples com barra (ano/ano)
+    listYears.push({
+      label: `${year} / ${year}`,
+      value: `${year} / ${year}`,
+    });
+
     if (i < 5) {
       // Adiciona anos compostos (ano/ano)
       listYears.push({

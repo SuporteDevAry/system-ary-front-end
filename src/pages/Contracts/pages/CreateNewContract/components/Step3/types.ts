@@ -23,6 +23,6 @@ export const fieldInfo: Record<FieldType, FieldName> = {
     pickup: (concatenatedPickupText) =>
       `${concatenatedPickupText}, limpo e seco sobre rodas.`,
     pickupLocation: `Nos armazéns ..... em Cidade/UF.`,
-    inspection: `De peso e qualidade no destino.`,
+    inspection: `De peso e qualidade na retirada.`,
   },
 };

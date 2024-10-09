@@ -102,10 +102,17 @@ export const Step3: React.FC<StepProps> = ({
       }
 
       if (name === "farm_direct") {
+        const addFarm =
+          "Direto da Lavoura, sem custo de recebimento e padronização.";
         updateFormData?.({
           ...formData,
           farm_direct: value,
+          pickup:
+            value !== "Não"
+              ? formData.pickup.replace("limpo e seco sobre rodas.", addFarm)
+              : formData.pickup.replace(addFarm, "limpo e seco sobre rodas."),
         });
+
         return;
       }
 
@@ -353,9 +360,9 @@ export const Step3: React.FC<StepProps> = ({
         name="type_pickup"
         radioPosition="only"
         radioOptions={[
-          { label: "CIF", value: "Entrega" },
-          { label: "FOB", value: "Embarque" },
-          { label: "CIF Porto/Ferrovia", value: "Retirada" },
+          { label: "CIF / Porto/Ferrovia", value: "Entrega" },
+          { label: "FOB", value: "Retirada" },
+          //{ label: "CIF Porto/Ferrovia", value: "Entrega " },
         ]}
         onRadioChange={(e) => handleRadioChange(e, "type_pickup")}
         selectedRadio={formData.type_pickup}
