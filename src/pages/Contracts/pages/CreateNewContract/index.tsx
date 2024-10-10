@@ -115,10 +115,10 @@ export const CreateNewContract: React.FC = () => {
 
   useEffect(() => {
     if (dataUserInfo && !isEditMode) {
-      updateStatus("A Conferir");
+      updateStatus("A CONFERIR");
     }
     if (isEditMode) {
-      updateStatus("Editado");
+      updateStatus("EDITADO");
     }
   }, [dataUserInfo]);
 

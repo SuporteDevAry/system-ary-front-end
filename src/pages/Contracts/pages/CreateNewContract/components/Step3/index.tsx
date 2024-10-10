@@ -298,6 +298,7 @@ export const Step3: React.FC<StepProps> = ({
       />
 
       <CustomTextArea
+        height="230px"
         label="Pagamento:"
         name="payment"
         onChange={handleChange}

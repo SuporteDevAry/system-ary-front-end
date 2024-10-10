@@ -120,14 +120,9 @@ const CustomTable: React.FC<ICustomTableProps> = ({
     );
   };
 
-  const paginatedData = useMemo(() => {
-    const startIndex = page * rowsPerPage;
-    const endIndex = startIndex + rowsPerPage;
-    return data.slice(startIndex, endIndex);
-  }, [data, page, rowsPerPage]);
-
+  //Onde fazemos o sort nos dados da tabela
   const sortedData = useMemo(() => {
-    return paginatedData.slice().sort((a, b) => {
+    return data.slice().sort((a, b) => {
       const aValue = getNestedValue(a, orderBy);
       const bValue = getNestedValue(b, orderBy);
 
@@ -139,7 +134,14 @@ const CustomTable: React.FC<ICustomTableProps> = ({
       }
       return 0;
     });
-  }, [paginatedData, order, orderBy]);
+  }, [data, order, orderBy]);
+
+  //Onde fazemos a paginação nos dados da tabela
+  const paginatedData = useMemo(() => {
+    const startIndex = page * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
+    return sortedData.slice(startIndex, endIndex);
+  }, [sortedData, page, rowsPerPage]);
 
   return (
     <TableContainer component={Paper}>
@@ -182,7 +184,7 @@ const CustomTable: React.FC<ICustomTableProps> = ({
               </TableCell>
             </TableRow>
           ) : (
-            sortedData.map((row) => (
+            paginatedData.map((row) => (
               <React.Fragment key={row.id}>
                 <TableRow
                   onClick={() => {
