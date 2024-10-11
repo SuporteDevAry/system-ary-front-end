@@ -23,7 +23,11 @@ import { insertMaskInCnpj } from "../../helpers/front-end/insertMaskInCnpj";
 import Loading from "../Loading";
 import { insertMaskInTelefone } from "../../helpers/front-end/insertMaskInFone";
 import { insertMaskInCelular } from "../../helpers/front-end/insertMaskInCelular";
-import { getNestedValue } from "../../helpers/getNestedValue";
+import {
+  compareValues,
+  extractNumberFromContract,
+  getNestedValue,
+} from "./helpers";
 import { CustomTruncateText } from "../CustomTruncateText";
 
 const locale = "pt-BR";
@@ -126,13 +130,14 @@ const CustomTable: React.FC<ICustomTableProps> = ({
       const aValue = getNestedValue(a, orderBy);
       const bValue = getNestedValue(b, orderBy);
 
-      if (aValue < bValue) {
-        return order === "asc" ? -1 : 1;
+      if (orderBy === "number_contract") {
+        const aContractNumber = extractNumberFromContract(aValue);
+        const bContractNumber = extractNumberFromContract(bValue);
+
+        return compareValues(aContractNumber, bContractNumber, order);
       }
-      if (aValue > bValue) {
-        return order === "asc" ? 1 : -1;
-      }
-      return 0;
+
+      return compareValues(aValue, bValue, order);
     });
   }, [data, order, orderBy]);
 

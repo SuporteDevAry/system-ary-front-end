@@ -16,9 +16,6 @@ function useTableSearch<T extends Record<string, any>>({
   const [filteredData, setFilteredData] = useState<T[]>(data);
 
   const handleSearch = useCallback(() => {
-    // Voltar para a primeira página ao realizar a pesquisa
-    setPage(0);
-
     if (searchTerm.trim() === "") {
       setFilteredData(data);
     } else {
@@ -40,6 +37,8 @@ function useTableSearch<T extends Record<string, any>>({
       );
 
       setFilteredData(result);
+      // Voltar para a primeira página ao realizar a pesquisa
+      setPage(0);
     }
   }, [searchTerm, data, searchableFields, setPage]);
 
