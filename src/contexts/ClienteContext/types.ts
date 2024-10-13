@@ -21,16 +21,32 @@ export interface IClientes {
   telephone: string;
   cellphone: string;
   situation: string;
+  account: IAccountData[];
   created_at: string;
   updated_at: string;
 }
 
 export interface ICreateClientesData
-  extends Omit<IClientes, "id" | "code_client" | "created_at" | "updated_at"> {}
+  extends Omit<IClientes, "id" | "code_client" | "created_at" | "updated_at"> { }
 
 export interface IUpdateClientesData
-  extends Omit<IClientes, "id" | "code_client" | "created_at" | "updated_at"> {}
+  extends Omit<IClientes, "id" | "code_client" | "created_at" | "updated_at"> { }
 
 export interface IListCliente extends IClientes {
   [key: string]: any;
 }
+
+export interface IListAccounts {
+  id: string;
+  bank_number: string;
+  bank_name: string;
+  agency: string;
+  account_number: string;
+  usePix: boolean;
+  keyPix: string;
+  main: boolean;
+}
+
+export interface IAccountData {
+  account: IListAccounts
+};
