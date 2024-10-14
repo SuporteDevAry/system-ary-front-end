@@ -20,7 +20,7 @@ export interface CustomInputProps {
   readOnly?: boolean;
   maxLength?: number;
   radioOptions?: RadioOption[]; // Adiciona as opções de radio buttons
-  radioPosition?: "inline" | "replace"; // Define a posição dos radio buttons
+  radioPosition?: "inline" | "only"; // Define a posição dos radio buttons
   onRadioChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
   selectedRadio?: string;
   [x: string]: any;

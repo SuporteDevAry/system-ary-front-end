@@ -1,24 +1,27 @@
 export type FieldType = "Entrega" | "Embarque" | "Retirada";
 
 interface FieldName {
-  pickup: string;
+  pickup: (concatenatedPickupText: string) => string;
   pickupLocation: string;
   inspection: string;
 }
 
 export const fieldInfo: Record<FieldType, FieldName> = {
   Entrega: {
-    pickup: `De ...., limpo e seco sobre rodas.`,
+    pickup: (concatenatedPickupText) =>
+      `${concatenatedPickupText}, limpo e seco sobre rodas.`,
     pickupLocation: `Nos armazéns ..... em Cidade/UF.`,
-    inspection: `De peso e qualidade na entrega.`,
+    inspection: `De peso e qualidade no destino.`,
   },
   Embarque: {
-    pickup: `De ...., limpo e seco sobre rodas.`,
+    pickup: (concatenatedPickupText) =>
+      `${concatenatedPickupText}, limpo e seco sobre rodas.`,
     pickupLocation: `Nos armazéns ..... em Cidade/UF.`,
-    inspection: `De peso e qualidade no embarque.`,
+    inspection: `De peso e qualidade na retirada.`,
   },
   Retirada: {
-    pickup: `De ...., limpo e seco sobre rodas.`,
+    pickup: (concatenatedPickupText) =>
+      `${concatenatedPickupText}, limpo e seco sobre rodas.`,
     pickupLocation: `Nos armazéns ..... em Cidade/UF.`,
     inspection: `De peso e qualidade na retirada.`,
   },

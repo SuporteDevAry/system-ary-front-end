@@ -16,22 +16,31 @@ function useTableSearch<T extends Record<string, any>>({
   const [filteredData, setFilteredData] = useState<T[]>(data);
 
   const handleSearch = useCallback(() => {
-    // Voltar para a primeira página ao realizar a pesquisa
-    setPage(0);
-
     if (searchTerm.trim() === "") {
       setFilteredData(data);
     } else {
-      const lowercasedSearchTerm = searchTerm.toLowerCase();
+      const lowercasedSearchTerm = searchTerm.trim().toLowerCase();
+
       const result = data.filter((item) =>
         searchableFields.some((field) => {
-          const value = item[field]; // Acessa o valor do campo
-          return value?.toString().toLowerCase().includes(lowercasedSearchTerm);
+          const value = item[field];
+          if (value) {
+            const stringValue = value.toString().toLowerCase();
+
+            return (
+              stringValue.includes(lowercasedSearchTerm) ||
+              stringValue === lowercasedSearchTerm
+            );
+          }
+          return false;
         })
       );
+
       setFilteredData(result);
+      // Voltar para a primeira página ao realizar a pesquisa
+      setPage(0);
     }
-  }, [searchTerm, data, setPage]);
+  }, [searchTerm, data, searchableFields, setPage]);
 
   return { filteredData, handleSearch };
 }

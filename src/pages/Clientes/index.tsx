@@ -121,8 +121,8 @@ export function Clientes() {
     () => [
       { field: "code_client", header: "Código", width: "60px" },
       {
-        field: "nickname",
-        header: "Nome Fantasia",
+        field: "name",
+        header: "Nome",
         width: "190px",
         sortable: true,
       },

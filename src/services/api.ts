@@ -1,7 +1,7 @@
 import axios from "axios";
 import axiosRetry from "axios-retry";
 import {
-  deleteUserLocalStorage,
+  //deleteUserLocalStorage,
   getUserLocalStorage,
   setUserLocalStorage,
 } from "../contexts/AuthProvider/util";
@@ -51,9 +51,9 @@ Api.interceptors.response.use(
     /* Toda vem que der algum erro de aplicação, exemplo: token expirar, ele limpa o token do localstorage
      * Isso será melhorado com um valida token, futuramente
      */
-    if (error.response && error.response.status === 500) {
-      deleteUserLocalStorage();
-    }
+    // if (error.response && error.response.status === 500) {
+    //   deleteUserLocalStorage();
+    // }
 
     return Promise.reject(error);
   }
