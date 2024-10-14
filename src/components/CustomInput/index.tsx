@@ -25,7 +25,25 @@ export const CustomInput: React.FC<CustomInputProps> = ({
 }) => {
   return (
     <SContainer $labelPosition={$labelPosition}>
-      {radioOptions && radioPosition === "inline" ? (
+      {radioOptions && radioPosition === "only" ? (
+        <>
+          {label ? <SLabel>{label}</SLabel> : ""}
+          <SRadioGroup>
+            {radioOptions.map((option, index) => (
+              <SRadioOption key={index}>
+                <input
+                  type="radio"
+                  name={rest.name}
+                  value={option.value}
+                  checked={selectedRadio === option.value}
+                  onChange={onRadioChange}
+                />
+                <span>{option.label}</span>
+              </SRadioOption>
+            ))}
+          </SRadioGroup>
+        </>
+      ) : radioOptions && radioPosition === "inline" ? (
         <>
           <SLabel>{label}</SLabel>
 

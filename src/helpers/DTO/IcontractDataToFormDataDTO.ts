@@ -39,5 +39,15 @@ export const IContractDataToFormDataDTO = (
       status_current: data.status.status_current || "",
       history: data.status.history || [],
     },
+    contract_emission_date: data.contract_emission_date,
+    destination: data.destination,
+    number_external_contract_buyer: data.number_external_contract_buyer,
+    number_external_contract_seller: data.number_external_contract_seller,
+    day_exchange_rate: data.day_exchange_rate,
+    payment_date: data.payment_date,
+    farm_direct: data.farm_direct,
+    initial_pickup_date: data.initial_pickup_date,
+    final_pickup_date: data.final_pickup_date,
+    internal_communication: data.internal_communication,
   };
 };

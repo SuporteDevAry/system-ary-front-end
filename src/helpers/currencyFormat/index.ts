@@ -2,6 +2,7 @@ export const formatCurrency = (
   value: string,
   currency: "Real" | "Dólar" | string,
   modeSave?: boolean
+  //quotation?: boolean
 ): string => {
   // Remove todos os caracteres que não sejam números, ponto ou hífen.
 
@@ -18,6 +19,10 @@ export const formatCurrency = (
   }
 
   const typeCurrency = currency === "Dólar" ? "USD" : "BRL";
+
+  // if (quotation) {
+  //   return `R$ ${numberValue.toFixed(4).replace(".", ",")}`;
+  // }
 
   return new Intl.NumberFormat(locale, {
     style: "currency",

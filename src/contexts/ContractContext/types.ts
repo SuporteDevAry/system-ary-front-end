@@ -47,9 +47,9 @@ export interface IContractData {
   icms: string;
   payment: string;
   type_commission_seller?: string;
-  commission_seller?: number;
+  commission_seller?: string;
   type_commission_buyer?: string;
-  commission_buyer?: number;
+  commission_buyer?: string;
   type_pickup: string;
   pickup: string;
   pickup_location: string;
@@ -62,6 +62,16 @@ export interface IContractData {
   status: ContractStatus;
   number_contract?: string;
   id?: string;
+  contract_emission_date: string;
+  destination: string;
+  number_external_contract_buyer: string;
+  number_external_contract_seller: string;
+  day_exchange_rate: string;
+  payment_date: string;
+  farm_direct: string;
+  initial_pickup_date: string;
+  final_pickup_date: string;
+  internal_communication: string;
 }
 
 export interface IContractContext {

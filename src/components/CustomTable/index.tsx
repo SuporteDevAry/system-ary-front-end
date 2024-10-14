@@ -23,7 +23,11 @@ import { insertMaskInCnpj } from "../../helpers/front-end/insertMaskInCnpj";
 import Loading from "../Loading";
 import { insertMaskInTelefone } from "../../helpers/front-end/insertMaskInFone";
 import { insertMaskInCelular } from "../../helpers/front-end/insertMaskInCelular";
-import { getNestedValue } from "../../helpers/getNestedValue";
+import {
+  compareValues,
+  extractNumberFromContract,
+  getNestedValue,
+} from "./helpers";
 import { CustomTruncateText } from "../CustomTruncateText";
 
 const locale = "pt-BR";
@@ -120,26 +124,29 @@ const CustomTable: React.FC<ICustomTableProps> = ({
     );
   };
 
-  const paginatedData = useMemo(() => {
-    const startIndex = page * rowsPerPage;
-    const endIndex = startIndex + rowsPerPage;
-    return data.slice(startIndex, endIndex);
-  }, [data, page, rowsPerPage]);
-
+  //Onde fazemos o sort nos dados da tabela
   const sortedData = useMemo(() => {
-    return paginatedData.slice().sort((a, b) => {
+    return data.slice().sort((a, b) => {
       const aValue = getNestedValue(a, orderBy);
       const bValue = getNestedValue(b, orderBy);
 
-      if (aValue < bValue) {
-        return order === "asc" ? -1 : 1;
+      if (orderBy === "number_contract") {
+        const aContractNumber = extractNumberFromContract(aValue);
+        const bContractNumber = extractNumberFromContract(bValue);
+
+        return compareValues(aContractNumber, bContractNumber, order);
       }
-      if (aValue > bValue) {
-        return order === "asc" ? 1 : -1;
-      }
-      return 0;
+
+      return compareValues(aValue, bValue, order);
     });
-  }, [paginatedData, order, orderBy]);
+  }, [data, order, orderBy]);
+
+  //Onde fazemos a paginação nos dados da tabela
+  const paginatedData = useMemo(() => {
+    const startIndex = page * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
+    return sortedData.slice(startIndex, endIndex);
+  }, [sortedData, page, rowsPerPage]);
 
   return (
     <TableContainer component={Paper}>
@@ -182,7 +189,7 @@ const CustomTable: React.FC<ICustomTableProps> = ({
               </TableCell>
             </TableRow>
           ) : (
-            sortedData.map((row) => (
+            paginatedData.map((row) => (
               <React.Fragment key={row.id}>
                 <TableRow
                   onClick={() => {

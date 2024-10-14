@@ -12,13 +12,14 @@ import { SText, STextArea } from "../Step2/styles";
 import { CustomerInfo } from "../../../../../../contexts/ContractContext/types";
 import { getDataUserFromToken } from "../../../../../../contexts/AuthProvider/util";
 import { toast } from "react-toastify";
+import { CustomDatePicker } from "../../../../../../components/CustomDatePicker";
+import CustomTooltipLabel from "../../../../../../components/CustomTooltipLabel";
 
 export const Step1: React.FC<StepProps> = ({
   id,
   handleChange,
   formData,
   updateFormData,
-  isEditMode,
 }) => {
   const [isCustomerModalOpen, setCustomerModalOpen] = useState<boolean>(false);
   const [selectionType, setSelectionType] = useState<"buyer" | "seller">(
@@ -98,9 +99,35 @@ export const Step1: React.FC<StepProps> = ({
     [updateFormData, formData]
   );
 
+  const handleDateChange = useCallback(
+    (newDate: string) => {
+      if (updateFormData) {
+        updateFormData({ contract_emission_date: newDate });
+      }
+    },
+    [updateFormData]
+  );
+
   return (
     <>
       <SContainer id={id}>
+        <CustomDatePicker
+          width="260px"
+          height="38x"
+          name="contract_emission_date"
+          label={
+            <CustomTooltipLabel
+              title={`Defina uma data, por mais que ela seja o dia atual.`}
+            >
+              Data de Emissão do Contrato:
+            </CustomTooltipLabel>
+          }
+          $labelPosition="top"
+          onChange={handleDateChange}
+          value={formData.contract_emission_date}
+          disableWeekends
+        />
+
         <CustomInput
           type="text"
           name="number_broker"
@@ -108,7 +135,7 @@ export const Step1: React.FC<StepProps> = ({
           $labelPosition="top"
           onChange={handleChange}
           value={formData.number_broker}
-          readOnly={isEditMode}
+          //readOnly={isEditMode} permitindo editar o broker
         />
 
         <SContainerSeller>
