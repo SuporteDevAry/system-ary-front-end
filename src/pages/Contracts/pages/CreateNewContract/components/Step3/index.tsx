@@ -170,19 +170,53 @@ export const Step3: React.FC<StepProps> = ({
   const formatPaymentText = (
     date: string,
     sellerName: string,
-    cpf_cnpj: string
+    cpfCnpj: string,
+    bankName?: string,
+    accountNumber?: string,
+    agency?: string
   ) => {
-    return `No dia ${date}, via Banco ...., Ag. nr. ....., c/c nr. ......, no CNPJ: ${cpf_cnpj} em nome de ${sellerName}.`;
+    return `No dia ${date}, via Banco ${bankName || "...."}, Ag. nr. ${
+      agency || "...."
+    }, c/c nr. ${
+      accountNumber || "...."
+    }, no CNPJ: ${cpfCnpj} em nome de ${sellerName}.`;
   };
 
   const handleDateForPaymentChange = useCallback(
     (newDate: string) => {
       if (updateFormData) {
         const sellerName = formData.seller?.name || "vendedor";
-        const cpf_cnpj = formData.seller?.cnpj_cpf
+        const cpfCnpj = formData.seller?.cnpj_cpf
           ? insertMaskInCnpj(formData.seller.cnpj_cpf)
           : "00.000.000/0000-00";
-        const paymentText = formatPaymentText(newDate, sellerName, cpf_cnpj);
+
+        const dataBank =
+          formData.seller?.account?.filter((i) => i.main === "S") || [];
+
+        if (dataBank.length === 0) {
+          const paymentText = formatPaymentText(newDate, sellerName, cpfCnpj);
+
+          updateFormData({
+            payment_date: newDate,
+            payment: paymentText,
+          });
+          return;
+        }
+
+        const {
+          bank_name: bankName,
+          account_number: accountNumber,
+          agency,
+        } = dataBank[0];
+
+        const paymentText = formatPaymentText(
+          newDate,
+          sellerName,
+          cpfCnpj,
+          bankName,
+          accountNumber,
+          agency
+        );
 
         updateFormData({
           payment_date: newDate,

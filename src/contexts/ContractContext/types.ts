@@ -1,3 +1,5 @@
+import { IAccounts } from "../ClienteContext/types";
+
 export interface IContractsProvider {
   children: JSX.Element;
 }
@@ -18,6 +20,7 @@ export type CustomerInfo = {
   state?: string;
   cnpj_cpf?: string;
   ins_est?: string;
+  account?: IAccounts[];
 };
 
 export type ContractStatus = {

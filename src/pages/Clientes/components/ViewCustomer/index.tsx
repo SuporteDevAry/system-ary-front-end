@@ -311,11 +311,11 @@ export function ViewCustomer(): JSX.Element {
 
   const nameColumnsFromAccount = useMemo(
     () => [
-      { field: "bank_number", header: "Banco" },
-      { field: "bank_name", header: "Nome" },
-      { field: "agency", header: "Agência" },
-      { field: "account_number", header: "C/C" },
-      { field: "main", header: "Conta Principal" },
+      { field: "bank_number", header: "Banco", sortable: true },
+      { field: "bank_name", header: "Nome", sortable: true },
+      { field: "agency", header: "Agência", sortable: true },
+      { field: "account_number", header: "C/C", sortable: true },
+      { field: "main", header: "Conta Principal", sortable: true },
     ],
     []
   );
