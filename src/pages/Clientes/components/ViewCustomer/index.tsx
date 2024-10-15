@@ -9,13 +9,17 @@ import {
   SkeyName,
   SKeyValue,
   STitle,
+  SButtonContainerBank,
 } from "./styles";
 import { CardContent } from "@mui/material";
 import CustomTable from "../../../../components/CustomTable";
 import CustomButton from "../../../../components/CustomButton";
 import { CustomSearch } from "../../../../components/CustomSearch";
 import { useLocation } from "react-router-dom";
-import { IListCliente } from "../../../../contexts/ClienteContext/types";
+import {
+  IListAccounts,
+  IListCliente,
+} from "../../../../contexts/ClienteContext/types";
 import { insertMaskInCpf } from "../../../../helpers/front-end/insertMaskInCpf";
 import { insertMaskInCnpj } from "../../../../helpers/front-end/insertMaskInCnpj";
 import { ContatoContext } from "../../../../contexts/ContatoContext";
@@ -28,13 +32,18 @@ import { insertMaskInTelefone } from "../../../../helpers/front-end/insertMaskIn
 import { insertMaskInCelular } from "../../../../helpers/front-end/insertMaskInCelular";
 import useTableSearch from "../../../../hooks/useTableSearch";
 import { useUserPermissions } from "../../../../hooks";
+import { ModalCreateNewAccount } from "./components/ModalCreateNewAccount";
+import { ModalUpdateAccount } from "./components/ModalUpdateAccount";
+import { ClienteContext } from "../../../../contexts/ClienteContext";
+import { useDebouncedValue } from "../../../../hooks/useDebouncedValue";
 
 export function ViewCustomer(): JSX.Element {
   const location = useLocation();
   const { canConsult } = useUserPermissions();
-
   const [dataClient, setDataClient] = useState<IListCliente | null>(null);
   const contactContext = ContatoContext();
+  const clienteContext = ClienteContext();
+
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [customerContactsList, setCustomerContactsList] = useState<
@@ -55,9 +64,31 @@ export function ViewCustomer(): JSX.Element {
   const [order, setOrder] = useState<"asc" | "desc">("asc");
   const [orderBy, setOrderBy] = useState<string>("name");
 
+  const [modalAccount, setModalAccount] = useState<string>("");
+  const [isNewModalAccount, setNewModalAccount] = useState<boolean>(false);
+  const [isUpdateModalAccount, setUpdateModalAccount] =
+    useState<boolean>(false);
+  const [isDeleteModalAccount, setDeleteModalAccount] =
+    useState<boolean>(false);
+  const [selectedAccount, setSelectedAccount] = useState<IListAccounts>(
+    {} as IListAccounts
+  );
+  const [customerAccountList, setCustomerAccountList] = useState<
+    IListAccounts[]
+  >([]);
+  const [accountForUpdate, setAccountForUpdate] = useState<IListAccounts>(
+    {} as IListAccounts
+  );
+  const [clientSelected, setClienteSelected] = useState<string>("");
+  const [pageAccount, setPageAccount] = useState(0);
+  const [orderAccount, setOrderAccount] = useState<"asc" | "desc">("asc");
+  const [orderByAccount, setOrderByAccount] = useState<string>("bank_number");
+
   useEffect(() => {
     const clientForView: IListCliente = location.state?.clientForView;
     setDataClient(clientForView);
+    setCustomerAccountList(location.state?.clientForView.account);
+    setClienteSelected(location.state?.clientForView.id);
   }, [location]);
 
   const fetchData = useCallback(async () => {
@@ -68,6 +99,12 @@ export function ViewCustomer(): JSX.Element {
         dataClient.code_client
       );
       setCustomerContactsList(response.data);
+
+      const responseClient = await clienteContext.getClientById(
+        dataClient.code_client
+      );
+
+      setCustomerAccountList(responseClient.data.account);
     } catch (error) {
       toast.error(
         `Erro ao tentar ler clientes, contacte o administrador do sistema ${error}`
@@ -75,7 +112,7 @@ export function ViewCustomer(): JSX.Element {
     } finally {
       setIsLoading(false);
     }
-  }, [contactContext, dataClient]);
+  }, [contactContext, dataClient, customerAccountList]);
 
   useEffect(() => {
     if (dataClient) {
@@ -83,10 +120,20 @@ export function ViewCustomer(): JSX.Element {
     }
   }, [dataClient]);
 
+  const { filteredData, handleSearch } = useTableSearch({
+    data: customerContactsList,
+    searchTerm,
+    setPage,
+  });
+
+  const debouncedSearchTerm = useDebouncedValue(searchTerm, 300);
+  useEffect(() => {
+    handleSearch();
+  }, [debouncedSearchTerm, handleSearch]);
+
   const handleCreateNewContact = () => {
     setNewContactModal(true);
   };
-
   const handleCloseNewContactModal = () => {
     setNewContactModal(false);
     fetchData();
@@ -106,10 +153,11 @@ export function ViewCustomer(): JSX.Element {
     if (!selectedContact) return;
     try {
       await contactContext.deleteContato(selectedContact.id);
-      fetchData();
+
       toast.success(
-        `Contato ${selectedContact.name} com id:${selectedContact.id}, foi deletado com sucesso!`
+        `Contato ${selectedContact.name} do cliente ${selectedContact.code_client}, foi deletado com sucesso!`
       );
+      fetchData();
     } catch (error) {
       toast.error(
         `Erro ao tentar excluir cliente, contacte o administrador do sistema ${error}`
@@ -134,15 +182,63 @@ export function ViewCustomer(): JSX.Element {
     fetchData();
   };
 
-  const { filteredData, handleSearch } = useTableSearch({
-    data: customerContactsList,
-    searchTerm,
-    setPage,
-  });
+  const handleCreateNewAccount = () => {
+    setNewModalAccount(true);
+  };
 
-  useEffect(() => {
-    handleSearch();
-  }, [searchTerm, handleSearch]);
+  const handleCloseNewModalAccount = () => {
+    setNewModalAccount(false);
+    fetchData();
+  };
+
+  const handleUpdateAccount = (account: IListAccounts) => {
+    setUpdateModalAccount(true);
+    setAccountForUpdate(account);
+  };
+
+  const handleCloseUpdateModalAccount = () => {
+    setUpdateModalAccount(false);
+    fetchData();
+  };
+
+  const handleCloseDeleteModalAccount = () => {
+    setDeleteModalAccount(false);
+    fetchData();
+  };
+
+  const handleOpenDeleteAccount = (account: IListAccounts) => {
+    setModalAccount(
+      `Tem certeza que deseja deletar a c/c: ${account.account_number}?`
+    );
+    setSelectedAccount(account);
+    setDeleteModalAccount(true);
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!selectedAccount) return;
+    try {
+      const newAccount = customerAccountList.filter(
+        (accounts) => accounts.id !== selectedAccount.id
+      );
+
+      const dataToSave = {
+        account: newAccount,
+      };
+
+      clienteContext.updateCliente(clientSelected, dataToSave);
+
+      toast.success(
+        `Conta Corrente ${selectedAccount.account_number} foi deletada com sucesso!`
+      );
+      fetchData();
+    } catch (error) {
+      toast.error(
+        `Erro ao tentar excluir conta corrente, contacte o administrador do sistema ${error}`
+      );
+    } finally {
+      setDeleteModalAccount(false);
+    }
+  };
 
   const nameColumnsFromDataClient = useMemo(
     () => [
@@ -159,6 +255,9 @@ export function ViewCustomer(): JSX.Element {
       { field: "situation", header: "Situação:" },
       { field: "telephone", header: "Telefone:" },
       { field: "cellphone", header: "Celular:" },
+      { field: "bank_number", header: "Banco:" },
+      { field: "agency", header: "Agência:" },
+      { field: "account_number", header: "C/C:" },
     ],
     []
   );
@@ -174,6 +273,28 @@ export function ViewCustomer(): JSX.Element {
       return insertMaskInTelefone(row.telephone);
     if (column.field === "cellphone") return insertMaskInCelular(row.cellphone);
 
+    if (column.field === "bank_number") {
+      const mainAccountBank = row.account.find(
+        (account: any) => account.main === "S"
+      );
+
+      return mainAccountBank ? mainAccountBank.bank_name : "";
+    }
+
+    if (column.field === "agency") {
+      const mainAccountAgency = row.account.find(
+        (account: any) => account.main === "S"
+      );
+      return mainAccountAgency ? mainAccountAgency.agency : "";
+    }
+
+    if (column.field === "account_number") {
+      const mainAccountCurrent = row.account.find(
+        (account: any) => account.main === "S"
+      );
+      return mainAccountCurrent ? mainAccountCurrent.account_number : "";
+    }
+
     return row[column.field];
   };
 
@@ -184,6 +305,17 @@ export function ViewCustomer(): JSX.Element {
       { field: "sector", header: "Setor", sortable: true },
       { field: "telephone", header: "Telefone" },
       { field: "cellphone", header: "Celular" },
+    ],
+    []
+  );
+
+  const nameColumnsFromAccount = useMemo(
+    () => [
+      { field: "bank_number", header: "Banco" },
+      { field: "bank_name", header: "Nome" },
+      { field: "agency", header: "Agência" },
+      { field: "account_number", header: "C/C" },
+      { field: "main", header: "Conta Principal" },
     ],
     []
   );
@@ -212,11 +344,34 @@ export function ViewCustomer(): JSX.Element {
     [handleUpdateCustomerContact, handleCloseDeleteModal]
   );
 
+  const renderActionButtonsAccount = useCallback(
+    (row: any) => (
+      <SButtonContainer>
+        <CustomButton
+          $variant={"primary"}
+          width="80px"
+          onClick={() => handleUpdateAccount(row)}
+          disabled={canConsult}
+        >
+          Editar
+        </CustomButton>
+        <CustomButton
+          $variant={"danger"}
+          width="80px"
+          onClick={() => handleOpenDeleteAccount(row)}
+          disabled={canConsult}
+        >
+          Deletar
+        </CustomButton>
+      </SButtonContainer>
+    ),
+    [handleUpdateAccount, handleCloseDeleteModalAccount]
+  );
+
   return (
     <>
       <SContainer>
         <STitle>Dados do Cliente</STitle>
-
         <SCardInfo>
           {nameColumnsFromDataClient.map((column) => {
             const isAddressField = [
@@ -251,7 +406,6 @@ export function ViewCustomer(): JSX.Element {
         </SCardInfo>
 
         <STitle>Contatos do Cliente</STitle>
-
         <SCardInfo>
           <BoxContainer>
             <CustomSearch
@@ -285,6 +439,35 @@ export function ViewCustomer(): JSX.Element {
             />
           </CardContent>
         </SCardInfo>
+
+        <STitle>Contas Bancárias do Cliente</STitle>
+        <SCardInfo>
+          <SButtonContainerBank>
+            <CustomButton
+              onClick={handleCreateNewAccount}
+              $variant={"success"}
+              width="180px"
+              disabled={canConsult}
+            >
+              Nova Conta
+            </CustomButton>
+          </SButtonContainerBank>
+          <CardContent>
+            <CustomTable
+              data={customerAccountList}
+              columns={nameColumnsFromAccount}
+              isLoading={isLoading}
+              hasPagination={true}
+              actionButtons={renderActionButtonsAccount}
+              page={pageAccount}
+              setPage={setPageAccount}
+              order={orderAccount}
+              orderBy={orderByAccount}
+              setOrder={setOrderAccount}
+              setOrderBy={setOrderByAccount}
+            />
+          </CardContent>
+        </SCardInfo>
       </SContainer>
 
       <ModalCreateNewContact
@@ -302,6 +485,29 @@ export function ViewCustomer(): JSX.Element {
           onClose={handleCloseDeleteModal}
           onConfirm={handleDeleteCustomerContact}
           content={modalContent}
+        />
+      )}
+
+      {/* ====== Lógica para contas correntes do cliente  ============ */}
+
+      <ModalCreateNewAccount
+        open={isNewModalAccount}
+        onClose={handleCloseNewModalAccount}
+        idCliente={dataClient?.id || ""}
+        account={customerAccountList}
+      />
+      <ModalUpdateAccount
+        open={isUpdateModalAccount}
+        onClose={handleCloseUpdateModalAccount}
+        dataAccount={accountForUpdate}
+        codeCliente={dataClient?.code_client || ""}
+      />
+      {selectedAccount && (
+        <ModalDelete
+          open={isDeleteModalAccount}
+          onClose={handleCloseDeleteModalAccount}
+          onConfirm={handleDeleteAccount}
+          content={modalAccount}
         />
       )}
     </>

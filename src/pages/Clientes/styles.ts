@@ -3,7 +3,8 @@ import styled from "styled-components";
 import { V } from "../../styles/variables";
 
 export const SContainer = styled.div`
-  width: 960px;
+  //width: 984px;
+  min-width: -webkit-fill-available;
 `;
 
 export const STitle = styled.h2`

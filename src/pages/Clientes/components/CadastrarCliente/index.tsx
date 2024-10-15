@@ -26,6 +26,7 @@ export function CadastrarCliente() {
     telephone: "",
     cellphone: "",
     situation: "",
+    account: [],
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -51,6 +52,7 @@ export function CadastrarCliente() {
       telephone: "",
       cellphone: "",
       situation: "",
+      account: [],
     });
   };
 
@@ -87,6 +89,7 @@ export function CadastrarCliente() {
         telephone: formData.telephone,
         cellphone: formData.cellphone,
         situation: formData.situation,
+        account: formData.account,
       });
 
       toast.success(`Cliente ${formData.name}, foi criado com sucesso!`);

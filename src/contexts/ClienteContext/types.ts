@@ -21,6 +21,7 @@ export interface IClientes {
   telephone: string;
   cellphone: string;
   situation: string;
+  account: IAccounts[];
   created_at: string;
   updated_at: string;
 }
@@ -34,3 +35,16 @@ export interface IUpdateClientesData
 export interface IListCliente extends IClientes {
   [key: string]: any;
 }
+
+export interface IAccounts {
+  id: string;
+  bank_number: string;
+  bank_name: string;
+  agency: string;
+  account_number: string;
+  usePix: string;
+  keyPix: string;
+  main: string;
+}
+
+export interface IListAccounts extends IAccounts {}
