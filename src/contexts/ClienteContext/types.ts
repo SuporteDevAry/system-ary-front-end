@@ -42,9 +42,9 @@ export interface IAccounts {
   bank_name: string;
   agency: string;
   account_number: string;
-  usePix: boolean;
+  usePix: string;
   keyPix: string;
-  main: boolean;
+  main: string;
 }
 
 export interface IListAccounts extends IAccounts {}

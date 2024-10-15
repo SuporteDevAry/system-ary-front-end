@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { Modal } from "../../../../../../components/Modal";
 import { toast } from "react-toastify";
-import { SFormContainer } from "./styles";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import { SBox, SFormContainer, SFormControlLabel } from "./styles";
 import { CustomInput } from "../../../../../../components/CustomInput";
 import { ModalCreateNewAccountProps } from "./types";
 import Checkbox from "@mui/material/Checkbox";
-import FormControlLabel from "@mui/material/FormControlLabel";
 import { ClienteContext } from "../../../../../../contexts/ClienteContext";
 import { v4 as uuid } from "uuid";
 
@@ -20,18 +20,20 @@ export function ModalCreateNewAccount({
     bank_name: "",
     agency: "",
     account_number: "",
-    usePix: false,
+    usePix: "",
     keyPix: "",
-    main: false,
+    main: "",
   });
 
   const clienteContext = ClienteContext();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
+    const newValue = type === "checkbox" ? (checked ? "S" : "N") : value;
+
     setFormData((prevData) => ({
       ...prevData,
-      [name]: value,
+      [name]: newValue,
     }));
   };
 
@@ -42,9 +44,9 @@ export function ModalCreateNewAccount({
       bank_name: "",
       agency: "",
       account_number: "",
-      usePix: false,
+      usePix: "",
       keyPix: "",
-      main: false,
+      main: "",
     });
   };
 
@@ -63,12 +65,12 @@ export function ModalCreateNewAccount({
       const newAccount = {
         id: uuid(),
         bank_number: formData.bank_number,
-        bank_name: formData.bank_name,
+        bank_name: formData.bank_name.toLocaleUpperCase(),
         agency: formData.agency,
         account_number: formData.account_number,
-        usePix: formData.usePix ? "S" : "N",
+        usePix: formData.usePix === "S" ? "S" : "N",
         keyPix: formData.keyPix,
-        main: formData.main ? "S" : "N",
+        main: formData.main === "S" ? "S" : "N",
       };
 
       account.push(newAccount);
@@ -134,7 +136,7 @@ export function ModalCreateNewAccount({
           onChange={handleChange}
           value={formData.account_number}
         />
-        <FormControlLabel
+        <SFormControlLabel
           control={
             <Checkbox
               name="usePix"
@@ -152,16 +154,18 @@ export function ModalCreateNewAccount({
           onChange={handleChange}
           value={formData.keyPix}
         />
-        <FormControlLabel
-          control={
-            <Checkbox
-              name="main"
-              onChange={handleChange}
-              value={formData.main}
-            />
-          }
-          label="Principal"
-        />
+        <SBox>
+          <FormControlLabel
+            control={
+              <Checkbox
+                name="main"
+                onChange={handleChange}
+                value={formData.main}
+              />
+            }
+            label="Conta Principal"
+          />
+        </SBox>
       </SFormContainer>
     </Modal>
   );

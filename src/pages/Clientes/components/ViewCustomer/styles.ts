@@ -12,8 +12,7 @@ export const SContainer = styled.div`
 
 export const SCardInfo = styled.div`
   padding: 16px;
-  min-width: -webkit-fill-available;
-  //width: 984px;
+  width: 935px;
   border-radius: 16px;
   background-color: ${(props) => props.theme["white"]};
   box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.16);

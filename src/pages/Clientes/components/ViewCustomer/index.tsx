@@ -98,7 +98,7 @@ export function ViewCustomer(): JSX.Element {
       const response = await contactContext.getContactsByClient(
         dataClient.code_client
       );
-      setCustomerContactsList(response?.data);
+      setCustomerContactsList(response.data);
 
       const responseClient = await clienteContext.getClientById(
         dataClient.code_client
@@ -227,10 +227,10 @@ export function ViewCustomer(): JSX.Element {
 
       clienteContext.updateCliente(clientSelected, dataToSave);
 
-      fetchData();
       toast.success(
         `Conta Corrente ${selectedAccount.account_number} foi deletada com sucesso!`
       );
+      fetchData();
     } catch (error) {
       toast.error(
         `Erro ao tentar excluir conta corrente, contacte o administrador do sistema ${error}`
@@ -278,9 +278,7 @@ export function ViewCustomer(): JSX.Element {
         (account: any) => account.main === "S"
       );
 
-      return mainAccountBank
-        ? mainAccountBank.bank_number + " - " + mainAccountBank.bank_name
-        : "";
+      return mainAccountBank ? mainAccountBank.bank_name : "";
     }
 
     if (column.field === "agency") {
@@ -317,7 +315,7 @@ export function ViewCustomer(): JSX.Element {
       { field: "bank_name", header: "Nome" },
       { field: "agency", header: "Agência" },
       { field: "account_number", header: "C/C" },
-      { field: "main", header: "Principal" },
+      { field: "main", header: "Conta Principal" },
     ],
     []
   );
