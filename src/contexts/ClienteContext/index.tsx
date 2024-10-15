@@ -12,7 +12,7 @@ interface IClienteContext {
   createCliente: (clienteData: ICreateClientesData) => Promise<any>;
   updateCliente: (clientId: string, updateClienteData: any) => void;
   deleteCliente: (clientId: string) => void;
-  getClientById: (clientId: string) => void;
+  getClientById: (clientId: string) => Promise<any>;
 }
 
 const newContext = createContext<IClienteContext>({
@@ -20,7 +20,7 @@ const newContext = createContext<IClienteContext>({
   createCliente: () => Promise.resolve(),
   updateCliente: () => {},
   deleteCliente: () => {},
-  getClientById: () => {},
+  getClientById: () => Promise.resolve(),
 });
 
 export const ClientesProvider = ({ children }: IClientesProvider) => {
