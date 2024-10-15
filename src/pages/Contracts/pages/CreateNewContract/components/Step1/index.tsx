@@ -76,6 +76,7 @@ export const Step1: React.FC<StepProps> = ({
             state: selectCustomerData.state,
             cnpj_cpf: selectCustomerData.cnpj_cpf,
             ins_est: selectCustomerData.ins_est,
+            account: selectCustomerData.account,
           },
         });
       }
