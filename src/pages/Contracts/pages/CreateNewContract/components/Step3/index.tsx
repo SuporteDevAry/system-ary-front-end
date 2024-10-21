@@ -181,25 +181,25 @@ export const Step3: React.FC<StepProps> = ({
         cpfCnpj: string,
         bankName: string,
         accountNumber: string,
-        agency: string,
-        cnpjPagto?: string
+        agency: string
     ) => {
         return `No dia ${date}, via Banco ${bankName || "...."}, Ag. nr. ${
             agency || "...."
-        }, c/c nr. ${accountNumber || "...."}, no CNPJ: ${
-            cnpjPagto !== null ? cnpjPagto : cpfCnpj
-        } em nome de ${sellerName}.`;
+        }, c/c nr. ${
+            accountNumber || "...."
+        }, no CNPJ: ${cpfCnpj} em nome de ${sellerName}.`;
     };
 
     const handleDateForPaymentChange = useCallback(
         (newDate: string) => {
             if (updateFormData) {
+                console.log("formData", formData);
+
                 const sellerName = formData.seller?.name || "vendedor";
-                const cpfCnpj = formData.seller?.cnpj_cpf
-                    ? insertMaskInCnpj(formData.seller.cnpj_cpf)
-                    : "00.000.000/0000-00";
-                const cnpjPagto = formData.seller?.cnpj_pagto
+                const cpfCnpj = formData.seller?.cnpj_pagto
                     ? insertMaskInCnpj(formData.seller.cnpj_pagto)
+                    : formData.seller?.cnpj_cpf
+                    ? insertMaskInCnpj(formData.seller.cnpj_cpf)
                     : "00.000.000/0000-00";
 
                 const dataBank =
@@ -219,8 +219,7 @@ export const Step3: React.FC<StepProps> = ({
                         cpfCnpj,
                         bankName,
                         accountNumber,
-                        agency,
-                        cnpjPagto
+                        agency
                     );
 
                     updateFormData({
@@ -236,8 +235,7 @@ export const Step3: React.FC<StepProps> = ({
                     cpfCnpj,
                     bankName,
                     accountNumber,
-                    agency,
-                    cnpjPagto
+                    agency
                 );
 
                 updateFormData({

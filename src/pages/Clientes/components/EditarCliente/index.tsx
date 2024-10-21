@@ -31,10 +31,7 @@ export function EditarCliente() {
         telephone: clienteForUpdate.telephone,
         cellphone: clienteForUpdate.cellphone,
         situation: clienteForUpdate.situation,
-        cnpj_pagto:
-            clienteForUpdate.cnpj_pagto == " "
-                ? ""
-                : clienteForUpdate.cnpj_pagto,
+        cnpj_pagto: clienteForUpdate.cnpj_pagto,
     });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -82,8 +79,7 @@ export function EditarCliente() {
                 telephone: formData.telephone,
                 cellphone: formData.cellphone,
                 situation: formData.situation,
-                cnpj_pagto:
-                    formData.cnpj_pagto == "" ? " " : formData.cnpj_pagto,
+                cnpj_pagto: formData.cnpj_pagto,
             });
 
             toast.success(
