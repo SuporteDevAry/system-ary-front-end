@@ -8,460 +8,499 @@ import CustomDatePicker from "../../../../../../components/CustomDatePicker";
 import { insertMaskInCnpj } from "../../../../../../helpers/front-end/insertMaskInCnpj";
 import { getCommissionFormat } from "./helpers";
 import {
-  usePriceHandlers,
-  useExchangeRateHandlers,
-  useCommissionHandlers,
-  useQuantityHandlers,
+    usePriceHandlers,
+    useExchangeRateHandlers,
+    useCommissionHandlers,
+    useQuantityHandlers,
 } from "./hooks";
 import { CustomTextArea } from "../../../../../../components/CustomTextArea";
 
 export const Step3: React.FC<StepProps> = ({
-  id,
-  handleChange,
-  formData,
-  updateFormData,
-  isEditMode,
+    id,
+    handleChange,
+    formData,
+    updateFormData,
+    isEditMode,
 }) => {
-  const { isEditingPrice, handlePriceFocus, handlePriceBlur } =
-    usePriceHandlers(formData, updateFormData);
+    const { isEditingPrice, handlePriceFocus, handlePriceBlur } =
+        usePriceHandlers(formData, updateFormData);
 
-  const {
-    isEditingExchangeRate,
-    handleExchangeRateFocus,
-    handleExchangeRateBlur,
-  } = useExchangeRateHandlers();
+    const {
+        isEditingExchangeRate,
+        handleExchangeRateFocus,
+        handleExchangeRateBlur,
+    } = useExchangeRateHandlers();
 
-  const { isEditingCommission, handleCommissionFocus, handleCommissionBlur } =
-    useCommissionHandlers();
+    const { isEditingCommission, handleCommissionFocus, handleCommissionBlur } =
+        useCommissionHandlers();
 
-  const {
-    isEditingQuantity,
-    handleQuantityChange,
-    handleQuantityFocus,
-    handleQuantityBlur,
-  } = useQuantityHandlers(formData, updateFormData);
+    const {
+        isEditingQuantity,
+        handleQuantityChange,
+        handleQuantityFocus,
+        handleQuantityBlur,
+    } = useQuantityHandlers(formData, updateFormData);
 
-  const modeSave = isEditMode ? false : true;
+    const modeSave = isEditMode ? false : true;
 
-  const [initialPickupDate, SetInitialPickupDate] = useState<string>(
-    formData.initial_pickup_date
-  );
-  const [finalPickupDate, SetFinalPickupDate] = useState<string>(
-    formData.final_pickup_date
-  );
+    const [initialPickupDate, SetInitialPickupDate] = useState<string>(
+        formData.initial_pickup_date
+    );
+    const [finalPickupDate, SetFinalPickupDate] = useState<string>(
+        formData.final_pickup_date
+    );
 
-  const concatenatedPickupText =
-    initialPickupDate === finalPickupDate
-      ? `Até o dia ${initialPickupDate}`
-      : `De ${initialPickupDate} até ${finalPickupDate}`;
+    const concatenatedPickupText =
+        initialPickupDate === finalPickupDate
+            ? `Até o dia ${initialPickupDate}`
+            : `De ${initialPickupDate} até ${finalPickupDate}`;
 
-  const handleFieldPickupChange = (
-    value: string,
-    concatenatedPickupText: string
-  ) => {
-    const info = fieldInfo[value as FieldType];
-    updateFormData?.({
-      ...formData,
-      type_pickup: value,
-      pickup: info.pickup(concatenatedPickupText),
-      pickup_location: info.pickupLocation,
-      inspection: info.inspection,
-    });
-  };
-
-  const handleRadioChange = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>, name: string) => {
-      const { value } = event.target;
-
-      if (name === "type_pickup")
-        return handleFieldPickupChange(value, concatenatedPickupText);
-
-      if (name === "type_icms") {
+    const handleFieldPickupChange = (
+        value: string,
+        concatenatedPickupText: string
+    ) => {
+        const info = fieldInfo[value as FieldType];
         updateFormData?.({
-          ...formData,
-          type_icms: value,
-          icms: value,
+            ...formData,
+            type_pickup: value,
+            pickup: info.pickup(concatenatedPickupText),
+            pickup_location: info.pickupLocation,
+            inspection: info.inspection,
         });
-        return;
-      }
+    };
 
-      if (name === "type_commission_seller") {
-        updateFormData?.({
-          ...formData,
-          type_commission_seller: value,
-        });
-        return;
-      }
+    const handleRadioChange = useCallback(
+        (event: React.ChangeEvent<HTMLInputElement>, name: string) => {
+            const { value } = event.target;
 
-      if (name === "type_commission_buyer") {
-        updateFormData?.({
-          ...formData,
-          type_commission_buyer: value,
-        });
-        return;
-      }
+            if (name === "type_pickup")
+                return handleFieldPickupChange(value, concatenatedPickupText);
 
-      if (name === "farm_direct") {
-        const addFarm =
-          "Direto da Lavoura, sem custo de recebimento e padronização.";
-        updateFormData?.({
-          ...formData,
-          farm_direct: value,
-          pickup:
-            value !== "Não"
-              ? formData.pickup.replace("limpo e seco sobre rodas.", addFarm)
-              : formData.pickup.replace(addFarm, "limpo e seco sobre rodas."),
-        });
+            if (name === "type_icms") {
+                updateFormData?.({
+                    ...formData,
+                    type_icms: value,
+                    icms: value,
+                });
+                return;
+            }
 
-        return;
-      }
+            if (name === "type_commission_seller") {
+                updateFormData?.({
+                    ...formData,
+                    type_commission_seller: value,
+                });
+                return;
+            }
 
-      handleChange?.({
-        ...event,
-        target: {
-          ...event.target,
-          name,
-          value,
+            if (name === "type_commission_buyer") {
+                updateFormData?.({
+                    ...formData,
+                    type_commission_buyer: value,
+                });
+                return;
+            }
+
+            if (name === "farm_direct") {
+                const addFarm =
+                    "Direto da Lavoura, sem custo de recebimento e padronização.";
+                updateFormData?.({
+                    ...formData,
+                    farm_direct: value,
+                    pickup:
+                        value !== "Não"
+                            ? formData.pickup.replace(
+                                  "limpo e seco sobre rodas.",
+                                  addFarm
+                              )
+                            : formData.pickup.replace(
+                                  addFarm,
+                                  "limpo e seco sobre rodas."
+                              ),
+                });
+
+                return;
+            }
+
+            handleChange?.({
+                ...event,
+                target: {
+                    ...event.target,
+                    name,
+                    value,
+                },
+            });
         },
-      });
-    },
-    [formData, updateFormData, handleChange, handleFieldPickupChange]
-  );
+        [formData, updateFormData, handleChange, handleFieldPickupChange]
+    );
 
-  useEffect(() => {
-    const price = parseFloat(formData.price.replace(",", "."));
-    /*Todo:Esse código abaixo, poderá ser utilizado no futuro!
-     *Number(formData.quantity.replace(",", ".")) * 1000;
-     */
-    const quantityToKG = Number(formData.quantity.replace(".", ""));
-    const quantityToBag = (Number(quantityToKG) / 60).toFixed(3);
-    const totalContractValue = Number(price * Number(quantityToBag)).toFixed(3);
+    useEffect(() => {
+        const price = parseFloat(formData.price.replace(",", "."));
+        /*Todo:Esse código abaixo, poderá ser utilizado no futuro!
+         *Number(formData.quantity.replace(",", ".")) * 1000;
+         */
+        const quantityToKG = Number(formData.quantity.replace(".", ""));
+        const quantityToBag = (Number(quantityToKG) / 60).toFixed(3);
+        const totalContractValue = Number(
+            price * Number(quantityToBag)
+        ).toFixed(3);
 
-    if (totalContractValue) {
-      updateFormData?.({
-        ...formData,
-        total_contract_value: parseFloat(totalContractValue),
-        quantity_kg: quantityToKG,
-        quantity_bag: Number(quantityToBag),
-      });
-    }
-  }, [formData.price, formData.quantity]);
+        if (totalContractValue) {
+            updateFormData?.({
+                ...formData,
+                total_contract_value: parseFloat(totalContractValue),
+                quantity_kg: quantityToKG,
+                quantity_bag: Number(quantityToBag),
+            });
+        }
+    }, [formData.price, formData.quantity]);
 
-  const handleNumericInputChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const { name, value } = event.target;
+    const handleNumericInputChange = (
+        event: React.ChangeEvent<HTMLInputElement>
+    ) => {
+        const { name, value } = event.target;
 
-    // Permitir apenas números, vírgula e ponto
-    const regex = /^[0-9]*[.,]?[0-9]*$/;
+        // Permitir apenas números, vírgula e ponto
+        const regex = /^[0-9]*[.,]?[0-9]*$/;
 
-    if (regex.test(value)) {
-      handleChange?.({
-        ...event,
-        target: {
-          ...event.target,
-          name,
-          value,
+        if (regex.test(value)) {
+            handleChange?.({
+                ...event,
+                target: {
+                    ...event.target,
+                    name,
+                    value,
+                },
+            });
+        }
+    };
+
+    const formatPaymentText = (
+        date: string,
+        sellerName: string,
+        cpfCnpj: string,
+        bankName: string,
+        accountNumber: string,
+        agency: string,
+        cnpjPagto?: string
+    ) => {
+        return `No dia ${date}, via Banco ${bankName || "...."}, Ag. nr. ${
+            agency || "...."
+        }, c/c nr. ${accountNumber || "...."}, no CNPJ: ${
+            cnpjPagto !== null ? cnpjPagto : cpfCnpj
+        } em nome de ${sellerName}.`;
+    };
+
+    const handleDateForPaymentChange = useCallback(
+        (newDate: string) => {
+            if (updateFormData) {
+                const sellerName = formData.seller?.name || "vendedor";
+                const cpfCnpj = formData.seller?.cnpj_cpf
+                    ? insertMaskInCnpj(formData.seller.cnpj_cpf)
+                    : "00.000.000/0000-00";
+                const cnpjPagto = formData.seller?.cnpj_pagto
+                    ? insertMaskInCnpj(formData.seller.cnpj_pagto)
+                    : "00.000.000/0000-00";
+
+                const dataBank =
+                    formData.seller?.account?.filter((i) => i.main === "S") ||
+                    [];
+
+                const {
+                    bank_name: bankName,
+                    account_number: accountNumber,
+                    agency,
+                } = dataBank[0];
+
+                if (dataBank.length === 0) {
+                    const paymentText = formatPaymentText(
+                        newDate,
+                        sellerName,
+                        cpfCnpj,
+                        bankName,
+                        accountNumber,
+                        agency,
+                        cnpjPagto
+                    );
+
+                    updateFormData({
+                        payment_date: newDate,
+                        payment: paymentText,
+                    });
+                    return;
+                }
+
+                const paymentText = formatPaymentText(
+                    newDate,
+                    sellerName,
+                    cpfCnpj,
+                    bankName,
+                    accountNumber,
+                    agency,
+                    cnpjPagto
+                );
+
+                updateFormData({
+                    payment_date: newDate,
+                    payment: paymentText,
+                });
+            }
         },
-      });
-    }
-  };
+        [updateFormData, formData.seller]
+    );
 
-  const formatPaymentText = (
-    date: string,
-    sellerName: string,
-    cpfCnpj: string,
-    bankName?: string,
-    accountNumber?: string,
-    agency?: string
-  ) => {
-    return `No dia ${date}, via Banco ${bankName || "...."}, Ag. nr. ${
-      agency || "...."
-    }, c/c nr. ${
-      accountNumber || "...."
-    }, no CNPJ: ${cpfCnpj} em nome de ${sellerName}.`;
-  };
-
-  const handleDateForPaymentChange = useCallback(
-    (newDate: string) => {
-      if (updateFormData) {
-        const sellerName = formData.seller?.name || "vendedor";
-        const cpfCnpj = formData.seller?.cnpj_cpf
-          ? insertMaskInCnpj(formData.seller.cnpj_cpf)
-          : "00.000.000/0000-00";
-
-        const dataBank =
-          formData.seller?.account?.filter((i) => i.main === "S") || [];
-
-        if (dataBank.length === 0) {
-          const paymentText = formatPaymentText(newDate, sellerName, cpfCnpj);
-
-          updateFormData({
-            payment_date: newDate,
-            payment: paymentText,
-          });
-          return;
+    useEffect(() => {
+        if (formData.type_pickup) {
+            handleFieldPickupChange(
+                formData.type_pickup,
+                concatenatedPickupText
+            );
         }
+    }, [initialPickupDate, finalPickupDate, formData.type_pickup]);
 
-        const {
-          bank_name: bankName,
-          account_number: accountNumber,
-          agency,
-        } = dataBank[0];
+    const handleDateChange = useCallback(
+        (newDate: string, name: string) => {
+            if (name === "initial_pickup_date") {
+                updateFormData?.({
+                    ...formData,
+                    initial_pickup_date: newDate,
+                });
+                SetInitialPickupDate(newDate);
+            } else if (name === "final_pickup_date") {
+                updateFormData?.({
+                    ...formData,
+                    final_pickup_date: newDate,
+                });
+                SetFinalPickupDate(newDate);
+            }
+        },
+        [updateFormData, formData]
+    );
 
-        const paymentText = formatPaymentText(
-          newDate,
-          sellerName,
-          cpfCnpj,
-          bankName,
-          accountNumber,
-          agency
-        );
+    return (
+        <SContainer id={id}>
+            <CustomInput
+                type="text"
+                name="quantity"
+                label="Quantidade:"
+                $labelPosition="top"
+                onChange={handleQuantityChange}
+                onFocus={handleQuantityFocus}
+                onBlur={handleQuantityBlur}
+                value={
+                    isEditingQuantity ? formData.quantity : formData.quantity
+                }
+            />
 
-        updateFormData({
-          payment_date: newDate,
-          payment: paymentText,
-        });
-      }
-    },
-    [updateFormData, formData.seller]
-  );
+            <CustomInput
+                type="text"
+                name="price"
+                label={`Preço em ${formData.type_currency}:`}
+                $labelPosition="top"
+                onChange={handleChange}
+                onFocus={handlePriceFocus}
+                onBlur={handlePriceBlur}
+                value={
+                    isEditingPrice
+                        ? formData.price
+                        : formatCurrency(
+                              formData.price,
+                              formData.type_currency,
+                              modeSave
+                          )
+                }
+                radioOptions={[
+                    { label: "BRL", value: "Real" },
+                    { label: "USD", value: "Dólar" },
+                ]}
+                radioPosition="inline"
+                onRadioChange={(e) => handleRadioChange(e, "type_currency")}
+                selectedRadio={formData.type_currency}
+            />
 
-  useEffect(() => {
-    if (formData.type_pickup) {
-      handleFieldPickupChange(formData.type_pickup, concatenatedPickupText);
-    }
-  }, [initialPickupDate, finalPickupDate, formData.type_pickup]);
+            {formData.type_currency === "Dólar" && (
+                <CustomInput
+                    type="text"
+                    name="day_exchange_rate"
+                    label="Câmbio do Dia:"
+                    $labelPosition="top"
+                    onChange={handleNumericInputChange}
+                    onFocus={handleExchangeRateFocus}
+                    onBlur={handleExchangeRateBlur}
+                    value={
+                        isEditingExchangeRate
+                            ? formData.day_exchange_rate
+                            : formData.day_exchange_rate
+                    }
+                />
+            )}
 
-  const handleDateChange = useCallback(
-    (newDate: string, name: string) => {
-      if (name === "initial_pickup_date") {
-        updateFormData?.({
-          ...formData,
-          initial_pickup_date: newDate,
-        });
-        SetInitialPickupDate(newDate);
-      } else if (name === "final_pickup_date") {
-        updateFormData?.({
-          ...formData,
-          final_pickup_date: newDate,
-        });
-        SetFinalPickupDate(newDate);
-      }
-    },
-    [updateFormData, formData]
-  );
+            <CustomInput
+                type="text"
+                name="icms"
+                label="ICMS:"
+                $labelPosition="top"
+                onChange={handleChange}
+                value={formData.icms}
+                radioOptions={[
+                    { label: "Isento", value: "Isento" },
+                    { label: "Incluso", value: "Incluso" },
+                    { label: "Diferido", value: "Diferido" },
+                ]}
+                radioPosition="inline"
+                onRadioChange={(e) => handleRadioChange(e, "type_icms")}
+                selectedRadio={formData.type_icms}
+            />
+            <CustomDatePicker
+                width="260px"
+                height="38x"
+                name="payment_date"
+                label="Data do Pagamento:"
+                $labelPosition="top"
+                onChange={handleDateForPaymentChange}
+                value={formData.payment_date}
+                disableWeekends
+            />
 
-  return (
-    <SContainer id={id}>
-      <CustomInput
-        type="text"
-        name="quantity"
-        label="Quantidade:"
-        $labelPosition="top"
-        onChange={handleQuantityChange}
-        onFocus={handleQuantityFocus}
-        onBlur={handleQuantityBlur}
-        value={isEditingQuantity ? formData.quantity : formData.quantity}
-      />
+            <CustomTextArea
+                height="230px"
+                label="Pagamento:"
+                name="payment"
+                onChange={handleChange}
+                value={formData.payment}
+            />
+            <CustomInput
+                name="commission_seller"
+                label="Comissão Vendedor:"
+                $labelPosition="top"
+                onChange={handleNumericInputChange}
+                value={
+                    isEditingCommission.seller
+                        ? formData.commission_seller
+                        : formData.type_commission_seller === "Valor"
+                        ? `${getCommissionFormat(
+                              formData.type_commission_seller || ""
+                          )}${formData.commission_seller}`
+                        : `${formData.commission_seller}${getCommissionFormat(
+                              formData.type_commission_seller || ""
+                          )}`
+                }
+                radioOptions={[
+                    { label: "Percentual", value: "Percentual" },
+                    { label: "Valor", value: "Valor" },
+                ]}
+                onFocus={() => handleCommissionFocus("seller")}
+                onBlur={() => handleCommissionBlur("seller")}
+                radioPosition="inline"
+                onRadioChange={(e) =>
+                    handleRadioChange(e, "type_commission_seller")
+                }
+                selectedRadio={formData.type_commission_seller}
+            />
+            <CustomInput
+                name="commission_buyer"
+                label="Comissão Comprador:"
+                $labelPosition="top"
+                onChange={handleNumericInputChange}
+                value={
+                    isEditingCommission.buyer
+                        ? formData.commission_buyer
+                        : formData.type_commission_buyer === "Valor"
+                        ? `${getCommissionFormat(
+                              formData.type_commission_buyer || ""
+                          )}${formData.commission_buyer}`
+                        : `${formData.commission_buyer}${getCommissionFormat(
+                              formData.type_commission_buyer || ""
+                          )}`
+                }
+                onFocus={() => handleCommissionFocus("buyer")}
+                onBlur={() => handleCommissionBlur("buyer")}
+                radioOptions={[
+                    { label: "Percentual", value: "Percentual" },
+                    { label: "Valor", value: "Valor" },
+                ]}
+                radioPosition="inline"
+                onRadioChange={(e) =>
+                    handleRadioChange(e, "type_commission_buyer")
+                }
+                selectedRadio={formData.type_commission_buyer}
+            />
 
-      <CustomInput
-        type="text"
-        name="price"
-        label={`Preço em ${formData.type_currency}:`}
-        $labelPosition="top"
-        onChange={handleChange}
-        onFocus={handlePriceFocus}
-        onBlur={handlePriceBlur}
-        value={
-          isEditingPrice
-            ? formData.price
-            : formatCurrency(formData.price, formData.type_currency, modeSave)
-        }
-        radioOptions={[
-          { label: "BRL", value: "Real" },
-          { label: "USD", value: "Dólar" },
-        ]}
-        radioPosition="inline"
-        onRadioChange={(e) => handleRadioChange(e, "type_currency")}
-        selectedRadio={formData.type_currency}
-      />
+            <CustomInput
+                name="type_pickup"
+                radioPosition="only"
+                radioOptions={[
+                    { label: "CIF / Porto/Ferrovia", value: "Entrega" },
+                    { label: "FOB", value: "Retirada" },
+                    //{ label: "CIF Porto/Ferrovia", value: "Entrega " },
+                ]}
+                onRadioChange={(e) => handleRadioChange(e, "type_pickup")}
+                selectedRadio={formData.type_pickup}
+            />
 
-      {formData.type_currency === "Dólar" && (
-        <CustomInput
-          type="text"
-          name="day_exchange_rate"
-          label="Câmbio do Dia:"
-          $labelPosition="top"
-          onChange={handleNumericInputChange}
-          onFocus={handleExchangeRateFocus}
-          onBlur={handleExchangeRateBlur}
-          value={
-            isEditingExchangeRate
-              ? formData.day_exchange_rate
-              : formData.day_exchange_rate
-          }
-        />
-      )}
+            <SContentBox>
+                <CustomDatePicker
+                    width="150px"
+                    height="38x"
+                    name="initial_pickup_date"
+                    label="De:"
+                    $labelPosition="top"
+                    onChange={(date) =>
+                        handleDateChange(date, "initial_pickup_date")
+                    }
+                    value={formData.initial_pickup_date}
+                />
+                <CustomDatePicker
+                    width="150px"
+                    height="38x"
+                    name="final_pickup_date"
+                    label="Até:"
+                    $labelPosition="top"
+                    onChange={(date) =>
+                        handleDateChange(date, "final_pickup_date")
+                    }
+                    value={formData.final_pickup_date}
+                />
+            </SContentBox>
 
-      <CustomInput
-        type="text"
-        name="icms"
-        label="ICMS:"
-        $labelPosition="top"
-        onChange={handleChange}
-        value={formData.icms}
-        radioOptions={[
-          { label: "Isento", value: "Isento" },
-          { label: "Incluso", value: "Incluso" },
-          { label: "Diferido", value: "Diferido" },
-        ]}
-        radioPosition="inline"
-        onRadioChange={(e) => handleRadioChange(e, "type_icms")}
-        selectedRadio={formData.type_icms}
-      />
-      <CustomDatePicker
-        width="260px"
-        height="38x"
-        name="payment_date"
-        label="Data do Pagamento:"
-        $labelPosition="top"
-        onChange={handleDateForPaymentChange}
-        value={formData.payment_date}
-        disableWeekends
-      />
+            <CustomTextArea
+                width="308px"
+                height="70px"
+                name="pickup"
+                onChange={handleChange}
+                value={formData.pickup}
+            />
 
-      <CustomTextArea
-        height="230px"
-        label="Pagamento:"
-        name="payment"
-        onChange={handleChange}
-        value={formData.payment}
-      />
-      <CustomInput
-        name="commission_seller"
-        label="Comissão Vendedor:"
-        $labelPosition="top"
-        onChange={handleNumericInputChange}
-        value={
-          isEditingCommission.seller
-            ? formData.commission_seller
-            : formData.type_commission_seller === "Valor"
-            ? `${getCommissionFormat(formData.type_commission_seller || "")}${
-                formData.commission_seller
-              }`
-            : `${formData.commission_seller}${getCommissionFormat(
-                formData.type_commission_seller || ""
-              )}`
-        }
-        radioOptions={[
-          { label: "Percentual", value: "Percentual" },
-          { label: "Valor", value: "Valor" },
-        ]}
-        onFocus={() => handleCommissionFocus("seller")}
-        onBlur={() => handleCommissionBlur("seller")}
-        radioPosition="inline"
-        onRadioChange={(e) => handleRadioChange(e, "type_commission_seller")}
-        selectedRadio={formData.type_commission_seller}
-      />
-      <CustomInput
-        name="commission_buyer"
-        label="Comissão Comprador:"
-        $labelPosition="top"
-        onChange={handleNumericInputChange}
-        value={
-          isEditingCommission.buyer
-            ? formData.commission_buyer
-            : formData.type_commission_buyer === "Valor"
-            ? `${getCommissionFormat(formData.type_commission_buyer || "")}${
-                formData.commission_buyer
-              }`
-            : `${formData.commission_buyer}${getCommissionFormat(
-                formData.type_commission_buyer || ""
-              )}`
-        }
-        onFocus={() => handleCommissionFocus("buyer")}
-        onBlur={() => handleCommissionBlur("buyer")}
-        radioOptions={[
-          { label: "Percentual", value: "Percentual" },
-          { label: "Valor", value: "Valor" },
-        ]}
-        radioPosition="inline"
-        onRadioChange={(e) => handleRadioChange(e, "type_commission_buyer")}
-        selectedRadio={formData.type_commission_buyer}
-      />
+            <CustomInput
+                name="farm_direct"
+                label="Direto da Lavoura:"
+                $labelPosition="left"
+                radioPosition="only"
+                radioOptions={[
+                    { label: "Sim", value: "Direto da Lavoura" },
+                    { label: "Não", value: "Não" },
+                ]}
+                onRadioChange={(e) => handleRadioChange(e, "farm_direct")}
+                selectedRadio={formData.farm_direct}
+            />
 
-      <CustomInput
-        name="type_pickup"
-        radioPosition="only"
-        radioOptions={[
-          { label: "CIF / Porto/Ferrovia", value: "Entrega" },
-          { label: "FOB", value: "Retirada" },
-          //{ label: "CIF Porto/Ferrovia", value: "Entrega " },
-        ]}
-        onRadioChange={(e) => handleRadioChange(e, "type_pickup")}
-        selectedRadio={formData.type_pickup}
-      />
+            <CustomTextArea
+                width="308px"
+                height="70px"
+                name="pickup_location"
+                label={`Local de ${formData.type_pickup}:`}
+                onChange={handleChange}
+                value={formData.pickup_location}
+            />
 
-      <SContentBox>
-        <CustomDatePicker
-          width="150px"
-          height="38x"
-          name="initial_pickup_date"
-          label="De:"
-          $labelPosition="top"
-          onChange={(date) => handleDateChange(date, "initial_pickup_date")}
-          value={formData.initial_pickup_date}
-        />
-        <CustomDatePicker
-          width="150px"
-          height="38x"
-          name="final_pickup_date"
-          label="Até:"
-          $labelPosition="top"
-          onChange={(date) => handleDateChange(date, "final_pickup_date")}
-          value={formData.final_pickup_date}
-        />
-      </SContentBox>
-
-      <CustomTextArea
-        width="308px"
-        height="70px"
-        name="pickup"
-        onChange={handleChange}
-        value={formData.pickup}
-      />
-
-      <CustomInput
-        name="farm_direct"
-        label="Direto da Lavoura:"
-        $labelPosition="left"
-        radioPosition="only"
-        radioOptions={[
-          { label: "Sim", value: "Direto da Lavoura" },
-          { label: "Não", value: "Não" },
-        ]}
-        onRadioChange={(e) => handleRadioChange(e, "farm_direct")}
-        selectedRadio={formData.farm_direct}
-      />
-
-      <CustomTextArea
-        width="308px"
-        height="70px"
-        name="pickup_location"
-        label={`Local de ${formData.type_pickup}:`}
-        onChange={handleChange}
-        value={formData.pickup_location}
-      />
-
-      <CustomTextArea
-        width="308px"
-        height="70px"
-        name="inspection"
-        label="Conferência:"
-        onChange={handleChange}
-        value={formData.inspection}
-      />
-    </SContainer>
-  );
+            <CustomTextArea
+                width="308px"
+                height="70px"
+                name="inspection"
+                label="Conferência:"
+                onChange={handleChange}
+                value={formData.inspection}
+            />
+        </SContainer>
+    );
 };

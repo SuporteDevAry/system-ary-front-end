@@ -15,6 +15,7 @@ export interface IFormData {
   telephone: string;
   cellphone: string;
   situation: string;
+  cnpj_pagto: string;
 }
 
 export interface IFormularioClienteProps {

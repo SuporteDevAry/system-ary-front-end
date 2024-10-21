@@ -22,15 +22,16 @@ export interface IClientes {
   cellphone: string;
   situation: string;
   account: IAccounts[];
+  cnpj_pagto: string;
   created_at: string;
   updated_at: string;
 }
 
 export interface ICreateClientesData
-  extends Omit<IClientes, "id" | "code_client" | "created_at" | "updated_at"> {}
+  extends Omit<IClientes, "id" | "code_client" | "created_at" | "updated_at"> { }
 
 export interface IUpdateClientesData
-  extends Omit<IClientes, "id" | "code_client" | "created_at" | "updated_at"> {}
+  extends Omit<IClientes, "id" | "code_client" | "created_at" | "updated_at"> { }
 
 export interface IListCliente extends IClientes {
   [key: string]: any;
@@ -47,4 +48,4 @@ export interface IAccounts {
   main: string;
 }
 
-export interface IListAccounts extends IAccounts {}
+export interface IListAccounts extends IAccounts { }
