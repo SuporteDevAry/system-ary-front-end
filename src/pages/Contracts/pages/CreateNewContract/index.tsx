@@ -23,310 +23,297 @@ import { IContractDataToFormDataDTO } from "../../../../helpers/DTO/IcontractDat
 import { useInfo, useUserPermissions } from "../../../../hooks";
 
 export const CreateNewContract: React.FC = () => {
-    const { createContract, updateContract } = ContractContext();
-    const navigate = useNavigate();
-    const location = useLocation();
-    const currentDate = dayjs().format("DD/MM/YYYY");
-    const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [activeStep, setActiveStep] = useState<number>(0);
-    const { dataUserInfo } = useInfo();
-    const [isEditMode, setIsEditMode] = useState<boolean>(false);
-    const [formData, setFormData] = React.useState<FormDataContract>({
-        id: "",
-        contract_emission_date: currentDate,
-        number_contract: "",
-        number_broker: "",
-        seller: {
-            address: "",
-            city: "",
-            cnpj_cpf: "",
-            district: "",
-            ins_est: "",
-            name: "",
-            number: "",
-            state: "",
-            complement: "",
-            account: [],
-            cnpj_pagto: "",
-        },
-        buyer: {
-            address: "",
-            city: "",
-            cnpj_cpf: "",
-            district: "",
-            ins_est: "",
-            name: "",
-            number: "",
-            state: "",
-            complement: "",
-            account: [],
-            cnpj_pagto: "",
-        },
-        list_email_seller: [],
-        list_email_buyer: [],
-        product: "",
-        name_product: "",
-        crop: "",
-        quality: "",
-        quantity: "",
-        type_currency: "",
-        price: "",
-        type_icms: "",
-        icms: "",
-        payment_date: currentDate,
-        payment: "",
-        type_commission_seller: "",
-        commission_seller: "",
-        type_commission_buyer: "",
-        commission_buyer: "",
-        type_pickup: "",
-        pickup: "",
-        pickup_location: "",
-        inspection: "",
-        observation: "",
-        owner_contract: "",
-        total_contract_value: 0,
-        quantity_bag: 0,
-        quantity_kg: 0,
-        status: {
-            status_current: "",
-            history: [],
-        },
-        destination: "",
-        number_external_contract_seller: "",
-        number_external_contract_buyer: "",
-        day_exchange_rate: "",
-        farm_direct: "",
-        initial_pickup_date: currentDate,
-        final_pickup_date: currentDate,
-        internal_communication: "",
-    });
-    const { canConsult } = useUserPermissions();
+  const { createContract, updateContract } = ContractContext();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const currentDate = dayjs().format("DD/MM/YYYY");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [activeStep, setActiveStep] = useState<number>(0);
+  const { dataUserInfo } = useInfo();
+  const [isEditMode, setIsEditMode] = useState<boolean>(false);
+  const [formData, setFormData] = React.useState<FormDataContract>({
+    id: "",
+    contract_emission_date: currentDate,
+    number_contract: "",
+    number_broker: "",
+    seller: {
+      address: "",
+      city: "",
+      cnpj_cpf: "",
+      district: "",
+      ins_est: "",
+      name: "",
+      number: "",
+      state: "",
+      complement: "",
+      account: [],
+      cnpj_pagto: "",
+    },
+    buyer: {
+      address: "",
+      city: "",
+      cnpj_cpf: "",
+      district: "",
+      ins_est: "",
+      name: "",
+      number: "",
+      state: "",
+      complement: "",
+      account: [],
+      cnpj_pagto: "",
+    },
+    list_email_seller: [],
+    list_email_buyer: [],
+    product: "",
+    name_product: "",
+    crop: "",
+    quality: "",
+    quantity: "",
+    type_currency: "",
+    price: "",
+    type_icms: "",
+    icms: "",
+    payment_date: currentDate,
+    payment: "",
+    type_commission_seller: "",
+    commission_seller: "",
+    type_commission_buyer: "",
+    commission_buyer: "",
+    type_pickup: "",
+    pickup: "",
+    pickup_location: "",
+    inspection: "",
+    observation: "",
+    owner_contract: "",
+    total_contract_value: 0,
+    quantity_bag: 0,
+    quantity_kg: 0,
+    status: {
+      status_current: "",
+      history: [],
+    },
+    destination: "",
+    number_external_contract_seller: "",
+    number_external_contract_buyer: "",
+    day_exchange_rate: "",
+    farm_direct: "",
+    initial_pickup_date: currentDate,
+    final_pickup_date: currentDate,
+    internal_communication: "",
+  });
+  const { canConsult } = useUserPermissions();
 
-    useEffect(() => {
-        if (location.state?.isEditMode) {
-            setIsEditMode(true);
-            const contractDataForEdit = location.state
-                .contractData as IContractData;
-            if (contractDataForEdit) {
-                const dataForm =
-                    IContractDataToFormDataDTO(contractDataForEdit);
+  useEffect(() => {
+    if (location.state?.isEditMode) {
+      setIsEditMode(true);
+      const contractDataForEdit = location.state.contractData as IContractData;
+      if (contractDataForEdit) {
+        const dataForm = IContractDataToFormDataDTO(contractDataForEdit);
 
-                setFormData({
-                    ...dataForm,
-                });
-            }
+        setFormData({
+          ...dataForm,
+        });
+      }
+    }
+  }, [location.state]);
+
+  useEffect(() => {
+    if (dataUserInfo && !isEditMode) {
+      updateStatus("A CONFERIR");
+    }
+    if (isEditMode) {
+      updateStatus("EDITADO");
+    }
+  }, [dataUserInfo]);
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      [name]: value,
+    }));
+  };
+
+  const updateFormData = (data: Partial<FormDataContract>) => {
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      ...data,
+    }));
+  };
+
+  const updateStatus = (newStatus: string) => {
+    const newDate = formattedDate();
+    const newTime = formattedTime();
+
+    const newStatusEntry = {
+      date: newDate,
+      time: newTime,
+      status: newStatus,
+      owner_change: {
+        name: dataUserInfo?.name || "",
+        email: dataUserInfo?.email || "",
+      },
+    };
+
+    const updatedStatus = {
+      status_current: newStatus,
+      history: [...formData.status.history, newStatusEntry],
+    };
+
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      status: updatedStatus,
+    }));
+  };
+
+  const handleNext = async () => {
+    if (activeStep === steps.length - 1) {
+      // Se for o último step, cria o contrato
+
+      setIsLoading(true);
+      try {
+        const contractData = FormDataToIContractDataDTO(formData);
+
+        if (isEditMode && formData?.id) {
+          const response = await updateContract(formData.id, contractData);
+
+          toast.success(
+            <div>
+              Contrato de Número:
+              <strong>{response?.data?.number_contract}</strong>
+              atualizado com sucesso!
+            </div>
+          );
         }
-    }, [location.state]);
+        if (!isEditMode) {
+          const { id: _, ...contractToCreate } = contractData;
 
-    useEffect(() => {
-        if (dataUserInfo && !isEditMode) {
-            updateStatus("A CONFERIR");
+          if (!contractToCreate.quantity || !contractToCreate.price) {
+            toast.error(`Obrigatório informar quantidade e preço!`);
+            return;
+          }
+
+          const response = await createContract(contractToCreate);
+
+          toast.success(
+            <div>
+              Contrato de Número:
+              <strong>{response?.data?.number_contract}</strong>
+              criado com sucesso!
+            </div>
+          );
         }
-        if (isEditMode) {
-            updateStatus("EDITADO");
-        }
-    }, [dataUserInfo]);
 
-    const handleChange = (
-        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-    ) => {
-        const { name, value } = e.target;
-        setFormData((prevFormData) => ({
-            ...prevFormData,
-            [name]: value,
-        }));
-    };
+        navigate("/contratos/historico");
+      } catch (error) {
+        toast.error(
+          `Erro ao tentar ${
+            isEditMode ? "atualizar" : "criar"
+          } contrato, contacte o administrador do sistema ${error}`
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    } else {
+      // Se não for o último step, avança para o próximo
+      setActiveStep((prevActiveStep) => prevActiveStep + 1);
+    }
+  };
 
-    const updateFormData = (data: Partial<FormDataContract>) => {
-        setFormData((prevFormData) => ({
-            ...prevFormData,
-            ...data,
-        }));
-    };
+  const handleBack = () => {
+    setActiveStep((prevActiveStep) => prevActiveStep - 1);
+  };
 
-    const updateStatus = (newStatus: string) => {
-        const newDate = formattedDate();
-        const newTime = formattedTime();
+  const steps: StepType[] = [
+    {
+      label: "Identificação",
+      elements: [
+        <Step1
+          id="step1"
+          formData={formData}
+          handleChange={handleChange}
+          updateFormData={updateFormData}
+          isEditMode={isEditMode}
+        />,
+      ],
+    },
+    {
+      label: "Produto",
+      elements: [
+        <Step2
+          id="step2"
+          formData={formData}
+          handleChange={handleChange}
+          updateFormData={updateFormData}
+          isEditMode={isEditMode}
+        />,
+      ],
+    },
+    {
+      label: "Info. de Venda",
+      elements: [
+        <Step3
+          id="step3"
+          formData={formData}
+          handleChange={handleChange}
+          updateFormData={updateFormData}
+          isEditMode={isEditMode}
+        />,
+      ],
+    },
+    {
+      label: "Observação",
+      elements: [
+        <Step4 id="step4" formData={formData} handleChange={handleChange} />,
+      ],
+    },
+    {
+      label: "Review",
+      elements: [
+        <Review id="review" formData={formData} isEditMode={isEditMode} />,
+      ],
+    },
+  ];
 
-        const newStatusEntry = {
-            date: newDate,
-            time: newTime,
-            status: newStatus,
-            owner_change: {
-                name: dataUserInfo?.name || "",
-                email: dataUserInfo?.email || "",
-            },
-        };
+  const currentStep = steps[activeStep] || { elements: [] };
 
-        const updatedStatus = {
-            status_current: newStatus,
-            history: [...formData.status.history, newStatusEntry],
-        };
+  return (
+    <SContainer>
+      <SStepper activeStep={activeStep}>
+        {steps.map((item, index) => (
+          <Step key={`${index}-${item.label}`}>
+            <StepLabel>{item.label}</StepLabel>
+          </Step>
+        ))}
+      </SStepper>
 
-        setFormData((prevFormData) => ({
-            ...prevFormData,
-            status: updatedStatus,
-        }));
-    };
+      <SContent key={currentStep.label}>{currentStep.elements}</SContent>
 
-    const handleNext = async () => {
-        if (activeStep === steps.length - 1) {
-            // Se for o último step, cria o contrato
+      <SButtonContainer>
+        {activeStep !== 0 && (
+          <CustomButton onClick={handleBack} $variant={"primary"}>
+            Voltar
+          </CustomButton>
+        )}
 
-            setIsLoading(true);
-            try {
-                const contractData = FormDataToIContractDataDTO(formData);
-
-                if (isEditMode && formData?.id) {
-                    const response = await updateContract(
-                        formData.id,
-                        contractData
-                    );
-
-                    toast.success(
-                        <div>
-                            Contrato de Número:
-                            <strong>{response?.data?.number_contract}</strong>
-                            atualizado com sucesso!
-                        </div>
-                    );
-                }
-                if (!isEditMode) {
-                    const { id: _, ...contractToCreate } = contractData;
-
-                    if (!contractToCreate.quantity || !contractToCreate.price) {
-                        toast.error(`Obrigatório informar quantidade e preço!`);
-                        return;
-                    }
-
-                    const response = await createContract(contractToCreate);
-
-                    toast.success(
-                        <div>
-                            Contrato de Número:
-                            <strong>{response?.data?.number_contract}</strong>
-                            criado com sucesso!
-                        </div>
-                    );
-                }
-
-                navigate("/contratos/historico");
-            } catch (error) {
-                toast.error(
-                    `Erro ao tentar ${
-                        isEditMode ? "atualizar" : "criar"
-                    } contrato, contacte o administrador do sistema ${error}`
-                );
-            } finally {
-                setIsLoading(false);
-            }
-        } else {
-            // Se não for o último step, avança para o próximo
-            setActiveStep((prevActiveStep) => prevActiveStep + 1);
-        }
-    };
-
-    const handleBack = () => {
-        setActiveStep((prevActiveStep) => prevActiveStep - 1);
-    };
-
-    const steps: StepType[] = [
-        {
-            label: "Identificação",
-            elements: [
-                <Step1
-                    id="step1"
-                    formData={formData}
-                    handleChange={handleChange}
-                    updateFormData={updateFormData}
-                    isEditMode={isEditMode}
-                />,
-            ],
-        },
-        {
-            label: "Produto",
-            elements: [
-                <Step2
-                    id="step2"
-                    formData={formData}
-                    handleChange={handleChange}
-                    updateFormData={updateFormData}
-                    isEditMode={isEditMode}
-                />,
-            ],
-        },
-        {
-            label: "Info. de Venda",
-            elements: [
-                <Step3
-                    id="step3"
-                    formData={formData}
-                    handleChange={handleChange}
-                    updateFormData={updateFormData}
-                    isEditMode={isEditMode}
-                />,
-            ],
-        },
-        {
-            label: "Observação",
-            elements: [
-                <Step4
-                    id="step4"
-                    formData={formData}
-                    handleChange={handleChange}
-                />,
-            ],
-        },
-        {
-            label: "Review",
-            elements: [
-                <Review
-                    id="review"
-                    formData={formData}
-                    isEditMode={isEditMode}
-                />,
-            ],
-        },
-    ];
-
-    const currentStep = steps[activeStep] || { elements: [] };
-
-    return (
-        <SContainer>
-            <SStepper activeStep={activeStep}>
-                {steps.map((item, index) => (
-                    <Step key={`${index}-${item.label}`}>
-                        <StepLabel>{item.label}</StepLabel>
-                    </Step>
-                ))}
-            </SStepper>
-
-            <SContent key={currentStep.label}>{currentStep.elements}</SContent>
-
-            <SButtonContainer>
-                {activeStep !== 0 && (
-                    <CustomButton onClick={handleBack} $variant={"primary"}>
-                        Voltar
-                    </CustomButton>
-                )}
-
-                {isLoading ? (
-                    <CircularProgress size={24} />
-                ) : activeStep === steps.length - 1 ? (
-                    <CustomButton
-                        onClick={handleNext}
-                        $variant={"success"}
-                        disabled={canConsult}
-                    >
-                        Salvar
-                    </CustomButton>
-                ) : (
-                    <CustomButton onClick={handleNext} $variant={"success"}>
-                        Avançar
-                    </CustomButton>
-                )}
-            </SButtonContainer>
-        </SContainer>
-    );
+        {isLoading ? (
+          <CircularProgress size={24} />
+        ) : activeStep === steps.length - 1 ? (
+          <CustomButton
+            onClick={handleNext}
+            $variant={"success"}
+            disabled={canConsult}
+          >
+            Salvar
+          </CustomButton>
+        ) : (
+          <CustomButton onClick={handleNext} $variant={"success"}>
+            Avançar
+          </CustomButton>
+        )}
+      </SButtonContainer>
+    </SContainer>
+  );
 };

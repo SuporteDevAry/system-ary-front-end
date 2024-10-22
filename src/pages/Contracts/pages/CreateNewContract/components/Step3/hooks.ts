@@ -66,7 +66,7 @@ export const useCommissionHandlers = () => {
   };
 };
 
-const formatQuantity = (value: string): string => {
+export const formatQuantity = (value: string): string => {
   const numericValue = value.replace(/\D/g, ""); // Remove qualquer caractere não numérico
   return numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, "."); // Adiciona o separador de milhares
 };
@@ -97,5 +97,6 @@ export const useQuantityHandlers = (
     handleQuantityChange,
     handleQuantityFocus,
     handleQuantityBlur,
+    formatQuantity,
   };
 };
