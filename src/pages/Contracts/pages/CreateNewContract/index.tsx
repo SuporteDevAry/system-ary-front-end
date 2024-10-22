@@ -47,6 +47,7 @@ export const CreateNewContract: React.FC = () => {
       state: "",
       complement: "",
       account: [],
+      cnpj_pagto: "",
     },
     buyer: {
       address: "",
@@ -59,6 +60,7 @@ export const CreateNewContract: React.FC = () => {
       state: "",
       complement: "",
       account: [],
+      cnpj_pagto: "",
     },
     list_email_seller: [],
     list_email_buyer: [],
@@ -180,8 +182,8 @@ export const CreateNewContract: React.FC = () => {
           toast.success(
             <div>
               Contrato de Número:
-              <strong>{response?.data?.number_contract}</strong> atualizado com
-              sucesso!
+              <strong>{response?.data?.number_contract}</strong>
+              atualizado com sucesso!
             </div>
           );
         }
@@ -198,8 +200,8 @@ export const CreateNewContract: React.FC = () => {
           toast.success(
             <div>
               Contrato de Número:
-              <strong>{response?.data?.number_contract}</strong> criado com
-              sucesso!
+              <strong>{response?.data?.number_contract}</strong>
+              criado com sucesso!
             </div>
           );
         }

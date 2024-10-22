@@ -3,6 +3,7 @@ import { Extenso } from "../helpers/Extenso";
 import { insertMaskInCnpj } from "../helpers/front-end/insertMaskInCnpj";
 import logoContrato from "../assets/img/Logo_Ary_Completo.jpg";
 import { formatDateWithLongMonth } from "../helpers/dateFormat";
+import { formatQuantity } from "../pages/Contracts/pages/CreateNewContract/components/Step3/hooks";
 
 interface ContratoTemplateProps {
   formData: any;
@@ -23,10 +24,9 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
       : formData.quantity.replace(/[,]/g, ".")
     : formData.quantity;
 
-  let qtd_informada = Number(quantity_aux);
-  let formattedQtd = qtd_informada.toLocaleString();
+  let formattedQtd = formatQuantity(quantity_aux);
 
-  const qtde_extenso = Extenso(qtd_informada);
+  const qtde_extenso = Extenso(quantity_aux);
   let formattedExtenso = `(${qtde_extenso})`;
 
   let formattedSellerCNPJ = formData.seller.cnpj_cpf
@@ -196,8 +196,8 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
         </p>
         <p style={{ textAlign: "justify" }}>
           <strong>
-            {formattedQtd} {formattedExtenso}
-          </strong>{" "}
+            {formattedQtd} {formattedExtenso}{" "}
+          </strong>
           quilos.
         </p>
         <br />
@@ -276,8 +276,9 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
             <br></br>
 
             <strong>
-              Comissão de <span>{formattedCSeller.replace(".", ",")}</span> por
-              conta do vendedor.
+              Comissão de
+              <span>{formattedCSeller.replace(".", ",")}</span>
+              por conta do vendedor.
             </strong>
 
             <br></br>
@@ -292,8 +293,9 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
             <strong>===</strong>
             <br></br>
             <strong>
-              Comissão de <span>{formattedCBuyer.replace(".", ",")}</span> por
-              conta do comprador.
+              Comissão de
+              <span>{formattedCBuyer.replace(".", ",")}</span> por conta do
+              comprador.
             </strong>
             <br></br>
             <strong>===</strong>

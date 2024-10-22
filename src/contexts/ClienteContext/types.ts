@@ -22,6 +22,7 @@ export interface IClientes {
   cellphone: string;
   situation: string;
   account: IAccounts[];
+  cnpj_pagto: string;
   created_at: string;
   updated_at: string;
 }

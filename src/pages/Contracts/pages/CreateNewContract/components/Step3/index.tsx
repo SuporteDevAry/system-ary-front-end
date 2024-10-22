@@ -39,6 +39,7 @@ export const Step3: React.FC<StepProps> = ({
     handleQuantityChange,
     handleQuantityFocus,
     handleQuantityBlur,
+    formatQuantity,
   } = useQuantityHandlers(formData, updateFormData);
 
   const modeSave = isEditMode ? false : true;
@@ -133,6 +134,7 @@ export const Step3: React.FC<StepProps> = ({
     /*Todo:Esse código abaixo, poderá ser utilizado no futuro!
      *Number(formData.quantity.replace(",", ".")) * 1000;
      */
+
     const quantityToKG = Number(formData.quantity.replace(".", ""));
     const quantityToBag = (Number(quantityToKG) / 60).toFixed(3);
     const totalContractValue = Number(price * Number(quantityToBag)).toFixed(3);
@@ -171,9 +173,9 @@ export const Step3: React.FC<StepProps> = ({
     date: string,
     sellerName: string,
     cpfCnpj: string,
-    bankName?: string,
-    accountNumber?: string,
-    agency?: string
+    bankName: string,
+    accountNumber: string,
+    agency: string
   ) => {
     return `No dia ${date}, via Banco ${bankName || "...."}, Ag. nr. ${
       agency || "...."
@@ -186,15 +188,30 @@ export const Step3: React.FC<StepProps> = ({
     (newDate: string) => {
       if (updateFormData) {
         const sellerName = formData.seller?.name || "vendedor";
-        const cpfCnpj = formData.seller?.cnpj_cpf
+        const cpfCnpj = formData?.seller?.cnpj_pagto
+          ? insertMaskInCnpj(formData?.seller?.cnpj_pagto)
+          : formData.seller?.cnpj_cpf
           ? insertMaskInCnpj(formData.seller.cnpj_cpf)
           : "00.000.000/0000-00";
 
         const dataBank =
           formData.seller?.account?.filter((i) => i.main === "S") || [];
 
+        const {
+          bank_name: bankName,
+          account_number: accountNumber,
+          agency,
+        } = dataBank[0];
+
         if (dataBank.length === 0) {
-          const paymentText = formatPaymentText(newDate, sellerName, cpfCnpj);
+          const paymentText = formatPaymentText(
+            newDate,
+            sellerName,
+            cpfCnpj,
+            bankName,
+            accountNumber,
+            agency
+          );
 
           updateFormData({
             payment_date: newDate,
@@ -202,12 +219,6 @@ export const Step3: React.FC<StepProps> = ({
           });
           return;
         }
-
-        const {
-          bank_name: bankName,
-          account_number: accountNumber,
-          agency,
-        } = dataBank[0];
 
         const paymentText = formatPaymentText(
           newDate,
@@ -262,7 +273,11 @@ export const Step3: React.FC<StepProps> = ({
         onChange={handleQuantityChange}
         onFocus={handleQuantityFocus}
         onBlur={handleQuantityBlur}
-        value={isEditingQuantity ? formData.quantity : formData.quantity}
+        value={
+          isEditingQuantity
+            ? formData.quantity
+            : formatQuantity(formData.quantity)
+        }
       />
 
       <CustomInput

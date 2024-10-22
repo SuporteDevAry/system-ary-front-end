@@ -31,6 +31,7 @@ export function EditarCliente() {
     telephone: clienteForUpdate.telephone,
     cellphone: clienteForUpdate.cellphone,
     situation: clienteForUpdate.situation,
+    cnpj_pagto: clienteForUpdate.cnpj_pagto,
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -45,6 +46,19 @@ export function EditarCliente() {
     }
     if (formData.kind == "J" && !ValidatorDocto.isCNPJ(formData.cnpj_cpf)) {
       toast.error("Digito verificador do CNPJ está incorreto.");
+      return;
+    }
+    if (
+      formData.kind == "J" &&
+      formData.cnpj_pagto !== null &&
+      formData.cnpj_pagto.length > 0 &&
+      !ValidatorDocto.isCNPJ(formData.cnpj_pagto)
+    ) {
+      toast.error("Digito verificador do CNPJ Pagamento está incorreto.");
+      return;
+    }
+    if (formData.kind !== "J" && formData.cnpj_pagto.length > 1) {
+      toast.error("CNPJ Pagamento somente filiais de PJ.");
       return;
     }
 
@@ -66,6 +80,7 @@ export function EditarCliente() {
         telephone: formData.telephone,
         cellphone: formData.cellphone,
         situation: formData.situation,
+        cnpj_pagto: formData.cnpj_pagto,
       });
 
       toast.success(`Cliente ${formData.name}, foi alterado com sucesso!`);
