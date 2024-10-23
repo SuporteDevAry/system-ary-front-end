@@ -47,7 +47,6 @@ export const CreateNewContract: React.FC = () => {
       state: "",
       complement: "",
       account: [],
-      cnpj_pagto: "",
     },
     buyer: {
       address: "",
@@ -60,7 +59,6 @@ export const CreateNewContract: React.FC = () => {
       state: "",
       complement: "",
       account: [],
-      cnpj_pagto: "",
     },
     list_email_seller: [],
     list_email_buyer: [],

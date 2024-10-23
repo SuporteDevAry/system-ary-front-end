@@ -21,7 +21,6 @@ export type CustomerInfo = {
   cnpj_cpf?: string;
   ins_est?: string;
   account?: IAccounts[];
-  cnpj_pagto?: string;
 };
 
 export type ContractStatus = {
