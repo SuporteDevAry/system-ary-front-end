@@ -188,8 +188,9 @@ export const Step3: React.FC<StepProps> = ({
     (newDate: string) => {
       if (updateFormData) {
         const sellerName = formData.seller?.name || "vendedor";
-        const cpfCnpj = formData?.seller?.cnpj_pagto
-          ? insertMaskInCnpj(formData?.seller?.cnpj_pagto)
+        //Alterar aqui embaixo, quando o cnpj_pagto estiver vindo do accounts
+        const cpfCnpj = formData?.seller?.cnpj_cpf
+          ? insertMaskInCnpj(formData?.seller.cnpj_cpf)
           : formData.seller?.cnpj_cpf
           ? insertMaskInCnpj(formData.seller.cnpj_cpf)
           : "00.000.000/0000-00";

@@ -156,16 +156,6 @@ export function FormularioCliente({
 
       <CustomInput
         type="text"
-        name="cnpj_pagto"
-        label="CNPJ Cláusula Pagamento:"
-        $labelPosition="top"
-        maxLength={data.kind == "F" ? 14 : 18}
-        value={data?.cnpj_pagto ? insertMaskInCnpj(data?.cnpj_pagto) : ""}
-        onChange={onChange}
-      />
-
-      <CustomInput
-        type="text"
         name="ins_est"
         label="Ins.Estadual:"
         $labelPosition="top"
