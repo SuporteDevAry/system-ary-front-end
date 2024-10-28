@@ -27,10 +27,10 @@ export interface IClientes {
 }
 
 export interface ICreateClientesData
-  extends Omit<IClientes, "id" | "code_client" | "created_at" | "updated_at"> {}
+  extends Omit<IClientes, "id" | "code_client" | "created_at" | "updated_at"> { }
 
 export interface IUpdateClientesData
-  extends Omit<IClientes, "id" | "code_client" | "created_at" | "updated_at"> {}
+  extends Omit<IClientes, "id" | "code_client" | "created_at" | "updated_at"> { }
 
 export interface IListCliente extends IClientes {
   [key: string]: any;
@@ -45,6 +45,8 @@ export interface IAccounts {
   usePix: string;
   keyPix: string;
   main: string;
+  cnpj_pagto: string;
+  name_pagto: string;
 }
 
-export interface IListAccounts extends IAccounts {}
+export interface IListAccounts extends IAccounts { }
