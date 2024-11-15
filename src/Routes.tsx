@@ -17,6 +17,7 @@ import { MyAccount } from "./pages/MyAccount";
 import { ViewCustomer } from "./pages/Clientes/components/ViewCustomer";
 import { ViewContract } from "./pages/Contracts/pages/HistoryContracts/components/ViewContract";
 import { Execution } from "./pages/Execution";
+import SendContracts from "./pages/Execution/pages/SendContracts";
 
 export function RoutesForPages() {
   return (
@@ -127,6 +128,27 @@ export function RoutesForPages() {
           <ProtectedLayout>
             <Layout>
               <Execution />
+            </Layout>
+          </ProtectedLayout>
+        }
+      />
+      <Route
+        path="/execucao/historico"
+        element={
+          <ProtectedLayout>
+            <Layout>
+              <HistoryContracts />
+            </Layout>
+          </ProtectedLayout>
+        }
+      />
+
+      <Route
+        path="/execucao/enviar-contratos"
+        element={
+          <ProtectedLayout>
+            <Layout>
+              <SendContracts />
             </Layout>
           </ProtectedLayout>
         }
