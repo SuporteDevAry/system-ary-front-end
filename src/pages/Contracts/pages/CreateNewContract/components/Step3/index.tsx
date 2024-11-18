@@ -144,7 +144,7 @@ export const Step3: React.FC<StepProps> = ({
          *Number(formData.quantity.replace(",", ".")) * 1000;
          */
 
-        const quantityToKG = Number(formData.quantity.replace(".", ""));
+        const quantityToKG = Number(formData.quantity.replace(/[.]/g, ""));
         const quantityToBag = (Number(quantityToKG) / 60).toFixed(3);
         const totalContractValue = Number(
             price * Number(quantityToBag)
@@ -437,12 +437,24 @@ export const Step3: React.FC<StepProps> = ({
                 name="type_pickup"
                 radioPosition="only"
                 radioOptions={[
-                    { label: "CIF / Porto/Ferrovia", value: "Entrega" },
+                    { label: "CIF", value: "Entrega" },
                     { label: "FOB", value: "Retirada" },
                     //{ label: "CIF Porto/Ferrovia", value: "Entrega " },
                 ]}
                 onRadioChange={(e) => handleRadioChange(e, "type_pickup")}
                 selectedRadio={formData.type_pickup}
+            />
+            <CustomInput
+                name="farm_direct"
+                label="Direto da Lavoura:"
+                $labelPosition="left"
+                radioPosition="only"
+                radioOptions={[
+                    { label: "Sim", value: "Direto da Lavoura" },
+                    { label: "Não", value: "Não" },
+                ]}
+                onRadioChange={(e) => handleRadioChange(e, "farm_direct")}
+                selectedRadio={formData.farm_direct}
             />
 
             <SContentBox>
@@ -476,19 +488,6 @@ export const Step3: React.FC<StepProps> = ({
                 name="pickup"
                 onChange={handleChange}
                 value={formData.pickup}
-            />
-
-            <CustomInput
-                name="farm_direct"
-                label="Direto da Lavoura:"
-                $labelPosition="left"
-                radioPosition="only"
-                radioOptions={[
-                    { label: "Sim", value: "Direto da Lavoura" },
-                    { label: "Não", value: "Não" },
-                ]}
-                onRadioChange={(e) => handleRadioChange(e, "farm_direct")}
-                selectedRadio={formData.farm_direct}
             />
 
             <CustomTextArea
