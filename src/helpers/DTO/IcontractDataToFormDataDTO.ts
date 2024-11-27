@@ -49,5 +49,6 @@ export const IContractDataToFormDataDTO = (
     initial_pickup_date: data.initial_pickup_date,
     final_pickup_date: data.final_pickup_date,
     internal_communication: data.internal_communication,
+    complement_destination: data.complement_destination,
   };
 };
