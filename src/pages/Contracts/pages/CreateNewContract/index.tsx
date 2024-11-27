@@ -91,6 +91,7 @@ export const CreateNewContract: React.FC = () => {
       history: [],
     },
     destination: "",
+    complement_destination: "",
     number_external_contract_seller: "",
     number_external_contract_buyer: "",
     day_exchange_rate: "",

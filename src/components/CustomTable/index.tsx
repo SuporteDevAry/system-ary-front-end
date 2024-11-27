@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -29,6 +29,7 @@ import {
   getNestedValue,
 } from "./helpers";
 import { CustomTruncateText } from "../CustomTruncateText";
+import useTableSearch from "../../hooks/useTableSearch";
 
 const locale = "pt-BR";
 
@@ -50,12 +51,35 @@ const CustomTable: React.FC<ICustomTableProps> = ({
   orderBy,
   setOrder,
   setOrderBy,
+  searchTerm = "",
+  searchableFields = columns.map((col) => col.field),
 }) => {
   const [openRows, setOpenRows] = useState<number[]>([]);
   const [selectedRowId, setSelectedRowId] = useState<number | null>(null);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  // const [order, setOrder] = useState<"asc" | "desc">("desc");
-  // const [orderBy, setOrderBy] = useState<string>("updated_at");
+
+  const { filteredData, handleSearch } = useTableSearch({
+    data,
+    searchTerm,
+    searchableFields,
+  });
+
+  const totalPages = useMemo(
+    () => Math.ceil(filteredData.length / rowsPerPage),
+    [filteredData.length, rowsPerPage]
+  );
+
+  useEffect(() => {
+    // Aciona a busca sempre que o termo mudar
+    handleSearch();
+  }, [searchTerm, handleSearch]);
+
+  useEffect(() => {
+    // Se a página atual for maior que o número de páginas após o filtro, ajuste para a última página disponível
+    if (page >= totalPages && totalPages > 0) {
+      setPage?.(totalPages - 1); // Ajusta a página para a última página
+    }
+  }, [filteredData.length, page, totalPages, setPage]);
 
   const handleRequestSort = (property: string) => {
     const column = columns.find((col) => col.field === property);
@@ -82,8 +106,11 @@ const CustomTable: React.FC<ICustomTableProps> = ({
     _event: React.MouseEvent<HTMLButtonElement> | null,
     newPage: number
   ) => {
-    if (setPage) {
-      setPage(newPage);
+    // Verifica se a nova página está dentro do limite das páginas disponíveis
+    if (newPage >= 0 && newPage < totalPages) {
+      if (setPage) {
+        setPage(newPage);
+      }
     }
   };
 
@@ -93,7 +120,7 @@ const CustomTable: React.FC<ICustomTableProps> = ({
     setRowsPerPage(parseInt(event.target.value, 10));
 
     if (setPage) {
-      setPage(0);
+      setPage(0); // Volta para a primeira página ao alterar a quantidade de itens por página
     }
   };
 
@@ -124,24 +151,23 @@ const CustomTable: React.FC<ICustomTableProps> = ({
     );
   };
 
-  //Onde fazemos o sort nos dados da tabela
+  // Onde fazemos o sort nos dados da tabela
   const sortedData = useMemo(() => {
-    return data.slice().sort((a, b) => {
+    return filteredData.slice().sort((a, b) => {
       const aValue = getNestedValue(a, orderBy);
       const bValue = getNestedValue(b, orderBy);
 
       if (orderBy === "number_contract") {
         const aContractNumber = extractNumberFromContract(aValue);
         const bContractNumber = extractNumberFromContract(bValue);
-
         return compareValues(aContractNumber, bContractNumber, order);
       }
 
       return compareValues(aValue, bValue, order);
     });
-  }, [data, order, orderBy]);
+  }, [filteredData, order, orderBy]);
 
-  //Onde fazemos a paginação nos dados da tabela
+  // Onde fazemos a paginação nos dados da tabela
   const paginatedData = useMemo(() => {
     const startIndex = page * rowsPerPage;
     const endIndex = startIndex + rowsPerPage;

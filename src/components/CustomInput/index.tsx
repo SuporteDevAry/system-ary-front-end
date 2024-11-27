@@ -21,6 +21,7 @@ export const CustomInput: React.FC<CustomInputProps> = ({
   radioPosition = "inline",
   onRadioChange,
   selectedRadio,
+  autoComplete = "off",
   ...rest
 }) => {
   return (
