@@ -2,14 +2,18 @@ export type ProductType = "S" | "CN" | "T" | "SG";
 
 interface ProductInfo {
   name: string;
+  commission_seller: string,
   quality: string;
   observation: string;
+  type_commission_seller: string;
 }
 
 // ATENÇÃO !!! = Não Mudar a Identação dos Objetos abaixo!
 export const productInfo: Record<ProductType, ProductInfo> = {
   S: {
     name: `SOJA em Grãos`,
+    commission_seller: `0,25`,
+    type_commission_seller: "Percentual",
     quality: `Padrão exportação conforme ANEC 41.
 Soja transgênica (GMO positivo).`,
     observation: `1-Mercadoria destinada à exportação.
@@ -21,6 +25,8 @@ Bill of Lading (BL).
   },
   CN: {
     name: `MILHO em Grãos`,
+    commission_seller: `0,50`,
+    type_commission_seller: "Percentual",
     quality: `Padrão exportação conforme contrato ANEC nr. 43.`,
     observation: `1-Mercadoria destinada à exportação.
 2-O comprador se compromete a apresentar os documentos de exportação no prazo determinado por lei, tais como:
@@ -31,6 +37,8 @@ Bill of Lading (BL).
   },
   T: {
     name: `TRIGO`,
+    commission_seller: `0,50`,
+    type_commission_seller: "Percentual",
     quality: `Trigo Pão Tipo 1, à granel, umidade máxima 13,0%, impurezas máxima1,0%, 
 PH mínimo 78, triguilho máximo 1,5%, falling number mínimo 250, W mínimo 250, 
 DON máximo 2ppm, proteína mínima 12,5%, isento de mofados, germinados e livre de insetos vivos e/ou mortos.`,
@@ -38,6 +46,8 @@ DON máximo 2ppm, proteína mínima 12,5%, isento de mofados, germinados e livre
   },
   SG: {
     name: `SORGO`,
+    commission_seller: `0,50`,
+    type_commission_seller: "Percentual",
     quality: `Peso de Teste: 56,0 LB/Bushel
 BCFM: Máx. 7%
 Número Danificado: Máx. Máx. 5%

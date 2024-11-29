@@ -89,7 +89,7 @@ export function Login() {
         <LoginContainer>
           <LogoImage src={logoAryLogin} alt="logo da empresa" />
 
-          <form onSubmit={handleSubmit} action="">
+          <form onSubmit={handleSubmit} autoComplete="off" action="">
             <FormContainer>
               <BoxInputUser>
                 <FaUserCircle size={20} />

@@ -123,7 +123,6 @@ export function ViewCustomer(): JSX.Element {
   const { filteredData, handleSearch } = useTableSearch({
     data: customerContactsList,
     searchTerm,
-    setPage,
   });
 
   const debouncedSearchTerm = useDebouncedValue(searchTerm, 300);

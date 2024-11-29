@@ -82,13 +82,13 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
         <br />
         <h3>
           <p style={{ paddingLeft: "280px" }}>
-            S&atilde;o Paulo,{" "}
+            São Paulo,{" "}
             <span>
               {formatDateWithLongMonth(formData.contract_emission_date)}
             </span>
           </p>
           <p style={{ paddingLeft: "280px" }}>
-            Confirma&ccedil;&atilde;o de venda nr.
+            Confirmação de venda nr.
             <span> {numberContract} </span>
             fechada nesta data:
           </p>
@@ -210,7 +210,14 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
             {formatCurrency(formData.price, formData.type_currency, modeSave)}
           </strong>{" "}
           por saca de 60(sessenta) quilos,{" "}
-          <strong>({formData.destination})</strong>.
+          <strong>
+            (
+            {formData.complement_destination
+              ? `${formData.destination} ${formData.complement_destination}`
+              : formData.destination}
+            )
+          </strong>
+          .
         </p>
         <br />
 
@@ -239,13 +246,13 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
         <br />
 
         <p style={{ textAlign: "left" }}>
-          <strong>Confer&ecirc;ncia:</strong>
+          <strong>Conferência:</strong>
         </p>
         <p style={{ textAlign: "justify" }}>{formData.inspection}</p>
         <br />
 
         <p style={{ textAlign: "left" }}>
-          <strong>Observa&ccedil;&otilde;es:</strong>
+          <strong>Observações:</strong>
         </p>
         {/* <p style={{ textAlign: "justify", whiteSpace: "pre-line" }}>
                         {formData.observation}
@@ -276,8 +283,8 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
             <br></br>
 
             <strong>
-              Comissão de
-              <span>{formattedCSeller.replace(".", ",")}</span>
+              Comissão de <span>{formattedCSeller.replace(".", ",")}</span>
+              {"  "}
               por conta do vendedor.
             </strong>
 
@@ -293,9 +300,9 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
             <strong>===</strong>
             <br></br>
             <strong>
-              Comissão de
-              <span>{formattedCBuyer.replace(".", ",")}</span> por conta do
-              comprador.
+              Comissão de <span>{formattedCBuyer.replace(".", ",")}</span>
+              {"  "}
+              por conta do comprador.
             </strong>
             <br></br>
             <strong>===</strong>
@@ -349,5 +356,4 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
     </>
   );
 };
-
 export default ContratoTemplate;

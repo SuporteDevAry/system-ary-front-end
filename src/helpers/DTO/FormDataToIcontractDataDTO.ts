@@ -16,7 +16,7 @@ export const FormDataToIContractDataDTO = (
     name_product: data.name_product,
     crop: data.crop,
     quality: data.quality,
-    quantity: Number(data.quantity.replace(".", "")),
+    quantity: Number(data.quantity.replace(/[.]/g, "")),
     type_currency: data.type_currency,
     price: parseFloat(data.price.replace(",", ".")),
     type_icms: data.type_icms,
@@ -49,5 +49,6 @@ export const FormDataToIContractDataDTO = (
     initial_pickup_date: data.initial_pickup_date,
     final_pickup_date: data.final_pickup_date,
     internal_communication: data.internal_communication,
+    complement_destination: data.complement_destination,
   };
 };

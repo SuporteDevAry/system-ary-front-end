@@ -30,4 +30,6 @@ export interface ICustomTableProps {
   orderBy: string;
   setOrder: Dispatch<SetStateAction<"asc" | "desc">>;
   setOrderBy: Dispatch<SetStateAction<string>>;
+  searchTerm?: string;
+  searchableFields?: string[];
 }

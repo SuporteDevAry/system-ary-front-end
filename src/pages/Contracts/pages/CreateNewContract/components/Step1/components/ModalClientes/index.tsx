@@ -47,7 +47,6 @@ export function ModalClientes({
   const { filteredData, handleSearch } = useTableSearch({
     data: data,
     searchTerm,
-    setPage,
   });
 
   useEffect(() => {

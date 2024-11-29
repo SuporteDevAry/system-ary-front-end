@@ -110,7 +110,7 @@ export function Clientes() {
   const { filteredData, handleSearch } = useTableSearch({
     data: clientes,
     searchTerm,
-    setPage,
+    searchableFields: ["name", "cnpj_cpf", "city"],
   });
 
   useEffect(() => {

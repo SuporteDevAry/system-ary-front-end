@@ -76,6 +76,7 @@ export interface IContractData {
   initial_pickup_date: string;
   final_pickup_date: string;
   internal_communication: string;
+  complement_destination?: string;
 }
 
 export interface IContractContext {
