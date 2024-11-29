@@ -5,6 +5,17 @@ import { ContractContext } from "../../../../contexts/ContractContext";
 import { toast } from "react-toastify";
 import { IContractData } from "../../../../contexts/ContractContext/types";
 
+const apiKey = process.env.VITE_RESEND_API_KEY;
+
+if (!apiKey) {
+  console.error(
+    "Chave da API Resend não encontrada. Verifique o arquivo .env."
+  );
+  throw new Error(
+    "Chave da API Resend não encontrada. Verifique o arquivo .env."
+  );
+}
+
 interface EmailAttachment {
   filename: string;
   content: Uint8Array | ArrayBuffer | null;
@@ -21,15 +32,7 @@ interface EmailData {
 // Função para enviar e-mails usando Resend
 const sendEmails = async (contractData: IContractData): Promise<void> => {
   try {
-    // 1. Buscar os dados do contrato
-    // const response = await axios.get<ContractDataTest>(
-    //   "https://seu-endpoint.com/contratos"
-    // );
-    // const contractData: ContractDataTest = response.data;
-
-    // 2. Gerar PDFs para vendedor e comprador
     const pdfSeller = await PdfGeneratorNew({
-      //documentContent: document,
       elementId: "contrato",
       fileName: `Contrato_${contractData.number_contract}_Vendedor`,
       data: contractData,
@@ -38,7 +41,6 @@ const sendEmails = async (contractData: IContractData): Promise<void> => {
     });
 
     const pdfBuyer = await PdfGeneratorNew({
-      //documentContent: document,
       elementId: "contrato",
       fileName: `Contrato_${contractData.number_contract}_Comprador`,
       data: contractData,
@@ -46,47 +48,35 @@ const sendEmails = async (contractData: IContractData): Promise<void> => {
       template: "contrato",
     });
 
-    console.log("###Entrei na fn Send", contractData);
-
     if (!pdfSeller || !pdfBuyer) {
-      console.error("Erro ao gerar um dos PDFs.");
-      return;
-    }
-
-    // 3. Configurar dados de e-mail para Resend
-    const apiKey = process.env.VITE_RESEND_API_KEY;
-
-    if (!apiKey) {
-      console.error("Chave da API Resend não encontrada.");
-      return;
+      throw new Error("Erro ao gerar um dos PDFs.");
     }
 
     const emailDataSeller: EmailData = {
       from: "no-reply@seu-dominio.com",
-      to: ["vendedor@dominio.com", "outro-vendedor@dominio.com"],
+      to: ["vendedor@dominio.com"],
       subject: "Contrato para Vendedor",
-      text: "Por favor, encontre em anexo o contrato.",
+      text: "Contrato anexado.",
       attachments: [
         {
           filename: "Contrato_Vendedor.pdf",
-          content: await pdfSeller?.output("arraybuffer"), // Envia o PDF como conteúdo binário
+          content: await pdfSeller.output("arraybuffer"),
         },
       ],
     };
 
     const emailDataBuyer: EmailData = {
       ...emailDataSeller,
-      to: ["comprador@dominio.com", "outro-comprador@dominio.com"],
+      to: ["comprador@dominio.com"],
       subject: "Contrato para Comprador",
       attachments: [
         {
           filename: "Contrato_Comprador.pdf",
-          content: await pdfBuyer?.output("arraybuffer"), // Envia o PDF como conteúdo binário
+          content: await pdfBuyer.output("arraybuffer"),
         },
       ],
     };
 
-    // 4. Enviar e-mails usando a API da Resend
     await Promise.all([
       axios.post("https://api.resend.io/v1/send", emailDataSeller, {
         headers: { Authorization: `Bearer ${apiKey}` },
@@ -96,15 +86,17 @@ const sendEmails = async (contractData: IContractData): Promise<void> => {
       }),
     ]);
 
-    console.log("E-mails enviados com sucesso!");
+    toast.success("E-mails enviados com sucesso!");
   } catch (error) {
-    console.error("Erro ao enviar e-mails:", error);
+    console.error(error);
+    toast.error("Erro ao enviar os e-mails.");
   }
 };
 
 const SendContracts: React.FC = () => {
   const contractContext = ContractContext();
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isPdfLoading, setIsPdfLoading] = useState(false);
   const [contractData, setContractData] = useState<IContractData>();
 
   const fetchContractData = useCallback(async () => {
@@ -118,7 +110,7 @@ const SendContracts: React.FC = () => {
       );
 
       console.log("## ", filteredContracts);
-      setContractData(filteredContracts);
+      setContractData(filteredContracts[0]);
     } catch (error) {
       toast.error(
         `Erro ao tentar ler contratos, contacte o administrador do sistema: ${error}`
@@ -135,51 +127,82 @@ const SendContracts: React.FC = () => {
   const generateAndOpenPdf = async (typeContract: "Vendedor" | "Comprador") => {
     if (!contractData) return;
 
-    const pdf = PdfGeneratorNew({
-      documentContent: document,
-      elementId: "contrato",
-      fileName: `Contrato_${contractData.id}_${typeContract}`,
-      data: contractData,
-      typeContract,
-      template: "contrato",
-    });
-
-    if (pdf) {
-      const pdfBlob = new Blob([await pdf.output("arraybuffer")], {
-        type: "application/pdf",
+    try {
+      setIsPdfLoading(true); // Adicione estado de carregamento
+      const pdf = await PdfGeneratorNew({
+        elementId: "contrato",
+        fileName: `Contrato_${contractData.id}_${typeContract}`,
+        data: contractData,
+        typeContract,
+        template: "contrato",
       });
-      const pdfUrl = URL.createObjectURL(pdfBlob);
-      window.open(pdfUrl, "_blank");
+
+      if (pdf) {
+        const pdfBlob = new Blob([await pdf.output("arraybuffer")], {
+          type: "application/pdf",
+        });
+        const pdfUrl = URL.createObjectURL(pdfBlob);
+        window.open(pdfUrl, "_blank");
+      }
+    } catch (error) {
+      toast.error("Erro ao gerar o PDF. Tente novamente.");
+    } finally {
+      setIsPdfLoading(false);
     }
+  };
+
+  const handleSendEmails = async () => {
+    if (!contractData || !contractData.number_contract) {
+      toast.error("Os dados do contrato estão incompletos ou ausentes.");
+      return;
+    }
+    await sendEmails(contractData);
   };
 
   return (
     <div>
-      {contractData && <>{contractData.buyer}</>}
+      {contractData && contractData.buyer && (
+        <div>
+          <p>Nome do comprador: {contractData.buyer.name}</p>
+          <p>CNPJ: {contractData.buyer.cnpj_cpf}</p>
+          <p>Endereço: {contractData.buyer.address}</p>
+          {/* Exiba outras propriedades conforme necessário */}
+        </div>
+      )}
+      <br />
+      {contractData && contractData.seller && (
+        <div>
+          <p>Nome do vendedor: {contractData.seller.name}</p>
+          <p>CNPJ: {contractData.seller.cnpj_cpf}</p>
+          <p>Endereço: {contractData.seller.address}</p>
+          {/* Exiba outras propriedades conforme necessário */}
+        </div>
+      )}
+      <br />
       <button onClick={fetchContractData} disabled={isLoading}>
-        Buscar Contrato
+        {isLoading ? "Carregando..." : "Buscar Contrato"}
       </button>
       <br />
       <button
         onClick={() => generateAndOpenPdf("Vendedor")}
-        disabled={!contractData || isLoading}
+        disabled={!contractData || isLoading || isPdfLoading}
       >
-        Visualizar PDF Vendedor
+        {isPdfLoading ? "Gerando PDF Vendedor..." : "Visualizar PDF Vendedor"}
       </button>
       <br />
       <button
         onClick={() => generateAndOpenPdf("Comprador")}
-        disabled={!contractData || isLoading}
+        disabled={!contractData || isLoading || isPdfLoading}
       >
-        Visualizar PDF Comprador
+        {isPdfLoading ? "Gerando PDF Comprador..." : "Visualizar PDF Comprador"}
       </button>
       <br />
       {contractData && (
         <button
-          onClick={() => sendEmails(contractData)}
-          disabled={!contractData}
+          onClick={handleSendEmails}
+          disabled={!contractData || isLoading}
         >
-          Enviar Email
+          Enviar Contratos por E-mail
         </button>
       )}
     </div>

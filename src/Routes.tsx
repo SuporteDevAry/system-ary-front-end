@@ -71,7 +71,7 @@ export function RoutesForPages() {
         }
       />
       <Route
-        path="/visualizar-contrato"
+        path="/contratos/historico/visualizar-contrato"
         element={
           <ProtectedLayout>
             <Layout>
@@ -92,7 +92,7 @@ export function RoutesForPages() {
       />
 
       <Route
-        path="/visualizar-cliente"
+        path="/clientes/visualizar-cliente"
         element={
           <ProtectedLayout>
             <Layout>
@@ -103,7 +103,7 @@ export function RoutesForPages() {
       />
 
       <Route
-        path="/cliente-cadastrar"
+        path="/clientes/cliente-cadastrar"
         element={
           <ProtectedLayout>
             <Layout>
@@ -113,7 +113,7 @@ export function RoutesForPages() {
         }
       />
       <Route
-        path="/cliente-editar"
+        path="/clientes/cliente-editar"
         element={
           <ProtectedLayout>
             <Layout>
