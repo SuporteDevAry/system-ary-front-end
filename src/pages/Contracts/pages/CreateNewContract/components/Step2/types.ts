@@ -62,9 +62,7 @@ Aflatoxina: Máx. 20PPB`,
     name: `ÓLEO DE SOJA a Granel`,
     commission_seller: `0,50`,
     type_commission_seller: "Percentual",
-    quality: `Padrão exportação, conforme contrato ANEC nr. 81.
-ou
-Refinado especial, tipo 1.`,
+    quality: `Padrão exportação, conforme contrato ANEC nr. 81.`,
     observation: `"Mercadoria destinada a fabricação de biodiesel."`,
   },
   F: {
