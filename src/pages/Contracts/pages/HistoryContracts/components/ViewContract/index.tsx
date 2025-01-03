@@ -150,11 +150,16 @@ export function ViewContract(): JSX.Element {
       ),
     },
     {
-      label: "Quantidade de saca",
+      label:
+        dataClient?.product === "O" || dataClient?.product === "F"
+          ? "Quantidade Tonelada Métrica"
+          : "Quantidade de saca",
       value:
-        dataClient?.quantity_bag && dataClient?.type_currency
-          ? Number(dataClient.quantity_bag).toFixed(2)
-          : "0,00",
+        dataClient?.product === "O" || dataClient?.product === "F"
+          ? Number(dataClient.quantity_bag)
+          : dataClient?.quantity_bag && dataClient?.type_currency
+          ? Number(dataClient.quantity_bag).toFixed(3)
+          : "0,000",
     },
     {
       label: "Total do Contrato",
