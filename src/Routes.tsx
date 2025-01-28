@@ -17,7 +17,7 @@ import { MyAccount } from "./pages/MyAccount";
 import { ViewCustomer } from "./pages/Clientes/components/ViewCustomer";
 import { ViewContract } from "./pages/Contracts/pages/HistoryContracts/components/ViewContract";
 import { Execution } from "./pages/Execution";
-import SendContracts from "./pages/Execution/pages/SendContracts";
+import { SendContracts } from "./pages/Execution/pages/SendContracts";
 
 export function RoutesForPages() {
   return (

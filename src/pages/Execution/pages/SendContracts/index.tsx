@@ -1,180 +1,141 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { ContractContext } from "../../../../contexts/ContractContext";
+import React from "react";
+import Step from "@mui/material/Step";
+import StepLabel from "@mui/material/StepLabel";
+import CircularProgress from "@mui/material/CircularProgress";
+import CustomButton from "../../../../components/CustomButton";
+import { SButtonContainer, SContainer, SContent, SStepper } from "./styles";
+import { FormDataSendContract, StepType } from "./types";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import CustomLoadingButton from "../../../../components/CustomLoadingButton";
-import generatePdf from "./generatePdf";
+import { useUserPermissions } from "../../../../hooks";
+import { StepInformContract } from "./components/StepInformContract";
+import { StepSendContract } from "./components/StepSendContract";
 
-import { ITemplates } from "../../../../templates";
-import { useInfo } from "../../../../hooks";
+export const SendContracts: React.FC = () => {
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [activeStep, setActiveStep] = useState<number>(0);
+  const [formData, setFormData] = React.useState<FormDataSendContract>({
+    number_contract: "",
+    list_email_seller: [],
+    list_email_buyer: [],
+    list_email_ocult_copy: [],
+    sended_contract: false,
+  });
 
-import { IContractData } from "../../../../contexts/ContractContext/types";
+  const { canConsult } = useUserPermissions();
 
-import { SendEmailContext } from "../../../../contexts/SendEmailContext";
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      [name]: value,
+    }));
+  };
 
-const SendContracts: React.FC = () => {
-  const contractContext = ContractContext();
-  const sendEmailContext = SendEmailContext();
-  const { dataUserInfo } = useInfo();
+  const updateFormData = (data: Partial<FormDataSendContract>) => {
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      ...data,
+    }));
+  };
 
-  const [isLoading, setIsLoading] = useState(false);
-  const [isPdfLoading, setIsPdfLoading] = useState(false);
-  const [isEmailSending, setIsEmailSending] = useState(false);
-  const [contractData, setContractData] = useState<IContractData | null>(null);
-  const [templateName, setTemplateName] = useState<ITemplates["template"]>(
-    "contratoTemplateSoja"
-  );
-  const [userEmail, setUserEmail] = useState("");
+  const handleNext = async () => {
+    if (activeStep === steps.length - 1) {
+      // Se for o último step, cria o contrato
 
-  useEffect(() => {
-    if (dataUserInfo?.email) {
-      setUserEmail(dataUserInfo.email);
-    }
-  }, [dataUserInfo]);
+      setIsLoading(true);
+      try {
+        toast.success(
+          <div>
+            Contrato de Número:
+            <strong>{response?.data?.number_contract}</strong>
+            criado com sucesso!
+          </div>
+        );
 
-  const fetchContractData = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const response = await contractContext.listContracts();
-      const filteredContracts = response.data.filter(
-        (contract: IContractData) =>
-          contract.status.status_current === "A CONFERIR"
-      );
-      setContractData(filteredContracts[0] || null);
-    } catch (error) {
-      toast.error(`Erro ao buscar contratos: ${error}`);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [contractContext]);
-
-  useEffect(() => {
-    fetchContractData();
-  }, [fetchContractData]);
-
-  const generateAndOpenPdf = async (
-    typeContract: "Vendedor" | "Comprador"
-  ): Promise<Blob | null> => {
-    if (!contractData) {
-      toast.error("Contrato não encontrado.");
-      return null;
-    }
-
-    setIsPdfLoading(true);
-    try {
-      const pdfBlob = await generatePdf(
-        contractData,
-        typeContract,
-        templateName
-      );
-      if (pdfBlob) {
-        const pdfUrl = URL.createObjectURL(pdfBlob);
-        window.open(pdfUrl, "_blank");
-        return pdfBlob;
+        navigate("/contratos/historico");
+      } catch (error) {
+        toast.error(
+          `Erro ao tentar enviar contrato, contacte o administrador do sistema ${error}`
+        );
+      } finally {
+        setIsLoading(false);
       }
-      return null;
-    } catch (error) {
-      toast.error(`Erro ao gerar o PDF para ${typeContract}.`);
-      return null;
-    } finally {
-      setIsPdfLoading(false);
+    } else {
+      // Se não for o último step, avança para o próximo
+      setActiveStep((prevActiveStep) => prevActiveStep + 1);
     }
   };
 
-  const handleSendEmails = async () => {
-    if (!contractData) {
-      toast.error("Contrato não encontrado.");
-      return;
-    }
-
-    setIsEmailSending(true);
-    try {
-      const numberContract = contractData?.number_contract?.replace("/", "-");
-
-     
-      const response = await sendEmailContext.sendEmail({
-        contractData,
-        templateName,
-        sender: userEmail,
-        number_contract: numberContract || "",
-      });
-
-      console.log("Response Passo1#####", response);
-      if (response) {
-        toast.success("E-mails enviados com sucesso!");
-      }
-    } catch (error) {
-      console.error("Erro ao enviar e-mails:", error);
-      toast.error("Erro ao enviar os e-mails.");
-    } finally {
-      setIsEmailSending(false);
-    }
+  const handleBack = () => {
+    setActiveStep((prevActiveStep) => prevActiveStep - 1);
   };
-  const renderContractInfo = (type: "buyer" | "seller") => {
-    const data = contractData?.[type];
-    if (!data) return null;
 
-    return (
-      <div>
-        <p>
-          Nome do {type === "buyer" ? "comprador" : "vendedor"}: {data.name}
-        </p>
-        <p>CNPJ: {data.cnpj_cpf}</p>
-        <p>Endereço: {data.address}</p>
-      </div>
-    );
-  };
+  const steps: StepType[] = [
+    {
+      label: "Informe o contrato",
+      elements: [
+        <StepInformContract
+          id="step1"
+          formData={formData}
+          handleChange={handleChange}
+          updateFormData={updateFormData}
+        />,
+      ],
+    },
+    {
+      label: "Enviar Contrato",
+      elements: [
+        <StepSendContract
+          id="step2"
+          formData={formData}
+          handleChange={handleChange}
+        />,
+      ],
+    },
+  ];
+
+  const currentStep = steps[activeStep] || { elements: [] };
 
   return (
-    <div>
-      <div>
-        <select
-          onChange={(e) =>
-            setTemplateName(e.target.value as ITemplates["template"])
-          }
-        >
-          <option value="contratoTemplateSoja">Template Soja</option>
-          <option value="contrato">Contrato</option>
-        </select>
-      </div>
-      <br />
-      {contractData ? (
-        <>
-          {renderContractInfo("buyer")}
-          {renderContractInfo("seller")}
-        </>
-      ) : (
-        <p>Nenhum contrato disponível para conferir.</p>
-      )}
-      <br />
-      <CustomLoadingButton
-        onClick={fetchContractData}
-        isLoading={isLoading}
-        label="Buscar Contrato"
-        loadingLabel="Carregando..."
-      />
-      <br />
-      <CustomLoadingButton
-        onClick={() => generateAndOpenPdf("Vendedor")}
-        isLoading={isPdfLoading}
-        label="Gerar PDF (Vendedor)"
-        loadingLabel="Gerando PDF..."
-      />
-      <br />
-      <CustomLoadingButton
-        onClick={() => generateAndOpenPdf("Comprador")}
-        isLoading={isPdfLoading}
-        label="Gerar PDF (Comprador)"
-        loadingLabel="Gerando PDF..."
-      />
-      <br />
-      <CustomLoadingButton
-        onClick={handleSendEmails}
-        isLoading={isEmailSending}
-        label="Enviar E-mails"
-        loadingLabel="Enviando..."
-      />
-    </div>
+    <SContainer>
+      <SStepper activeStep={activeStep}>
+        {steps.map((item, index) => (
+          <Step key={`${index}-${item.label}`}>
+            <StepLabel>{item.label}</StepLabel>
+          </Step>
+        ))}
+      </SStepper>
+
+      <SContent key={currentStep.label}>{currentStep.elements}</SContent>
+
+      <SButtonContainer>
+        {activeStep !== 0 && (
+          <CustomButton onClick={handleBack} $variant={"primary"}>
+            Voltar
+          </CustomButton>
+        )}
+
+        {isLoading ? (
+          <CircularProgress size={24} />
+        ) : activeStep === steps.length - 1 ? (
+          <CustomButton
+            onClick={handleNext}
+            $variant={"success"}
+            disabled={canConsult}
+          >
+            Salvar
+          </CustomButton>
+        ) : (
+          <CustomButton onClick={handleNext} $variant={"success"}>
+            Avançar
+          </CustomButton>
+        )}
+      </SButtonContainer>
+    </SContainer>
   );
 };
-
-export default SendContracts;
