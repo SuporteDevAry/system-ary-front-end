@@ -7,8 +7,6 @@ export const SContainer = styled.div`
   gap: 16px;
 `;
 
-export const STitle = styled.h2``;
-
 export const SContainerSearchAndButton = styled.div`
   display: flex;
   gap: ${V.mdSpacing};
