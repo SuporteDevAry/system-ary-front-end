@@ -3,6 +3,6 @@ export interface CustomTextAreaProps {
   height?: string;
   label?: string;
   name?: string;
-  value?: string;
+  value?: string | number | readonly string[];
   onChange?: React.ChangeEventHandler<HTMLTextAreaElement>;
 }

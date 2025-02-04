@@ -1,3 +1,4 @@
+import { ApiResponse } from "../../services/api";
 import { IAccounts } from "../ClienteContext/types";
 
 export interface IContractsProvider {
@@ -79,6 +80,9 @@ export interface IContractData {
 }
 
 export interface IContractContext {
+  getGrainContractById: (
+    contractId: string
+  ) => Promise<ApiResponse<IContractData>>;
   listContracts: () => Promise<any>;
   createContract: (contractData: IContractData) => Promise<any>;
   updateContract: (

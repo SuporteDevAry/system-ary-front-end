@@ -51,7 +51,7 @@ export function HistoryContracts() {
   }, [searchTerm, handleSearch]);
 
   const handleViewContract = (contract: IContractData) => {
-    navigate("/visualizar-contrato", {
+    navigate("/contratos/historico/visualizar-contrato", {
       state: { contractForView: contract },
     });
   };

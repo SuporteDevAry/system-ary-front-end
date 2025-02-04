@@ -59,17 +59,17 @@ export function Clientes() {
   }, [fetchData]);
 
   const handleCreateCliente = () => {
-    navigate("/cliente-cadastrar");
+    navigate("/clientes/cliente-cadastrar");
   };
 
   const handleUpdateCliente = (clientes: IListCliente) => {
-    navigate("/cliente-editar", {
+    navigate("/clientes/cliente-editar", {
       state: { clienteForUpdate: clientes },
     });
   };
 
   const handleViewCustomer = (clientes: IListCliente) => {
-    navigate("/visualizar-cliente", {
+    navigate("/clientes/visualizar-cliente", {
       state: { clientForView: clientes },
     });
   };

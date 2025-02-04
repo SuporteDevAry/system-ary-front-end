@@ -30,6 +30,7 @@ import {
 } from "./helpers";
 import { CustomTruncateText } from "../CustomTruncateText";
 import useTableSearch from "../../hooks/useTableSearch";
+import { CustomStatusIndicator } from "../CustomStatusIndicator";
 
 const locale = "pt-BR";
 
@@ -142,6 +143,14 @@ const CustomTable: React.FC<ICustomTableProps> = ({
     if (column.field === "telephone") return insertMaskInTelefone(value);
 
     if (column.field === "cellphone") return insertMaskInCelular(value);
+
+    if (column.field === "status.status_current") {
+      const statusCurrent = row?.status?.status_current;
+
+      return (
+        <CustomStatusIndicator status={statusCurrent} text={statusCurrent} />
+      );
+    }
 
     const stringValue = value?.toString() ?? "-";
     return value ? (

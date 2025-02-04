@@ -41,10 +41,12 @@ export const ClientesProvider = ({ children }: IClientesProvider) => {
 
   async function createCliente(clienteData: ICreateClientesData): Promise<any> {
     try {
+      console.log("### clienteData", clienteData);
       const response = await Api.post("/client", clienteData);
-
+      console.log("### ok", response);
       return response;
     } catch (error) {
+      console.log("### error", error);
       const err = error as AxiosError;
 
       if (err.response && err.response.data) {
