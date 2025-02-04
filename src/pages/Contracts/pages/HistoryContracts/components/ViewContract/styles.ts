@@ -61,6 +61,7 @@ export const SkeyName = styled.span`
 `;
 
 export const SKeyValue = styled.span`
+  display: inline-block;
   font-weight: 500;
   padding-left: 8px;
   color: ${(props) => props.theme["black-300"]};

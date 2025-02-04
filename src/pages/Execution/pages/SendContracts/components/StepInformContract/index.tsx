@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import CustomButton from "../../../../../../components/CustomButton";
 import { CustomSearch } from "../../../../../../components/CustomSearch";
 import CustomTable from "../../../../../../components/CustomTable";
 import { ContractContext } from "../../../../../../contexts/ContractContext";
@@ -12,7 +11,6 @@ import { IColumn } from "../../../../../../components/CustomTable/types";
 
 export const StepInformContract: React.FC<StepProps> = ({
   id,
-  formData,
   updateFormData,
 }) => {
   const contractContext = ContractContext();
@@ -28,7 +26,12 @@ export const StepInformContract: React.FC<StepProps> = ({
       setIsLoading(true);
       const response = await contractContext.listContracts();
 
-      setListContracts(response.data);
+      setListContracts(
+        response.data.filter(
+          (contract: IContractData) =>
+            contract.status.status_current === "VALIDADO"
+        )
+      );
     } catch (error) {
       toast.error(
         `Erro ao tentar ler contratos, contacte o administrador do sistema: ${error}`
@@ -126,7 +129,9 @@ export const StepInformContract: React.FC<StepProps> = ({
     toast.success(
       <div>
         Contrato de Número:
-        <strong>{formData?.number_contract}</strong>
+        <pre>
+          <strong>{contract.number_contract}</strong>
+        </pre>
         foi selecionado, agora avance para a próxima etapa!
       </div>
     );
@@ -168,16 +173,6 @@ export const StepInformContract: React.FC<StepProps> = ({
     []
   );
 
-  const renderActionButtons = (row: any) =>
-    row.status.status_current === "A CONFERIR" ? (
-      <CustomButton
-        $variant="secondary"
-        width="85px"
-        onClick={() => handleViewContract(row)}
-      >
-        Selecionar
-      </CustomButton>
-    ) : null;
   return (
     <>
       <SContainer id={id}>
@@ -195,7 +190,6 @@ export const StepInformContract: React.FC<StepProps> = ({
           columns={nameColumns}
           hasPagination
           dateFields={["created_at"]}
-          actionButtons={renderActionButtons}
           maxChars={15}
           page={page}
           setPage={setPage}
@@ -203,6 +197,8 @@ export const StepInformContract: React.FC<StepProps> = ({
           orderBy={orderBy}
           setOrder={setOrder}
           setOrderBy={setOrderBy}
+          hasCheckbox
+          onRowClick={(rowData) => handleViewContract(rowData as IContractData)}
         />
       </SContainer>
     </>

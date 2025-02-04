@@ -15,10 +15,12 @@ import { StepSendContract } from "./components/StepSendContract";
 import { Modal } from "../../../../components/Modal";
 import { SendEmailContext } from "../../../../contexts/SendEmailContext";
 import { ITemplates } from "../../../../templates";
+import { formattedDate, formattedTime } from "../../../../helpers/dateFormat";
+import { ContractContext } from "../../../../contexts/ContractContext";
 
 export const SendContracts: React.FC = () => {
   const navigate = useNavigate();
-
+  const { updateContract } = ContractContext();
   const sendEmailContext = SendEmailContext();
   const { dataUserInfo } = useInfo();
   const { canConsult } = useUserPermissions();
@@ -126,6 +128,53 @@ export const SendContracts: React.FC = () => {
     }));
   };
 
+  const handleUpdateContract = async () => {
+    if (!formData || !formData.id) {
+      toast.error("Id do Contrato não encontrado.");
+      return;
+    }
+
+    const newDate = formattedDate();
+    const newTime = formattedTime();
+
+    const newStatusEntry = {
+      date: newDate,
+      time: newTime,
+      status: "ENVIADO",
+      owner_change: {
+        name: dataUserInfo?.name || "",
+        email: dataUserInfo?.email || "",
+      },
+    };
+
+    const updatedStatus = {
+      status_current: "ENVIADO",
+      history: [...formData.status.history, newStatusEntry],
+    };
+
+    const updatedContract = {
+      ...formData,
+      status: updatedStatus,
+    };
+
+    try {
+      await updateContract(formData?.id, updatedContract);
+      toast.success(
+        <div>
+          Contrato de Número:
+          <strong>{formData.number_contract}</strong> enviado com sucesso!
+        </div>
+      );
+      navigate("/contratos/historico");
+    } catch (error) {
+      toast.error(
+        `Erro ao tentar deletar contrato: ${formData.number_contract}, contacte o administrador do sistema ${error}`
+      );
+    } finally {
+      setDeleteModal(false);
+    }
+  };
+
   // Depois que tiver mais de um template, mudar para um select e verificar pela sigla contida no number_contract
   //   const handleChangeTemplate = (templateName: ITemplates["template"]) => {
   //     setTemplateName(templateName);
@@ -142,8 +191,8 @@ export const SendContracts: React.FC = () => {
       });
 
       if (response) {
-        //mudar status do contrato para enviado
-        //updateStatus("ENVIADO");
+        await handleUpdateContract();
+
         setDeleteModal(false);
       }
     } catch (error) {
@@ -161,13 +210,6 @@ export const SendContracts: React.FC = () => {
       setIsLoading(true);
       try {
         await handleSendEmails();
-        toast.success(
-          <div>
-            Contrato de Número:
-            <strong>{formData.number_contract}</strong>
-            foi enviado com sucesso!
-          </div>
-        );
 
         navigate("/contratos/historico");
       } catch (error) {
@@ -267,6 +309,7 @@ export const SendContracts: React.FC = () => {
         onHandleConfirm={handleNext}
         variantCancel={"primary"}
         variantConfirm={"success"}
+        disabledConfirm={isLoading || isEmailSending}
       >
         {modalContent}
       </Modal>

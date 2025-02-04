@@ -13,4 +13,5 @@ export interface IModalProps {
   variantConfirm: ButtonVariant;
   maxWidth?: "xs" | "sm" | "md" | "lg" | "xl";
   fullWidth?: boolean;
+  disabledConfirm?: boolean;
 }
