@@ -29,18 +29,25 @@ import { ModalDelete } from "../../../../../../components/ModalDelete";
 import PdfGenerator from "../../../../../../helpers/PDFGenerator";
 import ContratoTemplate from "../../../../../../templates/contrato";
 import { createRoot } from "react-dom/client";
+import { Modal } from "../../../../../../components/Modal";
+import { CustomStatusIndicator } from "../../../../../../components/CustomStatusIndicator";
+import { CustomSelect } from "../../../../../../components/CustomSelect";
 
 export function ViewContract(): JSX.Element {
-  const { deleteContract } = ContractContext();
+  const { deleteContract, updateContract } = ContractContext();
   const location = useLocation();
   const navigate = useNavigate();
   const { dataUserInfo } = useInfo();
-  const { canConsult } = useUserPermissions();
+  const { canConsult, canChangeStatus } = useUserPermissions();
   const [dataClient, setDataClient] = useState<IContractData | null>(null);
   const [modalContent, setModalContent] = useState<string>("");
   const [isDeleteModal, setDeleteModal] = useState<boolean>(false);
+  const [isChangeStatusModal, setChangeStatusModal] = useState<boolean>(false);
+  const [selectedStatus, setSelectedStatus] = useState(
+    dataClient?.status.status_current || ""
+  );
 
-  const forDisabled = dataClient?.status.status_current === "Deletado";
+  const forDisabled = dataClient?.status.status_current === "DELETADO";
 
   useEffect(() => {
     const contractForView: IContractData = location.state?.contractForView;
@@ -103,7 +110,7 @@ export function ViewContract(): JSX.Element {
     const newStatusEntry = {
       date: newDate,
       time: newTime,
-      status: "Deletado",
+      status: "DELETADO",
       owner_change: {
         name: dataUserInfo?.name || "",
         email: dataUserInfo?.email || "",
@@ -111,7 +118,7 @@ export function ViewContract(): JSX.Element {
     };
 
     const updatedStatus = {
-      status_current: "Deletado",
+      status_current: "DELETADO",
       history: [...dataClient.status.history, newStatusEntry],
     };
 
@@ -135,6 +142,57 @@ export function ViewContract(): JSX.Element {
       );
     } finally {
       setDeleteModal(false);
+    }
+  };
+
+  const handleOpenChangeStatusModal = () => {
+    setChangeStatusModal(true);
+  };
+  const handleCloseChangeStatusModal = () => {
+    setChangeStatusModal(false);
+  };
+
+  const handleChangeStatus = async () => {
+    if (!dataClient || !dataClient.id) {
+      toast.error("Id do Contrato não encontrado.");
+      return;
+    }
+
+    if (!selectedStatus) {
+      toast.error("Por favor, selecione um status.");
+      return;
+    }
+
+    const newDate = formattedDate();
+    const newTime = formattedTime();
+
+    const newStatusEntry = {
+      date: newDate,
+      time: newTime,
+      status: selectedStatus,
+      owner_change: {
+        name: dataUserInfo?.name || "",
+        email: dataUserInfo?.email || "",
+      },
+    };
+
+    const updatedStatus = {
+      status_current: selectedStatus,
+      history: [...dataClient.status.history, newStatusEntry],
+    };
+
+    const updatedContract = {
+      ...dataClient,
+      status: updatedStatus,
+    };
+
+    try {
+      await updateContract(dataClient?.id, updatedContract);
+      toast.success(`Status do contrato atualizado para ${selectedStatus}`);
+      setChangeStatusModal(false);
+      navigate("/contratos/historico");
+    } catch (error) {
+      toast.error(`Erro ao atualizar status: ${error}`);
     }
   };
 
@@ -187,20 +245,36 @@ export function ViewContract(): JSX.Element {
             <SKeyContainer>
               <SkeyName>
                 Status:
-                <SKeyValue>{dataClient?.status.status_current}</SKeyValue>
+                <SKeyValue>
+                  <CustomStatusIndicator
+                    status={dataClient?.status.status_current || ""}
+                    text={dataClient?.status.status_current || ""}
+                  />
+                </SKeyValue>
               </SkeyName>
             </SKeyContainer>
             <BoxContainer>
+              {canChangeStatus && (
+                <CustomButton
+                  $variant="success"
+                  width="120px"
+                  onClick={handleOpenChangeStatusModal}
+                  disabled={!canChangeStatus}
+                >
+                  Mudar Status
+                </CustomButton>
+              )}
+
               <CustomButton
                 $variant="secondary"
-                width="90px"
+                width="100px"
                 onClick={handleViewPDF}
               >
                 Visualizar
               </CustomButton>
               <CustomButton
                 $variant={"primary"}
-                width="70px"
+                width="100px"
                 onClick={handleEdit}
                 disabled={forDisabled}
               >
@@ -208,7 +282,7 @@ export function ViewContract(): JSX.Element {
               </CustomButton>
               <CustomButton
                 $variant="danger"
-                width="70px"
+                width="100px"
                 onClick={handleOpenDeleteModal}
                 disabled={forDisabled || canConsult}
               >
@@ -234,6 +308,32 @@ export function ViewContract(): JSX.Element {
         onConfirm={handleContractDelete}
         content={modalContent}
       />
+      <Modal
+        titleText={`Selecione um novo status para o contrato ${dataClient?.number_contract}`}
+        open={isChangeStatusModal}
+        confirmButton="Alterar"
+        cancelButton="Fechar"
+        onClose={handleCloseChangeStatusModal}
+        onHandleConfirm={handleChangeStatus}
+        variantCancel={"primary"}
+        variantConfirm={"success"}
+      >
+        <CustomSelect
+          name="changeStatus"
+          label="Novo Status: "
+          $labelPosition="top"
+          selectOptions={[
+            { label: "A Conferir", value: "A CONFERIR" },
+            { label: "Validado", value: "VALIDADO" },
+            { label: "Enviado", value: "ENVIADO" },
+            { label: "Editado", value: "EDITADO" },
+            { label: "Em Pausa", value: "EM PAUSA" },
+            { label: "Deletado", value: "DELETADO" },
+          ]}
+          onSelectChange={(value) => setSelectedStatus(value)}
+          value={selectedStatus}
+        />
+      </Modal>
     </>
   );
 }

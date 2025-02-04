@@ -6,6 +6,13 @@ import {
   setUserLocalStorage,
 } from "../contexts/AuthProvider/util";
 
+
+export interface ApiResponse<T> {
+  data: T;
+  message?: string;
+  status?: number;
+}
+
 export const ApiCustom = axios.create({
   baseURL: process.env.URL_API_NODE,
   headers: {

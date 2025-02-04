@@ -17,6 +17,7 @@ import { MyAccount } from "./pages/MyAccount";
 import { ViewCustomer } from "./pages/Clientes/components/ViewCustomer";
 import { ViewContract } from "./pages/Contracts/pages/HistoryContracts/components/ViewContract";
 import { Execution } from "./pages/Execution";
+import { SendContracts } from "./pages/Execution/pages/SendContracts";
 
 export function RoutesForPages() {
   return (
@@ -70,7 +71,7 @@ export function RoutesForPages() {
         }
       />
       <Route
-        path="/visualizar-contrato"
+        path="/contratos/historico/visualizar-contrato"
         element={
           <ProtectedLayout>
             <Layout>
@@ -91,7 +92,7 @@ export function RoutesForPages() {
       />
 
       <Route
-        path="/visualizar-cliente"
+        path="/clientes/visualizar-cliente"
         element={
           <ProtectedLayout>
             <Layout>
@@ -102,7 +103,7 @@ export function RoutesForPages() {
       />
 
       <Route
-        path="/cliente-cadastrar"
+        path="/clientes/cliente-cadastrar"
         element={
           <ProtectedLayout>
             <Layout>
@@ -112,7 +113,7 @@ export function RoutesForPages() {
         }
       />
       <Route
-        path="/cliente-editar"
+        path="/clientes/cliente-editar"
         element={
           <ProtectedLayout>
             <Layout>
@@ -127,6 +128,27 @@ export function RoutesForPages() {
           <ProtectedLayout>
             <Layout>
               <Execution />
+            </Layout>
+          </ProtectedLayout>
+        }
+      />
+      <Route
+        path="/execucao/historico"
+        element={
+          <ProtectedLayout>
+            <Layout>
+              <HistoryContracts />
+            </Layout>
+          </ProtectedLayout>
+        }
+      />
+
+      <Route
+        path="/execucao/enviar-contratos"
+        element={
+          <ProtectedLayout>
+            <Layout>
+              <SendContracts />
             </Layout>
           </ProtectedLayout>
         }

@@ -17,6 +17,7 @@ export function Modal({
   fullWidth,
   onHandleConfirm,
   onClose,
+  disabledConfirm,
 }: IModalProps) {
   const handleClose = () => {
     onClose();
@@ -48,6 +49,7 @@ export function Modal({
             $variant={variantConfirm}
             width="90px"
             onClick={onHandleConfirm}
+            disabled={disabledConfirm}
           >
             {confirmButton}
           </CustomButton>

@@ -5,4 +5,8 @@ import { V } from "../../styles/variables";
 export const CardContainer = styled(Card)`
   padding: ${V.smSpacing};
   margin: ${V.xxlSpacing} ${V.xlSpacing};
+
+  &.MuiCard-root {
+    overflow: visible;
+  }
 `;

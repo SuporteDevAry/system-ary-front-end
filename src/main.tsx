@@ -7,21 +7,24 @@ import { ClientesProvider } from "./contexts/ClienteContext/index.tsx";
 import { ContatosProvider } from "./contexts/ContatoContext/index.tsx";
 import { NotificationsProvider } from "./contexts/NotificationContext/index.tsx";
 import { ContractProvider } from "./contexts/ContractContext/index.tsx";
+import { SendEmailProvider } from "./contexts/SendEmailContext/index.tsx";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <AuthProvider>
-      <UserProvider>
-        <ClientesProvider>
-          <ContatosProvider>
-            <NotificationsProvider>
-              <ContractProvider>
-                <App />
-              </ContractProvider>
-            </NotificationsProvider>
-          </ContatosProvider>
-        </ClientesProvider>
-      </UserProvider>
+      <SendEmailProvider>
+        <UserProvider>
+          <ClientesProvider>
+            <ContatosProvider>
+              <NotificationsProvider>
+                <ContractProvider>
+                  <App />
+                </ContractProvider>
+              </NotificationsProvider>
+            </ContatosProvider>
+          </ClientesProvider>
+        </UserProvider>
+      </SendEmailProvider>
     </AuthProvider>
   </React.StrictMode>
 );
