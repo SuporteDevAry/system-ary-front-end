@@ -1,4 +1,4 @@
-export type ProductType = "S" | "CN" | "T" | "SG";
+export type ProductType = "S" | "CN" | "T" | "SG" | "O" | "F";
 
 interface ProductInfo {
   name: string;
@@ -57,5 +57,28 @@ Tanino: Máx. 0,5%
 Aflatoxina: Máx. 20PPB`,
     observation: `1- Mercadoria destinada à exportação.
 2- O comprador se compromete a apresentar os documentos de exportação no prazo determinado por lei.`,
+  },
+  O: {
+    name: `ÓLEO DE SOJA a Granel`,
+    commission_seller: `0,50`,
+    type_commission_seller: "Percentual",
+    quality: `Padrão exportação, conforme contrato ANEC nr. 81.`,
+    observation: `"Mercadoria destinada a fabricação de biodiesel."`,
+  },
+  F: {
+    name: `FARELO DE SOJA a Granel`,
+    commission_seller: `0,50`,
+    type_commission_seller: "Percentual",
+    quality: `Farelo de soja, base 46% proteína min 45%, demais termos e condições desse contrato de acordo com a clausula 3 do contrato ANEC nr. 71. GMP+.`,
+    observation: `1-O comprador e responsável pela obtenção das cotas para remessa da mercadoria para o porto.
+2-Despesas portuárias por conta do comprador.
+3-O comprador e responsável pela apresentação de cópias do(s) DUE (s) averbadas 
+   e deverá fazer constar no campo especifico do(s) DUE(s) o NOME e CNPJ do vendedor como 
+   sendo o fabricante/vendedor. 
+   O comprador também deverá apresentar o(s) respectivo(s) memorando(s) de exportação até 
+   30 dias após o(s) embarque(s).
+4-Vendedor e Comprador concordam em que a Control Union é excluída como entidade 
+   supervisora.
+5-Demais cláusulas não citadas neste contrato serão conforme ANEC 71.`,
   },
 };

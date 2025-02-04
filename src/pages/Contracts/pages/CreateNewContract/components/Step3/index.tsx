@@ -69,7 +69,10 @@ export const Step3: React.FC<StepProps> = ({
       pickup_location: formData.pickup_location
         ? formData.pickup_location
         : info.pickupLocation,
-      inspection: info.inspection,
+      inspection:
+        formData.product === "O"
+          ? `${info.inspection} Diferenças de peso de até 0,25% serão consideradas como normais entre balanças.`
+          : `${info.inspection}`,
     });
   };
 
@@ -139,7 +142,13 @@ export const Step3: React.FC<StepProps> = ({
      */
 
     const quantityToKG = Number(formData.quantity.replace(/[.]/g, ""));
-    const quantityToBag = (Number(quantityToKG) / 60).toFixed(3);
+
+    // 02/01/2025 - Carlos - Farelo e Óleo não divide por 60
+    const quantityToBag =
+      formData.product === "O" || formData.product === "F"
+        ? (Number(quantityToKG) / 1).toFixed(3)
+        : (Number(quantityToKG) / 60).toFixed(3);
+
     const totalContractValue = Number(price * Number(quantityToBag)).toFixed(3);
 
     if (totalContractValue) {
