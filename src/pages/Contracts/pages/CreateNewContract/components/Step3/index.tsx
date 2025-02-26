@@ -236,7 +236,7 @@ export const Step3: React.FC<StepProps> = ({
           return;
         }
 
-        const paymentText = formatPaymentText(
+        let paymentText = formatPaymentText(
           newDate,
           sellerName,
           cpfCnpj,
@@ -244,6 +244,11 @@ export const Step3: React.FC<StepProps> = ({
           accountNumber,
           agency
         );
+
+        if (formData.type_currency === "Dólar") {
+          paymentText +=
+            " A ser convertido em R$ (reais) pela taxa média de fechamento do Sisbacen do dia anterior ao pagamento.";
+        }
 
         updateFormData({
           payment_date: newDate,
