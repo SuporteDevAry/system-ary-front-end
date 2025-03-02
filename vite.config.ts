@@ -12,6 +12,7 @@ export default defineConfig(({ mode }) => {
     plugins: [react()],
     server: {
       port: PORT,
+      allowedHosts: ["sistema.prod.dev.br"],
     },
     assetsInclude: ["**/*.jpg", "**/*.png"],
   };
