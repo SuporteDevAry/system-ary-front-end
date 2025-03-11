@@ -2,7 +2,7 @@ export type ProductType = "S" | "CN" | "T" | "SG" | "O" | "F";
 
 interface ProductInfo {
   name: string;
-  commission_seller: string,
+  commission_seller: string;
   quality: string;
   observation: string;
   type_commission_seller: string;
@@ -21,7 +21,7 @@ Soja transgênica (GMO positivo).`,
 DUE com referência das Notas Fiscais de Remessa.
 NF de Exportação.
 Bill of Lading (BL).
-3-CBOT referência = CU... ......... / .......... spot.`,
+3-CBOT referência =   ... ......... / .......... spot.`,
   },
   CN: {
     name: `MILHO em Grãos`,
@@ -33,7 +33,7 @@ Bill of Lading (BL).
 DUE com referência das Notas Fiscais de Remessa.
 NF de Exportação.
 Bill of Lading (BL).
-3-CBOT referência = CU... ......... / .......... spot.`,
+3-CBOT referência =   ... ......... / .......... spot.`,
   },
   T: {
     name: `TRIGO`,
