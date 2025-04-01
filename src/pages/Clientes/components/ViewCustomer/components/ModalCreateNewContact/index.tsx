@@ -3,13 +3,13 @@ import { Modal } from "../../../../../../components/Modal";
 
 import { toast } from "react-toastify";
 import { isEmailValid } from "../../../../../../helpers/back-end/utils";
-import { SFormContainer, SFormControlLabel } from "./styles";
+import { SCheckbox, SFormContainer, SFormControlLabel } from "./styles";
 import { CustomInput } from "../../../../../../components/CustomInput";
 import { ModalCreateNewContactProps } from "./types";
 import { ContatoContext } from "../../../../../../contexts/ContatoContext";
 import { useLocation } from "react-router-dom";
 import { IListCliente } from "../../../../../../contexts/ClienteContext/types";
-import Checkbox from "@mui/material/Checkbox";
+
 
 export function ModalCreateNewContact({
   open,
@@ -143,7 +143,7 @@ export function ModalCreateNewContact({
         />
         <SFormControlLabel
           control={
-            <Checkbox
+            <SCheckbox
               name="receive_email"
               onChange={handleChange}
               value={formData.receive_email}
