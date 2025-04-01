@@ -3,10 +3,11 @@ import { Modal } from "../../../../../../components/Modal";
 
 import { toast } from "react-toastify";
 import { isEmailValid } from "../../../../../../helpers/back-end/utils";
-import { SFormContainer } from "./styles";
+import { SFormContainer, SFormControlLabel } from "./styles";
 import { CustomInput } from "../../../../../../components/CustomInput";
 import { ModalUpdateContactProps } from "./types";
 import { ContatoContext } from "../../../../../../contexts/ContatoContext";
+import Checkbox from "@mui/material/Checkbox";
 
 export function ModalUpdateContact({
   open,
@@ -21,6 +22,7 @@ export function ModalUpdateContact({
     sector: "",
     telephone: "",
     cellphone: "",
+    receive_email: "",
   });
 
   useEffect(() => {
@@ -30,14 +32,15 @@ export function ModalUpdateContact({
       sector: dataContact.sector ?? "",
       telephone: dataContact.telephone ?? "",
       cellphone: dataContact.cellphone ?? "",
+      receive_email: dataContact.receive_email === "true" ? "true" : "false",
     });
   }, [dataContact]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
+    const { name, value, checked, type } = e.target;
     setFormData((prevData) => ({
       ...prevData,
-      [name]: value,
+      [name]: type === "checkbox" ? (checked ? "true" : "false") : value,
     }));
   };
 
@@ -49,6 +52,7 @@ export function ModalUpdateContact({
       sector: "",
       telephone: "",
       cellphone: "",
+      receive_email: "",
     });
   };
 
@@ -77,6 +81,7 @@ export function ModalUpdateContact({
         sector: formData.sector,
         telephone: formData.telephone,
         cellphone: formData.cellphone,
+        receive_email: formData.receive_email,
       });
 
       toast.success(`Usuario ${formData.name}, foi atualizado com sucesso!`);
@@ -141,6 +146,17 @@ export function ModalUpdateContact({
           $labelPosition="top"
           onChange={handleChange}
           value={formData.cellphone}
+        />
+        <SFormControlLabel
+          control={
+            <Checkbox
+              name="receive_email"
+              onChange={handleChange}
+              value={formData.receive_email}
+              checked={formData.receive_email === "true"}
+            />
+          }
+          label="Recebe e-mail"
         />
       </SFormContainer>
     </Modal>

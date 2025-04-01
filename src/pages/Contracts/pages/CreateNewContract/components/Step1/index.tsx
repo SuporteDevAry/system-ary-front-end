@@ -14,6 +14,8 @@ import { getDataUserFromToken } from "../../../../../../contexts/AuthProvider/ut
 import { toast } from "react-toastify";
 import { CustomDatePicker } from "../../../../../../components/CustomDatePicker";
 import CustomTooltipLabel from "../../../../../../components/CustomTooltipLabel";
+import { ContatoContext } from "../../../../../../contexts/ContatoContext";
+import { IListContatos } from "../../../../../../contexts/ContatoContext/types";
 
 export const Step1: React.FC<StepProps> = ({
   id,
@@ -27,6 +29,7 @@ export const Step1: React.FC<StepProps> = ({
   );
 
   const clienteContext = ClienteContext();
+  const contactContext = ContatoContext();
 
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [clientes, setClientes] = useState<IListCliente[]>([]);
@@ -44,6 +47,36 @@ export const Step1: React.FC<StepProps> = ({
       setIsLoading(false);
     }
   }, [clienteContext]);
+
+  // Busca os contatos do cliente e filtra os e-mails com receive_email === "true"
+  const fetchContactsDataByClient = useCallback(
+    async (codeClient: string, type: "buyer" | "seller") => {
+      try {
+        setIsLoading(true);
+        const response = await contactContext.getContactsByClient(codeClient);
+
+        // Filtra e-mails onde receive_email === "true"
+        const emailList =
+          response.data
+            .filter(
+              (contact: IListContatos) =>
+                contact.receive_email.toLowerCase() === "true"
+            )
+            .map((contact: IListContatos) => contact.email)
+            .join("; ") || "";
+
+        // Atualiza o estado com a lista de e-mails filtrada e o tipo de cliente  (comprador ou vendedor)
+        updateFormData?.({ [`list_email_${type}`]: emailList });
+      } catch (error) {
+        toast.error(
+          `Erro ao buscar contatos do cliente, contacte o administrador do sistema ${error}`
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [contactContext, updateFormData]
+  );
 
   useEffect(() => {
     fetchData();
@@ -63,7 +96,11 @@ export const Step1: React.FC<StepProps> = ({
   }, []);
 
   const handleSelected = useCallback(
-    (selectCustomerData: CustomerInfo & { type: "seller" | "buyer" }) => {
+    (
+      selectCustomerData: CustomerInfo & {
+        type: "seller" | "buyer";
+      }
+    ) => {
       if (updateFormData) {
         updateFormData({
           [selectCustomerData.type]: {
@@ -79,6 +116,14 @@ export const Step1: React.FC<StepProps> = ({
             account: selectCustomerData.account,
           },
         });
+
+        // Chama a função para buscar os contatos pelo código do cliente
+        if (selectCustomerData.code_client) {
+          fetchContactsDataByClient(
+            selectCustomerData.code_client,
+            selectCustomerData.type
+          );
+        }
       }
     },
     [formData, updateFormData, handleCloseCustomerModal]
