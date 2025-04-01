@@ -99,7 +99,6 @@ export const Step1: React.FC<StepProps> = ({
     (
       selectCustomerData: CustomerInfo & {
         type: "seller" | "buyer";
-        code_client: string;
       }
     ) => {
       if (updateFormData) {
@@ -119,10 +118,12 @@ export const Step1: React.FC<StepProps> = ({
         });
 
         // Chama a função para buscar os contatos pelo código do cliente
-        fetchContactsDataByClient(
-          selectCustomerData.code_client,
-          selectCustomerData.type
-        );
+        if (selectCustomerData.code_client) {
+          fetchContactsDataByClient(
+            selectCustomerData.code_client,
+            selectCustomerData.type
+          );
+        }
       }
     },
     [formData, updateFormData, handleCloseCustomerModal]
