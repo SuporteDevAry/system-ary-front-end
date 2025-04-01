@@ -78,12 +78,12 @@ export function ModalCreateNewContact({
         receive_email: formData.receive_email,
       });
 
-      toast.success(`Usuario ${formData.name}, foi criado com sucesso!`);
+      toast.success(`Contato ${formData.name}, foi criado com sucesso!`);
       handleClose();
       return newUser;
     } catch (error) {
       toast.error(
-        `Erro ao tentar criar usuário novo, contacte o administrador do sistema ${error}`
+        `Erro ao tentar criar contato novo, contacte o administrador do sistema ${error}`
       );
     }
   };
