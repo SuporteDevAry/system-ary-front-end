@@ -97,7 +97,7 @@ export function ModalUpdateContact({
     <Modal
       titleText={"Editar Contato"}
       open={open}
-      confirmButton="Criar"
+      confirmButton="Salvar"
       cancelButton="Fechar"
       onClose={handleClose}
       onHandleConfirm={handleCreate}
