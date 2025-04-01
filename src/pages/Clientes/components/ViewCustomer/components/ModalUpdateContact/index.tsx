@@ -3,11 +3,10 @@ import { Modal } from "../../../../../../components/Modal";
 
 import { toast } from "react-toastify";
 import { isEmailValid } from "../../../../../../helpers/back-end/utils";
-import { SFormContainer, SFormControlLabel } from "./styles";
+import { SCheckbox, SFormContainer, SFormControlLabel } from "./styles";
 import { CustomInput } from "../../../../../../components/CustomInput";
 import { ModalUpdateContactProps } from "./types";
 import { ContatoContext } from "../../../../../../contexts/ContatoContext";
-import Checkbox from "@mui/material/Checkbox";
 
 export function ModalUpdateContact({
   open,
@@ -98,7 +97,7 @@ export function ModalUpdateContact({
     <Modal
       titleText={"Editar Contato"}
       open={open}
-      confirmButton="Criar"
+      confirmButton="Salvar"
       cancelButton="Fechar"
       onClose={handleClose}
       onHandleConfirm={handleCreate}
@@ -149,7 +148,7 @@ export function ModalUpdateContact({
         />
         <SFormControlLabel
           control={
-            <Checkbox
+            <SCheckbox
               name="receive_email"
               onChange={handleChange}
               value={formData.receive_email}
