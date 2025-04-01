@@ -10,6 +10,7 @@ export interface IContatos {
   sector: string;
   telephone: string;
   cellphone: string;
+  receive_email: string;
   created_at: string;
   updated_at: string;
 }
@@ -22,6 +23,7 @@ export interface ICreateContatosData
   sector: string;
   telephone: string;
   cellphone: string;
+  receive_email: string;
 }
 
 export interface IUpdateContatosData

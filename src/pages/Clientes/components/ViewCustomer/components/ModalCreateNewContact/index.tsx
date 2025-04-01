@@ -3,12 +3,13 @@ import { Modal } from "../../../../../../components/Modal";
 
 import { toast } from "react-toastify";
 import { isEmailValid } from "../../../../../../helpers/back-end/utils";
-import { SFormContainer } from "./styles";
+import { SFormContainer, SFormControlLabel } from "./styles";
 import { CustomInput } from "../../../../../../components/CustomInput";
 import { ModalCreateNewContactProps } from "./types";
 import { ContatoContext } from "../../../../../../contexts/ContatoContext";
 import { useLocation } from "react-router-dom";
 import { IListCliente } from "../../../../../../contexts/ClienteContext/types";
+import Checkbox from "@mui/material/Checkbox";
 
 export function ModalCreateNewContact({
   open,
@@ -25,13 +26,14 @@ export function ModalCreateNewContact({
     sector: "",
     telephone: "",
     cellphone: "",
+    receive_email: "",
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     setFormData((prevData) => ({
       ...prevData,
-      [name]: value,
+      [name]: type === "checkbox" ? (checked ? "true" : "false") : value,
     }));
   };
 
@@ -43,6 +45,7 @@ export function ModalCreateNewContact({
       sector: "",
       telephone: "",
       cellphone: "",
+      receive_email: "",
     });
   };
 
@@ -72,6 +75,7 @@ export function ModalCreateNewContact({
         sector: formData.sector,
         telephone: formData.telephone,
         cellphone: formData.cellphone,
+        receive_email: formData.receive_email,
       });
 
       toast.success(`Usuario ${formData.name}, foi criado com sucesso!`);
@@ -136,6 +140,17 @@ export function ModalCreateNewContact({
           $labelPosition="top"
           onChange={handleChange}
           value={formData.cellphone}
+        />
+        <SFormControlLabel
+          control={
+            <Checkbox
+              name="receive_email"
+              onChange={handleChange}
+              value={formData.receive_email}
+              checked={formData.receive_email === "true"}
+            />
+          }
+          label="Recebe e-mail"
         />
       </SFormContainer>
     </Modal>
