@@ -196,6 +196,10 @@ export function ViewContract(): JSX.Element {
     }
   };
 
+  // Só iremos remover essa regra das siglas, caso o cliente aceite a sugestão da reunião do dia 09/04/2025
+  const listProducts = ["O", "F", "OC", "OA", "SB", "EP"];
+  const validProducts = listProducts.includes(dataClient?.product ?? "");
+
   const contractFields = [
     { label: "Produto", value: dataClient?.name_product },
     { label: "Vendedor", value: dataClient?.seller.name },
@@ -208,16 +212,14 @@ export function ViewContract(): JSX.Element {
       ),
     },
     {
-      label:
-        dataClient?.product === "O" || dataClient?.product === "F"
-          ? "Quantidade Tonelada Métrica"
-          : "Quantidade de saca",
-      value:
-        dataClient?.product === "O" || dataClient?.product === "F"
-          ? Number(dataClient.quantity_bag)
-          : dataClient?.quantity_bag && dataClient?.type_currency
-          ? Number(dataClient.quantity_bag).toFixed(3)
-          : "0,000",
+      label: validProducts
+        ? "Quantidade Tonelada Métrica"
+        : "Quantidade de saca",
+      value: validProducts
+        ? Number(dataClient?.quantity_bag)
+        : dataClient?.quantity_bag && dataClient?.type_currency
+        ? Number(dataClient.quantity_bag).toFixed(3)
+        : "0,000",
     },
     {
       label: "Total do Contrato",

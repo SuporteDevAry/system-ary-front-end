@@ -1,4 +1,14 @@
-export type ProductType = "S" | "CN" | "T" | "SG" | "O" | "F";
+export type ProductType =
+  | "S"
+  | "CN"
+  | "T"
+  | "SG"
+  | "O"
+  | "F"
+  | "OC"
+  | "OA"
+  | "SB"
+  | "EP";
 
 interface ProductInfo {
   name: string;
@@ -61,9 +71,9 @@ Aflatoxina: Máx. 20PPB`,
   O: {
     name: `ÓLEO DE SOJA a Granel`,
     commission_seller: `0,50`,
-    type_commission_seller: "Percentual",
+    type_commission_seller: `Percentual`,
     quality: `Padrão exportação, conforme contrato ANEC nr. 81.`,
-    observation: `"Mercadoria destinada a fabricação de biodiesel."`,
+    observation: `Mercadoria destinada a fabricação de biodiesel.`,
   },
   F: {
     name: `FARELO DE SOJA a Granel`,
@@ -80,5 +90,34 @@ Aflatoxina: Máx. 20PPB`,
 4-Vendedor e Comprador concordam em que a Control Union é excluída como entidade 
    supervisora.
 5-Demais cláusulas não citadas neste contrato serão conforme ANEC 71.`,
+  },
+  OC: {
+    name: `ÓLEO DE CANOLA a Granel`,
+    quality: `Acidez até 1.30% sem desconto, acima desconto de 2x1, Fósforo até 200 ppm.`,
+    observation: `Mercadoria destinada a fabricação de biodiesel.`,
+    commission_seller: `0,50`,
+    type_commission_seller: "Percentual",
+  },
+
+  OA: {
+    name: `ÓLEO DE ALGODÃO a Granel`,
+    quality: ``,
+    observation: "Mercadoria destinada a fabricação de biodiesel.",
+    commission_seller: `0,50`,
+    type_commission_seller: "Percentual",
+  },
+  SB: {
+    name: `SEBO BOVINO`,
+    quality: `Acidez máxima 10%.`,
+    observation: `Mercadoria destinada a fabricação de biodiesel.`,
+    commission_seller: `0,50`,
+    type_commission_seller: `Percentual`,
+  },
+  EP: {
+    name: `ESTEARINA DE PALMA`,
+    quality: `Estearina de palma refinada, branqueada e desodorizada. (Refined bleached deodorised Palm Stearin - RBD PS)`,
+    observation: `Mercadoria destinada a fabricação de biodiesel.`,
+    commission_seller: `0,50`,
+    type_commission_seller: `Percentual`,
   },
 };
