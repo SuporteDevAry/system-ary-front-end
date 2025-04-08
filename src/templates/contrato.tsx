@@ -56,9 +56,14 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
         )} por saca,`
     : "";
 
+  // Só iremos remover essa regra das siglas, caso o cliente aceite a sugestão da reunião do dia 09/04/2025
+  const listProducts = ["O", "F", "OC", "OA", "SB", "EP"];
+  const validProducts = listProducts.includes(formData.product);
+  const siglaProduct = validProducts ? "O" : formData.product;
+
   const numberContract = formData?.number_contract
     ? formData.number_contract
-    : `${formData.product}.${formData.number_broker}-NNN/${currentYear}`;
+    : `${siglaProduct}.${formData.number_broker}-NNN/${currentYear}`;
 
   function formatObservationText(observation: string) {
     const lines = observation.split("\n");
@@ -73,20 +78,16 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
       .join("");
   }
 
-  let formattedSafra =
-    formData.product === "O" || formData.product === "F"
-      ? ` `
-      : ` - Safra: ${formData.crop}`;
+  // const listProducts = ["O", "F", "OC", "OA", "SB", "EP"];
+  // const validProducts = listProducts.includes(formData.product);
 
-  let formattedMetrica =
-    formData.product === "O" || formData.product === "F"
-      ? ` toneladas métricas`
-      : ` quilos`;
+  let formattedSafra = validProducts ? ` ` : ` - Safra: ${formData.crop}`;
 
-  let formattedPreco =
-    formData.product === "O" || formData.product === "F"
-      ? ` por tonelada métrica.`
-      : ` por saca de 60(sessenta) quilos,`;
+  let formattedMetrica = validProducts ? ` toneladas métricas` : ` quilos`;
+
+  let formattedPreco = validProducts
+    ? ` por tonelada métrica.`
+    : ` por saca de 60(sessenta) quilos,`;
 
   return (
     <>

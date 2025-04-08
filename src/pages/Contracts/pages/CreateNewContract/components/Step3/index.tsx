@@ -144,10 +144,11 @@ export const Step3: React.FC<StepProps> = ({
     const quantityToKG = Number(formData.quantity.replace(/[.]/g, ""));
 
     // 02/01/2025 - Carlos - Farelo e Óleo não divide por 60
-    const quantityToBag =
-      formData.product === "O" || formData.product === "F"
-        ? (Number(quantityToKG) / 1).toFixed(3)
-        : (Number(quantityToKG) / 60).toFixed(3);
+    // Só iremos remover essa regra das siglas, caso o cliente aceite a sugestão da reunião do dia 09/04/2025
+    const validProducts = ["O", "F", "OC", "OA", "SB", "EP"];
+    const quantityToBag = validProducts.includes(formData.product)
+      ? (Number(quantityToKG) / 1).toFixed(3)
+      : (Number(quantityToKG) / 60).toFixed(3);
 
     const totalContractValue = Number(price * Number(quantityToBag)).toFixed(3);
 

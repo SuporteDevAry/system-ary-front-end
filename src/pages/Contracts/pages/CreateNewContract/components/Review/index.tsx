@@ -9,11 +9,16 @@ export const Review: React.FC<StepProps> = ({ formData, isEditMode }) => {
   };
 
   const today = new Date();
-  const ano2 = today.getFullYear().toString().substr(-2);
+  const yearTwoDigits = today.getFullYear().toString().substr(-2);
+
+  // Só iremos remover essa regra das siglas, caso o cliente aceite a sugestão da reunião do dia 09/04/2025
+  const listProducts = ["O", "F", "OC", "OA", "SB", "EP"];
+  const validProducts = listProducts.includes(formData.product);
+  const siglaProduct = validProducts ? "O" : formData.product;
 
   const numberContract = formData?.number_contract
     ? formData.number_contract
-    : `${formData.product}.${formData.number_broker}-NNN/${ano2}`;
+    : `${siglaProduct}.${formData.number_broker}-NNN/${yearTwoDigits}`;
 
   let nomeArquivo = `${numberContract}.pdf`;
 
