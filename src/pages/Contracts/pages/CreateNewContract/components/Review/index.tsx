@@ -12,7 +12,7 @@ export const Review: React.FC<StepProps> = ({ formData, isEditMode }) => {
   const yearTwoDigits = today.getFullYear().toString().substr(-2);
 
   // Só iremos remover essa regra das siglas, caso o cliente aceite a sugestão da reunião do dia 09/04/2025
-  const listProducts = ["O", "F", "OC", "OA", "SB", "EP"];
+  const listProducts = ["O", "OC", "OA", "SB", "EP"];
   const validProducts = listProducts.includes(formData.product);
   const siglaProduct = validProducts ? "O" : formData.product;
 
