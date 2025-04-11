@@ -78,14 +78,20 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
       .join("");
   }
 
-  // const listProducts = ["O", "F", "OC", "OA", "SB", "EP"];
-  // const validProducts = listProducts.includes(formData.product);
+  const listProductsForMetricTon = ["O", "F", "OC", "OA", "SB", "EP"];
+  const validProductsForMetricTon = listProductsForMetricTon.includes(
+    formData.product
+  );
 
-  let formattedSafra = validProducts ? ` ` : ` - Safra: ${formData.crop}`;
+  let formattedSafra = validProductsForMetricTon
+    ? ` `
+    : ` - Safra: ${formData.crop}`;
 
-  let formattedMetrica = validProducts ? ` toneladas métricas` : ` quilos`;
+  let formattedMetrica = validProductsForMetricTon
+    ? ` toneladas métricas`
+    : ` quilos`;
 
-  let formattedPreco = validProducts
+  let formattedPreco = validProductsForMetricTon
     ? ` por tonelada métrica.`
     : ` por saca de 60(sessenta) quilos,`;
 
