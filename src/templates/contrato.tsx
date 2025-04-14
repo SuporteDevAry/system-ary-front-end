@@ -245,14 +245,18 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
           </strong>{" "}
           {/* por saca de 60(sessenta) quilos, */}
           {formattedPreco}{" "}
-          <strong>
-            (
-            {formData.complement_destination
-              ? `${formData.destination} ${formData.complement_destination}`
-              : formData.destination}
-            )
-          </strong>
-          .
+          {formData.destination && (
+            <span>
+              <strong>
+                (
+                {formData.complement_destination
+                  ? `${formData.destination} ${formData.complement_destination}`
+                  : formData.destination}
+                )
+              </strong>
+              .
+            </span>
+          )}
         </p>
         <br />
 
