@@ -87,13 +87,15 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
     ? ` `
     : ` - Safra: ${formData.crop}`;
 
-  let formattedMetrica = validProductsForMetricTon
-    ? ` toneladas métricas`
-    : ` quilos`;
+  let formattedMetrica =
+    formData.type_quantity === "toneladas métricas"
+      ? ` toneladas métricas`
+      : ` quilos`;
 
-  let formattedPreco = validProductsForMetricTon
-    ? ` por tonelada métrica.`
-    : ` por saca de 60(sessenta) quilos,`;
+  let formattedPreco =
+    formData.type_quantity === "toneladas métricas"
+      ? ` por tonelada métrica.`
+      : ` por saca de 60(sessenta) quilos,`;
 
   return (
     <>

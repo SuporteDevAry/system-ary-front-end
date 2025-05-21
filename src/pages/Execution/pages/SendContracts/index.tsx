@@ -98,6 +98,7 @@ export const SendContracts: React.FC = () => {
     initial_pickup_date: "",
     final_pickup_date: "",
     internal_communication: "",
+    type_quantity: "",
   });
 
   const [modalContent, setModalContent] = useState<string>("");

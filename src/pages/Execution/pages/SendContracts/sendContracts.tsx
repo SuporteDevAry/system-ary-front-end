@@ -90,7 +90,6 @@ const SendContracts: React.FC = () => {
     try {
       const numberContract = contractData?.number_contract?.replace("/", "-");
 
-     
       const response = await sendEmailContext.sendEmail({
         contractData,
         templateName,
@@ -98,7 +97,6 @@ const SendContracts: React.FC = () => {
         number_contract: numberContract || "",
       });
 
-      console.log("Response Passo1#####", response);
       if (response) {
         toast.success("E-mails enviados com sucesso!");
       }

@@ -36,6 +36,7 @@ export type ContractStatus = {
 };
 
 export interface IContractData {
+  id?: string;
   number_broker: string;
   seller: CustomerInfo;
   buyer: CustomerInfo;
@@ -66,7 +67,6 @@ export interface IContractData {
   quantity_bag: number;
   status: ContractStatus;
   number_contract?: string;
-  id?: string;
   contract_emission_date: string;
   destination: string;
   number_external_contract_buyer: string;
@@ -78,6 +78,7 @@ export interface IContractData {
   final_pickup_date: string;
   internal_communication: string;
   complement_destination?: string;
+  type_quantity?: string;
 }
 
 export interface IContractContext {

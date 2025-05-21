@@ -51,6 +51,7 @@ export type FormDataContract = {
   initial_pickup_date: string;
   final_pickup_date: string;
   internal_communication: string;
+  type_quantity?: string;
   //updated_at?: string;
 };
 
