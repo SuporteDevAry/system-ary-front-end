@@ -50,5 +50,6 @@ export const IContractDataToFormDataDTO = (
     final_pickup_date: data.final_pickup_date,
     internal_communication: data.internal_communication,
     complement_destination: data.complement_destination,
+    type_quantity: data?.type_quantity,
   };
 };

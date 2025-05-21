@@ -123,6 +123,14 @@ export const Step3: React.FC<StepProps> = ({
         return;
       }
 
+      if (name === "type_quantity") {
+        updateFormData?.({
+          ...formData,
+          type_quantity: value,
+        });
+        return;
+      }
+
       handleChange?.({
         ...event,
         target: {
@@ -160,7 +168,7 @@ export const Step3: React.FC<StepProps> = ({
         quantity_bag: Number(quantityToBag),
       });
     }
-  }, [formData.price, formData.quantity]);
+  }, [formData.price, formData.quantity, formData.type_currency]);
 
   const handleNumericInputChange = (
     event: React.ChangeEvent<HTMLInputElement>
@@ -300,6 +308,13 @@ export const Step3: React.FC<StepProps> = ({
             ? formData.quantity
             : formatQuantity(formData.quantity)
         }
+        radioOptions={[
+          { label: "Quilos", value: "quilos" },
+          { label: "Toneladas métricas", value: "toneladas métricas" },
+        ]}
+        radioPosition="inline"
+        onRadioChange={(e) => handleRadioChange(e, "type_quantity")}
+        selectedRadio={formData.type_quantity}
       />
 
       <CustomInput
