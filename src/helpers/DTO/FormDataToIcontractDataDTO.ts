@@ -49,6 +49,7 @@ export const FormDataToIContractDataDTO = (
     initial_pickup_date: data.initial_pickup_date,
     final_pickup_date: data.final_pickup_date,
     internal_communication: data.internal_communication,
-    complement_destination: data.complement_destination,
+    complement_destination: data?.complement_destination,
+    type_quantity: data?.type_quantity,
   };
 };
