@@ -32,6 +32,7 @@ import { createRoot } from "react-dom/client";
 import { Modal } from "../../../../../../components/Modal";
 import { CustomStatusIndicator } from "../../../../../../components/CustomStatusIndicator";
 import { CustomSelect } from "../../../../../../components/CustomSelect";
+import { formatQuantity } from "../../../CreateNewContract/components/Step3/hooks";
 
 export function ViewContract(): JSX.Element {
   const { deleteContract, updateContract } = ContractContext();
@@ -196,9 +197,14 @@ export function ViewContract(): JSX.Element {
     }
   };
 
-  // Só iremos remover essa regra das siglas, caso o cliente aceite a sugestão da reunião do dia 09/04/2025
-  const listProducts = ["O", "F", "OC", "OA", "SB", "EP"];
-  const validProducts = listProducts.includes(dataClient?.product ?? "");
+  // Função para formatar a quantidade
+  const typeQuantity = dataClient?.type_quantity;
+  const toTon = Number(dataClient?.quantity || 0) * 1000;
+  const formattedValue = formatQuantity(toTon.toString());
+  const quantityValue =
+    typeQuantity === "toneladas métricas"
+      ? Number(dataClient?.quantity)
+      : formattedValue;
 
   const contractFields = [
     { label: "Produto", value: dataClient?.name_product },
@@ -212,14 +218,8 @@ export function ViewContract(): JSX.Element {
       ),
     },
     {
-      label: validProducts
-        ? "Quantidade Tonelada Métrica"
-        : "Quantidade de saca",
-      value: validProducts
-        ? Number(dataClient?.quantity_bag)
-        : dataClient?.quantity_bag && dataClient?.type_currency
-        ? Number(dataClient.quantity_bag).toFixed(3)
-        : "0,000",
+      label: "Quantidade",
+      value: quantityValue,
     },
     {
       label: "Total do Contrato",
