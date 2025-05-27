@@ -112,9 +112,8 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
             </span>
           </p>
           <p style={{ paddingLeft: "280px" }}>
-            Confirmação de venda nr.
+            Confirmação de negociação
             <span> {numberContract} </span>
-            fechada nesta data:
           </p>
         </h3>
         <br />
