@@ -43,7 +43,12 @@ export function HistoryContracts() {
   const { filteredData, handleSearch } = useTableSearch({
     data: listcontracts,
     searchTerm,
-    searchableFields: ["number_contract"],
+    searchableFields: [
+      "number_contract",
+      "status.status_current",
+      "buyer.name",
+      "seller.name",
+    ],
   });
 
   useEffect(() => {
@@ -110,7 +115,7 @@ export function HistoryContracts() {
       <SContainerSearchAndButton>
         <CustomSearch
           width="400px"
-          placeholder="Digite o Nº Contrato"
+          placeholder="Digite Nº Contrato, Vendedor, Comprador, Status"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />

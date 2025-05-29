@@ -110,7 +110,7 @@ export function Clientes() {
   const { filteredData, handleSearch } = useTableSearch({
     data: clientes,
     searchTerm,
-    searchableFields: ["name", "cnpj_cpf", "city"],
+    searchableFields: ["name", "nickname", "cnpj_cpf", "city"],
   });
 
   useEffect(() => {
@@ -126,6 +126,7 @@ export function Clientes() {
         width: "190px",
         sortable: true,
       },
+      { field: "nickname", header: "Fantasia", sortable: true },
       { field: "cnpj_cpf", header: "CNPJ/CPF", width: "190px", sortable: true },
       { field: "city", header: "Cidade", width: "150px" },
       { field: "state", header: "UF", width: "80px" },
@@ -170,7 +171,7 @@ export function Clientes() {
       <BoxContainer>
         <CustomSearch
           width="400px"
-          placeholder="Digite o Nome, CNPJ ou Cidade"
+          placeholder="Digite o Nome, Fantasia, CNPJ ou Cidade"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
