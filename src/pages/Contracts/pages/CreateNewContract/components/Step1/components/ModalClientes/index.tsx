@@ -30,11 +30,13 @@ export function ModalClientes({
         ...selectedCustomer,
         type: selectionType,
       });
+      setSearchTerm("");
       onClose();
     }
   };
 
   const handleClose = () => {
+    setSearchTerm("");
     onClose();
   };
 
