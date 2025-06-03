@@ -30,11 +30,13 @@ export function ModalClientes({
         ...selectedCustomer,
         type: selectionType,
       });
+      setSearchTerm("");
       onClose();
     }
   };
 
   const handleClose = () => {
+    setSearchTerm("");
     onClose();
   };
 
@@ -56,6 +58,7 @@ export function ModalClientes({
   const nameColumns: IColumn[] = useMemo(
     () => [
       { field: "name", header: "Nome", sortable: true },
+      { field: "nickname", header: "Fantasia", sortable: true },
       { field: "cnpj_cpf", header: "CNPJ/CPF", sortable: true },
       { field: "city", header: "Cidade" },
       { field: "state", header: "UF" },

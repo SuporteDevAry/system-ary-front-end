@@ -124,6 +124,7 @@ export const StepInformContract: React.FC<StepProps> = ({
       initial_pickup_date: contract.initial_pickup_date,
       final_pickup_date: contract.final_pickup_date,
       internal_communication: contract.internal_communication,
+      type_quantity: contract.type_quantity,
     });
 
     toast.success(

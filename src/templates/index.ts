@@ -1,12 +1,14 @@
 import { FC } from "react";
 import Contrato from "./contrato";
-import ContratoTemplateSoja from "./contratoTemplateSoja";
 
+// adicionar mais templates aqui
+/*
+ * | "contratoTemplateSoja"
+ */
 export interface ITemplates {
-  template: "contrato" | "contratoTemplateSoja";
+  template: "contrato";
 }
 
-export const templates: Record<"contrato" | "contratoTemplateSoja", FC<any>> = {
+export const templates: Record<"contrato", FC<any>> = {
   contrato: Contrato,
-  contratoTemplateSoja: ContratoTemplateSoja,
 };

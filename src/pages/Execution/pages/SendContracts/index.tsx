@@ -25,9 +25,8 @@ export const SendContracts: React.FC = () => {
   const { dataUserInfo } = useInfo();
   const { canConsult } = useUserPermissions();
   const [isEmailSending, setIsEmailSending] = useState(false);
-  const [templateName, setTemplateName] = useState<ITemplates["template"]>(
-    "contratoTemplateSoja"
-  );
+  const [templateName, setTemplateName] =
+    useState<ITemplates["template"]>("contrato");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [activeStep, setActiveStep] = useState<number>(0);
   const [formData, setFormData] = React.useState<FormDataSendContract>({
@@ -98,6 +97,7 @@ export const SendContracts: React.FC = () => {
     initial_pickup_date: "",
     final_pickup_date: "",
     internal_communication: "",
+    type_quantity: "",
   });
 
   const [modalContent, setModalContent] = useState<string>("");
@@ -180,7 +180,7 @@ export const SendContracts: React.FC = () => {
   //     setTemplateName(templateName);
   //   };
   const handleSendEmails = async () => {
-    setTemplateName("contratoTemplateSoja");
+    setTemplateName("contrato");
     setIsEmailSending(true);
     try {
       const response = await sendEmailContext.sendEmail({

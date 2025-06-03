@@ -4,14 +4,18 @@ import { useDebouncedValue } from "../useDebouncedValue";
 interface UseTableSearchProps<T extends Record<string, any>> {
   data: T[];
   searchTerm: string;
-  searchableFields?: (keyof T)[];
+  searchableFields?: string[];
   debounceDelay?: number;
+}
+
+function getNestedValue(obj: Record<string, any>, path: string): any {
+  return path.split(".").reduce((acc, part) => acc?.[part], obj);
 }
 
 function useTableSearch<T extends Record<string, any>>({
   data,
   searchTerm,
-  searchableFields = Object.keys(data[0] || {}) as (keyof T)[],
+  searchableFields = Object.keys(data[0] || {}) as string[],
   debounceDelay = 300,
 }: UseTableSearchProps<T>) {
   const debouncedSearchTerm = useDebouncedValue(searchTerm, debounceDelay);
@@ -25,7 +29,7 @@ function useTableSearch<T extends Record<string, any>>({
 
       const result = data.filter((item) =>
         searchableFields.some((field) => {
-          const value = item[field];
+          const value = getNestedValue(item, field as string);
 
           if (value === null || value === undefined) {
             return false;
