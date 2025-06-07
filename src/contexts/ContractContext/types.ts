@@ -13,6 +13,7 @@ export type IUserInfo = {
 
 export type CustomerInfo = {
   name: string;
+  nickname?: string;
   address?: string;
   number?: string;
   complement?: string;
