@@ -72,6 +72,7 @@ export const StepInformContract: React.FC<StepProps> = ({
         state: contract.seller.state,
         complement: contract.seller.complement,
         account: contract.seller.account,
+        nickname: contract.seller.nickname,
       },
       buyer: {
         address: contract.buyer.address,
@@ -84,6 +85,7 @@ export const StepInformContract: React.FC<StepProps> = ({
         state: contract.buyer.state,
         complement: contract.buyer.complement,
         account: contract.buyer.account,
+        nickname: contract.buyer.nickname,
       },
       list_email_seller: contract.list_email_seller,
       list_email_buyer: contract.list_email_buyer,

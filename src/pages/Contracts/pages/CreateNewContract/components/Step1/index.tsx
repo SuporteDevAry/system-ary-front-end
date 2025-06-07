@@ -105,6 +105,7 @@ export const Step1: React.FC<StepProps> = ({
         updateFormData({
           [selectCustomerData.type]: {
             name: selectCustomerData.name,
+            nickname: selectCustomerData.nickname,
             address: selectCustomerData.address,
             number: selectCustomerData.number,
             complement: selectCustomerData.complement,
@@ -153,6 +154,10 @@ export const Step1: React.FC<StepProps> = ({
     },
     [updateFormData]
   );
+
+  useEffect(() => {
+    console.log(formData);
+  });
 
   return (
     <>
