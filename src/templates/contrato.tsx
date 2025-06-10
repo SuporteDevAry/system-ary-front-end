@@ -133,6 +133,8 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
               {formData.seller.number}
               {" - "}
               {formData.seller.district}
+              {" - "}
+              {formData.seller.district}
             </span>
             <br></br>
             <span style={{ paddingLeft: "140px" }}>
@@ -168,6 +170,8 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
               {formData.buyer.address}
               {","}
               {formData.buyer.number}
+              {" - "}
+              {formData.buyer.complement}
               {" - "}
               {formData.buyer.district}
             </span>
