@@ -97,6 +97,15 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
       ? ` por tonelada métrica.`
       : ` por saca de 60(sessenta) quilos,`;
 
+  let formattedComplementSeller = formData.seller.complement
+    ? `${" - "} ${formData.seller.complement} `
+    : "";
+
+  let formattedComplementBuyer = formData.buyer.complement
+    ? `${" - "} ${formData.buyer.complement} `
+    : "";
+
+  console.log(formattedComplementSeller, formattedComplementBuyer);
   return (
     <>
       <div id="contrato">
@@ -131,8 +140,7 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
               {formData.seller.address}
               {","}
               {formData.seller.number}
-              {" - "}
-              {formData.seller.complement}
+              {formattedComplementSeller}
               {" - "}
               {formData.seller.district}
             </span>
@@ -170,8 +178,7 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
               {formData.buyer.address}
               {","}
               {formData.buyer.number}
-              {" - "}
-              {formData.buyer.complement}
+              {formattedComplementBuyer}
               {" - "}
               {formData.buyer.district}
             </span>
