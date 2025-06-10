@@ -132,7 +132,7 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
               {","}
               {formData.seller.number}
               {" - "}
-              {formData.seller.district}
+              {formData.seller.complement}
               {" - "}
               {formData.seller.district}
             </span>
