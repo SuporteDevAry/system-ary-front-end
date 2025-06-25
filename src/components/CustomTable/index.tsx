@@ -146,9 +146,9 @@ const CustomTable: React.FC<ICustomTableProps> = ({
         if (column.field === "cellphone") return insertMaskInCelular(value);
 
         if (column.field === "quantity") {
-            let auxQtd = parseFloat(value.replace(",", ".")) || 0;
+            let auxQtd = Math.round(value) || 0;
             return auxQtd.toLocaleString("pt-BR", {
-                minimumFractionDigits: 0,
+                minimumFractionDigits: 3,
             });
         }
 
@@ -162,12 +162,13 @@ const CustomTable: React.FC<ICustomTableProps> = ({
         }
 
         if (column.field === "type_commission_seller") {
-            typeCommission = value;
+            return (typeCommission = value == "Valor" ? "V" : "P");
         }
 
         if (column.field === "commission_seller") {
             let auxQtd = parseFloat(value.replace(",", ".")) || 0;
-            return typeCommission === "Percentual"
+
+            return typeCommission === "P"
                 ? auxQtd.toLocaleString("pt-BR", {
                       minimumFractionDigits: 2,
                   })
@@ -178,14 +179,14 @@ const CustomTable: React.FC<ICustomTableProps> = ({
                   });
         }
 
-        if (column.field === "commission") {
-            let auxQtd = parseFloat(value.replace(",", ".")) || 0;
-            return auxQtd.toLocaleString("pt-BR", {
-                style: "currency",
-                currency: "BRL",
-                minimumFractionDigits: 2,
-            });
-        }
+        // if (column.field === "commission") {
+        //     let auxQtd = parseFloat(value.replace(",", ".")) || 0;
+        //     return auxQtd.toLocaleString("pt-BR", {
+        //         style: "currency",
+        //         currency: "BRL",
+        //         minimumFractionDigits: 2,
+        //     });
+        // }
 
         if (column.field === "status.status_current") {
             const statusCurrent = row?.status?.status_current;
