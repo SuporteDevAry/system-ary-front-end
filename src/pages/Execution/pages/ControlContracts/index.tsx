@@ -6,8 +6,8 @@ import { ContractContext } from "../../../../contexts/ContractContext";
 import { toast } from "react-toastify";
 import { IContractData } from "../../../../contexts/ContractContext/types";
 import useTableSearch from "../../../../hooks/useTableSearch";
-import { SContainer, SContainerSearchAndButton, STitle } from "./styles";
-import { Button } from "@mui/material";
+import { SCard, SContainer, SContainerSearchAndButton, STitle } from "./styles";
+import CustomButton from "../../../../components/CustomButton";
 
 export function ControlContracts() {
     const contractContext = ContractContext();
@@ -16,7 +16,7 @@ export function ControlContracts() {
     const [searchTerm, setSearchTerm] = useState("");
     const [page, setPage] = useState(0);
     const [order, setOrder] = useState<"asc" | "desc">("desc");
-    const [orderBy, setOrderBy] = useState<string>("created_at");
+    const [orderBy, setOrderBy] = useState("contract_emission_date");
 
     const fetchData = useCallback(async () => {
         try {
@@ -37,7 +37,11 @@ export function ControlContracts() {
     const { filteredData, handleSearch } = useTableSearch({
         data: listcontracts,
         searchTerm,
-        searchableFields: ["number_contract"],
+        searchableFields: [
+            "contract_emission_date",
+            "product",
+            "number_contract",
+        ],
     });
 
     useEffect(() => {
@@ -50,103 +54,87 @@ export function ControlContracts() {
                 field: "contract_emission_date",
                 header: "Data",
                 width: "50px",
-                sortable: false,
+                sortable: true,
             },
             {
                 field: "product",
                 header: "Sigla",
                 width: "50px",
-                sortable: false,
-            },
-            {
-                field: "number_broker",
-                header: "Corretor",
-                width: "50px",
-                sortable: false,
             },
             {
                 field: "number_contract",
                 header: "Nº Contrato",
                 width: "120px",
-                sortable: false,
             },
             {
                 field: "seller.name",
                 header: "Vendedor",
                 width: "160px",
-                sortable: false,
             },
             {
                 field: "buyer.name",
                 header: "Comprador",
                 width: "150px",
-                sortable: false,
             },
             {
                 field: "number_external_contract_buyer",
                 header: "Nro.Comprador",
                 width: "100px",
-                sortable: false,
             },
             {
                 field: "name_product",
                 header: "Produto",
                 width: "150px",
-                sortable: false,
             },
             {
                 field: "quantity",
                 header: "Quantidade",
                 width: "150px",
-                sortable: false,
             },
             {
                 field: "price",
                 header: "Preço",
                 width: "150px",
-                sortable: false,
             },
             {
                 field: "type_currency",
                 header: "Moeda",
                 width: "150px",
-                sortable: false,
             },
             {
                 field: "total_contract_value",
                 header: "Valor Contrato",
                 width: "150px",
-                sortable: false,
             },
             {
                 field: "pickup",
                 header: "Embarque",
                 width: "150px",
-                sortable: false,
             },
             {
                 field: "payment",
                 header: "Pagamento",
                 width: "150px",
-                sortable: false,
             },
             {
                 field: "payment_date",
                 header: "Data Pagamento",
                 width: "150px",
-                sortable: false,
+            },
+            {
+                field: "type_commission_seller",
+                header: "Tp.Comissão",
+                width: "50px",
             },
             {
                 field: "commission_seller",
                 header: "Comissão",
                 width: "150px",
-                sortable: false,
             },
             {
                 field: "calculated_field",
                 header: "Valor da Comissão",
                 width: "150px",
-                sortable: false,
                 render: (rowData: any) => {
                     const valor1 = rowData.total_contract_value || 0;
                     const valor2 = rowData.commission_seller || 0;
@@ -158,25 +146,21 @@ export function ControlContracts() {
                 field: "",
                 header: "Data Pagto.",
                 width: "150px",
-                sortable: false,
             },
             {
                 field: "",
                 header: "Qtde. Entregue",
                 width: "150px",
-                sortable: false,
             },
             {
                 field: "",
                 header: "Qtde. Saldo",
                 width: "150px",
-                sortable: false,
             },
             {
                 field: "",
                 header: "Observações",
                 width: "200px",
-                sortable: false,
             },
         ],
         []
@@ -295,46 +279,44 @@ export function ControlContracts() {
         <SContainer>
             <STitle>Controle de Contratos</STitle>
 
-            <SContainerSearchAndButton>
-                <CustomSearch
-                    width="400px"
-                    placeholder="Digite o Nº Contrato"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                />
-                <div
-                // style={{ display: "flex", gap: "10px", marginLeft: "auto" }}
-                >
-                    <Button
-                        variant="contained"
-                        color="primary"
+            <SCard>
+                <SContainerSearchAndButton>
+                    <CustomSearch
+                        width="400px"
+                        placeholder="Filtre Data, Sigla ou Nº Contrato"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                    <CustomButton
+                        $variant="success"
+                        width="150px"
                         onClick={handlePrint}
                     >
                         Imprimir
-                    </Button>
-                    <Button
-                        variant="outlined"
-                        color="secondary"
+                    </CustomButton>
+                    <CustomButton
+                        $variant="success"
+                        width="150px"
                         onClick={handleExportCSV}
                     >
                         Exportar CSV
-                    </Button>
-                </div>
-            </SContainerSearchAndButton>
+                    </CustomButton>
+                </SContainerSearchAndButton>
 
-            <CustomTable
-                isLoading={isLoading}
-                data={filteredData}
-                columns={nameColumns}
-                hasPagination
-                maxChars={15}
-                page={page}
-                setPage={setPage}
-                order={order}
-                orderBy={orderBy}
-                setOrder={setOrder}
-                setOrderBy={setOrderBy}
-            />
+                <CustomTable
+                    isLoading={isLoading}
+                    data={filteredData}
+                    columns={nameColumns}
+                    hasPagination
+                    maxChars={15}
+                    page={page}
+                    setPage={setPage}
+                    order={order}
+                    orderBy={orderBy}
+                    setOrder={setOrder}
+                    setOrderBy={setOrderBy}
+                />
+            </SCard>
         </SContainer>
     );
 }

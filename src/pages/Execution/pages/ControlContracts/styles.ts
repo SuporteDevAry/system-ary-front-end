@@ -15,3 +15,7 @@ export const SContainerSearchAndButton = styled.div`
   padding-bottom: ${V.mdSpacing};
   margin-left: -16px;
 `;
+
+export const SCard = styled.div`
+  width: 1150px;
+`;
