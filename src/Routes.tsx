@@ -23,6 +23,8 @@ import { GrainsBigger } from "./pages/Reports/pages/GrainsBigger";
 import { GrainsVol } from "./pages/Reports/pages/GrainsVol";
 import { Invoicing } from "./pages/Reports/pages/Invoicing";
 import { ControlContracts } from "./pages/Execution/pages/ControlContracts";
+import { ChangeContracts } from "./pages/Change";
+import { ChangeViewContract } from "./pages/Change/pages/ChangeViewContracts";
 
 export function RoutesForPages() {
     return (
@@ -164,6 +166,26 @@ export function RoutesForPages() {
                     <ProtectedLayout>
                         <Layout>
                             <SendContracts />
+                        </Layout>
+                    </ProtectedLayout>
+                }
+            />
+            <Route
+                path="/cobranca"
+                element={
+                    <ProtectedLayout>
+                        <Layout>
+                            <ChangeContracts />
+                        </Layout>
+                    </ProtectedLayout>
+                }
+            />
+            <Route
+                path="/cobranca/visualizar-contrato"
+                element={
+                    <ProtectedLayout>
+                        <Layout>
+                            <ChangeViewContract />
                         </Layout>
                     </ProtectedLayout>
                 }
