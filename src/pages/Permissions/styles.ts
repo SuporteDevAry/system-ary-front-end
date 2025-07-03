@@ -32,7 +32,7 @@ export const SCardContainer = styled(Box)``;
 
 export const SCard = styled(Card)`
   height: 130px;
-  width: 180px;
+  width: 200px;
   padding: ${V.mdSpacing};
   margin: ${V.mdSpacing};
   border-radius: 8px;

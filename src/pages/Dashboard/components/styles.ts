@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { V } from "../../styles/variables";
+import { V } from "../../../styles/variables";
 import Card from "@mui/material/Card/Card";
 
 export const SContainer = styled.main`
