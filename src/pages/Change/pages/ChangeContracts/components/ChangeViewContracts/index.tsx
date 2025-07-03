@@ -14,20 +14,112 @@ import {
 
 import { useLocation } from "react-router-dom";
 
-import { IContractData } from "../../../../contexts/ContractContext/types";
-import CustomButton from "../../../../components/CustomButton";
-import { formatCurrency } from "../../../../helpers/currencyFormat";
-import { CustomStatusIndicator } from "../../../../components/CustomStatusIndicator";
+import { IContractData } from "../../../../../../contexts/ContractContext/types";
+import CustomButton from "../../../../../../components/CustomButton";
+import { formatCurrency } from "../../../../../../helpers/currencyFormat";
+import { CustomStatusIndicator } from "../../../../../../components/CustomStatusIndicator";
+import CustomTable from "../../../../../../components/CustomTable";
 
 export function ChangeViewContract(): JSX.Element {
     const location = useLocation();
     //const { dataUserInfo } = useInfo();
     const [dataClient, setDataClient] = useState<IContractData | null>(null);
+    //const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [page, setPage] = useState(0);
+    const [order, setOrder] = useState<"asc" | "desc">("desc");
+    const [orderBy, setOrderBy] = useState<string>("contract_emission_date");
 
     useEffect(() => {
         const contractForView: IContractData = location.state?.contractForView;
         setDataClient(contractForView);
     }, [location]);
+
+    const handleNew = () => {};
+    //setIsLoading(false);
+
+    const formatValor = (value: number | bigint) => {
+        return new Intl.NumberFormat("pt-BR", {
+            style: "currency",
+            currency: "BRL",
+            minimumFractionDigits: 2,
+        }).format(value);
+    };
+    const recebtos = [
+        {
+            data: "01/06/2025",
+            data_nf: "01/06/2025",
+            nf: "0001001",
+            valor_bruto: 1500.0,
+            valor_ir: 200.0,
+            valor_liq: 1300.0,
+        },
+        {
+            data: "01/06/2025",
+            data_nf: "01/06/2025",
+            nf: "0001002",
+            valor_bruto: 2000.0,
+            valor_ir: 300.0,
+            valor_liq: 1700.0,
+        },
+        {
+            data: "01/06/2025",
+            data_nf: "01/06/2025",
+            nf: "0001003",
+            valor_bruto: 1800.0,
+            valor_ir: 250.0,
+            valor_liq: 1550.0,
+        },
+        {
+            data: "01/06/2025",
+            data_nf: "01/06/2025",
+            nf: "0001004",
+            valor_bruto: 2200.0,
+            valor_ir: 350.0,
+            valor_liq: 1850.0,
+        },
+        {
+            data: "01/06/2025",
+            data_nf: "01/06/2025",
+            nf: "0001005",
+            valor_bruto: 2500.0,
+            valor_ir: 400.0,
+            valor_liq: 2100.0,
+        },
+    ];
+    const nameColRecebto = [
+        {
+            field: "data",
+            header: "DATA COBRANÇA",
+            width: "100px",
+        },
+        {
+            field: "data_nf",
+            header: "DATA NF",
+            width: "100px",
+            sortable: true,
+        },
+        {
+            field: "nf",
+            header: "NOTA FISCAL",
+            width: "100px",
+        },
+        {
+            field: "valor_bruto",
+            header: "VALOR BRUTO",
+            width: "100px",
+        },
+        {
+            field: "valor_ir",
+            header: "I.R.",
+            width: "100px",
+        },
+        {
+            field: "valor_liq",
+            header: "VALOR LIQ.",
+            width: "100px",
+            value: formatValor(recebtos[0].valor_liq),
+        },
+    ];
 
     const contractFields = [
         { label: "Produto", value: dataClient?.name_product },
@@ -56,7 +148,7 @@ export function ChangeViewContract(): JSX.Element {
     return (
         <>
             <SContainer>
-                <STitle>Dados do Contrato</STitle>
+                <STitle>Recebimento - Dados do Contrato</STitle>
                 <SBox>
                     <SCardInfoNumber>
                         <SKeyContainer>
@@ -106,6 +198,26 @@ export function ChangeViewContract(): JSX.Element {
                         </SKeyContainer>
                     ))}
                 </SCardInfo>
+                <CustomButton
+                    $variant="success"
+                    width="150px"
+                    onClick={handleNew}
+                >
+                    Novo
+                </CustomButton>
+                <CustomTable
+                    //isLoading={isLoading}
+                    data={recebtos}
+                    columns={nameColRecebto}
+                    hasPagination
+                    maxChars={15}
+                    page={page}
+                    setPage={setPage}
+                    order={order}
+                    orderBy={orderBy}
+                    setOrder={setOrder}
+                    setOrderBy={setOrderBy}
+                />
             </SContainer>
         </>
     );

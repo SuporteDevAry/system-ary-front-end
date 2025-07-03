@@ -23,8 +23,10 @@ import { GrainsBigger } from "./pages/Reports/pages/GrainsBigger";
 import { GrainsVol } from "./pages/Reports/pages/GrainsVol";
 import { Invoicing } from "./pages/Reports/pages/Invoicing";
 import { ControlContracts } from "./pages/Execution/pages/ControlContracts";
-import { ChangeContracts } from "./pages/Change";
-import { ChangeViewContract } from "./pages/Change/pages/ChangeViewContracts";
+import { Change } from "./pages/Change";
+import { ChangeViewContract } from "./pages/Change/pages/ChangeContracts/components/ChangeViewContracts";
+import { ChangeInvoice } from "./pages/Change/pages/ChangeInvoice";
+import { ChangeContract } from "./pages/Change/pages/ChangeContracts";
 
 export function RoutesForPages() {
     return (
@@ -175,7 +177,17 @@ export function RoutesForPages() {
                 element={
                     <ProtectedLayout>
                         <Layout>
-                            <ChangeContracts />
+                            <Change />
+                        </Layout>
+                    </ProtectedLayout>
+                }
+            />
+            <Route
+                path="/cobranca/recebimento"
+                element={
+                    <ProtectedLayout>
+                        <Layout>
+                            <ChangeContract />
                         </Layout>
                     </ProtectedLayout>
                 }
@@ -186,6 +198,26 @@ export function RoutesForPages() {
                     <ProtectedLayout>
                         <Layout>
                             <ChangeViewContract />
+                        </Layout>
+                    </ProtectedLayout>
+                }
+            />
+            <Route
+                path="/cobranca/notafiscal"
+                element={
+                    <ProtectedLayout>
+                        <Layout>
+                            <ChangeInvoice />
+                        </Layout>
+                    </ProtectedLayout>
+                }
+            />
+            <Route
+                path="/cobranca/notafiscal"
+                element={
+                    <ProtectedLayout>
+                        <Layout>
+                            <ChangeInvoice />
                         </Layout>
                     </ProtectedLayout>
                 }
