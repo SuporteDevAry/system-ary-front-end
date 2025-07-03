@@ -80,7 +80,7 @@ export function Invoicing() {
             const dateParts = rawDate.trim().split("/");
             if (dateParts.length !== 3) return;
 
-            const [dayStr, monthStr, yearStr] = dateParts;
+            const [_dayStr, monthStr, yearStr] = dateParts;
             const monthIndex = Number(monthStr) - 1;
             if (monthIndex < 0 || monthIndex > 11) return;
 
