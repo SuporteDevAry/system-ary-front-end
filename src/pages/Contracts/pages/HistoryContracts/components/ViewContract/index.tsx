@@ -203,8 +203,10 @@ export function ViewContract(): JSX.Element {
 
     // Função para formatar a quantidade
     const typeQuantity = dataClient?.type_quantity;
-    const toTon = Number(dataClient?.quantity || 0) * 1000;
-    const formattedValue = formatQuantity(toTon.toString());
+
+    const formattedValue = formatQuantity(
+        Number(dataClient?.quantity || 0).toString()
+    );
     const quantityValue =
         typeQuantity === "toneladas métricas"
             ? Number(dataClient?.quantity)
@@ -223,7 +225,7 @@ export function ViewContract(): JSX.Element {
         },
         {
             label: "Quantidade",
-            value: quantityValue,
+            value: `${quantityValue} ${typeQuantity}`,
         },
         {
             label: "Total do Contrato",
@@ -343,6 +345,7 @@ export function ViewContract(): JSX.Element {
                         { label: "Enviado", value: "ENVIADO" },
                         { label: "Editado", value: "EDITADO" },
                         { label: "Em Pausa", value: "EM PAUSA" },
+                        { label: "Cancelado", value: "CANCELADO" },
                         { label: "Deletado", value: "DELETADO" },
                         { label: "Cobrança", value: "COBRANCA" },
                     ]}
