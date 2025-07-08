@@ -324,9 +324,11 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
         <p style={{ textAlign: "justify" }}>{formData.inspection}</p>
         <br />
 
-        <p style={{ textAlign: "left" }}>
-          <strong>Observações:</strong>
-        </p>
+        {formData.observation && (
+          <p style={{ textAlign: "left" }}>
+            <strong>Observações:</strong>
+          </p>
+        )}
         {/* <p style={{ textAlign: "justify", whiteSpace: "pre-line" }}>
                         {formData.observation}
                     </p> */}
