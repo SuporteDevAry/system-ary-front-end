@@ -101,7 +101,7 @@ export const Step2: React.FC<StepProps> = ({
             value: "Industrialização Ração Animal - Suspenso de Pis/Cofins",
             label: "Industrialização Ração Animal - Suspenso de Pis/Cofins",
           },
-          { value: "", label: "Nenhum" },
+          { value: "Nenhum", label: "Nenhum" },
         ]}
         onSelectChange={(value) => handleFieldChange("destination", value)}
         value={formData.destination}

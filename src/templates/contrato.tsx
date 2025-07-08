@@ -89,13 +89,19 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
 
   let formattedMetrica =
     formData.type_quantity === "toneladas métricas"
-      ? ` toneladas métricas`
-      : ` quilos`;
+      ? ` toneladas métricas.`
+      : ` quilos.`;
+
+  let Dot =
+    formData.destination === "Nenhum" &&
+    formData.complement_destination?.length === 0
+      ? "."
+      : ", ";
 
   let formattedPreco =
     formData.type_quantity === "toneladas métricas"
-      ? ` por tonelada métrica.`
-      : ` por saca de 60(sessenta) quilos,`;
+      ? ` por tonelada métrica${Dot}`
+      : ` por saca de 60(sessenta) quilos${Dot}`;
 
   let formattedComplementSeller = formData.seller.complement
     ? `${" - "} ${formData.seller.complement} `
@@ -105,7 +111,6 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
     ? `${" - "} ${formData.buyer.complement} `
     : "";
 
-  console.log(formattedComplementSeller, formattedComplementBuyer);
   return (
     <>
       <div id="contrato">
@@ -233,7 +238,6 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
           <strong>
             {formattedQtd} {formattedExtenso}{" "}
           </strong>
-          {/* quilos. */}
           {formattedMetrica}
         </p>
         <br />
@@ -256,14 +260,32 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
                 )}
           </strong>{" "}
           {/* por saca de 60(sessenta) quilos, */}
-          {formattedPreco}{" "}
-          {formData.destination && (
+          {formattedPreco}
+          {/* Remover codigo depois de aprovado */}
+          {/* {formData.destination && (
             <span>
               <strong>
                 (
                 {formData.complement_destination
                   ? `${formData.destination} ${formData.complement_destination}`
                   : formData.destination}
+                )
+              </strong>
+              .
+            </span>
+          )} */}
+          {(formData.destination !== "Nenhum" ||
+            formData.complement_destination) && (
+            <span>
+              <strong>
+                (
+                {formData.destination === "Nenhum"
+                  ? formData.complement_destination || ""
+                  : `${formData.destination}${
+                      formData.complement_destination
+                        ? ` ${formData.complement_destination}`
+                        : ""
+                    }`}
                 )
               </strong>
               .
