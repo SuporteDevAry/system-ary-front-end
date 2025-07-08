@@ -11,6 +11,7 @@ const statusColors: Record<string, string> = {
   ENVIADO: "#00B37E",
   EDITADO: "#B2A5FF",
   "EM PAUSA": "#7C7C8A",
+  CANCELADO: "black",
   DELETADO: "red",
 };
 

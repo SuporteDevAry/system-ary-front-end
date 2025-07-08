@@ -155,10 +155,6 @@ export const Step1: React.FC<StepProps> = ({
     [updateFormData]
   );
 
-  useEffect(() => {
-    console.log(formData);
-  });
-
   return (
     <>
       <SContainer id={id}>
