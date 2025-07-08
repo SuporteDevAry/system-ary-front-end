@@ -89,13 +89,19 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
 
   let formattedMetrica =
     formData.type_quantity === "toneladas métricas"
-      ? ` toneladas métricas`
-      : ` quilos`;
+      ? ` toneladas métricas.`
+      : ` quilos.`;
+
+  let Dot =
+    formData.destination === "Nenhum" &&
+    formData.complement_destination?.length === 0
+      ? "."
+      : ", ";
 
   let formattedPreco =
     formData.type_quantity === "toneladas métricas"
-      ? ` por tonelada métrica.`
-      : ` por saca de 60(sessenta) quilos,`;
+      ? ` por tonelada métrica${Dot}`
+      : ` por saca de 60(sessenta) quilos${Dot}`;
 
   let formattedComplementSeller = formData.seller.complement
     ? `${" - "} ${formData.seller.complement} `
@@ -232,7 +238,6 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
           <strong>
             {formattedQtd} {formattedExtenso}{" "}
           </strong>
-          {/* quilos. */}
           {formattedMetrica}
         </p>
         <br />
