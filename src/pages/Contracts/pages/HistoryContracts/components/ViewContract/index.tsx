@@ -236,6 +236,13 @@ export function ViewContract(): JSX.Element {
         },
     ];
 
+    const contractComunication = [
+        {
+            label: "Comunicado Interno",
+            value: dataClient?.internal_communication,
+        },
+    ];
+
     return (
         <>
             <SContainer>
@@ -310,6 +317,16 @@ export function ViewContract(): JSX.Element {
 
                 <SCardInfo>
                     {contractFields.map((field, index) => (
+                        <SKeyContainer key={index}>
+                            <SkeyName>
+                                {field.label}:
+                                <SKeyValue>{field.value}</SKeyValue>
+                            </SkeyName>
+                        </SKeyContainer>
+                    ))}
+                </SCardInfo>
+                <SCardInfo>
+                    {contractComunication.map((field, index) => (
                         <SKeyContainer key={index}>
                             <SkeyName>
                                 {field.label}:
