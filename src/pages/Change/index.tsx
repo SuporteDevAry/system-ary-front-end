@@ -7,14 +7,14 @@ import { IoReceiptOutline } from "react-icons/io5";
 export function Change() {
     const cardLinks = [
         {
-            label: "Recebimento",
-            icon: <IoCashOutline size={64} />,
-            to: "/cobranca/recebimento",
-        },
-        {
             label: "Emissão Nota Fiscal",
             icon: <IoReceiptOutline size={64} />,
             to: "/cobranca/notafiscal",
+        },
+        {
+            label: "Recebimento",
+            icon: <IoCashOutline size={64} />,
+            to: "/cobranca/recebimento",
         },
     ];
     return (
