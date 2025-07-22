@@ -100,6 +100,7 @@ export const SendContracts: React.FC = () => {
     final_pickup_date: "",
     internal_communication: "",
     type_quantity: "",
+    copy_correct: "",
   });
 
   const [modalContent, setModalContent] = useState<string>("");
@@ -116,10 +117,13 @@ export const SendContracts: React.FC = () => {
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    const { name, value } = e.target;
+    const { name, value, type } = e.target;
+    // Quando o tipo do ChangeEvent é indefinido, precisamos pegar dessa forma o checked.
+    const checked = (e.currentTarget as HTMLInputElement).checked;
+
     setFormData((prevFormData) => ({
       ...prevFormData,
-      [name]: value,
+      [name]: type === "checkbox" ? (checked ? "true" : "false") : value,
     }));
   };
 
