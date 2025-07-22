@@ -6,7 +6,7 @@ export type StepType = {
 };
 
 export interface FormDataSendContract extends IContractData {
-  //list_email_ocult_copy: string[];
+  copy_correct: string;
 }
 
 export interface StepProps {
