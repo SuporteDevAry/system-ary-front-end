@@ -7,7 +7,13 @@ import { ModalEditUserProps } from "./types";
 import { SFormContainer } from "./styles";
 import { CustomInput } from "../../../../components/CustomInput";
 
-export function ModalEditUser({ open, onClose, user }: ModalEditUserProps) {
+export function ModalEditUser({
+  open,
+  onClose,
+  user,
+  readOnly,
+  titleText,
+}: ModalEditUserProps) {
   const userContext = UserContext();
 
   const [formData, setFormData] = useState({
@@ -57,7 +63,7 @@ export function ModalEditUser({ open, onClose, user }: ModalEditUserProps) {
 
   return (
     <Modal
-      titleText={"Editar Usuário"}
+      titleText={titleText ? titleText : "Editar Usuário"}
       open={open}
       confirmButton="Atualizar"
       cancelButton="Cancelar"
@@ -74,6 +80,7 @@ export function ModalEditUser({ open, onClose, user }: ModalEditUserProps) {
           $labelPosition="top"
           onChange={handleChange}
           value={formData.name}
+          readOnly={readOnly}
         />
         <CustomInput
           type="email"
@@ -82,6 +89,7 @@ export function ModalEditUser({ open, onClose, user }: ModalEditUserProps) {
           $labelPosition="top"
           onChange={handleChange}
           value={formData.email}
+          readOnly={readOnly}
         />
         <CustomInput
           type="password"
