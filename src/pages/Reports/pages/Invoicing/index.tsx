@@ -91,8 +91,7 @@ export function Invoicing() {
             )}`;
 
             const broker = contract.number_broker ?? "0";
-            const quantity = Number(contract.quantity / 1000) || 0;
-
+            const quantity = Number(contract.quantity) / 1000;
             const brokerField = `S_CN_${broker}`;
             const brokerHeader = `S.${broker} / CN.${broker}`;
 

@@ -152,7 +152,26 @@ const CustomTable: React.FC<ICustomTableProps> = ({
             });
         }
 
-        if (column.field === "price") {
+        // Carlos - usado no relatorio de Faturamento Grãos (Invoicing)
+        if (column.field === "TOTAL" || column.field.startsWith("S_CN")) {
+            let auxQtd = value || 0;
+            return auxQtd.toLocaleString("pt-BR", {
+                minimumFractionDigits: 3,
+            });
+        }
+
+        // Carlos - usado no relatorio de Grãos Maiores (Grains Bigger)
+        const validProducts = ["S", "CN", "O", "F", "OC", "OA", "SB", "EP"];
+        if (validProducts.includes(column.field)) {
+            let auxQtd = value || 0;
+            return auxQtd.toLocaleString("pt-BR", {
+                minimumFractionDigits: 3,
+            });
+        }
+        if (
+            column.field === "price" ||
+            column.field === "total_contract_value"
+        ) {
             let auxQtd = parseFloat(value.replace(",", ".")) || 0;
             return auxQtd.toLocaleString("pt-BR", {
                 style: "currency",
@@ -161,12 +180,12 @@ const CustomTable: React.FC<ICustomTableProps> = ({
             });
         }
 
-        if (column.field === "type_commission_seller") {
-            return (typeCommission = value == "Valor" ? "V" : "P");
+        if (column.field === "type_commission") {
+            return (typeCommission = value);
         }
 
-        if (column.field === "commission_seller") {
-            let auxQtd = parseFloat(value.replace(",", ".")) || 0;
+        if (column.field === "commission") {
+            let auxQtd = value; //parseFloat(value.replace(",", ".")) || 0;
 
             return typeCommission === "P"
                 ? auxQtd.toLocaleString("pt-BR", {
@@ -178,15 +197,6 @@ const CustomTable: React.FC<ICustomTableProps> = ({
                       minimumFractionDigits: 2,
                   });
         }
-
-        // if (column.field === "commission") {
-        //     let auxQtd = parseFloat(value.replace(",", ".")) || 0;
-        //     return auxQtd.toLocaleString("pt-BR", {
-        //         style: "currency",
-        //         currency: "BRL",
-        //         minimumFractionDigits: 2,
-        //     });
-        // }
 
         if (column.field === "status.status_current") {
             const statusCurrent = row?.status?.status_current;
