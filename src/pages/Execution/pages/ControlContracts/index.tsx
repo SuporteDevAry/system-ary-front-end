@@ -22,7 +22,81 @@ export function ControlContracts() {
         try {
             setIsLoading(true);
             const response = await contractContext.listContracts();
-            setListContracts(response.data);
+            const updatedContracts = response.data.map(
+                (contract: {
+                    total_contract_value: any;
+                    commission_seller: any;
+                    commission_buyer: any;
+                    type_commission_seller: any;
+                    type_commission_buyer: any;
+                    type_commission: any;
+                    resp_commission: any;
+                    commission: any;
+                    quantity: any;
+                    product: any;
+                }) => {
+                    // 02/01/2025 - Carlos - Farelo e Óleo não divide por 60
+                    // Só iremos remover essa regra das siglas, caso o cliente aceite a sugestão da reunião do dia 09/04/2025
+                    const validProducts = ["O", "F", "OC", "OA", "SB", "EP"];
+                    const quantityTon = validProducts.includes(contract.product)
+                        ? Number(contract.quantity) / 1
+                        : Number(contract.quantity) / 1000;
+
+                    const total = Number(
+                        contract.total_contract_value
+                            .replace(/[,]/g, ".")
+                            .toLocaleString("pt-BR", {
+                                style: "currency",
+                                currency: "BRL",
+                            })
+                    );
+
+                    const commission = Number(
+                        contract.commission_seller == 0
+                            ? contract.commission_buyer.replace(",", ".")
+                            : contract.commission_seller.replace(",", ".")
+                    );
+
+                    const type_commission =
+                        contract.commission_seller != 0
+                            ? contract.type_commission_seller == "Percentual"
+                                ? "P"
+                                : "V"
+                            : contract.type_commission_buyer != 0
+                            ? contract.type_commission_buyer == "Percentual"
+                                ? "P"
+                                : "V"
+                            : "?";
+
+                    const commissionValue =
+                        type_commission == "P"
+                            ? (total * commission) / 100
+                            : commission;
+
+                    const resp_commission =
+                        contract.commission_seller == 0 ? "C" : "V";
+
+                    const formattedCommission = commissionValue.toLocaleString(
+                        "pt-BR",
+                        {
+                            style: "currency",
+                            currency: "BRL",
+                        }
+                    );
+
+                    return {
+                        ...contract,
+                        quantity: quantityTon,
+                        type_commission: type_commission,
+                        resp_commission: resp_commission,
+                        commission: commission,
+                        commission_value: formattedCommission,
+                    };
+                }
+            );
+
+            setListContracts(updatedContracts);
+            //            setListContracts(response.data);
         } catch (error) {
             toast.error(`Erro ao tentar ler contratos: ${error}`);
         } finally {
@@ -122,43 +196,42 @@ export function ControlContracts() {
                 width: "150px",
             },
             {
-                field: "type_commission_seller",
-                header: "Tp.Comissão",
+                field: "type_commission",
+                header: "P/V",
                 width: "50px",
             },
             {
-                field: "commission_seller",
+                field: "resp_commission",
+                header: "C/V",
+                width: "20px",
+            },
+            {
+                field: "commission",
                 header: "Comissão",
                 width: "150px",
             },
             {
-                field: "calculated_field",
-                header: "Valor da Comissão",
+                field: "commission_value",
+                header: "Vlr. Comissão",
                 width: "150px",
-                render: (rowData: any) => {
-                    const valor1 = rowData.total_contract_value || 0;
-                    const valor2 = rowData.commission_seller || 0;
-                    const resultado = valor1 * valor2;
-                    return <span>{resultado.toFixed(2)}</span>;
-                },
             },
             {
-                field: "",
+                field: "data_pagto",
                 header: "Data Pagto.",
                 width: "150px",
             },
             {
-                field: "",
+                field: "qtde_entrega",
                 header: "Qtde. Entregue",
                 width: "150px",
             },
             {
-                field: "",
+                field: "qtde_saldo",
                 header: "Qtde. Saldo",
                 width: "150px",
             },
             {
-                field: "",
+                field: "observacao",
                 header: "Observações",
                 width: "200px",
             },
@@ -255,6 +328,31 @@ export function ControlContracts() {
                     for (const f of fields) {
                         value = value?.[f];
                     }
+
+                    // Corrige campos numéricos com vírgula decimal
+                    if (
+                        col.field === "quantity" ||
+                        col.field === "price" ||
+                        col.field === "total_contract_value" ||
+                        col.field === "commission"
+                    ) {
+                        const number = parseFloat(
+                            String(value).replace(",", ".")
+                        );
+                        if (!isNaN(number)) {
+                            value = number
+                                .toFixed(2) // duas casas decimais
+                                .replace(".", ","); // troca ponto por vírgula
+                        }
+                    }
+
+                    if (col.field === "commission_value") {
+                        value = String(value)
+                            .replace("R$", "")
+                            .replace(".", "")
+                            .trim();
+                    }
+
                     return `"${value ?? ""}"`;
                 })
                 .join(";");
