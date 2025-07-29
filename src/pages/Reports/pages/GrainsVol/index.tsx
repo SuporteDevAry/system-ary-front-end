@@ -27,7 +27,11 @@ export function GrainsVol() {
                 (contract: {
                     total_contract_value: any;
                     commission_seller: any;
+                    commission_buyer: any;
                     type_commission_seller: any;
+                    type_commission_buyer: any;
+                    type_commission: any;
+                    resp_commission: any;
                     commission: any;
                     quantity: any;
                     product: any;
@@ -39,30 +43,34 @@ export function GrainsVol() {
                         ? Number(contract.quantity) / 1
                         : Number(contract.quantity) / 1000;
 
-                    const total = validProducts.includes(contract.product)
-                        ? Number(
-                              contract.total_contract_value.replace(
-                                  /[.]/g,
-                                  ""
-                              ) / 1
-                          )
-                        : Number(
-                              contract.total_contract_value.replace(
-                                  /[.]/g,
-                                  ""
-                              ) / 1000
-                          );
+                    const total = Number(
+                        contract.total_contract_value.replace(/[,]/g, ".")
+                    );
 
-                    const commission =
-                        contract.type_commission_seller == "Percentual"
-                            ? contract.commission_seller.replace(",", ".") / 100
-                            : Number(
-                                  contract.commission_seller.replace(",", ".")
-                              );
+                    const commission = Number(
+                        contract.commission_seller == 0
+                            ? contract.commission_buyer.replace(",", ".")
+                            : contract.commission_seller.replace(",", ".")
+                    );
+
+                    const type_commission =
+                        contract.commission_seller != 0
+                            ? contract.type_commission_seller == "Percentual"
+                                ? "P"
+                                : "V"
+                            : contract.type_commission_buyer != 0
+                            ? contract.type_commission_buyer == "Percentual"
+                                ? "P"
+                                : "V"
+                            : "?";
+
                     const commissionValue =
-                        contract.type_commission_seller == "Percentual"
-                            ? total * commission
+                        type_commission == "P"
+                            ? (total * commission) / 100
                             : commission;
+
+                    const resp_commission =
+                        contract.commission_seller == 0 ? "C" : "V";
 
                     const formattedCommission = commissionValue.toLocaleString(
                         "pt-BR",
@@ -74,8 +82,11 @@ export function GrainsVol() {
 
                     return {
                         ...contract,
-                        commission: formattedCommission,
                         quantity: quantityTon,
+                        type_commission: type_commission,
+                        resp_commission: resp_commission,
+                        commission: commission,
+                        commission_value: formattedCommission,
                     };
                 }
             );
@@ -149,17 +160,22 @@ export function GrainsVol() {
                 width: "150px",
             },
             {
-                field: "type_commission_seller",
-                header: "T",
+                field: "type_commission",
+                header: "P/V",
                 width: "20px",
             },
             {
-                field: "commission_seller",
-                header: "COMISSÃO (%)",
-                width: "100px",
+                field: "resp_commission",
+                header: "C/V",
+                width: "20px",
             },
             {
                 field: "commission",
+                header: "COMISSÃO",
+                width: "100px",
+            },
+            {
+                field: "commission_value",
                 header: "COMISSÃO EM R$",
                 width: "130px",
             },
@@ -285,21 +301,28 @@ export function GrainsVol() {
                         value = value?.[f];
                     }
 
+                    // Corrige campos numéricos com vírgula decimal
                     if (
+                        col.field === "quantity" ||
                         col.field === "price" ||
                         col.field === "total_contract_value" ||
                         col.field === "commission"
                     ) {
-                        value =
-                            typeof value === "number"
-                                ? value.toLocaleString("pt-BR", {
-                                      style: "currency",
-                                      currency: "BRL",
-                                  })
-                                : value;
+                        const number = parseFloat(
+                            String(value).replace(",", ".")
+                        );
+                        if (!isNaN(number)) {
+                            value = number
+                                .toFixed(2) // duas casas decimais
+                                .replace(".", ","); // troca ponto por vírgula
+                        }
                     }
-                    if (col.field === "type_commission_seller") {
-                        value = value == "Valor" ? "V" : "P";
+
+                    if (col.field === "commission_value") {
+                        value = String(value)
+                            .replace("R$", "")
+                            .replace(".", "")
+                            .trim();
                     }
 
                     return `"${value ?? ""}"`;

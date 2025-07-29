@@ -70,9 +70,6 @@ export function DashFinance() {
     // .reduce((acc, produto) => acc + produto.quantidade, 0); // Soma as quantidades
 
     const currentDate = new Date(); // Obtém a data atual
-
-    // retirar comentario do +1 utilizei para pegar contratos de maio/25
-
     const currentMonth = currentDate.getMonth() + 1; // Mês atual (0 = Janeiro, 1 = Fevereiro, ..., 11 = Dezembro)
     const currentYear = currentDate.getFullYear(); // Ano atual
 
@@ -91,17 +88,25 @@ export function DashFinance() {
         return mesEmissao === currentMonth;
     });
 
-    let totalYear = contractYear.reduce(
-        (acc, contract) => acc + Number(contract.quantity),
-        0
-    );
+    const validProducts = ["O", "F", "OC", "OA", "SB", "EP"];
 
-    let totalMes = Math.round(
-        contractMonth.reduce(
-            (acc, contract) => acc + Number(contract.quantity) / 1000,
-            0
-        )
-    );
+    let totalYear = contractYear.reduce((acc, contract) => {
+        const quantity = validProducts.includes(contract.product)
+            ? Number(contract.quantity)
+            : Number(contract.quantity) / 1000;
+        return acc + quantity;
+    }, 0);
+
+    let totalMes =
+        /*Math.round(*/
+        contractMonth.reduce((acc, contract) => {
+            const quantity = validProducts.includes(contract.product)
+                ? Number(contract.quantity)
+                : Number(contract.quantity) / 1000;
+            return acc + quantity;
+        }, 0);
+    3;
+    /*)*/
 
     // Total Gráfico Mês
     let monthSoja = Math.round(
@@ -141,14 +146,12 @@ export function DashFinance() {
             .filter(
                 (contract) => contract.name_product === "ÓLEO DE SOJA a Granel"
             )
-            .reduce((acc, contract) => acc + Number(contract.quantity), 0) /
-            1000
+            .reduce((acc, contract) => acc + Number(contract.quantity), 0)
     );
     let monthSebo = Math.round(
         contractMonth
             .filter((contract) => contract.name_product === "SEBO BOVINO")
-            .reduce((acc, contract) => acc + Number(contract.quantity), 0) /
-            1000
+            .reduce((acc, contract) => acc + Number(contract.quantity), 0)
     );
     let monthFarelo = Math.round(
         contractMonth
@@ -156,8 +159,7 @@ export function DashFinance() {
                 (contract) =>
                     contract.name_product === "FARELO DE SOJA a Granel"
             )
-            .reduce((acc, contract) => acc + Number(contract.quantity), 0) /
-            1000
+            .reduce((acc, contract) => acc + Number(contract.quantity), 0)
     );
 
     // Total Gráfico ANO
@@ -198,14 +200,12 @@ export function DashFinance() {
             .filter(
                 (contract) => contract.name_product === "ÓLEO DE SOJA a Granel"
             )
-            .reduce((acc, contract) => acc + Number(contract.quantity), 0) /
-            1000
+            .reduce((acc, contract) => acc + Number(contract.quantity), 0)
     );
     let totalSebo = Math.round(
         contractYear
             .filter((contract) => contract.name_product === "SEBO BOVINO")
-            .reduce((acc, contract) => acc + Number(contract.quantity), 0) /
-            1000
+            .reduce((acc, contract) => acc + Number(contract.quantity), 0)
     );
     let totalFarelo = Math.round(
         contractYear
@@ -213,8 +213,7 @@ export function DashFinance() {
                 (contract) =>
                     contract.name_product === "FARELO DE SOJA a Granel"
             )
-            .reduce((acc, contract) => acc + Number(contract.quantity), 0) /
-            1000
+            .reduce((acc, contract) => acc + Number(contract.quantity), 0)
     );
 
     const dataYear = [
