@@ -1,6 +1,6 @@
 import { CustomTextArea } from "../../../../../../components/CustomTextArea";
 import { StepProps } from "../../types";
-import { SContainer } from "./styles";
+import { SCheckbox, SContainer, SFormControlLabel } from "./styles";
 
 export const StepSendContract: React.FC<StepProps> = ({
   id,
@@ -10,6 +10,18 @@ export const StepSendContract: React.FC<StepProps> = ({
   return (
     <>
       <SContainer id={id}>
+        <SFormControlLabel
+          control={
+            <SCheckbox
+              name="copy_correct"
+              onChange={handleChange}
+              value={formData?.copy_correct}
+              checked={formData?.copy_correct === "true"}
+            />
+          }
+          label="Cópia correta"
+        />
+
         <CustomTextArea
           width="530px"
           height="230px"

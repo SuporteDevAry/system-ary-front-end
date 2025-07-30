@@ -59,7 +59,7 @@ export function GrainsBigger() {
         const buyerMap = new Map<string, PivotRow>();
 
         filteredData.forEach((item) => {
-            const buyerName = item.buyer?.name ?? "DESCONHECIDO";
+            const buyerName = item.buyer?.name.toUpperCase() ?? "DESCONHECIDO";
             const product = item.product ?? "N/A";
             const quantity = Number(item.quantity / 1000) || 0;
 
