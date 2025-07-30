@@ -153,14 +153,22 @@ const CustomTable: React.FC<ICustomTableProps> = ({
         }
 
         // Carlos - usado no relatorio de Faturamento Grãos (Invoicing)
-        if (column.field === "TOTAL" || column.field.startsWith("S_CN")) {
+        if (column.field === "TOTALCALC" || column.field.startsWith("S_CN")) {
+            let auxQtd = value || 0;
+            return auxQtd.toLocaleString("pt-BR", {
+                style: "currency",
+                currency: "BRL",
+                minimumFractionDigits: 2,
+            });
+        }
+
+        // Carlos - usado no relatorio de Grãos Maiores (Grains Bigger)
+        if (column.field === "TOTAL") {
             let auxQtd = value || 0;
             return auxQtd.toLocaleString("pt-BR", {
                 minimumFractionDigits: 3,
             });
         }
-
-        // Carlos - usado no relatorio de Grãos Maiores (Grains Bigger)
         const validProducts = ["S", "CN", "O", "F", "OC", "OA", "SB", "EP"];
         if (validProducts.includes(column.field)) {
             let auxQtd = value || 0;

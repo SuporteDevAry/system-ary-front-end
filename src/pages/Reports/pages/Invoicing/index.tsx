@@ -9,10 +9,18 @@ import { IContractData } from "../../../../contexts/ContractContext/types";
 import { SContainerSearchAndButton, STitle } from "./styles";
 import CustomButton from "../../../../components/CustomButton";
 
+interface IContractExtended extends IContractData {
+    type_commission_seller: string;
+    type_commission_buyer: string;
+    type_commission: string;
+    resp_commission: string;
+    commission_value: number;
+}
+
 export function Invoicing() {
     const contractContext = ContractContext();
     const [isLoading, setIsLoading] = useState<boolean>(true);
-    const [listcontracts, setListContracts] = useState<IContractData[]>([]);
+    const [listcontracts, setListContracts] = useState<IContractExtended[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [page, setPage] = useState(0);
     const [order, setOrder] = useState<"asc" | "desc">("asc");
@@ -23,12 +31,81 @@ export function Invoicing() {
             setIsLoading(true);
             const response = await contractContext.listContracts();
 
-            const formatted = response.data.map((contract: IContractData) => ({
-                ...contract,
-                quantity: Number(contract.quantity),
-            }));
+            // const formatted = response.data.map((contract: IContractData) => ({
+            //     ...contract,
+            //     quantity: Number(contract.quantity),
+            // }));
+            // setListContracts(formatted);
 
-            setListContracts(formatted);
+            const updatedContracts = response.data.map(
+                (contract: {
+                    total_contract_value: any;
+                    commission_seller: any;
+                    commission_buyer: any;
+                    type_commission_seller: any;
+                    type_commission_buyer: any;
+                    type_commission: any;
+                    resp_commission: any;
+                    commission: any;
+                    quantity: any;
+                    product: any;
+                }) => {
+                    // 02/01/2025 - Carlos - Farelo e Óleo não divide por 60
+                    // Só iremos remover essa regra das siglas, caso o cliente aceite a sugestão da reunião do dia 09/04/2025
+                    const validProducts = ["O", "F", "OC", "OA", "SB", "EP"];
+                    const quantityTon = validProducts.includes(contract.product)
+                        ? Number(contract.quantity) / 1
+                        : Number(contract.quantity) / 1000;
+
+                    const total = Number(
+                        contract.total_contract_value.replace(/[,]/g, ".")
+                    );
+
+                    const commission = Number(
+                        contract.commission_seller == 0
+                            ? contract.commission_buyer.replace(",", ".")
+                            : contract.commission_seller.replace(",", ".")
+                    );
+
+                    const type_commission =
+                        contract.commission_seller != 0
+                            ? contract.type_commission_seller == "Percentual"
+                                ? "P"
+                                : "V"
+                            : contract.type_commission_buyer != 0
+                            ? contract.type_commission_buyer == "Percentual"
+                                ? "P"
+                                : "V"
+                            : "?";
+
+                    const commissionValue =
+                        type_commission == "P"
+                            ? (total * commission) / 100
+                            : commission;
+
+                    const resp_commission =
+                        contract.commission_seller == 0 ? "C" : "V";
+
+                    // const formattedCommission = commissionValue.toLocaleString(
+                    //     "pt-BR",
+                    //     {
+                    //         style: "currency",
+                    //         currency: "BRL",
+                    //     }
+                    // );
+
+                    return {
+                        ...contract,
+                        quantity: quantityTon,
+                        type_commission: type_commission,
+                        resp_commission: resp_commission,
+                        commission: commission,
+                        commission_value: commissionValue,
+                    };
+                }
+            );
+
+            setListContracts(updatedContracts);
         } catch (error) {
             toast.error(`Erro ao tentar ler contratos: ${error}`);
         } finally {
@@ -91,7 +168,7 @@ export function Invoicing() {
             )}`;
 
             const broker = contract.number_broker ?? "0";
-            const quantity = Number(contract.quantity) / 1000;
+            //const quantity = Number(contract.quantity) / 1000;
             const brokerField = `S_CN_${broker}`;
             const brokerHeader = `S.${broker} / CN.${broker}`;
 
@@ -101,13 +178,14 @@ export function Invoicing() {
                 dataMap.set(mesAnoSort, {
                     mesAno: mesAnoExtenso,
                     mesAnoSort,
-                    TOTAL: 0,
+                    TOTALCALC: 0,
                 });
             }
 
             const row = dataMap.get(mesAnoSort);
-            row[brokerField] = (row[brokerField] ?? 0) + quantity;
-            row.TOTAL += quantity;
+            row[brokerField] =
+                (row[brokerField] ?? 0) + contract.commission_value;
+            row.TOTALCALC += contract.commission_value;
         });
 
         // Agora pegamos os valores e ordenamos por mesAnoSort (não visível)
@@ -133,26 +211,12 @@ export function Invoicing() {
             field,
             header,
             width: "120px",
-            render: (value: number) =>
-                typeof value === "number"
-                    ? value.toLocaleString("pt-BR", {
-                          minimumFractionDigits: 0,
-                          maximumFractionDigits: 0,
-                      })
-                    : "",
         }));
 
         const totalCol = {
-            field: "TOTAL",
+            field: "TOTALCALC",
             header: "TOTAL",
             width: "150px",
-            render: (value: number) =>
-                typeof value === "number"
-                    ? value.toLocaleString("pt-BR", {
-                          minimumFractionDigits: 0,
-                          maximumFractionDigits: 0,
-                      })
-                    : "",
         };
 
         return [...base, ...brokerCols, totalCol];
