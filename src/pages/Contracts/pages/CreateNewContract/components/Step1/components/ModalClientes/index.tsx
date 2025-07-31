@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Modal } from "../../../../../../../../components/Modal";
 import { ISelectedCustomer, ModalClientesProps } from "./types";
 import CustomTable from "../../../../../../../../components/CustomTable";
@@ -24,6 +24,9 @@ export function ModalClientes({
   const [orderBy, setOrderBy] = useState<string>("name");
 
   const [page, setPage] = useState(0);
+
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
   const handleConfirm = () => {
     if (selectedCustomer) {
       onConfirm({
@@ -41,10 +44,16 @@ export function ModalClientes({
   };
 
   useEffect(() => {
-    if (data) {
+    if (open) {
       handleSearch();
+
+      const timeout = setTimeout(() => {
+        searchInputRef.current?.focus();
+      }, 100);
+
+      return () => clearTimeout(timeout);
     }
-  }, [data]);
+  }, [open]);
 
   const { filteredData, handleSearch } = useTableSearch({
     data: data,
@@ -88,6 +97,7 @@ export function ModalClientes({
             placeholder="Search"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+            inputRef={searchInputRef}
           />
           <CustomButton $variant="primary" width="70px" onClick={handleSearch}>
             Search
