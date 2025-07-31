@@ -248,11 +248,11 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
         <p style={{ textAlign: "justify" }}>
           <strong>
             {formData.type_currency === "Dólar"
-              ? `${"US"}${formatCurrency(
+              ? formatCurrency(
                   formData.price,
                   formData.type_currency,
                   modeSave
-                )}`
+                ).replace("$", "US$ ")
               : formatCurrency(
                   formData.price,
                   formData.type_currency,

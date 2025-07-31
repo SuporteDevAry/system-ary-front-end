@@ -22,6 +22,7 @@ export const CustomInput: React.FC<CustomInputProps> = ({
   onRadioChange,
   selectedRadio,
   autoComplete = "off",
+  inputRef,
   ...rest
 }) => {
   return (
@@ -70,6 +71,7 @@ export const CustomInput: React.FC<CustomInputProps> = ({
             value={value}
             type={type}
             placeholder={placeholder}
+            ref={inputRef}
             {...rest}
           />
         </>
@@ -83,6 +85,7 @@ export const CustomInput: React.FC<CustomInputProps> = ({
             value={value}
             type={type}
             placeholder={placeholder}
+            ref={inputRef}
             {...rest}
           />
         </>
