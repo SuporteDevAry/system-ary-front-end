@@ -6,6 +6,7 @@ export const CustomSearch: React.FC<CustomSearchProps> = ({
   placeholder,
   height,
   width,
+  inputRef,
   ...rest
 }) => {
   return (
@@ -15,6 +16,7 @@ export const CustomSearch: React.FC<CustomSearchProps> = ({
           placeholder={placeholder}
           width={width}
           height={height}
+          inputRef={inputRef}
           {...rest}
         />
       </SContainer>

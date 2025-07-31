@@ -24,4 +24,5 @@ export interface CustomInputProps {
   onRadioChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
   selectedRadio?: string;
   [x: string]: any;
+  inputRef?: React.Ref<HTMLInputElement>;
 }
