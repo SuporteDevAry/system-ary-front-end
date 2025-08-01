@@ -41,7 +41,7 @@ export function GrainsBigger() {
     const { filteredData, handleSearch } = useTableSearch({
         data: listcontracts,
         searchTerm,
-        searchableFields: ["name_product", "buyer.name"],
+        searchableFields: ["name_product", "seller.name"],
     });
 
     useEffect(() => {
@@ -51,33 +51,34 @@ export function GrainsBigger() {
     const pivotData = useMemo(() => {
         const productSet = new Set<string>();
         type PivotRow = {
-            buyer: string;
+            seller: string;
             TOTAL: number;
             [product: string]: string | number;
         };
 
-        const buyerMap = new Map<string, PivotRow>();
+        const sellerMap = new Map<string, PivotRow>();
 
         filteredData.forEach((item) => {
-            const buyerName = item.buyer?.name.toUpperCase() ?? "DESCONHECIDO";
+            const sellerName =
+                item.seller?.name.toUpperCase() ?? "DESCONHECIDO";
             const product = item.product ?? "N/A";
             const quantity = Number(item.quantity / 1000) || 0;
 
             productSet.add(product);
 
-            if (!buyerMap.has(buyerName)) {
-                buyerMap.set(buyerName, { buyer: buyerName, TOTAL: 0 });
+            if (!sellerMap.has(sellerName)) {
+                sellerMap.set(sellerName, { seller: sellerName, TOTAL: 0 });
             }
 
-            const buyerEntry = buyerMap.get(buyerName)!;
-            buyerEntry[product] = Number(buyerEntry[product] || 0) + quantity;
-            buyerEntry.TOTAL += quantity;
+            const sellerEntry = sellerMap.get(sellerName)!;
+            sellerEntry[product] = Number(sellerEntry[product] || 0) + quantity;
+            sellerEntry.TOTAL += quantity;
         });
 
         const products = Array.from(productSet).sort();
 
         // Ordena compradores pelo maior total
-        const rows = Array.from(buyerMap.values()).sort(
+        const rows = Array.from(sellerMap.values()).sort(
             (a, b) => b.TOTAL - a.TOTAL
         );
 
@@ -87,8 +88,8 @@ export function GrainsBigger() {
     const nameColumns: IColumn[] = useMemo(() => {
         const base = [
             {
-                field: "buyer",
-                header: "COMPRADOR",
+                field: "seller",
+                header: "VENDEDOR",
                 width: "250px",
             },
         ];
@@ -231,7 +232,7 @@ export function GrainsBigger() {
             <SContainerSearchAndButton>
                 <CustomSearch
                     width="450px"
-                    placeholder="Filtre por Sigla ou Comprador"
+                    placeholder="Filtre por Sigla ou Vendedor"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
