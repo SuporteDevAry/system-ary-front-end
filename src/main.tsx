@@ -8,6 +8,7 @@ import { ContatosProvider } from "./contexts/ContatoContext/index.tsx";
 import { NotificationsProvider } from "./contexts/NotificationContext/index.tsx";
 import { ContractProvider } from "./contexts/ContractContext/index.tsx";
 import { SendEmailProvider } from "./contexts/SendEmailContext/index.tsx";
+import { ProductProvider } from "./contexts/Products/index.tsx";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
@@ -18,7 +19,9 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
             <ContatosProvider>
               <NotificationsProvider>
                 <ContractProvider>
-                  <App />
+                  <ProductProvider>
+                    <App />
+                  </ProductProvider>
                 </ContractProvider>
               </NotificationsProvider>
             </ContatosProvider>
