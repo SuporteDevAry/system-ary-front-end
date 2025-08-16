@@ -1,10 +1,15 @@
 import { StepProps } from "../../types";
 import { SContainer, SText, STextArea } from "./styles";
 import { CustomSelect } from "../../../../../../components/CustomSelect";
-import { ProductType, productInfo } from "./types";
-import { useMemo } from "react";
+//import { ProductType, productInfo } from "./types";
+import { useEffect, useMemo, useState } from "react";
 import { generateCropYears } from "./helpers";
 import { CustomInput } from "../../../../../../components/CustomInput";
+import { TableProductContext } from "../../../../../../contexts/TablesProducts";
+import { ProductContext } from "../../../../../../contexts/Products";
+import { ITableProductsData } from "../../../../../../contexts/TablesProducts/types";
+import { IProductsData } from "../../../../../../contexts/Products/types";
+import { toast } from "react-toastify";
 
 export const Step2: React.FC<StepProps> = ({
   id,
@@ -14,8 +19,110 @@ export const Step2: React.FC<StepProps> = ({
 }) => {
   const cropYearOptions = useMemo(generateCropYears, []);
 
+  const tableProductContext = TableProductContext();
+  const productContext = ProductContext();
+
+  const [tables, setTables] = useState<ITableProductsData[]>([]);
+  const [products, setProducts] = useState<IProductsData[]>([]);
+  const [selectedTable, setSelectedTable] = useState<ITableProductsData | null>(
+    null
+  );
+
+  useEffect(() => {
+    const fetchTablesAndProducts = async () => {
+      try {
+        const tablesResponse = await tableProductContext.listTableProducts();
+        setTables(tablesResponse.data);
+
+        const productsResponse = await productContext.listProducts();
+        setProducts(productsResponse.data);
+      } catch (error) {
+        toast.error("Erro ao carregar dados. Tente novamente.");
+      }
+    };
+
+    fetchTablesAndProducts();
+  }, []);
+
+  // // ✅ NOVO useEffect: Inicializa os estados locais com base no formData
+  // useEffect(() => {
+  //   if (formData.tableId) {
+  //     const table = tables.find((t) => t.id === formData.tableId);
+  //     if (table) {
+  //       setSelectedTable(table);
+  //     }
+  //   } else {
+  //     setSelectedTable(null); // Reseta se não houver tableId no form
+  //   }
+  // }, [formData.tableId, tables]);
+
+  useEffect(() => {
+    if (formData.product && tables.length > 0) {
+      // Encontra a mesa que contém o product_type (sigla) do produto no seu array de product_types
+      const foundTable = tables.find((table) =>
+        table.product_types.includes(formData.product)
+      );
+      if (foundTable) {
+        setSelectedTable(foundTable);
+        // Opcionalmente, você pode atualizar o formData com o tableId aqui, se precisar dele para alguma outra lógica
+        // updateFormData({ ...formData, tableId: foundTable.id });
+      } else {
+        setSelectedTable(null);
+      }
+    } else {
+      setSelectedTable(null); // Reseta se não houver produto no form
+    }
+  }, [formData.product, tables]); // Dependências: produto e mesas
+
+  const filteredProducts = useMemo(() => {
+    if (!selectedTable) {
+      return [];
+    }
+    const productTypesInTable = selectedTable.product_types;
+
+    // Filtra os produtos com base nas siglas da mesa selecionada
+    return products.filter((product) =>
+      productTypesInTable.includes(product.product_type)
+    );
+  }, [selectedTable, products]);
+
   const handleFieldChange = (field: string, value: string) => {
-    const info = productInfo[value as ProductType];
+    //const info = productInfo[value as ProductType];
+
+    if (field === "table") {
+      const table = tables.find((t) => t.id === value);
+      setSelectedTable(table || null);
+
+      updateFormData?.({
+        ...formData,
+        tableId: value,
+        product: "",
+        quality: "",
+        observation: "",
+        name_product: "",
+        commission_seller: "",
+        type_commission_seller: "",
+      });
+      return;
+    }
+
+    if (field === "product") {
+      const productInfo = filteredProducts.find(
+        (p) => p.product_type === value
+      );
+      if (productInfo) {
+        updateFormData?.({
+          ...formData,
+          product: value,
+          quality: productInfo.quality,
+          observation: productInfo.observation,
+          name_product: productInfo.name,
+          commission_seller: productInfo.commission_seller,
+          type_commission_seller: productInfo.type_commission_seller,
+        });
+      }
+      return;
+    }
 
     if (field === "destination") {
       updateFormData?.({
@@ -40,40 +147,41 @@ export const Step2: React.FC<StepProps> = ({
       });
       return;
     }
-
-    updateFormData?.({
-      ...formData,
-      [field]: value,
-      quality: info.quality,
-      observation: info.observation,
-      name_product: info.name,
-      commission_seller: info.commission_seller,
-      type_commission_seller: info.type_commission_seller,
-    });
   };
+
+  const tableOptions = useMemo(() => {
+    return tables
+      .filter((table) => table.id !== undefined)
+      .map((table) => ({
+        value: table.id!,
+        label: table.name,
+      }));
+  }, [tables]);
 
   return (
     <SContainer id={id}>
       <CustomSelect
+        name="table"
+        label="Mesa:"
+        $labelPosition="top"
+        selectOptions={tableOptions}
+        onSelectChange={(value) => handleFieldChange("table", value)}
+        value={formData.tableId ?? ""}
+      />
+
+      <CustomSelect
         name="product"
         label="Mercadoria: "
         $labelPosition="top"
-        selectOptions={[
-          { value: "S", label: "SOJA em Grãos" },
-          { value: "CN", label: "MILHO em Grãos" },
-          { value: "T", label: "TRIGO" },
-          { value: "SG", label: "SORGO" },
-          { value: "O", label: "ÓLEO DE SOJA a Granel" },
-          { value: "OC", label: "ÓLEO DE CANOLA a Granel" },
-          { value: "OA", label: "ÓLEO DE ALGODÃO a Granel" },
-          { value: "SB", label: "SEBO BOVINO" },
-          { value: "EP", label: "ESTEARINA DE PALMA" },
-          { value: "F", label: "FARELO DE SOJA a Granel" },
-        ]}
+        selectOptions={filteredProducts.map((product) => ({
+          value: product.product_type,
+          label: product.name,
+        }))}
         onSelectChange={(value) => handleFieldChange("product", value)}
         value={formData.product}
-        //readOnly={isEditMode}  permitindo editar o produto
+        disabled={!selectedTable}
       />
+
       <CustomSelect
         name="crop"
         label="Safra: "
