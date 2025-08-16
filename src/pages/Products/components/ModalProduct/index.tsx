@@ -27,7 +27,6 @@ export function ModalProduct({
 
   const [formData, setFormData] = useState(initialFormData);
 
-  // Use useEffect para carregar os dados do produto quando o modal é aberto
   useEffect(() => {
     if (productToEdit) {
       setFormData({
@@ -39,7 +38,7 @@ export function ModalProduct({
         observation: productToEdit.observation || "",
       });
     } else {
-      setFormData(initialFormData); // Reseta o formulário para criação
+      setFormData(initialFormData);
     }
   }, [productToEdit, open]);
 
@@ -58,7 +57,7 @@ export function ModalProduct({
 
   const handleClose = () => {
     onClose();
-    setFormData(initialFormData); // Reseta o formulário ao fechar
+    setFormData(initialFormData);
   };
 
   const handleSubmit = async () => {
@@ -76,7 +75,6 @@ export function ModalProduct({
 
     try {
       if (productToEdit?.id) {
-        // Lógica de edição
         await productContext.updateProduct(productToEdit.id, {
           ...formData,
           product_type: formData.product_type.toUpperCase(),
@@ -84,7 +82,6 @@ export function ModalProduct({
         });
         toast.success(`Produto ${formData.name} foi atualizado com sucesso!`);
       } else {
-        // Lógica de criação
         await productContext.createProduct({
           ...formData,
           product_type: formData.product_type.toUpperCase(),
@@ -188,7 +185,7 @@ export function ModalProduct({
           value={formData.quality}
         />
         <CustomTextArea
-         width="500px"
+          width="500px"
           height="230px"
           label="Observação:"
           name="observation"

@@ -20,7 +20,6 @@ export const SContainer = styled.div`
 
 export const SCard = styled(Card)`
   height: 200px;
-  width: 300px;
   padding: ${V.mdSpacing};
   margin: ${V.mdSpacing};
 

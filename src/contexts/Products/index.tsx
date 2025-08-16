@@ -31,7 +31,7 @@ export const ProductProvider = ({ children }: IProductsProvider) => {
     productId: string
   ): Promise<ApiResponse<IProductsData>> {
     try {
-      const response = await Api.get(`/grain-contracts/${productId}`);
+      const response = await Api.get(`/products/${productId}`);
 
       return response;
     } catch (error) {

@@ -111,13 +111,13 @@ export function Products() {
 
   const handleCloseProductModal = () => {
     setProductModalOpen(false);
-    setProductToEdit(null); // Reseta o estado do produto para edição
-    fetchData(); // Recarrega os dados após fechar (para refletir a edição ou criação)
+    setProductToEdit(null);
+    fetchData();
   };
 
   const handleOpenDeleteProductModal = (product: IProductsData) => {
     setModalContent(
-      `Tem certeza que deseja deletar o produto: ${product?.name}?`
+      `Tem certeza que deseja deletar o produto: ${product?.name} ?`
     );
 
     setProductForDelete(product);
@@ -179,7 +179,7 @@ export function Products() {
         </CustomButton>
       </SButtonContainer>
     ),
-    [handleViewProduct, handleOpenDeleteProductModal]
+    [handleViewProduct, handleUpdateProduct, handleOpenDeleteProductModal]
   );
 
   return (
@@ -190,7 +190,7 @@ export function Products() {
         <SContainerSearchAndButton>
           <CustomSearch
             width="400px"
-            placeholder="Pesquise por sigla, nome do produto"
+            placeholder="Pesquise por sigla, nome do produto."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
