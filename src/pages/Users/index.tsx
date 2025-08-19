@@ -141,10 +141,10 @@ export function Users() {
         />
         <CustomButton
           $variant={"success"}
-          width="100px"
+          width="180px"
           onClick={handleCreateNewUser}
         >
-          Criar Novo
+          Criar Novo Usuário
         </CustomButton>
       </BoxContainer>
 

@@ -14,7 +14,9 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
   readOnly,
   ...rest
 }) => {
-  const [option, setOption] = React.useState<string>(value);
+  const [option, setOption] = React.useState<string>(
+    Array.isArray(value) ? value.join(", ") : value
+  );
 
   const handleSelectChange = (event: SelectChangeEvent<unknown>) => {
     const newSelectValue = event.target.value as string;

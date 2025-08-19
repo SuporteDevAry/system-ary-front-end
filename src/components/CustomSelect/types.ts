@@ -7,8 +7,9 @@ export interface CustomSelectProps {
   $labelPosition: labelPositionVariant;
   placeholder?: string;
   name: string;
-  value: string;
+  value: string | string[];
   selectOptions?: { value: string; label: string }[];
   onSelectChange?: (value: string) => void;
   readOnly?: boolean;
+  disabled?: boolean;
 }

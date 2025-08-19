@@ -9,7 +9,7 @@ export type labelPositionVariant = "left" | "top";
 export interface CustomInputProps {
   width?: string;
   height?: string;
-  label?: string;
+  label?: string | React.ReactNode;
   $labelPosition?: labelPositionVariant;
   placeholder?: string;
   type?: HTMLInputTypeAttribute | "number" | undefined;
