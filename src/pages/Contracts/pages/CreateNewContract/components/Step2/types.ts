@@ -1,3 +1,7 @@
+/*
+ *Esse arquivo será removido em breve!
+ */
+
 export type ProductType =
   | "S"
   | "CN"

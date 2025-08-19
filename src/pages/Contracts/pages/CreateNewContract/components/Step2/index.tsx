@@ -1,7 +1,7 @@
 import { StepProps } from "../../types";
 import { SContainer, SText, STextArea } from "./styles";
 import { CustomSelect } from "../../../../../../components/CustomSelect";
-//import { ProductType, productInfo } from "./types";
+//import { ProductType, productInfo } from "./types"; será removido junto com arquivo 01/09/25.
 import { useEffect, useMemo, useState } from "react";
 import { generateCropYears } from "./helpers";
 import { CustomInput } from "../../../../../../components/CustomInput";
@@ -44,35 +44,16 @@ export const Step2: React.FC<StepProps> = ({
     fetchTablesAndProducts();
   }, []);
 
-  // // ✅ NOVO useEffect: Inicializa os estados locais com base no formData
-  // useEffect(() => {
-  //   if (formData.tableId) {
-  //     const table = tables.find((t) => t.id === formData.tableId);
-  //     if (table) {
-  //       setSelectedTable(table);
-  //     }
-  //   } else {
-  //     setSelectedTable(null); // Reseta se não houver tableId no form
-  //   }
-  // }, [formData.tableId, tables]);
-
   useEffect(() => {
-    if (formData.product && tables.length > 0) {
-      // Encontra a mesa que contém o product_type (sigla) do produto no seu array de product_types
-      const foundTable = tables.find((table) =>
-        table.product_types.includes(formData.product)
-      );
-      if (foundTable) {
-        setSelectedTable(foundTable);
-        // Opcionalmente, você pode atualizar o formData com o tableId aqui, se precisar dele para alguma outra lógica
-        // updateFormData({ ...formData, tableId: foundTable.id });
-      } else {
-        setSelectedTable(null);
+    if (formData.table_id) {
+      const table = tables.find((t) => t.id === formData.table_id);
+      if (table) {
+        setSelectedTable(table);
       }
     } else {
-      setSelectedTable(null); // Reseta se não houver produto no form
+      setSelectedTable(null); // Reseta se não houver table_id no formulário
     }
-  }, [formData.product, tables]); // Dependências: produto e mesas
+  }, [formData.table_id, tables]);
 
   const filteredProducts = useMemo(() => {
     if (!selectedTable) {
@@ -87,15 +68,13 @@ export const Step2: React.FC<StepProps> = ({
   }, [selectedTable, products]);
 
   const handleFieldChange = (field: string, value: string) => {
-    //const info = productInfo[value as ProductType];
-
     if (field === "table") {
       const table = tables.find((t) => t.id === value);
       setSelectedTable(table || null);
 
       updateFormData?.({
         ...formData,
-        tableId: value,
+        table_id: value,
         product: "",
         quality: "",
         observation: "",
@@ -166,7 +145,7 @@ export const Step2: React.FC<StepProps> = ({
         $labelPosition="top"
         selectOptions={tableOptions}
         onSelectChange={(value) => handleFieldChange("table", value)}
-        value={formData.tableId ?? ""}
+        value={formData.table_id ?? ""}
       />
 
       <CustomSelect
