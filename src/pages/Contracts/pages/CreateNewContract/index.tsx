@@ -102,6 +102,7 @@ export const CreateNewContract: React.FC = () => {
     final_pickup_date: currentDate,
     internal_communication: "",
     type_quantity: "",
+    table_id: "",
   });
   const { canConsult } = useUserPermissions();
 
