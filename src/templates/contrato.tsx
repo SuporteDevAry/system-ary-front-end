@@ -93,8 +93,9 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
       : ` quilos.`;
 
   let Dot =
-    formData.destination === "Nenhum" &&
-    formData.complement_destination?.length === 0
+    formData.destination === "Nenhum" ||
+    (formData.destination === "" &&
+      formData.complement_destination?.length === 0)
       ? "."
       : ", ";
 
@@ -111,6 +112,7 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
     ? `${" - "} ${formData.buyer.complement} `
     : "";
 
+  console.log("#####################koe", formData.destination, formData);
   return (
     <>
       <div id="contrato">
@@ -261,36 +263,22 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
           </strong>{" "}
           {/* por saca de 60(sessenta) quilos, */}
           {formattedPreco}
-          {/* Remover codigo depois de aprovado */}
-          {/* {formData.destination && (
+          {(formData.destination && formData.destination !== "Nenhum") ||
+          formData.complement_destination ? (
             <span>
               <strong>
                 (
-                {formData.complement_destination
-                  ? `${formData.destination} ${formData.complement_destination}`
-                  : formData.destination}
+                {[
+                  formData.destination !== "Nenhum" ? formData.destination : "",
+                  formData.complement_destination,
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
                 )
               </strong>
               .
             </span>
-          )} */}
-          {(formData.destination !== "Nenhum" ||
-            formData.complement_destination) && (
-            <span>
-              <strong>
-                (
-                {formData.destination === "Nenhum"
-                  ? formData.complement_destination || ""
-                  : `${formData.destination}${
-                      formData.complement_destination
-                        ? ` ${formData.complement_destination}`
-                        : ""
-                    }`}
-                )
-              </strong>
-              .
-            </span>
-          )}
+          ) : null}
         </p>
         <br />
 
