@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import {
     SBox,
+    SButtonContainer,
     SCardInfo,
     SCardInfoActions,
     SCardInfoNumber,
@@ -52,13 +53,15 @@ export function ChangeViewContract(): JSX.Element {
     };
 
     const renderActionButtons = (row: any) => (
-        <CustomButton
-            $variant="secondary"
-            width="75px"
-            onClick={() => handleEditReceipt(row)}
-        >
-            Editar
-        </CustomButton>
+        <SButtonContainer>
+            <CustomButton
+                $variant="secondary"
+                width="75px"
+                onClick={() => handleEditReceipt(row)}
+            >
+                Editar
+            </CustomButton>
+        </SButtonContainer>
     );
     const formatValor = (value: number | bigint) => {
         return new Intl.NumberFormat("pt-BR", {
@@ -254,10 +257,10 @@ export function ChangeViewContract(): JSX.Element {
 
                 <CustomButton
                     $variant={"success"}
-                    width="100px"
+                    width="200px"
                     onClick={handleCreateNewReceipt}
                 >
-                    Novo
+                    Novo Recebimento
                 </CustomButton>
                 <CustomTable
                     //isLoading={isLoading}
