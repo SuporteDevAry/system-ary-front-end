@@ -65,18 +65,28 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
     ? formData.number_contract
     : `${siglaProduct}.${formData.number_broker}-NNN/${currentYear}`;
 
-  function formatObservationText(observation: string) {
-    const lines = observation.split("\n");
-    return lines
-      .map((line) => {
-        if (/^\d+-/.test(line)) {
-          return `<span style="display:block; margin-left:0;">${line}</span>`;
-        } else {
-          return `<span style="display:block; margin-left:15px;">${line}</span>`;
-        }
-      })
-      .join("");
-  }
+  // // Remova as duas funções duplicadas e use esta:
+  // function formatObservationText(observation: string) {
+  //   // Se a observação estiver vazia, retorna uma string vazia
+  //   if (!observation) {
+  //     return "";
+  //   }
+
+  //   const lines = observation.split("\n");
+  //   const formattedLines = lines.map((line) => {
+  //     // Verifica se a linha começa com um ou mais dígitos seguidos de um traço.
+  //     if (/^\d+-/.test(line.trim())) {
+  //       // Se for uma linha de item de lista (ex: "1-"), não adiciona margem
+  //       return `<p style="margin-left: 0;">${line}</p>`;
+  //     } else {
+  //       // Se for uma linha de continuação, adiciona uma margem para indentar
+  //       return `<p style="margin-left: 0px;">${line}</p>`;
+  //     }
+  //   });
+
+  //   // Junta todas as linhas formatadas em uma única string HTML
+  //   return formattedLines.join("");
+  // }
 
   const listProductsForMetricTon = ["O", "F", "OC", "OA", "SB", "EP"];
   const validProductsForMetricTon = listProductsForMetricTon.includes(
@@ -112,7 +122,6 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
     ? `${" - "} ${formData.buyer.complement} `
     : "";
 
-  console.log("#####################koe", formData.destination, formData);
   return (
     <>
       <div id="contrato">
@@ -317,13 +326,10 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
             <strong>Observações:</strong>
           </p>
         )}
-        {/* <p style={{ textAlign: "justify", whiteSpace: "pre-line" }}>
-                        {formData.observation}
-                    </p> */}
         <p
           style={{ textAlign: "justify", whiteSpace: "pre-line" }}
           dangerouslySetInnerHTML={{
-            __html: formatObservationText(formData.observation),
+            __html: formData.observation,
           }}
         />
 
