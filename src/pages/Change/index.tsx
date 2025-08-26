@@ -3,13 +3,19 @@ import { SContainer, SCard, SCardIcon, SContent, STitle } from "./styles";
 
 import { IoCashOutline } from "react-icons/io5";
 import { IoReceiptOutline } from "react-icons/io5";
+import { IoReceiptSharp } from "react-icons/io5";
 
 export function Change() {
     const cardLinks = [
         {
-            label: "Emissão Nota Fiscal",
+            label: "Emissão RPS",
             icon: <IoReceiptOutline size={64} />,
             to: "/cobranca/notafiscal",
+        },
+        {
+            label: "Importa Nota Fiscal",
+            icon: <IoReceiptSharp size={64} />,
+            to: "/cobranca/AtualizaNF",
         },
         {
             label: "Recebimento",

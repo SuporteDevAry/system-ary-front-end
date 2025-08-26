@@ -13,30 +13,53 @@ import {
 } from "./styles";
 
 import { useLocation } from "react-router-dom";
-
 import { IContractData } from "../../../../../../contexts/ContractContext/types";
 import CustomButton from "../../../../../../components/CustomButton";
 import { formatCurrency } from "../../../../../../helpers/currencyFormat";
 import { CustomStatusIndicator } from "../../../../../../components/CustomStatusIndicator";
 import CustomTable from "../../../../../../components/CustomTable";
+import { ModalCreateNewReceipt } from "../modalNewReceipt";
 
 export function ChangeViewContract(): JSX.Element {
     const location = useLocation();
     //const { dataUserInfo } = useInfo();
     const [dataClient, setDataClient] = useState<IContractData | null>(null);
     //const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [isNewReceiptModalOpen, setNewReceiptModalOpen] =
+        useState<boolean>(false);
     const [page, setPage] = useState(0);
     const [order, setOrder] = useState<"asc" | "desc">("desc");
-    const [orderBy, setOrderBy] = useState<string>("contract_emission_date");
+    const [orderBy, setOrderBy] = useState<string>("data");
 
     useEffect(() => {
         const contractForView: IContractData = location.state?.contractForView;
         setDataClient(contractForView);
     }, [location]);
 
-    const handleNew = () => {};
-    //setIsLoading(false);
+    const handleCreateNewReceipt = async () => {
+        setNewReceiptModalOpen(true);
+    };
 
+    const handleCloseNewReceipt = () => {
+        setNewReceiptModalOpen(false);
+        //fetchData();
+    };
+
+    const handleEditReceipt = (row: any) => {
+        const dadosEdit = row;
+        console.log(dadosEdit);
+        setNewReceiptModalOpen(true);
+    };
+
+    const renderActionButtons = (row: any) => (
+        <CustomButton
+            $variant="secondary"
+            width="75px"
+            onClick={() => handleEditReceipt(row)}
+        >
+            Editar
+        </CustomButton>
+    );
     const formatValor = (value: number | bigint) => {
         return new Intl.NumberFormat("pt-BR", {
             style: "currency",
@@ -46,54 +69,41 @@ export function ChangeViewContract(): JSX.Element {
     };
     const recebtos = [
         {
-            data: "01/06/2025",
-            data_nf: "01/06/2025",
-            nf: "0001001",
+            dataRecebto: "01/08/2025",
+            rps: "0001001",
+            dataNF: "01/08/2025",
+            nf: "0005450",
             valor_bruto: 1500.0,
             valor_ir: 200.0,
             valor_liq: 1300.0,
         },
         {
-            data: "01/06/2025",
-            data_nf: "01/06/2025",
-            nf: "0001002",
-            valor_bruto: 2000.0,
-            valor_ir: 300.0,
-            valor_liq: 1700.0,
+            dataRecebto: "01/08/2025",
+            rps: "0001002",
+            dataNF: "01/08/2025",
+            nf: "0005451",
+            valor_bruto: 1000.0,
+            valor_ir: 100.0,
+            valor_liq: 900.0,
         },
         {
-            data: "01/06/2025",
-            data_nf: "01/06/2025",
-            nf: "0001003",
-            valor_bruto: 1800.0,
-            valor_ir: 250.0,
-            valor_liq: 1550.0,
-        },
-        {
-            data: "01/06/2025",
-            data_nf: "01/06/2025",
-            nf: "0001004",
-            valor_bruto: 2200.0,
-            valor_ir: 350.0,
-            valor_liq: 1850.0,
-        },
-        {
-            data: "01/06/2025",
-            data_nf: "01/06/2025",
-            nf: "0001005",
-            valor_bruto: 2500.0,
-            valor_ir: 400.0,
-            valor_liq: 2100.0,
+            dataRecebto: "03/08/2025",
+            rps: "0001005",
+            dataNF: "03/08/2025",
+            nf: "0005455",
+            valor_bruto: 21500.0,
+            valor_ir: 500.0,
+            valor_liq: 21000.0,
         },
     ];
     const nameColRecebto = [
         {
-            field: "data",
-            header: "DATA COBRANÇA",
+            field: "dataRecebto",
+            header: "DATA",
             width: "100px",
         },
         {
-            field: "data_nf",
+            field: "dataNF",
             header: "DATA NF",
             width: "100px",
             sortable: true,
@@ -121,29 +131,47 @@ export function ChangeViewContract(): JSX.Element {
         },
     ];
 
-    const contractFields = [
+    const contractFieldsCol1 = [
         { label: "Produto", value: dataClient?.name_product },
-        { label: "Vendedor", value: dataClient?.seller.name },
-        { label: "Comprador", value: dataClient?.buyer.name },
-        {
-            label: "Preço",
-            value: formatCurrency(
-                dataClient?.price?.toString() ?? "0",
-                dataClient?.type_currency ?? "Real"
-            ),
-        },
+        { label: "Vendedor", value: dataClient?.seller.name?.split(" ")[0] },
         {
             label: "Quantidade",
             value: dataClient?.quantity,
         },
         {
-            label: "Total do Contrato",
+            label: "Valor Comissão",
             value: formatCurrency(
-                dataClient?.total_contract_value?.toString() ?? "0",
-                dataClient?.type_currency ?? "Real"
+                dataClient?.vlr_comissao ?? "0",
+                dataClient?.vlr_comissao ?? "Real"
+            ),
+        },
+        {
+            label: "Total Recebido",
+            value: formatCurrency(
+                dataClient?.tot_recebido?.toString() ?? "0",
+                dataClient?.tot_recebido ?? "Real"
             ),
         },
     ];
+
+    const contractFieldsCol2 = [
+        {
+            label: "Data Pagamento",
+            value: dataClient?.payment_date,
+        },
+        { label: "Comprador", value: dataClient?.buyer.name?.split(" ")[0] },
+        {
+            label: "Quantidade Final",
+            value: dataClient?.quantity.toString() ?? "0",
+        },
+        {
+            label: "Liquidado",
+            value: dataClient?.liquidado,
+        },
+    ];
+
+    const column1 = contractFieldsCol1;
+    const column2 = contractFieldsCol2;
 
     return (
         <>
@@ -176,32 +204,58 @@ export function ChangeViewContract(): JSX.Element {
                                         }
                                     />
                                 </SKeyValue>
+                                <br></br>
+                                <CustomButton
+                                    $variant="secondary"
+                                    width="100px"
+
+                                    //onClick={handleViewPDF}
+                                >
+                                    Visualizar
+                                </CustomButton>
                             </SkeyName>
                         </SKeyContainer>
-                        <CustomButton
-                            $variant="secondary"
-                            width="100px"
-                            //onClick={handleViewPDF}
-                        >
-                            Visualizar
-                        </CustomButton>
                     </SCardInfoActions>
                 </SBox>
+                <SBox>
+                    <SCardInfo>
+                        <div
+                            style={{
+                                gap: "10px",
+                                width: "50%",
+                            }}
+                        >
+                            {column1.map((field, index) => (
+                                <SKeyContainer key={index}>
+                                    <SkeyName>
+                                        {field.label}:
+                                        <SKeyValue>{field.value}</SKeyValue>
+                                    </SkeyName>
+                                </SKeyContainer>
+                            ))}
+                        </div>
+                        <div
+                            style={{
+                                gap: "10px",
+                                width: "50%",
+                            }}
+                        >
+                            {column2.map((field, index) => (
+                                <SKeyContainer key={index}>
+                                    <SkeyName>
+                                        {field.label}:
+                                        <SKeyValue>{field.value}</SKeyValue>
+                                    </SkeyName>
+                                </SKeyContainer>
+                            ))}
+                        </div>
+                    </SCardInfo>
+                </SBox>
 
-                <SCardInfo>
-                    {contractFields.map((field, index) => (
-                        <SKeyContainer key={index}>
-                            <SkeyName>
-                                {field.label}:
-                                <SKeyValue>{field.value}</SKeyValue>
-                            </SkeyName>
-                        </SKeyContainer>
-                    ))}
-                </SCardInfo>
                 <CustomButton
-                    $variant="success"
-                    width="150px"
-                    onClick={handleNew}
+                    $variant={"success"}
+                    width="100px"
+                    onClick={handleCreateNewReceipt}
                 >
                     Novo
                 </CustomButton>
@@ -210,6 +264,7 @@ export function ChangeViewContract(): JSX.Element {
                     data={recebtos}
                     columns={nameColRecebto}
                     hasPagination
+                    actionButtons={renderActionButtons}
                     maxChars={15}
                     page={page}
                     setPage={setPage}
@@ -219,6 +274,10 @@ export function ChangeViewContract(): JSX.Element {
                     setOrderBy={setOrderBy}
                 />
             </SContainer>
+            <ModalCreateNewReceipt
+                open={isNewReceiptModalOpen}
+                onClose={handleCloseNewReceipt}
+            />
         </>
     );
 }

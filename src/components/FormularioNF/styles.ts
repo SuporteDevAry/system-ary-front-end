@@ -1,13 +1,19 @@
-import { styled } from "styled-components";
+import styled from "styled-components";
 
 export const STitle = styled.h2``;
 
-export const SContainer = styled.div`
+export const SFormContainer = styled.div`
+  width: 700px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  justify-content: center;
-  align-items: start;
+  gap: 8px;
+`;
+
+export const BoxContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  justify-content: flex-end;
 `;
 
 export const SCardInfo = styled.div`
@@ -50,13 +56,6 @@ export const SKeyContainer = styled.div`
   padding-left: 16px;
 `;
 
-export const SCardContainer = styled.span`
-  display: inline-block;
-  padding-right: 8px;
-  margin-top: 8px;
-  padding-left: 16px;
-`;
-
 export const SkeyName = styled.span`
   font-weight: bold;
   color: ${(props) => props.theme["black"]};
@@ -67,28 +66,4 @@ export const SKeyValue = styled.span`
   font-weight: 500;
   padding-left: 8px;
   color: ${(props) => props.theme["black-300"]};
-`;
-
-export const SButtonContainer = styled.div`
-  display: flex;
-  flex-direction: row;
-  gap: 8px;
-  justify-content: flex-end;
-`;
-
-export const BoxContainer = styled.div`
-  display: flex;
-  flex-direction: row;
-  gap: 16px;
-  justify-content: end;
-  padding-top: 16px;
-`;
-
-export const SNumberContract = styled.span`
-  display: flex;
-  font-weight: 500;
-  padding-top: 16px;
-  font-size: 30px;
-  color: ${(props) => props.theme["black-300"]};
-  justify-content: end;
 `;

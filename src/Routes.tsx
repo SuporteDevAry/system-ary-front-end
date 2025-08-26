@@ -27,6 +27,8 @@ import { Change } from "./pages/Change";
 import { ChangeViewContract } from "./pages/Change/pages/ChangeContracts/components/ChangeViewContracts";
 import { ChangeInvoice } from "./pages/Change/pages/ChangeInvoice";
 import { ChangeContract } from "./pages/Change/pages/ChangeContracts";
+import { Invoice } from "./pages/Change/pages/ChangeInvoice/components/Invoice";
+import { ChangeNotaFiscal } from "./pages/Change/pages/ChangeNotaFiscal";
 
 export function RoutesForPages() {
     return (
@@ -193,6 +195,26 @@ export function RoutesForPages() {
                 }
             />
             <Route
+                path="/cobranca/notafiscal"
+                element={
+                    <ProtectedLayout>
+                        <Layout>
+                            <ChangeInvoice />
+                        </Layout>
+                    </ProtectedLayout>
+                }
+            />
+            <Route
+                path="/cobranca/dados-nf"
+                element={
+                    <ProtectedLayout>
+                        <Layout>
+                            <Invoice />
+                        </Layout>
+                    </ProtectedLayout>
+                }
+            />
+            <Route
                 path="/cobranca/visualizar-contrato"
                 element={
                     <ProtectedLayout>
@@ -203,21 +225,11 @@ export function RoutesForPages() {
                 }
             />
             <Route
-                path="/cobranca/notafiscal"
+                path="/cobranca/atualizaNF"
                 element={
                     <ProtectedLayout>
                         <Layout>
-                            <ChangeInvoice />
-                        </Layout>
-                    </ProtectedLayout>
-                }
-            />
-            <Route
-                path="/cobranca/notafiscal"
-                element={
-                    <ProtectedLayout>
-                        <Layout>
-                            <ChangeInvoice />
+                            <ChangeNotaFiscal />
                         </Layout>
                     </ProtectedLayout>
                 }
