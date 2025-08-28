@@ -65,29 +65,33 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
     ? formData.number_contract
     : `${siglaProduct}.${formData.number_broker}-NNN/${currentYear}`;
 
-  // // Remova as duas funções duplicadas e use esta:
-  // function formatObservationText(observation: string) {
-  //   // Se a observação estiver vazia, retorna uma string vazia
-  //   if (!observation) {
-  //     return "";
-  //   }
+  function formatObservationText(observation: string) {
+    if (!observation) {
+      return "";
+    }
 
-  //   const lines = observation.split("\n");
-  //   const formattedLines = lines.map((line) => {
-  //     // Verifica se a linha começa com um ou mais dígitos seguidos de um traço.
-  //     if (/^\d+-/.test(line.trim())) {
-  //       // Se for uma linha de item de lista (ex: "1-"), não adiciona margem
-  //       return `<p style="margin-left: 0;">${line}</p>`;
-  //     } else {
-  //       // Se for uma linha de continuação, adiciona uma margem para indentar
-  //       return `<p style="margin-left: 0px;">${line}</p>`;
-  //     }
-  //   });
+    const lines = observation.split("\n");
+    const hasMultipleLines = lines.length > 1;
 
-  //   // Junta todas as linhas formatadas em uma única string HTML
-  //   return formattedLines.join("");
-  // }
+    const formattedLines = lines.map((line) => {
+      // Trim para remover espaços em branco no início/fim da linha
+      const trimmedLine = line.trim();
 
+      // Se a linha começar com um número seguido de hífen...
+      if (/^\d+-/.test(trimmedLine)) {
+        // ... não adicione margem.
+        return `<p style="margin-left: 0;">${line}</p>`;
+      } else if (hasMultipleLines) {
+        // ... caso contrário, se houver múltiplas linhas, adicione margem para indentar.
+        return `<p style="margin-left: 20px;">${line}</p>`;
+      } else {
+        // ... se houver apenas uma linha, não adicione margem.
+        return `<p>${line}</p>`;
+      }
+    });
+
+    return formattedLines.join("");
+  }
   const listProductsForMetricTon = ["O", "F", "OC", "OA", "SB", "EP"];
   const validProductsForMetricTon = listProductsForMetricTon.includes(
     formData.product
@@ -329,7 +333,7 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
         <p
           style={{ textAlign: "justify", whiteSpace: "pre-line" }}
           dangerouslySetInnerHTML={{
-            __html: formData.observation,
+            __html: formatObservationText(formData.observation),
           }}
         />
 
