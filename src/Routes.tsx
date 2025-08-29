@@ -23,6 +23,9 @@ import { GrainsBigger } from "./pages/Reports/pages/GrainsBigger";
 import { GrainsVol } from "./pages/Reports/pages/GrainsVol";
 import { Invoicing } from "./pages/Reports/pages/Invoicing";
 import { ControlContracts } from "./pages/Execution/pages/ControlContracts";
+import { Products } from "./pages/Products";
+import { TableProducts } from "./pages/TableProducts";
+import { ViewProduct } from "./pages/Products/components/ViewProduct";
 import { Change } from "./pages/Change";
 import { ChangeViewContract } from "./pages/Change/pages/ChangeContracts/components/ChangeViewContracts";
 import { ChangeInvoice } from "./pages/Change/pages/ChangeInvoice";
@@ -163,6 +166,7 @@ export function RoutesForPages() {
                     </ProtectedLayout>
                 }
             />
+
             <Route
                 path="/execucao/enviar-contratos"
                 element={
@@ -299,6 +303,36 @@ export function RoutesForPages() {
                     <ProtectedLayout>
                         <Layout>
                             <Permissions />
+                        </Layout>
+                    </ProtectedLayout>
+                }
+            />
+            <Route
+                path="/admin/produtos"
+                element={
+                    <ProtectedLayout>
+                        <Layout>
+                            <Products />
+                        </Layout>
+                    </ProtectedLayout>
+                }
+            />
+            <Route
+                path="/admin/produtos/visualizar-produto"
+                element={
+                    <ProtectedLayout>
+                        <Layout>
+                            <ViewProduct />
+                        </Layout>
+                    </ProtectedLayout>
+                }
+            />
+            <Route
+                path="/admin/mesas"
+                element={
+                    <ProtectedLayout>
+                        <Layout>
+                            <TableProducts />
                         </Layout>
                     </ProtectedLayout>
                 }
