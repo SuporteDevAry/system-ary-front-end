@@ -23,154 +23,146 @@ import { GrainsBigger } from "./pages/Reports/pages/GrainsBigger";
 import { GrainsVol } from "./pages/Reports/pages/GrainsVol";
 import { Invoicing } from "./pages/Reports/pages/Invoicing";
 import { ControlContracts } from "./pages/Execution/pages/ControlContracts";
-<<<<<<< HEAD
 import { Change } from "./pages/Change";
 import { ChangeViewContract } from "./pages/Change/pages/ChangeContracts/components/ChangeViewContracts";
 import { ChangeInvoice } from "./pages/Change/pages/ChangeInvoice";
 import { ChangeContract } from "./pages/Change/pages/ChangeContracts";
 import { Invoice } from "./pages/Change/pages/ChangeInvoice/components/Invoice";
 import { ChangeNotaFiscal } from "./pages/Change/pages/ChangeNotaFiscal";
-=======
-import { Products } from "./pages/Products";
-import { TableProducts } from "./pages/TableProducts";
-import { ViewProduct } from "./pages/Products/components/ViewProduct";
->>>>>>> f1295817a67957e1417a83118bc6135db41449b9
 
 export function RoutesForPages() {
-  return (
-    <Routes>
-      <Route
-        path="/dashboard"
-        element={
-          <Layout>
-            <Dashboard />
-          </Layout>
-        }
-      />
-      <Route
-        path="/contratos"
-        element={
-          <ProtectedLayout>
-            <Layout>
-              <Contract />
-            </Layout>
-          </ProtectedLayout>
-        }
-      />
-      <Route
-        path="/contratos/novo-contrato"
-        element={
-          <ProtectedLayout>
-            <Layout>
-              <CreateNewContract />
-            </Layout>
-          </ProtectedLayout>
-        }
-      />
-      <Route
-        path="/contratos/editar-contrato"
-        element={
-          <ProtectedLayout>
-            <Layout>
-              <CreateNewContract />
-            </Layout>
-          </ProtectedLayout>
-        }
-      />
-      <Route
-        path="/contratos/historico"
-        element={
-          <ProtectedLayout>
-            <Layout>
-              <HistoryContracts />
-            </Layout>
-          </ProtectedLayout>
-        }
-      />
-      <Route
-        path="/contratos/historico/visualizar-contrato"
-        element={
-          <ProtectedLayout>
-            <Layout>
-              <ViewContract />
-            </Layout>
-          </ProtectedLayout>
-        }
-      />
-      <Route
-        path="/clientes"
-        element={
-          <ProtectedLayout>
-            <Layout>
-              <Clientes />
-            </Layout>
-          </ProtectedLayout>
-        }
-      />
+    return (
+        <Routes>
+            <Route
+                path="/dashboard"
+                element={
+                    <Layout>
+                        <Dashboard />
+                    </Layout>
+                }
+            />
+            <Route
+                path="/contratos"
+                element={
+                    <ProtectedLayout>
+                        <Layout>
+                            <Contract />
+                        </Layout>
+                    </ProtectedLayout>
+                }
+            />
+            <Route
+                path="/contratos/novo-contrato"
+                element={
+                    <ProtectedLayout>
+                        <Layout>
+                            <CreateNewContract />
+                        </Layout>
+                    </ProtectedLayout>
+                }
+            />
+            <Route
+                path="/contratos/editar-contrato"
+                element={
+                    <ProtectedLayout>
+                        <Layout>
+                            <CreateNewContract />
+                        </Layout>
+                    </ProtectedLayout>
+                }
+            />
+            <Route
+                path="/contratos/historico"
+                element={
+                    <ProtectedLayout>
+                        <Layout>
+                            <HistoryContracts />
+                        </Layout>
+                    </ProtectedLayout>
+                }
+            />
+            <Route
+                path="/contratos/historico/visualizar-contrato"
+                element={
+                    <ProtectedLayout>
+                        <Layout>
+                            <ViewContract />
+                        </Layout>
+                    </ProtectedLayout>
+                }
+            />
+            <Route
+                path="/clientes"
+                element={
+                    <ProtectedLayout>
+                        <Layout>
+                            <Clientes />
+                        </Layout>
+                    </ProtectedLayout>
+                }
+            />
 
-      <Route
-        path="/clientes/visualizar-cliente"
-        element={
-          <ProtectedLayout>
-            <Layout>
-              <ViewCustomer />
-            </Layout>
-          </ProtectedLayout>
-        }
-      />
+            <Route
+                path="/clientes/visualizar-cliente"
+                element={
+                    <ProtectedLayout>
+                        <Layout>
+                            <ViewCustomer />
+                        </Layout>
+                    </ProtectedLayout>
+                }
+            />
 
-      <Route
-        path="/clientes/cliente-cadastrar"
-        element={
-          <ProtectedLayout>
-            <Layout>
-              <CadastrarCliente />
-            </Layout>
-          </ProtectedLayout>
-        }
-      />
-      <Route
-        path="/clientes/cliente-editar"
-        element={
-          <ProtectedLayout>
-            <Layout>
-              <EditarCliente />
-            </Layout>
-          </ProtectedLayout>
-        }
-      />
-      <Route
-        path="/execucao"
-        element={
-          <ProtectedLayout>
-            <Layout>
-              <Execution />
-            </Layout>
-          </ProtectedLayout>
-        }
-      />
-      <Route
-        path="/execucao/historico"
-        element={
-          <ProtectedLayout>
-            <Layout>
-              <HistoryContracts />
-            </Layout>
-          </ProtectedLayout>
-        }
-      />
-      <Route
-        path="/execucao/controle"
-        element={
-          <ProtectedLayout>
-            <Layout>
-              <ControlContracts />
-            </Layout>
-          </ProtectedLayout>
-        }
-      />
-
-<<<<<<< HEAD
+            <Route
+                path="/clientes/cliente-cadastrar"
+                element={
+                    <ProtectedLayout>
+                        <Layout>
+                            <CadastrarCliente />
+                        </Layout>
+                    </ProtectedLayout>
+                }
+            />
+            <Route
+                path="/clientes/cliente-editar"
+                element={
+                    <ProtectedLayout>
+                        <Layout>
+                            <EditarCliente />
+                        </Layout>
+                    </ProtectedLayout>
+                }
+            />
+            <Route
+                path="/execucao"
+                element={
+                    <ProtectedLayout>
+                        <Layout>
+                            <Execution />
+                        </Layout>
+                    </ProtectedLayout>
+                }
+            />
+            <Route
+                path="/execucao/historico"
+                element={
+                    <ProtectedLayout>
+                        <Layout>
+                            <HistoryContracts />
+                        </Layout>
+                    </ProtectedLayout>
+                }
+            />
+            <Route
+                path="/execucao/controle"
+                element={
+                    <ProtectedLayout>
+                        <Layout>
+                            <ControlContracts />
+                        </Layout>
+                    </ProtectedLayout>
+                }
+            />
             <Route
                 path="/execucao/enviar-contratos"
                 element={
@@ -327,132 +319,4 @@ export function RoutesForPages() {
             <Route path="*" element={<Login />} />
         </Routes>
     );
-=======
-      <Route
-        path="/execucao/enviar-contratos"
-        element={
-          <ProtectedLayout>
-            <Layout>
-              <SendContracts />
-            </Layout>
-          </ProtectedLayout>
-        }
-      />
-      <Route
-        path="/relatorios"
-        element={
-          <ProtectedLayout>
-            <Layout>
-              <Reports />
-            </Layout>
-          </ProtectedLayout>
-        }
-      />
-      <Route
-        path="/relatorios/graos-volume"
-        element={
-          <ProtectedLayout>
-            <Layout>
-              <GrainsVol />
-            </Layout>
-          </ProtectedLayout>
-        }
-      />
-      <Route
-        path="/relatorios/graos-maiores"
-        element={
-          <ProtectedLayout>
-            <Layout>
-              <GrainsBigger />
-            </Layout>
-          </ProtectedLayout>
-        }
-      />
-      <Route
-        path="/relatorios/faturamento"
-        element={
-          <ProtectedLayout>
-            <Layout>
-              <Invoicing />
-            </Layout>
-          </ProtectedLayout>
-        }
-      />
-      <Route
-        path="/admin/usuarios"
-        element={
-          <ProtectedLayout>
-            <Layout>
-              <Users />
-            </Layout>
-          </ProtectedLayout>
-        }
-      />
-      <Route
-        path="/admin"
-        element={
-          <ProtectedLayout>
-            <Layout>
-              <Admin />
-            </Layout>
-          </ProtectedLayout>
-        }
-      />
-      <Route
-        path="/admin/permissoes"
-        element={
-          <ProtectedLayout>
-            <Layout>
-              <Permissions />
-            </Layout>
-          </ProtectedLayout>
-        }
-      />
-      <Route
-        path="/admin/produtos"
-        element={
-          <ProtectedLayout>
-            <Layout>
-              <Products />
-            </Layout>
-          </ProtectedLayout>
-        }
-      />
-      <Route
-        path="/admin/produtos/visualizar-produto"
-        element={
-          <ProtectedLayout>
-            <Layout>
-              <ViewProduct />
-            </Layout>
-          </ProtectedLayout>
-        }
-      />
-      <Route
-        path="/admin/mesas"
-        element={
-          <ProtectedLayout>
-            <Layout>
-              <TableProducts />
-            </Layout>
-          </ProtectedLayout>
-        }
-      />
-      <Route
-        path="/minha-conta"
-        element={
-          <ProtectedLayout>
-            <Layout>
-              <MyAccount />
-            </Layout>
-          </ProtectedLayout>
-        }
-      />
-      <Route path="/" element={<Login />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/logout" element={<Logout />} />
-      <Route path="*" element={<Login />} />
-    </Routes>
-  );
->>>>>>> f1295817a67957e1417a83118bc6135db41449b9
 }
