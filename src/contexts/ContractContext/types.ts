@@ -80,6 +80,7 @@ export interface IContractData {
   internal_communication: string;
   complement_destination?: string;
   type_quantity?: string;
+  table_id?: string;
 }
 
 export interface IContractContext {

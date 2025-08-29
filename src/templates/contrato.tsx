@@ -66,18 +66,32 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
     : `${siglaProduct}.${formData.number_broker}-NNN/${currentYear}`;
 
   function formatObservationText(observation: string) {
-    const lines = observation.split("\n");
-    return lines
-      .map((line) => {
-        if (/^\d+-/.test(line)) {
-          return `<span style="display:block; margin-left:0;">${line}</span>`;
-        } else {
-          return `<span style="display:block; margin-left:15px;">${line}</span>`;
-        }
-      })
-      .join("");
-  }
+    if (!observation) {
+      return "";
+    }
 
+    const lines = observation.split("\n");
+    const hasMultipleLines = lines.length > 1;
+
+    const formattedLines = lines.map((line) => {
+      // Trim para remover espaços em branco no início/fim da linha
+      const trimmedLine = line.trim();
+
+      // Se a linha começar com um número seguido de hífen...
+      if (/^\d+-/.test(trimmedLine)) {
+        // ... não adicione margem.
+        return `<p style="margin-left: 0;">${line}</p>`;
+      } else if (hasMultipleLines) {
+        // ... caso contrário, se houver múltiplas linhas, adicione margem para indentar.
+        return `<p style="margin-left: 20px;">${line}</p>`;
+      } else {
+        // ... se houver apenas uma linha, não adicione margem.
+        return `<p>${line}</p>`;
+      }
+    });
+
+    return formattedLines.join("");
+  }
   const listProductsForMetricTon = ["O", "F", "OC", "OA", "SB", "EP"];
   const validProductsForMetricTon = listProductsForMetricTon.includes(
     formData.product
@@ -93,8 +107,9 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
       : ` quilos.`;
 
   let Dot =
-    formData.destination === "Nenhum" &&
-    formData.complement_destination?.length === 0
+    formData.destination === "Nenhum" ||
+    (formData.destination === "" &&
+      formData.complement_destination?.length === 0)
       ? "."
       : ", ";
 
@@ -261,36 +276,22 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
           </strong>{" "}
           {/* por saca de 60(sessenta) quilos, */}
           {formattedPreco}
-          {/* Remover codigo depois de aprovado */}
-          {/* {formData.destination && (
+          {(formData.destination && formData.destination !== "Nenhum") ||
+          formData.complement_destination ? (
             <span>
               <strong>
                 (
-                {formData.complement_destination
-                  ? `${formData.destination} ${formData.complement_destination}`
-                  : formData.destination}
+                {[
+                  formData.destination !== "Nenhum" ? formData.destination : "",
+                  formData.complement_destination,
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
                 )
               </strong>
               .
             </span>
-          )} */}
-          {(formData.destination !== "Nenhum" ||
-            formData.complement_destination) && (
-            <span>
-              <strong>
-                (
-                {formData.destination === "Nenhum"
-                  ? formData.complement_destination || ""
-                  : `${formData.destination}${
-                      formData.complement_destination
-                        ? ` ${formData.complement_destination}`
-                        : ""
-                    }`}
-                )
-              </strong>
-              .
-            </span>
-          )}
+          ) : null}
         </p>
         <br />
 
@@ -329,9 +330,6 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
             <strong>Observações:</strong>
           </p>
         )}
-        {/* <p style={{ textAlign: "justify", whiteSpace: "pre-line" }}>
-                        {formData.observation}
-                    </p> */}
         <p
           style={{ textAlign: "justify", whiteSpace: "pre-line" }}
           dangerouslySetInnerHTML={{

@@ -52,7 +52,7 @@ export type FormDataContract = {
   final_pickup_date: string;
   internal_communication: string;
   type_quantity?: string;
-  //updated_at?: string;
+  table_id?: string;
 };
 
 export interface StepProps {

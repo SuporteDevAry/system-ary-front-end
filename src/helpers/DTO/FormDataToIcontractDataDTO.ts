@@ -51,5 +51,6 @@ export const FormDataToIContractDataDTO = (
     internal_communication: data.internal_communication,
     complement_destination: data?.complement_destination,
     type_quantity: data?.type_quantity,
+    table_id: data?.table_id,
   };
 };

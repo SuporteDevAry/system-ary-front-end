@@ -1,3 +1,7 @@
+/*
+ *Esse arquivo será removido em breve!
+ */
+
 export type ProductType =
   | "S"
   | "CN"
@@ -40,9 +44,9 @@ Bill of Lading (BL).
     quality: `Padrão exportação conforme contrato ANEC nr. 43.`,
     observation: `1-Mercadoria destinada à exportação.
 2-O comprador se compromete a apresentar os documentos de exportação no prazo determinado por lei, tais como:
-DUE com referência das Notas Fiscais de Remessa.
-NF de Exportação.
-Bill of Lading (BL).
+  DUE com referência das Notas Fiscais de Remessa.
+  NF de Exportação.
+  Bill of Lading (BL).
 3-CBOT referência =   ... ......... / .......... spot.`,
   },
   T: {
