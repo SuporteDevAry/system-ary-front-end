@@ -16,15 +16,25 @@ import { IContractData } from "../../../contexts/ContractContext/types";
 import { toast } from "react-toastify";
 import { SChartContainer, SContainer, SDashboardContainer } from "./styles";
 
-const COLORS = [
-    "#00A335", // soja
-    "#413ea0", // milho
-    "#D72735", // trigo
-    "#ff7300", // sorgo
-    "#8884d8", // oleo
-    "#A349A4", // sebo bovino
-    "#B97A57", // farelo
-];
+// const COLORS = [
+//     "#00A335", // soja
+//     "#413ea0", // milho
+//     "#D72735", // trigo
+//     "#ff7300", // sorgo
+//     "#8884d8", // oleo
+//     "#A349A4", // sebo bovino
+//     "#B97A57", // farelo
+// ];
+
+const COLORS: Record<string, string> = {
+    SOJA: "#00A335",
+    MILHO: "#413ea0",
+    TRIGO: "#D72735",
+    SORGO: "#ff7300",
+    ÓLEO: "#8884d8",
+    "SEBO BOVINO": "#A349A4",
+    FARELO: "#B97A57",
+};
 
 export function DashFinance() {
     const contractContext = ContractContext();
@@ -111,7 +121,10 @@ export function DashFinance() {
     // Total Gráfico Mês
     let monthSoja = Math.round(
         contractMonth
-            .filter((contract) => contract.name_product === "SOJA em Grãos")
+            .filter(
+                (contract) =>
+                    contract.name_product.toUpperCase() === "SOJA EM GRÃOS"
+            )
             .reduce(
                 (acc, contract) => acc + Number(contract.quantity) / 1000,
                 0
@@ -119,7 +132,10 @@ export function DashFinance() {
     );
     let monthMilho = Math.round(
         contractMonth
-            .filter((contract) => contract.name_product === "MILHO em Grãos")
+            .filter(
+                (contract) =>
+                    contract.name_product.toUpperCase() === "MILHO EM GRÃOS"
+            )
             .reduce(
                 (acc, contract) => acc + Number(contract.quantity) / 1000,
                 0
@@ -127,7 +143,9 @@ export function DashFinance() {
     );
     let monthTrigo = Math.round(
         contractMonth
-            .filter((contract) => contract.name_product === "TRIGO")
+            .filter(
+                (contract) => contract.name_product.toUpperCase() === "TRIGO"
+            )
             .reduce(
                 (acc, contract) => acc + Number(contract.quantity) / 1000,
                 0
@@ -135,7 +153,9 @@ export function DashFinance() {
     );
     let monthSorgo = Math.round(
         contractMonth
-            .filter((contract) => contract.name_product === "SORGO")
+            .filter(
+                (contract) => contract.name_product.toUpperCase() === "SORGO"
+            )
             .reduce(
                 (acc, contract) => acc + Number(contract.quantity) / 1000,
                 0
@@ -144,20 +164,28 @@ export function DashFinance() {
     let monthOleo = Math.round(
         contractMonth
             .filter(
-                (contract) => contract.name_product === "ÓLEO DE SOJA a Granel"
+                (contract) =>
+                    contract.name_product.toUpperCase() ===
+                        "ÓLEO DE SOJA A GRANEL" ||
+                    contract.name_product.toUpperCase() ===
+                        "ÓLEO DE ALGODÃO A GRANEL"
             )
             .reduce((acc, contract) => acc + Number(contract.quantity), 0)
     );
     let monthSebo = Math.round(
         contractMonth
-            .filter((contract) => contract.name_product === "SEBO BOVINO")
+            .filter(
+                (contract) =>
+                    contract.name_product.toUpperCase() === "SEBO BOVINO"
+            )
             .reduce((acc, contract) => acc + Number(contract.quantity), 0)
     );
     let monthFarelo = Math.round(
         contractMonth
             .filter(
                 (contract) =>
-                    contract.name_product === "FARELO DE SOJA a Granel"
+                    contract.name_product.toUpperCase() ===
+                    "FARELO DE SOJA A GRANEL"
             )
             .reduce((acc, contract) => acc + Number(contract.quantity), 0)
     );
@@ -165,7 +193,10 @@ export function DashFinance() {
     // Total Gráfico ANO
     let totalSoja = Math.round(
         contractYear
-            .filter((contract) => contract.name_product === "SOJA em Grãos")
+            .filter(
+                (contract) =>
+                    contract.name_product.toUpperCase() === "SOJA EM GRÃOS"
+            )
             .reduce(
                 (acc, contract) => acc + Number(contract.quantity) / 1000,
                 0
@@ -173,7 +204,10 @@ export function DashFinance() {
     );
     let totalMilho = Math.round(
         contractYear
-            .filter((contract) => contract.name_product === "MILHO em Grãos")
+            .filter(
+                (contract) =>
+                    contract.name_product.toUpperCase() === "MILHO EM GRÃOS"
+            )
             .reduce(
                 (acc, contract) => acc + Number(contract.quantity) / 1000,
                 0
@@ -181,7 +215,9 @@ export function DashFinance() {
     );
     let totalTrigo = Math.round(
         contractYear
-            .filter((contract) => contract.name_product === "TRIGO")
+            .filter(
+                (contract) => contract.name_product.toUpperCase() === "TRIGO"
+            )
             .reduce(
                 (acc, contract) => acc + Number(contract.quantity) / 1000,
                 0
@@ -189,7 +225,9 @@ export function DashFinance() {
     );
     let totalSorgo = Math.round(
         contractYear
-            .filter((contract) => contract.name_product === "SORGO")
+            .filter(
+                (contract) => contract.name_product.toUpperCase() === "SORGO"
+            )
             .reduce(
                 (acc, contract) => acc + Number(contract.quantity) / 1000,
                 0
@@ -198,20 +236,28 @@ export function DashFinance() {
     let totalOleo = Math.round(
         contractYear
             .filter(
-                (contract) => contract.name_product === "ÓLEO DE SOJA a Granel"
+                (contract) =>
+                    contract.name_product.toUpperCase() ===
+                        "ÓLEO DE SOJA A GRANEL" ||
+                    contract.name_product.toUpperCase() ===
+                        "ÓLEO DE ALGODÃO A GRANEL"
             )
             .reduce((acc, contract) => acc + Number(contract.quantity), 0)
     );
     let totalSebo = Math.round(
         contractYear
-            .filter((contract) => contract.name_product === "SEBO BOVINO")
+            .filter(
+                (contract) =>
+                    contract.name_product.toUpperCase() === "SEBO BOVINO"
+            )
             .reduce((acc, contract) => acc + Number(contract.quantity), 0)
     );
     let totalFarelo = Math.round(
         contractYear
             .filter(
                 (contract) =>
-                    contract.name_product === "FARELO DE SOJA a Granel"
+                    contract.name_product.toUpperCase() ===
+                    "FARELO DE SOJA A GRANEL"
             )
             .reduce((acc, contract) => acc + Number(contract.quantity), 0)
     );
@@ -256,7 +302,11 @@ export function DashFinance() {
                             {dataYear.map((_entry, index) => (
                                 <Cell
                                     key={`cell-${index}`}
-                                    fill={COLORS[index % COLORS.length]}
+                                    // fill={COLORS[index % COLORS.length]}
+                                    fill={
+                                        COLORS[_entry.name?.toUpperCase()] ||
+                                        "#CCCCCC"
+                                    }
                                 />
                             ))}
                         </Pie>
@@ -305,7 +355,11 @@ export function DashFinance() {
                             {dataMonth.map((_entry, index) => (
                                 <Cell
                                     key={`cell-${index}`}
-                                    fill={COLORS[index % COLORS.length]}
+                                    //fill={COLORS[index % COLORS.length]}
+                                    fill={
+                                        COLORS[_entry.name?.toUpperCase()] ||
+                                        "#CCCCCC"
+                                    }
                                 />
                             ))}
                         </Pie>
