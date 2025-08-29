@@ -23,7 +23,7 @@ export function GrainsVol() {
             setIsLoading(true);
             const response = await contractContext.listContracts();
 
-            const updatedContracts = response.data.map(
+            const filteredContracts = response.data.filter(
                 (contract: {
                     total_contract_value: any;
                     commission_seller: any;
@@ -35,6 +35,29 @@ export function GrainsVol() {
                     commission: any;
                     quantity: any;
                     product: any;
+                    name_product: any;
+                }) =>
+                    (contract.name_product &&
+                        contract.name_product.toUpperCase() ===
+                            "SOJA EM GRÃOS") ||
+                    contract.name_product.toUpperCase() === "MILHO EM GRÃOS" ||
+                    contract.name_product.toUpperCase() === "TRIGO" ||
+                    contract.name_product.toUpperCase() === "SORGO"
+            );
+
+            const updatedContracts = filteredContracts.map(
+                (contract: {
+                    total_contract_value: any;
+                    commission_seller: any;
+                    commission_buyer: any;
+                    type_commission_seller: any;
+                    type_commission_buyer: any;
+                    type_commission: any;
+                    resp_commission: any;
+                    commission: any;
+                    quantity: any;
+                    product: any;
+                    name_product: any;
                 }) => {
                     // 02/01/2025 - Carlos - Farelo e Óleo não divide por 60
                     // Só iremos remover essa regra das siglas, caso o cliente aceite a sugestão da reunião do dia 09/04/2025

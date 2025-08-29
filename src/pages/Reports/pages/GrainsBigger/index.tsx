@@ -21,10 +21,22 @@ export function GrainsBigger() {
             setIsLoading(true);
             const response = await contractContext.listContracts();
 
-            const formatted = response.data.map((contract: IContractData) => ({
-                ...contract,
-                quantity: Number(contract.quantity),
-            }));
+            const filteredContracts = response.data.filter(
+                (contract: IContractData) =>
+                    (contract.name_product &&
+                        contract.name_product.toUpperCase() ===
+                            "SOJA EM GRÃOS") ||
+                    contract.name_product.toUpperCase() === "MILHO EM GRÃOS" ||
+                    contract.name_product.toUpperCase() === "TRIGO" ||
+                    contract.name_product.toUpperCase() === "SORGO"
+            );
+
+            const formatted = filteredContracts.map(
+                (contract: IContractData) => ({
+                    ...contract,
+                    quantity: Number(contract.quantity),
+                })
+            );
 
             setListContracts(formatted);
         } catch (error) {
@@ -90,7 +102,7 @@ export function GrainsBigger() {
             {
                 field: "seller",
                 header: "VENDEDOR",
-                width: "250px",
+                width: "350px",
             },
         ];
 
