@@ -26,12 +26,12 @@ import { ControlContracts } from "./pages/Execution/pages/ControlContracts";
 import { Products } from "./pages/Products";
 import { TableProducts } from "./pages/TableProducts";
 import { ViewProduct } from "./pages/Products/components/ViewProduct";
-import { Change } from "./pages/Change";
-import { ChangeViewContract } from "./pages/Change/pages/ChangeContracts/components/ChangeViewContracts";
-import { ChangeInvoice } from "./pages/Change/pages/ChangeInvoice";
-import { ChangeContract } from "./pages/Change/pages/ChangeContracts";
-import { Invoice } from "./pages/Change/pages/ChangeInvoice/components/Invoice";
-import { ChangeNotaFiscal } from "./pages/Change/pages/ChangeNotaFiscal";
+import { Billing } from "./pages/Billing";
+import { Receipt } from "./pages/Billing/pages/Receipt";
+import { NotaFiscal } from "./pages/Billing/pages/NotaFiscal";
+import { Invoice } from "./pages/Billing/pages/Invoice";
+import { CreateInvoice } from "./pages/Billing/pages/Invoice/components/CreateInvoice";
+import { ViewReceipt } from "./pages/Billing/pages/Receipt/components/ViewReceipt";
 
 export function RoutesForPages() {
     return (
@@ -182,17 +182,7 @@ export function RoutesForPages() {
                 element={
                     <ProtectedLayout>
                         <Layout>
-                            <Change />
-                        </Layout>
-                    </ProtectedLayout>
-                }
-            />
-            <Route
-                path="/cobranca/recebimento"
-                element={
-                    <ProtectedLayout>
-                        <Layout>
-                            <ChangeContract />
+                            <Billing />
                         </Layout>
                     </ProtectedLayout>
                 }
@@ -202,7 +192,7 @@ export function RoutesForPages() {
                 element={
                     <ProtectedLayout>
                         <Layout>
-                            <ChangeInvoice />
+                            <Invoice />
                         </Layout>
                     </ProtectedLayout>
                 }
@@ -212,17 +202,7 @@ export function RoutesForPages() {
                 element={
                     <ProtectedLayout>
                         <Layout>
-                            <Invoice />
-                        </Layout>
-                    </ProtectedLayout>
-                }
-            />
-            <Route
-                path="/cobranca/visualizar-contrato"
-                element={
-                    <ProtectedLayout>
-                        <Layout>
-                            <ChangeViewContract />
+                            <CreateInvoice />
                         </Layout>
                     </ProtectedLayout>
                 }
@@ -232,7 +212,27 @@ export function RoutesForPages() {
                 element={
                     <ProtectedLayout>
                         <Layout>
-                            <ChangeNotaFiscal />
+                            <NotaFiscal />
+                        </Layout>
+                    </ProtectedLayout>
+                }
+            />
+            <Route
+                path="/cobranca/recebimento"
+                element={
+                    <ProtectedLayout>
+                        <Layout>
+                            <Receipt />
+                        </Layout>
+                    </ProtectedLayout>
+                }
+            />
+            <Route
+                path="/cobranca/visualizar-contrato"
+                element={
+                    <ProtectedLayout>
+                        <Layout>
+                            <ViewReceipt />
                         </Layout>
                     </ProtectedLayout>
                 }

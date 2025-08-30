@@ -21,7 +21,7 @@ import { CustomStatusIndicator } from "../../../../../../components/CustomStatus
 import CustomTable from "../../../../../../components/CustomTable";
 import { ModalCreateNewReceipt } from "../modalNewReceipt";
 
-export function ChangeViewContract(): JSX.Element {
+export function ViewReceipt(): JSX.Element {
     const location = useLocation();
     //const { dataUserInfo } = useInfo();
     const [dataClient, setDataClient] = useState<IContractData | null>(null);

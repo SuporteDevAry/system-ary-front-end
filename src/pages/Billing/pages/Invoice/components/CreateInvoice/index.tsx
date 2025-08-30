@@ -6,7 +6,7 @@ import { SBox, SContainer } from "./styles";
 import { FormularioNF } from "../../../../../../components/FormularioNF";
 import { toast } from "react-toastify";
 
-export function Invoice(): JSX.Element {
+export function CreateInvoice(): JSX.Element {
     //const location = useLocation();
     //const [dataClient, setDataClient] = useState<IContractData | null>(null);
 

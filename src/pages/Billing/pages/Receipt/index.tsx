@@ -10,7 +10,7 @@ import { IContractData } from "../../../../contexts/ContractContext/types";
 import { useNavigate } from "react-router-dom";
 import useTableSearch from "../../../../hooks/useTableSearch";
 
-export function ChangeContract() {
+export function Receipt() {
     const contractContext = ContractContext();
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState<boolean>(true);

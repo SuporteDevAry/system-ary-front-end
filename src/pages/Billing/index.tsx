@@ -5,7 +5,7 @@ import { IoCashOutline } from "react-icons/io5";
 import { IoReceiptOutline } from "react-icons/io5";
 import { IoReceiptSharp } from "react-icons/io5";
 
-export function Change() {
+export function Billing() {
     const cardLinks = [
         {
             label: "Emissão RPS",
