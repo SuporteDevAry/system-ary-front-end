@@ -1,19 +1,20 @@
-import { /*useEffect,*/ useState } from "react";
+import { useEffect, useState } from "react";
 import { SBox, SContainer } from "./styles";
 
-//import { useLocation } from "react-router-dom";
-//import { IContractData } from "../../../../../../contexts/ContractContext/types";
+import { useLocation } from "react-router-dom";
+import { IContractData } from "../../../../../../contexts/ContractContext/types";
 import { FormularioNF } from "../../../../../../components/FormularioNF";
 import { toast } from "react-toastify";
 
 export function CreateInvoice(): JSX.Element {
-    //const location = useLocation();
-    //const [dataClient, setDataClient] = useState<IContractData | null>(null);
+    const location = useLocation();
+    const [dataClient, setDataClient] = useState<IContractData | null>(null);
 
-    // useEffect(() => {
-    //     const contractForView: IContractData = location.state?.contractForView;
-    //     setDataClient(contractForView);
-    // }, [location]);
+    useEffect(() => {
+        const selectedContract: IContractData =
+            location.state?.selectedContract;
+        setDataClient(selectedContract);
+    }, [location]);
 
     // interface WDEmpresa {
     //     status: "OK";
@@ -86,8 +87,8 @@ export function CreateInvoice(): JSX.Element {
         codigoServico: "06009",
         aliquota: "5,00",
         cpfCnpj: "",
-        razaoSocial: "",
-        endereco: "",
+        razaoSocial: dataClient?.seller,
+        endereco: dataClient?.seller.address,
         numeroEndereco: "",
         bairro: "",
         cidade: "",

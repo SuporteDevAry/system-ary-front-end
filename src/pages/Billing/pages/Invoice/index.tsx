@@ -1,20 +1,21 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import CustomButton from "../../../../components/CustomButton";
-import { CustomSearch } from "../../../../components/CustomSearch";
-import CustomTable from "../../../../components/CustomTable";
-import { SContainer, SContainerSearchAndButton, STitle } from "./styles";
-import { IColumn } from "../../../../components/CustomTable/types";
-import { ContractContext } from "../../../../contexts/ContractContext";
 import { toast } from "react-toastify";
-import { IContractData } from "../../../../contexts/ContractContext/types";
 import { useNavigate } from "react-router-dom";
 import useTableSearch from "../../../../hooks/useTableSearch";
+import { CustomSearch } from "../../../../components/CustomSearch";
+import CustomButton from "../../../../components/CustomButton";
+import CustomTable from "../../../../components/CustomTable";
+import { IColumn } from "../../../../components/CustomTable/types";
+import { SContainer, SContainerSearchAndButton, STitle } from "./styles";
+import { ContractContext } from "../../../../contexts/ContractContext";
+import { IContractData } from "../../../../contexts/ContractContext/types";
 
 export function Invoice() {
     const contractContext = ContractContext();
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [listcontracts, setListContracts] = useState<IContractData[]>([]);
+    const [selectedContract, setSelectedContract] = useState<IContractData[]>();
     const [searchTerm, setSearchTerm] = useState("");
     const [page, setPage] = useState(0);
     const [order, setOrder] = useState<"asc" | "desc">("desc");
@@ -65,13 +66,13 @@ export function Invoice() {
             {
                 field: "status.status_current",
                 header: "Status",
-                width: "90px",
+                width: "50px",
                 sortable: true,
             },
             {
                 field: "number_contract",
                 header: "Nº Contrato",
-                width: "160px",
+                width: "100px",
                 sortable: true,
             },
             {
@@ -95,13 +96,13 @@ export function Invoice() {
             {
                 field: "payment_date",
                 header: "Dt.Pagto",
-                width: "150px",
+                width: "100px",
                 sortable: true,
             },
             {
                 field: "rpsGerada",
                 header: "Nr.RPS",
-                width: "150px",
+                width: "100px",
                 sortable: true,
             },
             // {
@@ -408,9 +409,9 @@ export function Invoice() {
     };
 
     const handleGeraRPS = () => {
-        navigate(
-            "/cobranca/dados-nf" /*{state: { contractForView: contract},*/
-        );
+        console.log(selectedContract);
+
+        navigate("/cobranca/dados-nf", { state: selectedContract });
     };
 
     // Geração do arquivo
@@ -490,9 +491,7 @@ export function Invoice() {
                 orderBy={orderBy}
                 setOrder={setOrder}
                 setOrderBy={setOrderBy}
-                // onRowClick={(rowData) =>
-                //     handleSetContract(rowData.number_contract)
-                // }
+                onRowClick={(rowData) => setSelectedContract(rowData)}
             />
         </SContainer>
     );

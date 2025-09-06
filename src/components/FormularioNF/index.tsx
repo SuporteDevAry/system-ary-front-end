@@ -23,22 +23,16 @@ export function FormularioNF({
 }: IFormNFProps) {
     const navigate = useNavigate();
 
-    const contractFieldsCol1 = [
-        { label: "Razão Social", value: data?.razaoSocial },
-        { label: "Endereço", value: data?.endereco },
-        { label: "Bairro", value: data?.bairro },
-        { label: "UF", value: data?.uf },
-        { label: "E-mail", value: data?.email },
+    const contractFields = [
+        { label: "Razão Social", value: data?.razaoSocial, cols: 3 },
+        { label: "Endereço", value: data?.endereco, cols: 2 },
+        { label: "Número", value: data?.numeroEndereco, cols: 1 },
+        { label: "Bairro", value: data?.bairro, cols: 1 },
+        { label: "Cidade", value: data?.cidade, cols: 1 },
+        { label: "UF", value: data?.uf, cols: 1 },
+        { label: "CEP", value: data?.cep, cols: 1 },
+        { label: "E-mail", value: data?.email, cols: 2 },
     ];
-    const column1 = contractFieldsCol1;
-
-    const contractFieldsCol2 = [
-        { label: "", valeu: "" },
-        { label: "Nro.", value: data?.numeroEndereco },
-        { label: "Cidade", value: data?.cidade },
-        { label: "CEP", value: data?.cep },
-    ];
-    const column2 = contractFieldsCol2;
 
     return (
         <SFormContainer>
@@ -47,7 +41,7 @@ export function FormularioNF({
             <div
                 style={{
                     display: "flex",
-                    gap: "10px",
+                    gap: "5px",
                     alignItems: "flex-start",
                 }}
             >
@@ -59,6 +53,7 @@ export function FormularioNF({
                     width="70%"
                     value={data.numeroRps}
                     onChange={onChange}
+                    readOnly
                 />
                 <CustomInput
                     type="text"
@@ -68,6 +63,7 @@ export function FormularioNF({
                     width="80%"
                     value={data.dataEmissao}
                     onChange={onChange}
+                    readOnly
                 />
                 <CustomInput
                     type="text"
@@ -77,6 +73,7 @@ export function FormularioNF({
                     width="70%"
                     value={data.codigoServico}
                     onChange={onChange}
+                    readOnly
                 />
                 <CustomInput
                     type="text"
@@ -86,6 +83,7 @@ export function FormularioNF({
                     width="70%"
                     value={data.aliquota}
                     onChange={onChange}
+                    readOnly
                 />
             </div>
             <CustomInput
@@ -102,32 +100,25 @@ export function FormularioNF({
                 <SCardInfo>
                     <div
                         style={{
-                            gap: "10px",
-                            width: "50%",
+                            display: "grid",
+                            gridTemplateColumns: "repeat(3, 1fr)", // até 3 colunas
+                            gap: "5px",
                         }}
                     >
-                        {column1.map((field, index) => (
-                            <SKeyContainer key={index}>
-                                <SkeyName>
-                                    {field.label}:
-                                    <SKeyValue>{field.value}</SKeyValue>
-                                </SkeyName>
-                            </SKeyContainer>
-                        ))}
-                    </div>
-                    <div
-                        style={{
-                            gap: "10px",
-                            width: "50%",
-                        }}
-                    >
-                        {column2.map((field, index) => (
-                            <SKeyContainer key={index}>
-                                <SkeyName>
-                                    {field.label}:
-                                    <SKeyValue>{field.value}</SKeyValue>
-                                </SkeyName>
-                            </SKeyContainer>
+                        {contractFields.map((field, index) => (
+                            <div
+                                key={index}
+                                style={{
+                                    gridColumn: `span ${field.cols ?? 1}`, // ocupa 1, 2 ou 3 colunas
+                                }}
+                            >
+                                <SKeyContainer>
+                                    <SkeyName>
+                                        {field.label}:
+                                        <SKeyValue>{field.value}</SKeyValue>
+                                    </SkeyName>
+                                </SKeyContainer>
+                            </div>
                         ))}
                     </div>
                 </SCardInfo>
@@ -136,7 +127,7 @@ export function FormularioNF({
             <div
                 style={{
                     display: "flex",
-                    gap: "10px",
+                    gap: "5px",
                     alignItems: "flex-start",
                 }}
             >
@@ -166,6 +157,7 @@ export function FormularioNF({
                     width="100%"
                     value={data.valorDeducao}
                     onChange={onChange}
+                    readOnly
                 />
                 <CustomInput
                     type="text"
