@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { CustomTextArea } from "../CustomTextArea";
 
 export const STitle = styled.h2``;
 
@@ -17,7 +18,7 @@ export const BoxContainer = styled.div`
 `;
 
 export const SCardInfo = styled.div`
-  padding: 16px;
+  padding: 5px;
   width: 740px;
   border-radius: 16px;
   background-color: ${(props) => props.theme["white"]};
@@ -66,4 +67,10 @@ export const SKeyValue = styled.span`
   font-weight: 500;
   padding-left: 8px;
   color: ${(props) => props.theme["black-300"]};
+`;
+
+export const SCustomTextArea = styled(CustomTextArea)`
+  font-family: "Courier New", monospace;
+  font-size: 12px;
+  padding: 10px;
 `;

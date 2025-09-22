@@ -9,6 +9,9 @@ import { toast } from "react-toastify";
 import { IContractData } from "../../../../contexts/ContractContext/types";
 import { useNavigate } from "react-router-dom";
 import useTableSearch from "../../../../hooks/useTableSearch";
+import { CustomTimeline } from "../../../Contracts/pages/HistoryContracts/components/CustomTimeline";
+import Checkbox from "@mui/material/Checkbox";
+import FormControlLabel from "@mui/material/FormControlLabel";
 
 export function Receipt() {
     const contractContext = ContractContext();
@@ -49,9 +52,9 @@ export function Receipt() {
         searchTerm,
         searchableFields: [
             "number_contract",
-            "status.status_current",
             "buyer.name",
             "seller.name",
+            "payment_date",
         ],
     });
 
@@ -67,68 +70,59 @@ export function Receipt() {
 
     const nameColumns: IColumn[] = useMemo(
         () => [
+            // {
+            //     field: "status.status_current",
+            //     header: "Status",
+            //     width: "90px",
+            //     sortable: true,
+            // },
             {
-                field: "status.status_current",
-                header: "Status",
-                width: "90px",
+                field: "contract_emission_date",
+                header: "DATA",
+                width: "100px",
                 sortable: true,
             },
             {
                 field: "number_contract",
-                header: "Nº Contrato",
-                width: "160px",
-                sortable: true,
-            },
-            {
-                field: "contract_emission_date",
-                header: "Data",
-                width: "50px",
+                header: "Nº CONTRATO",
+                width: "100px",
                 sortable: true,
             },
             {
                 field: "seller.name",
-                header: "Vendedor",
+                header: "VENDEDOR",
+                width: "160px",
+                sortable: true,
+            },
+            {
+                field: "buyer.name",
+                header: "COMPRADOR",
                 width: "160px",
                 sortable: true,
             },
             {
                 field: "payment_date",
-                header: "Dt.Pagto.",
-                width: "150px",
-                sortable: true,
-            },
-            {
-                field: "rpsGerada",
-                header: "Nr.RPS",
-                width: "150px",
-                sortable: true,
-            },
-            {
-                field: "notaFiscal",
-                header: "Nota Fiscal",
-                width: "150px",
-                sortable: true,
-            },
-            {
-                field: "recibo",
-                header: "Recibo",
+                header: "DT.PAGTO.",
                 width: "150px",
                 sortable: true,
             },
             // {
-            //     field: "price",
-            //     header: "PREÇO",
-            //     width: "150px",
-            // },
-            // {
-            //     field: "type_commission_seller",
-            //     header: "T",
-            //     width: "20px",
-            // },
-            // {
-            //     field: "commission_seller",
-            //     header: "COMISSÃO",
+            //     field: "rpsGerada",
+            //     header: "Nr.RPS",
             //     width: "100px",
+            //     sortable: true,
+            // },
+            // {
+            //     field: "notaFiscal",
+            //     header: "NF",
+            //     width: "100px",
+            //     sortable: true,
+            // },
+            // {
+            //     field: "recibo",
+            //     header: "Recibo",
+            //     width: "100px",
+            //     sortable: true,
             // },
         ],
         []
@@ -150,10 +144,14 @@ export function Receipt() {
 
             <SContainerSearchAndButton>
                 <CustomSearch
-                    width="400px"
-                    placeholder="Digite Nº Contrato, Vendedor, Comprador, Status"
+                    width="450px"
+                    placeholder="Digite Nº Contrato,Vendedor,Comprador ou Dt.Pagto"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                <FormControlLabel
+                    control={<Checkbox defaultChecked />}
+                    label="Somente Pagamento no mês corrente"
                 />
             </SContainerSearchAndButton>
             <CustomTable
@@ -163,6 +161,10 @@ export function Receipt() {
                 hasPagination
                 dateFields={["created_at"]}
                 actionButtons={renderActionButtons}
+                collapsible
+                renderChildren={(row) => (
+                    <CustomTimeline events={row.status.history || []} />
+                )}
                 maxChars={15}
                 page={page}
                 setPage={setPage}

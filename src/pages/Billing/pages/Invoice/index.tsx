@@ -15,7 +15,7 @@ export function Invoice() {
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [listcontracts, setListContracts] = useState<IContractData[]>([]);
-    const [selectedContract, setSelectedContract] = useState<IContractData[]>();
+    const [selectedContract, setSelectedContract] = useState<IContractData>();
     const [searchTerm, setSearchTerm] = useState("");
     const [page, setPage] = useState(0);
     const [order, setOrder] = useState<"asc" | "desc">("desc");
@@ -409,9 +409,14 @@ export function Invoice() {
     };
 
     const handleGeraRPS = () => {
-        console.log(selectedContract);
+        if (!selectedContract) {
+            toast.error("Nenhum contrato selecionado");
+            return;
+        }
 
-        navigate("/cobranca/dados-nf", { state: selectedContract });
+        navigate("/cobranca/dados-nf", {
+            state: { selectedContract: selectedContract },
+        });
     };
 
     // Geração do arquivo

@@ -2,6 +2,7 @@ import {
     BoxContainer,
     SBox,
     SCardInfo,
+    SCustomTextArea,
     SFormContainer,
     SKeyContainer,
     SkeyName,
@@ -12,7 +13,6 @@ import { IFormNFProps } from "./types";
 import { useNavigate } from "react-router-dom";
 import CustomButton from "../CustomButton";
 import { CustomInput } from "../CustomInput";
-import { CustomTextArea } from "../CustomTextArea";
 
 export function FormularioNF({
     titleText,
@@ -23,16 +23,22 @@ export function FormularioNF({
 }: IFormNFProps) {
     const navigate = useNavigate();
 
+    const formData = data;
+
     const contractFields = [
-        { label: "Razão Social", value: data?.razaoSocial, cols: 3 },
-        { label: "Endereço", value: data?.endereco, cols: 2 },
-        { label: "Número", value: data?.numeroEndereco, cols: 1 },
-        { label: "Bairro", value: data?.bairro, cols: 1 },
-        { label: "Cidade", value: data?.cidade, cols: 1 },
-        { label: "UF", value: data?.uf, cols: 1 },
-        { label: "CEP", value: data?.cep, cols: 1 },
-        { label: "E-mail", value: data?.email, cols: 2 },
+        { label: "Razão Social", value: formData?.name, cols: 3 },
+        { label: "Endereço", value: formData?.address, cols: 2 },
+        { label: "Número", value: formData?.number, cols: 1 },
+        { label: "Bairro", value: formData?.district, cols: 1 },
+        { label: "Cidade", value: formData?.city, cols: 1 },
+        { label: "UF", value: formData?.state, cols: 1 },
+        { label: "CEP", value: formData?.zip_code, cols: 1 },
+        { label: "E-mail", value: formData?.email, cols: 2 },
     ];
+
+    const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        return { ...formData, service_discrim: e.target.value };
+    };
 
     return (
         <SFormContainer>
@@ -47,31 +53,40 @@ export function FormularioNF({
             >
                 <CustomInput
                     type="text"
+                    label="CPF/CNPJ Tomador:"
+                    $labelPosition="top"
+                    name="cpf_cnpj"
+                    width="90%"
+                    value={formData.cpf_cnpj}
+                    onBlur={onCheckCNPJ}
+                    onChange={onChange}
+                />
+                {/* <CustomInput
+                    type="text"
                     label="Número RPS:"
                     $labelPosition="top"
-                    name="numeroRps"
-                    width="70%"
-                    value={data.numeroRps}
+                    name="rps_number"
+                    width="90%"
+                    value={formData.rps_number}
                     onChange={onChange}
                     readOnly
-                />
+                /> */}
                 <CustomInput
                     type="text"
                     label="Data Emissão:"
                     $labelPosition="top"
-                    name="dataEmissao"
-                    width="80%"
-                    value={data.dataEmissao}
+                    name="rps_emission_date"
+                    width="90%"
+                    value={formData.rps_emission_date}
                     onChange={onChange}
-                    readOnly
                 />
-                <CustomInput
+                {/* <CustomInput
                     type="text"
                     label="Cód.Serviço:"
                     $labelPosition="top"
                     name="codigoServico"
                     width="70%"
-                    value={data.codigoServico}
+                    value={formData.codigoServico}
                     onChange={onChange}
                     readOnly
                 />
@@ -81,21 +96,11 @@ export function FormularioNF({
                     $labelPosition="top"
                     name="aliquota"
                     width="70%"
-                    value={data.aliquota}
+                    value={formData.aliquota}
                     onChange={onChange}
                     readOnly
-                />
+                /> */}
             </div>
-            <CustomInput
-                type="text"
-                label="CPF/CNPJ Tomador:"
-                $labelPosition="top"
-                name="cpfCnpj"
-                width="30%"
-                value={data.cpfCnpj}
-                onBlur={onCheckCNPJ}
-                onChange={onChange}
-            />
             <SBox>
                 <SCardInfo>
                     <div
@@ -132,47 +137,76 @@ export function FormularioNF({
                 }}
             >
                 <CustomInput
-                    type="text"
+                    type="number"
                     label="Valor Serviços:"
                     $labelPosition="top"
-                    name="valorServicos"
+                    name="service_value"
                     width="100%"
-                    value={data.valorServicos}
+                    value={formData.service_value}
                     onChange={onChange}
                 />
                 <CustomInput
-                    type="text"
+                    type="number"
                     label="Valor I.R.R.F:"
                     $labelPosition="top"
-                    name="valorIR"
+                    name="irrf_value"
                     width="100%"
-                    value={data.valorIR}
+                    value={formData.irrf_value}
                     onChange={onChange}
                 />
-                <CustomInput
-                    type="text"
+                {/* <CustomInput
+                    type="number"
                     label="Valor Dedução:"
                     $labelPosition="top"
                     name="valorDeducao"
                     width="100%"
-                    value={data.valorDeducao}
+                    value={formData.valorDeducao}
                     onChange={onChange}
                     readOnly
-                />
+                /> */}
                 <CustomInput
-                    type="text"
+                    type="number"
                     label="Valor Líquido:"
                     $labelPosition="top"
-                    name="valorLiquido"
+                    name="service_liquid_value"
                     width="100%"
-                    value={data.valorLiquido}
+                    value={formData.service_liquid_value}
                     onChange={onChange}
                 />
             </div>
-            <CustomTextArea
-                label="Discriminação dos serviços:"
-                name="discriminacao"
+            <div
+                style={{
+                    display: "flex",
+                    gap: "5px",
+                    alignItems: "flex-start",
+                }}
+            >
+                <CustomInput
+                    type="text"
+                    label="Descrição Ajuste:"
+                    $labelPosition="top"
+                    name="name_adjust1"
+                    width="100%"
+                    value={formData.name_adjust1}
+                    onChange={onChange}
+                />
+                <CustomInput
+                    type="number"
+                    label="Valor Ajuste:"
+                    $labelPosition="top"
+                    name="value_adjust1"
+                    width="100%"
+                    value={formData.value_adjust1}
+                    onChange={onChange}
+                />
+            </div>
+            <SCustomTextArea
                 width="100%"
+                height="220px"
+                label="Discriminação dos serviços:"
+                name="service_discrim"
+                value={formData.service_discrim}
+                onChange={handleChange}
             />
             <BoxContainer>
                 <CustomButton

@@ -1,34 +1,36 @@
 import { createContext, useContext } from "react";
 import {
-    IClientesProvider,
-    ICreateClientesData,
-    IUpdateClientesData,
+    IInvoicesProvider,
+    ICreateInvoicesData,
+    IUpdateInvoicesData,
 } from "./types";
 import { Api } from "../../services/api";
 import { AxiosError } from "axios";
 
-interface IClienteContext {
-    listClientes: () => Promise<any>;
-    createCliente: (clienteData: ICreateClientesData) => Promise<any>;
-    updateCliente: (clientId: string, updateClienteData: any) => void;
-    deleteCliente: (clientId: string) => void;
-    getClientById: (clientId: string) => Promise<any>;
-    getClientByCnpj_cpf: (clientCnpj_Cpf: string) => Promise<any>;
+interface IInvoiceContext {
+    listInvoices: () => Promise<any>;
+    createInvoice: (invoiceData: ICreateInvoicesData) => Promise<any>;
+    updateInvoice: (invoiceId: string, updateInvoiceData: any) => void;
+    deleteInvoice: (invoiceId: string) => void;
+    getInvoiceById: (invoiceId: string) => Promise<any>;
+    getInvoiceByRps: (invoiceRps: string) => Promise<any>;
+    getInvoiceByNfs: (invoiceNfs: string) => Promise<any>;
 }
 
-const newContext = createContext<IClienteContext>({
-    listClientes: () => Promise.resolve(),
-    createCliente: () => Promise.resolve(),
-    updateCliente: () => {},
-    deleteCliente: () => {},
-    getClientById: () => Promise.resolve(),
-    getClientByCnpj_cpf: () => Promise.resolve(),
+const newContext = createContext<IInvoiceContext>({
+    listInvoices: () => Promise.resolve(),
+    createInvoice: () => Promise.resolve(),
+    updateInvoice: () => {},
+    deleteInvoice: () => {},
+    getInvoiceById: () => Promise.resolve(),
+    getInvoiceByRps: () => Promise.resolve(),
+    getInvoiceByNfs: () => Promise.resolve(),
 });
 
-export const ClientesProvider = ({ children }: IClientesProvider) => {
-    async function listClientes(): Promise<any> {
+export const InvoicesProvider = ({ children }: IInvoicesProvider) => {
+    async function listInvoices(): Promise<any> {
         try {
-            const response = await Api.get("/clients");
+            const response = await Api.get("/invoices");
 
             return response;
         } catch (error) {
@@ -42,11 +44,11 @@ export const ClientesProvider = ({ children }: IClientesProvider) => {
         }
     }
 
-    async function createCliente(
-        clienteData: ICreateClientesData
+    async function createInvoice(
+        invoiceData: ICreateInvoicesData
     ): Promise<any> {
         try {
-            const response = await Api.post("/client", clienteData);
+            const response = await Api.post("/invoices", invoiceData);
 
             return response;
         } catch (error) {
@@ -61,14 +63,14 @@ export const ClientesProvider = ({ children }: IClientesProvider) => {
         }
     }
 
-    async function updateCliente(
-        clientId: string,
-        updateClienteData: IUpdateClientesData
+    async function updateInvoice(
+        invoiceId: string,
+        updateInvoiceData: IUpdateInvoicesData
     ) {
         try {
             const response = await Api.patch(
-                `/client/${clientId}`,
-                updateClienteData
+                `/invoices/${invoiceId}`,
+                updateInvoiceData
             );
             return response;
         } catch (error) {
@@ -82,9 +84,9 @@ export const ClientesProvider = ({ children }: IClientesProvider) => {
         }
     }
 
-    async function deleteCliente(clientId: string) {
+    async function deleteInvoice(invoiceId: string) {
         try {
-            const response = await Api.delete(`/client/${clientId}`);
+            const response = await Api.delete(`/invoices/${invoiceId}`);
 
             return response;
         } catch (error) {
@@ -98,9 +100,9 @@ export const ClientesProvider = ({ children }: IClientesProvider) => {
         }
     }
 
-    async function getClientById(clientId: string) {
+    async function getInvoiceById(invoiceId: string) {
         try {
-            const response = await Api.get(`/client/client-by-id/${clientId}`);
+            const response = await Api.get(`/invoices/${invoiceId}`);
 
             return response;
         } catch (error) {
@@ -114,11 +116,25 @@ export const ClientesProvider = ({ children }: IClientesProvider) => {
         }
     }
 
-    async function getClientByCnpj_cpf(clientCnpj_cpf: string) {
+    async function getInvoiceByRps(invoiceRps: string) {
         try {
-            const response = await Api.get(
-                `/client/client-by-cnpj-cpf/${clientCnpj_cpf}`
-            );
+            const response = await Api.get(`/invoices/rps/${invoiceRps}`);
+
+            return response;
+        } catch (error) {
+            const err = error as AxiosError;
+
+            if (err.response && err.response.data) {
+                const errorMessage = (err.response.data as { message: string })
+                    .message;
+                throw new Error(errorMessage);
+            }
+        }
+    }
+
+    async function getInvoiceByNfs(invoiceNfs: string) {
+        try {
+            const response = await Api.get(`/invoices/nfs/${invoiceNfs}`);
 
             return response;
         } catch (error) {
@@ -135,12 +151,13 @@ export const ClientesProvider = ({ children }: IClientesProvider) => {
     return (
         <newContext.Provider
             value={{
-                listClientes,
-                createCliente,
-                updateCliente,
-                deleteCliente,
-                getClientById,
-                getClientByCnpj_cpf,
+                listInvoices,
+                createInvoice,
+                updateInvoice,
+                deleteInvoice,
+                getInvoiceById,
+                getInvoiceByRps,
+                getInvoiceByNfs,
             }}
         >
             {children}
@@ -148,7 +165,7 @@ export const ClientesProvider = ({ children }: IClientesProvider) => {
     );
 };
 
-export const ClienteContext = () => {
+export const InvoiceContext = () => {
     const context = useContext(newContext);
 
     return context;

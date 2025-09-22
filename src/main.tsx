@@ -10,27 +10,30 @@ import { ContractProvider } from "./contexts/ContractContext/index.tsx";
 import { SendEmailProvider } from "./contexts/SendEmailContext/index.tsx";
 import { ProductProvider } from "./contexts/Products/index.tsx";
 import { TableProductsProvider } from "./contexts/TablesProducts/index.tsx";
+import { InvoicesProvider } from "./contexts/InvoiceContext/index.tsx";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
-    <AuthProvider>
-      <SendEmailProvider>
-        <UserProvider>
-          <ClientesProvider>
-            <ContatosProvider>
-              <NotificationsProvider>
-                <ContractProvider>
-                  <ProductProvider>
-                    <TableProductsProvider>
-                      <App />
-                    </TableProductsProvider>
-                  </ProductProvider>
-                </ContractProvider>
-              </NotificationsProvider>
-            </ContatosProvider>
-          </ClientesProvider>
-        </UserProvider>
-      </SendEmailProvider>
-    </AuthProvider>
-  </React.StrictMode>
+    <React.StrictMode>
+        <AuthProvider>
+            <SendEmailProvider>
+                <UserProvider>
+                    <ClientesProvider>
+                        <ContatosProvider>
+                            <NotificationsProvider>
+                                <ContractProvider>
+                                    <ProductProvider>
+                                        <TableProductsProvider>
+                                            <InvoicesProvider>
+                                                <App />
+                                            </InvoicesProvider>
+                                        </TableProductsProvider>
+                                    </ProductProvider>
+                                </ContractProvider>
+                            </NotificationsProvider>
+                        </ContatosProvider>
+                    </ClientesProvider>
+                </UserProvider>
+            </SendEmailProvider>
+        </AuthProvider>
+    </React.StrictMode>
 );

@@ -1,26 +1,26 @@
 export interface IFormNF {
-    numeroRps: string;
-    dataEmissao: string;
-    codigoServico: string;
-    aliquota: string;
-    cpfCnpj: string;
-    razaoSocial: string;
-    endereco: string;
-    numeroEndereco: string;
-    bairro: string;
-    cidade: string;
-    uf: string;
-    cep: string;
+    rps_number: string;
+    rps_emission_date: string;
+    service_code: string;
+    aliquot: number;
+    cpf_cnpj: string;
+    name: string;
+    address: string;
+    number: string;
+    district: string;
+    city: string;
+    state: string;
+    zip_code: string;
     email: string;
-    discriminacao: string;
-    valorServicos: string;
-    nomeAjuste1: string
-    valorAjuste1: string;
-    nomeAjuste2: string
-    valorAjuste2: string;
-    valorIR: string;
-    valorLiquido: string;
-    valorDeducao: string;
+    service_discrim: string;
+    service_value: number;
+    name_adjust1: string;
+    value_adjust1: number;
+    name_adjust2: string;
+    value_adjust2: number;
+    irrf_value: number;
+    service_liquid_value: number;
+    deduction_value: number;
 }
 
 export interface IFormNFProps {

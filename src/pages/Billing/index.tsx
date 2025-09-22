@@ -9,17 +9,17 @@ export function Billing() {
     const cardLinks = [
         {
             label: "Emissão RPS",
-            icon: <IoReceiptOutline size={64} />,
+            icon: <IoReceiptOutline size={50} />,
             to: "/cobranca/notafiscal",
         },
         {
             label: "Importa Nota Fiscal",
-            icon: <IoReceiptSharp size={64} />,
+            icon: <IoReceiptSharp size={50} />,
             to: "/cobranca/AtualizaNF",
         },
         {
             label: "Recebimento",
-            icon: <IoCashOutline size={64} />,
+            icon: <IoCashOutline size={50} />,
             to: "/cobranca/recebimento",
         },
     ];
