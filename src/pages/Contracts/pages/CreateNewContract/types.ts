@@ -53,6 +53,12 @@ export type FormDataContract = {
   internal_communication: string;
   type_quantity?: string;
   table_id?: string;
+  final_quantity?: string;
+  status_received?: string;
+  commission_contract?: number;
+  charge_date?: string;
+  expected_receipt_date?: string;
+  total_received?: number;
 };
 
 export interface StepProps {
