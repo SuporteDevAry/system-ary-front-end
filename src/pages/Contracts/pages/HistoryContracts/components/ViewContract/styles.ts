@@ -90,3 +90,18 @@ export const SNumberContract = styled.span`
   color: ${(props) => props.theme["black-300"]};
   justify-content: end;
 `;
+
+export const SCardInfoAdjust = styled(SCardInfo)`
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+
+  /* Você pode ajustar o estilo dos filhos (SKeyContainer) diretamente aqui se quiser
+   * ou criar um novo componente para os itens
+   */
+  ${SKeyContainer} {
+    flex: 1 1 45%; // Permite que cada item ocupe aproximadamente metade da largura (45% para incluir o gap)
+  }
+`;
+
+///Modal Edit Quantity
