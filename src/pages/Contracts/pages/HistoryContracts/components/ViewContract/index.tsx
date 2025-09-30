@@ -330,6 +330,13 @@ export function ViewContract(): JSX.Element {
     { label: "Comprador", value: dataClient?.buyer.name },
   ];
 
+  const commission =
+    (
+      dataClient?.type_commission_seller || dataClient?.type_commission_buyer
+    )?.toLocaleLowerCase() === "percentual"
+      ? `${dataClient?.commission_seller}%`
+      : `R$ ${dataClient?.commission_seller}`;
+
   const contractFields = [
     {
       label: "Preço:",
@@ -360,33 +367,39 @@ export function ViewContract(): JSX.Element {
 
     {
       label: "Comissão",
-      value: `${dataClient?.commission_seller}`,
+      value: commission,
     },
     {
       label: "Valor Comissão",
-      value: `${dataClient?.commission_contract}`,
+      value: formatCurrency(
+        dataClient?.commission_contract?.toString() ?? "0",
+        "Real"
+      ),
     },
 
     {
       label: "Total Recebido",
-      value: dataClient?.total_received,
+      value: formatCurrency(
+        dataClient?.total_received?.toString() ?? "0",
+        "Real"
+      ),
     },
     {
       label: "Data do Pagamento",
       value: dataClient?.payment_date,
     },
     {
-      label: "Data Prevista Recebimento",
-      value: dataClient?.expected_receipt_date,
+      label: "Data da Cobrança",
+      value: dataClient?.charge_date || "-",
     },
     {
-      label: "Data da Cobrança",
-      value: dataClient?.charge_date,
+      label: "Data Prevista Recebimento",
+      value: dataClient?.expected_receipt_date || "-",
     },
 
     {
       label: "Liquidado",
-      value: dataClient?.status_received,
+      value: dataClient?.status_received?.toString() || "",
     },
   ];
 

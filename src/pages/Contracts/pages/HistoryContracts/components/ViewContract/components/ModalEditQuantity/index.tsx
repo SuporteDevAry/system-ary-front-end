@@ -5,8 +5,7 @@ import CustomTooltipLabel from "../../../../../../../../components/CustomTooltip
 import { Modal } from "../../../../../../../../components/Modal";
 import { SBoxDatePicker, SContainer, SText, STextArea } from "./styles";
 import { IModalEditQuantityProps } from "./types";
-import { useEffect } from "react";
-import { toast } from "react-toastify";
+import { useCallback } from "react";
 
 export function ModalEditQuantity({
   open,
@@ -17,6 +16,22 @@ export function ModalEditQuantity({
 }: IModalEditQuantityProps) {
   const currentDate = dayjs().format("DD/MM/YYYY");
 
+  const handleRadioChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>, name: string) => {
+      const { value } = event.target;
+
+      onHandleChange?.({
+        ...event,
+        target: {
+          ...event.target,
+          name,
+          value,
+        },
+      });
+    },
+    []
+  );
+
   const handleClose = () => {
     onClose();
   };
@@ -24,29 +39,6 @@ export function ModalEditQuantity({
   const handleConfirm = async () => {
     await onConfirm();
   };
-
-  const fetchCnpjData = async () => {
-    // Substitua '12345678000195' pelo CNPJ que você quer testar
-    const cnpj = "05668724000121";
-
-    // Use o novo caminho de proxy: '/api-cnpj'
-    try {
-      const response = await fetch(`/api-cnpj/cnpj/${cnpj}`);
-
-      if (!response.ok) {
-        throw new Error("Erro na requisição da API");
-      }
-
-      const result = await response.json();
-      console.log("#########", result);
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-  if (open) {
-    fetchCnpjData();
-  }
 
   return (
     <Modal
@@ -120,12 +112,17 @@ export function ModalEditQuantity({
         />
 
         <CustomInput
-          type="text"
           name="status_received"
           label="Liquidado:"
           $labelPosition="top"
-          value={dataContract?.status_received || ""}
-          onChange={onHandleChange}
+          radioPosition="only"
+          radioOptions={[
+            { label: "Sim", value: "Sim" },
+            { label: "Não", value: "Não" },
+            { label: "Parcial", value: "Parcial" },
+          ]}
+          onRadioChange={(e) => handleRadioChange(e, "status_received")}
+          selectedRadio={dataContract?.status_received || "Não"}
         />
 
         <CustomTooltipLabel
