@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
     SBox,
     SButtonContainer,
@@ -16,25 +16,47 @@ import {
 import { useLocation } from "react-router-dom";
 import { IContractData } from "../../../../../../contexts/ContractContext/types";
 import CustomButton from "../../../../../../components/CustomButton";
-import { formatCurrency } from "../../../../../../helpers/currencyFormat";
+//import { formatCurrency } from "../../../../../../helpers/currencyFormat";
 import { CustomStatusIndicator } from "../../../../../../components/CustomStatusIndicator";
 import CustomTable from "../../../../../../components/CustomTable";
 import { ModalCreateNewReceipt } from "../modalNewReceipt";
+import { createRoot } from "react-dom/client";
+import ContratoTemplate from "../../../../../../templates/contrato";
+import PdfGenerator from "../../../../../../helpers/PDFGenerator";
+import { BillingContext } from "../../../../../../contexts/BillingContext";
+import { IBillings } from "../../../../../../contexts/BillingContext/types";
+import { toast } from "react-toastify";
 
 export function ViewReceipt(): JSX.Element {
     const location = useLocation();
-    //const { dataUserInfo } = useInfo();
     const [dataClient, setDataClient] = useState<IContractData | null>(null);
-    //const [isLoading, setIsLoading] = useState<boolean>(true);
     const [isNewReceiptModalOpen, setNewReceiptModalOpen] =
         useState<boolean>(false);
     const [page, setPage] = useState(0);
     const [order, setOrder] = useState<"asc" | "desc">("desc");
     const [orderBy, setOrderBy] = useState<string>("data");
+    const billingContext = BillingContext();
+    const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [listBillings, setListBillings] = useState<IBillings[]>([]);
+
+    const fetchData = useCallback(async () => {
+        try {
+            setIsLoading(true);
+            const response = await billingContext.listBillings();
+
+            setListBillings(response.data);
+        } catch (error) {
+            toast.error(`Erro ao tentar ler Recebimentos: ${error}`);
+        } finally {
+            setIsLoading(false);
+        }
+    }, [listBillings]);
 
     useEffect(() => {
         const contractForView: IContractData = location.state?.contractForView;
         setDataClient(contractForView);
+
+        fetchData();
     }, [location]);
 
     const handleCreateNewReceipt = async () => {
@@ -52,6 +74,32 @@ export function ViewReceipt(): JSX.Element {
         setNewReceiptModalOpen(true);
     };
 
+    const handleViewPDF = () => {
+        let nomePDF =
+            dataClient?.number_contract === undefined
+                ? ""
+                : dataClient.number_contract;
+
+        // Cria um container temporário invisível
+        const container = document.createElement("div");
+        container.style.display = "none";
+        document.body.appendChild(container);
+
+        // Renderiza o ContratoTemplate dentro do container usando createRoot
+        const root = createRoot(container);
+        root.render(
+            <ContratoTemplate formData={dataClient} nomeArquivo={nomePDF} />
+        );
+
+        // Aguarda a renderização e, então, gera o PDF
+        setTimeout(() => {
+            PdfGenerator(document, "contrato", nomePDF, "window");
+
+            // Remove o container temporário após a geração do PDF
+            document.body.removeChild(container);
+        }, 1000);
+    };
+
     const renderActionButtons = (row: any) => (
         <SButtonContainer>
             <CustomButton
@@ -63,75 +111,43 @@ export function ViewReceipt(): JSX.Element {
             </CustomButton>
         </SButtonContainer>
     );
-    const formatValor = (value: number | bigint) => {
-        return new Intl.NumberFormat("pt-BR", {
-            style: "currency",
-            currency: "BRL",
-            minimumFractionDigits: 2,
-        }).format(value);
-    };
-    const recebtos = [
+
+    // const formatValor = (value: number | bigint) => {
+    //     return new Intl.NumberFormat("pt-BR", {
+    //         style: "currency",
+    //         currency: "BRL",
+    //         minimumFractionDigits: 2,
+    //     }).format(value);
+    // };
+
+    const nameCols = [
         {
-            dataRecebto: "01/08/2025",
-            rps: "0001001",
-            dataNF: "01/08/2025",
-            nf: "0005450",
-            valor_bruto: 1500.0,
-            valor_ir: 200.0,
-            valor_liq: 1300.0,
-        },
-        {
-            dataRecebto: "01/08/2025",
-            rps: "0001002",
-            dataNF: "01/08/2025",
-            nf: "0005451",
-            valor_bruto: 1000.0,
-            valor_ir: 100.0,
-            valor_liq: 900.0,
-        },
-        {
-            dataRecebto: "03/08/2025",
-            rps: "0001005",
-            dataNF: "03/08/2025",
-            nf: "0005455",
-            valor_bruto: 21500.0,
-            valor_ir: 500.0,
-            valor_liq: 21000.0,
-        },
-    ];
-    const nameColRecebto = [
-        {
-            field: "dataRecebto",
+            field: "receipt_date",
             header: "DATA",
             width: "100px",
         },
         {
-            field: "dataNF",
-            header: "DATA NF",
+            field: "nfs_number",
+            header: "NRO.NF",
             width: "100px",
             sortable: true,
         },
         {
-            field: "nf",
-            header: "NOTA FISCAL",
+            field: "total_service_value",
+            header: "VALOR TOTAL",
             width: "100px",
         },
         {
-            field: "valor_bruto",
-            header: "VALOR BRUTO",
-            width: "100px",
-        },
-        {
-            field: "valor_ir",
+            field: "irrf_value",
             header: "I.R.",
             width: "100px",
         },
-        {
-            field: "valor_liq",
-            header: "VALOR LIQ.",
-            width: "100px",
-            value: formatValor(recebtos[0].valor_liq),
-        },
+        // {
+        //     field: "liquid_value",
+        //     header: "VALOR LIQ.",
+        //     width: "100px",
+        //     value: formatValor(recebtos[0].valor_liq),
+        // },
     ];
 
     const contractFieldsCol1 = [
@@ -141,20 +157,20 @@ export function ViewReceipt(): JSX.Element {
             label: "Quantidade",
             value: dataClient?.quantity,
         },
-        {
-            label: "Valor Comissão",
-            value: formatCurrency(
-                dataClient?.vlr_comissao ?? "0",
-                dataClient?.vlr_comissao ?? "Real"
-            ),
-        },
-        {
-            label: "Total Recebido",
-            value: formatCurrency(
-                dataClient?.tot_recebido?.toString() ?? "0",
-                dataClient?.tot_recebido ?? "Real"
-            ),
-        },
+        // {
+        //     label: "Valor Comissão",
+        //     value: formatCurrency(
+        //         dataClient?.commission_contract ?? "0",
+        //         dataClient?.commission_contract ?? "Real"
+        //     ),
+        // },
+        // {
+        //     label: "Total Recebido",
+        //     value: formatCurrency(
+        //         dataClient?.total_received?.toString() ?? "0",
+        //         dataClient?.total_received ?? "Real"
+        //     ),
+        // },
     ];
 
     const contractFieldsCol2 = [
@@ -169,7 +185,7 @@ export function ViewReceipt(): JSX.Element {
         },
         {
             label: "Liquidado",
-            value: dataClient?.liquidado,
+            value: "", //dataClient?.status_received,
         },
     ];
 
@@ -211,8 +227,7 @@ export function ViewReceipt(): JSX.Element {
                                 <CustomButton
                                     $variant="secondary"
                                     width="100px"
-
-                                    //onClick={handleViewPDF}
+                                    onClick={handleViewPDF}
                                 >
                                     Visualizar
                                 </CustomButton>
@@ -263,9 +278,9 @@ export function ViewReceipt(): JSX.Element {
                     Novo Recebimento
                 </CustomButton>
                 <CustomTable
-                    //isLoading={isLoading}
-                    data={recebtos}
-                    columns={nameColRecebto}
+                    isLoading={isLoading}
+                    data={listBillings}
+                    columns={nameCols}
                     hasPagination
                     actionButtons={renderActionButtons}
                     maxChars={15}

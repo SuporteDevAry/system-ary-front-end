@@ -32,6 +32,9 @@ import { NotaFiscal } from "./pages/Billing/pages/NotaFiscal";
 import { Invoice } from "./pages/Billing/pages/Invoice";
 import { CreateInvoice } from "./pages/Billing/pages/Invoice/components/CreateInvoice";
 import { ViewReceipt } from "./pages/Billing/pages/Receipt/components/ViewReceipt";
+import { ReceiptMap } from "./pages/Billing/pages/ReceiptMap";
+import { PaymentContract } from "./pages/Billing/pages/PaymentContract";
+import { BillingsContract } from "./pages/Billing/pages/BillingsContract";
 
 export function RoutesForPages() {
     return (
@@ -233,6 +236,36 @@ export function RoutesForPages() {
                     <ProtectedLayout>
                         <Layout>
                             <ViewReceipt />
+                        </Layout>
+                    </ProtectedLayout>
+                }
+            />
+            <Route
+                path="/cobranca/mapa-recebimento"
+                element={
+                    <ProtectedLayout>
+                        <Layout>
+                            <ReceiptMap />
+                        </Layout>
+                    </ProtectedLayout>
+                }
+            />
+            <Route
+                path="/cobranca/contrato-vencto"
+                element={
+                    <ProtectedLayout>
+                        <Layout>
+                            <PaymentContract />
+                        </Layout>
+                    </ProtectedLayout>
+                }
+            />
+            <Route
+                path="/cobranca/contratos-receb"
+                element={
+                    <ProtectedLayout>
+                        <Layout>
+                            <BillingsContract />
                         </Layout>
                     </ProtectedLayout>
                 }

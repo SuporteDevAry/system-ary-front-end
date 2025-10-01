@@ -13,6 +13,7 @@ import { IFormNFProps } from "./types";
 import { useNavigate } from "react-router-dom";
 import CustomButton from "../CustomButton";
 import { CustomInput } from "../CustomInput";
+import CustomDatePicker from "../CustomDatePicker";
 
 export function FormularioNF({
     titleText,
@@ -29,15 +30,18 @@ export function FormularioNF({
         { label: "Razão Social", value: formData?.name, cols: 3 },
         { label: "Endereço", value: formData?.address, cols: 2 },
         { label: "Número", value: formData?.number, cols: 1 },
-        { label: "Bairro", value: formData?.district, cols: 1 },
+        { label: "Bairro", value: formData?.district, cols: 3 },
         { label: "Cidade", value: formData?.city, cols: 1 },
         { label: "UF", value: formData?.state, cols: 1 },
         { label: "CEP", value: formData?.zip_code, cols: 1 },
-        { label: "E-mail", value: formData?.email, cols: 2 },
     ];
 
     const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         return { ...formData, service_discrim: e.target.value };
+    };
+
+    const handleDateChange = (newDate: string) => {
+        return { ...formData, rps_emission_date: newDate };
     };
 
     return (
@@ -71,14 +75,14 @@ export function FormularioNF({
                     onChange={onChange}
                     readOnly
                 /> */}
-                <CustomInput
+                <CustomDatePicker
                     type="text"
                     label="Data Emissão:"
                     $labelPosition="top"
                     name="rps_emission_date"
-                    width="90%"
+                    width="70%"
                     value={formData.rps_emission_date}
-                    onChange={onChange}
+                    onChange={handleDateChange}
                 />
                 {/* <CustomInput
                     type="text"

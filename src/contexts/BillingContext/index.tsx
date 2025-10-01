@@ -1,38 +1,38 @@
 import { createContext, useContext } from "react";
 import {
-    IInvoicesProvider,
-    ICreateInvoicesData,
-    IUpdateInvoicesData,
+    IBillingsProvider,
+    ICreateBillingsData,
+    IUpdateBillingsData,
 } from "./types";
 import { Api } from "../../services/api";
 import { AxiosError } from "axios";
 
-interface IInvoiceContext {
-    listInvoices: () => Promise<any>;
-    createInvoice: (invoiceData: ICreateInvoicesData) => Promise<any>;
-    updateInvoice: (invoiceId: string, updateInvoiceData: any) => void;
-    deleteInvoice: (invoiceId: string) => void;
-    getInvoiceById: (invoiceId: string) => Promise<any>;
-    getInvoiceByRps: (invoiceRps: string) => Promise<any>;
-    getInvoiceByNfs: (invoiceNfs: string) => Promise<any>;
-    getNextNumberRps: () => Promise<any>;
+interface IBillingContext {
+    listBillings: () => Promise<any>;
+    createBilling: (BillingData: ICreateBillingsData) => Promise<any>;
+    updateBilling: (billingId: string, updateBillingData: any) => void;
+    deleteBilling: (billingId: string) => void;
+    getBillingById: (billingId: string) => Promise<any>;
+    getBillingByRps: (billingRps: string) => Promise<any>;
+    getBillingByNfs: (billingNfs: string) => Promise<any>;
+    getBillingByNumberContract: (billingNfs: string) => Promise<any>;
 }
 
-const newContext = createContext<IInvoiceContext>({
-    listInvoices: () => Promise.resolve(),
-    createInvoice: () => Promise.resolve(),
-    updateInvoice: () => {},
-    deleteInvoice: () => {},
-    getInvoiceById: () => Promise.resolve(),
-    getInvoiceByRps: () => Promise.resolve(),
-    getInvoiceByNfs: () => Promise.resolve(),
-    getNextNumberRps: () => Promise.resolve(),
+const newContext = createContext<IBillingContext>({
+    listBillings: () => Promise.resolve(),
+    createBilling: () => Promise.resolve(),
+    updateBilling: () => {},
+    deleteBilling: () => {},
+    getBillingById: () => Promise.resolve(),
+    getBillingByRps: () => Promise.resolve(),
+    getBillingByNfs: () => Promise.resolve(),
+    getBillingByNumberContract: () => Promise.resolve(),
 });
 
-export const InvoicesProvider = ({ children }: IInvoicesProvider) => {
-    async function listInvoices(): Promise<any> {
+export const BillingsProvider = ({ children }: IBillingsProvider) => {
+    async function listBillings(): Promise<any> {
         try {
-            const response = await Api.get("/invoices");
+            const response = await Api.get("/billings");
 
             return response;
         } catch (error) {
@@ -46,11 +46,11 @@ export const InvoicesProvider = ({ children }: IInvoicesProvider) => {
         }
     }
 
-    async function createInvoice(
-        invoiceData: ICreateInvoicesData
+    async function createBilling(
+        billingData: ICreateBillingsData
     ): Promise<any> {
         try {
-            const response = await Api.post("/invoices", invoiceData);
+            const response = await Api.post("/billings", billingData);
 
             return response;
         } catch (error) {
@@ -65,14 +65,14 @@ export const InvoicesProvider = ({ children }: IInvoicesProvider) => {
         }
     }
 
-    async function updateInvoice(
-        invoiceId: string,
-        updateInvoiceData: IUpdateInvoicesData
+    async function updateBilling(
+        billingId: string,
+        updateBillingData: IUpdateBillingsData
     ) {
         try {
             const response = await Api.patch(
-                `/invoices/${invoiceId}`,
-                updateInvoiceData
+                `/billings/${billingId}`,
+                updateBillingData
             );
             return response;
         } catch (error) {
@@ -86,9 +86,9 @@ export const InvoicesProvider = ({ children }: IInvoicesProvider) => {
         }
     }
 
-    async function deleteInvoice(invoiceId: string) {
+    async function deleteBilling(billingId: string) {
         try {
-            const response = await Api.delete(`/invoices/${invoiceId}`);
+            const response = await Api.delete(`/billings/${billingId}`);
 
             return response;
         } catch (error) {
@@ -102,9 +102,9 @@ export const InvoicesProvider = ({ children }: IInvoicesProvider) => {
         }
     }
 
-    async function getInvoiceById(invoiceId: string) {
+    async function getBillingById(billingId: string) {
         try {
-            const response = await Api.get(`/invoices/${invoiceId}`);
+            const response = await Api.get(`/billings/${billingId}`);
 
             return response;
         } catch (error) {
@@ -118,9 +118,9 @@ export const InvoicesProvider = ({ children }: IInvoicesProvider) => {
         }
     }
 
-    async function getInvoiceByRps(invoiceRps: string) {
+    async function getBillingByRps(billingRps: string) {
         try {
-            const response = await Api.get(`/invoices/rps/${invoiceRps}`);
+            const response = await Api.get(`/billings/rps/${billingRps}`);
 
             return response;
         } catch (error) {
@@ -134,9 +134,9 @@ export const InvoicesProvider = ({ children }: IInvoicesProvider) => {
         }
     }
 
-    async function getInvoiceByNfs(invoiceNfs: string) {
+    async function getBillingByNfs(billingNfs: string) {
         try {
-            const response = await Api.get(`/invoices/nfs/${invoiceNfs}`);
+            const response = await Api.get(`/billings/nfs/${billingNfs}`);
 
             return response;
         } catch (error) {
@@ -150,9 +150,12 @@ export const InvoicesProvider = ({ children }: IInvoicesProvider) => {
         }
     }
 
-    async function getNextNumberRps() {
+    async function getBillingByNumberContract(billingNumberContract: string) {
         try {
-            const response = await Api.get(`/invoices/nextrps`);
+            const response = await Api.get(
+                `/billings/nfs/${billingNumberContract}`
+            );
+
             return response;
         } catch (error) {
             const err = error as AxiosError;
@@ -168,14 +171,14 @@ export const InvoicesProvider = ({ children }: IInvoicesProvider) => {
     return (
         <newContext.Provider
             value={{
-                listInvoices,
-                createInvoice,
-                updateInvoice,
-                deleteInvoice,
-                getInvoiceById,
-                getInvoiceByRps,
-                getInvoiceByNfs,
-                getNextNumberRps,
+                listBillings,
+                createBilling,
+                updateBilling,
+                deleteBilling,
+                getBillingById,
+                getBillingByRps,
+                getBillingByNfs,
+                getBillingByNumberContract,
             }}
         >
             {children}
@@ -183,7 +186,7 @@ export const InvoicesProvider = ({ children }: IInvoicesProvider) => {
     );
 };
 
-export const InvoiceContext = () => {
+export const BillingContext = () => {
     const context = useContext(newContext);
 
     return context;

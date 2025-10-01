@@ -8,8 +8,8 @@ export const STitle = styled.h2`
 
 export const SContainer = styled.div`
   display: flex;
-  justify-content: flex-end;
-  padding-top: 30px;
+  justify-content: flex;
+  padding-top: 20px;
 
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
 
@@ -19,8 +19,8 @@ export const SContainer = styled.div`
 `;
 
 export const SCard = styled(Card)`
-  height: 200px;
-  width: 300px;
+  height: 150px;
+  width: 200px;
   padding: ${V.mdSpacing};
   margin: ${V.mdSpacing};
 
@@ -48,7 +48,7 @@ export const SCardIcon = styled.div`
 
 export const SContent = styled.div`
   display: flex;
-  padding: 30px 0px 0px 0px;
+  padding: 20px 0px 0px 0px;
   font-weight: bold;
   letter-spacing: 2px;
 `;

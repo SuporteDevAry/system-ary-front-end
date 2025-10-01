@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { V } from "../../../../../../styles/variables";
+import { V } from "../../../../styles/variables";
 
 export const STitle = styled.h2`
     padding-left: ${V.mdSpacing};

@@ -13,8 +13,6 @@ export function ModalCreateNewReceipt({
     open,
     onClose,
 }: ModalCreateNewReceiptProps) {
-    // const userContext = UserContext();
-
     const [formData, setFormData] = useState({
         dataCobranca: "",
         rps: "",
@@ -97,50 +95,42 @@ export function ModalCreateNewReceipt({
             variantConfirm={"success"}
         >
             <SFormContainer>
-                <div
-                    style={{
-                        display: "flex",
-                        gap: "5px",
-                        alignItems: "flex-start",
-                    }}
-                >
-                    <CustomInput
-                        type="text"
-                        name="dataCobranca"
-                        label="Data:"
-                        $labelPosition="top"
-                        onChange={handleChange}
-                        value={formData.dataCobranca}
-                        width="100%"
-                    />
-                    <CustomInput
-                        type="text"
-                        name="rps"
-                        label="RPS:"
-                        $labelPosition="top"
-                        onChange={handleChange}
-                        value={formData.rps}
-                        width="100%"
-                    />
-                    <CustomInput
-                        type="text"
-                        name="nf"
-                        label="Nota Fiscal:"
-                        $labelPosition="top"
-                        onChange={handleChange}
-                        value={formData.nf}
-                        width="100%"
-                    />
-                    <CustomInput
-                        type="text"
-                        name="nf"
-                        label="Recibo:"
-                        $labelPosition="top"
-                        onChange={handleChange}
-                        value={formData.recibo}
-                        width="100%"
-                    />
-                </div>
+                <CustomInput
+                    type="text"
+                    name="dataCobranca"
+                    label="Data:"
+                    $labelPosition="top"
+                    onChange={handleChange}
+                    value={formData.dataCobranca}
+                    width="100%"
+                />
+                <CustomInput
+                    type="text"
+                    name="rps"
+                    label="RPS:"
+                    $labelPosition="top"
+                    onChange={handleChange}
+                    value={formData.rps}
+                    width="100%"
+                />
+                <CustomInput
+                    type="text"
+                    name="nf"
+                    label="Nota Fiscal:"
+                    $labelPosition="top"
+                    onChange={handleChange}
+                    value={formData.nf}
+                    width="100%"
+                />
+                <CustomInput
+                    type="text"
+                    name="nf"
+                    label="Recibo:"
+                    $labelPosition="top"
+                    onChange={handleChange}
+                    value={formData.recibo}
+                    width="100%"
+                />
                 <CustomInput
                     type="text"
                     name="valor_bruto"
@@ -165,7 +155,6 @@ export function ModalCreateNewReceipt({
                     onChange={handleChange}
                     value={formData.valor_liq}
                 />
-
                 <CustomInput
                     type="text"
                     name="quantidade"
@@ -174,7 +163,6 @@ export function ModalCreateNewReceipt({
                     onChange={handleChange}
                     value={formData.quantidade}
                 />
-
                 <CustomInput
                     type="text"
                     name="liquidado"

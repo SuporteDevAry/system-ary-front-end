@@ -106,6 +106,16 @@ export function Receipt() {
                 width: "150px",
                 sortable: true,
             },
+            {
+                field: "expected_receipt_date",
+                header: "PREV.PAGTO",
+                width: "150px",
+            },
+            {
+                field: "charge_date",
+                header: "DT.COBRANÇA",
+                width: "150px",
+            },
             // {
             //     field: "rpsGerada",
             //     header: "Nr.RPS",

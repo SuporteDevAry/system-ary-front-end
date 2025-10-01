@@ -1,23 +1,25 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { SBox, SContainer } from "./styles";
 import { useLocation, useNavigate } from "react-router-dom";
 import { FormularioNF } from "../../../../../../components/FormularioNF";
 import { toast } from "react-toastify";
 import { ClienteContext } from "../../../../../../contexts/ClienteContext";
 import { InvoiceContext } from "../../../../../../contexts/InvoiceContext";
+import dayjs from "dayjs";
 
 export function CreateInvoice(): JSX.Element {
     const navigate = useNavigate();
     const invoiceContext = InvoiceContext();
     const location = useLocation();
-    const comTimestamp = new Date().toISOString();
+    const currentDate = dayjs().format("DD/MM/YYYY");
     const [cnpjContract, setCnpjContract] = useState("");
+    const [cnpjFound, setCnpjFound] = useState<boolean>(false);
 
     const [formData, setFormData] = useState({
         rps_number: "",
-        rps_emission_date: comTimestamp,
+        rps_emission_date: currentDate,
         nfs_number: "",
-        nfs_emission_date: comTimestamp,
+        nfs_emission_date: "",
         service_code: "",
         aliquot: 0,
         cpf_cnpj: "",
@@ -42,64 +44,55 @@ export function CreateInvoice(): JSX.Element {
     });
 
     const clienteContext = ClienteContext();
-    const fetchData = async () => {
-        setCnpjContract(
+
+    const fetchData = useCallback(async () => {
+        const cnpj =
             location.state?.selectedContract.seller.account[0].cnpj_pagto.replace(
                 /\.|-|\//g,
                 ""
-            )
-        );
-
-        //if (cnpjContract) return;
-        try {
-            const response = await clienteContext.getClientByCnpj_cpf(
-                cnpjContract
             );
 
-            if (response) {
-                formData.name = response.data.name;
-                formData.address = response.data.address;
-                formData.number = response.data.number;
-                formData.district = response.data.district;
-                formData.city = response.data.city;
-                formData.state = response.data.state;
-                formData.zip_code = response.data.zip_code;
+        setCnpjContract(cnpj);
 
-                // Atualiza o estado corretamente
+        setFormData((prev) => ({
+            ...prev,
+            cpf_cnpj: cnpj,
+        }));
+
+        const nextNumberRps = await invoiceContext.getNextNumberRps();
+        setFormData((prev) => ({
+            ...prev,
+            rps_number: nextNumberRps.data.nextNumber,
+        }));
+
+        try {
+            const response = await clienteContext.getClientByCnpj_cpf(cnpj);
+
+            if (response.status == "200") {
                 setFormData((prev) => ({
                     ...prev,
-                    // cpf_cnpj: cnpjContract || "",
-                    // name: response.data.nome || "",
-                    // address: response.data.logradouro || "",
-                    // number: response.data.numero || "",
-                    // district: response.data.bairro || "",
-                    // city: response.data.municipio || "",
-                    // state: response.data.uf || "",
-                    // zip_code: response.data.cep || "",
+                    cpf_cnpj: cnpj,
+                    name: response.data.name || "",
+                    address: response.data.address || "",
+                    number: response.data.number || "",
+                    district: response.data.district || "",
+                    city: response.data.city || "",
+                    state: response.data.state || "",
+                    zip_code: response.data.zip_code || "",
                 }));
             }
         } catch (error) {
-            setCnpjContract(
-                location.state?.selectedContract.seller.account[0].cnpj_pagto.replace(
-                    /\.|-|\//g,
-                    ""
-                )
-            );
+            setCnpjFound(false);
             setFormData((prev) => ({
                 ...prev,
-                cpf_cnpj: cnpjContract || "",
+                cpf_cnpj: cnpj,
             }));
-
-            // toast.error(
-            //     `Erro ao tentar ler clientes, contacte o administrador do sistema ${error}`
-            // );
-        } finally {
         }
-    };
+    }, [location.state?.selectedContract.seller.account, cnpjContract]);
 
     useEffect(() => {
         fetchData();
-    }, [cnpjContract]);
+    }, [fetchData]);
 
     useEffect(() => {
         const larguraValor = 15; // largura da coluna dos valores
@@ -138,31 +131,6 @@ export function CreateInvoice(): JSX.Element {
             : location.state?.selectedContract.buyer.name;
 
         const dadosContrato = {
-            // cpf_cnpj:
-            //     location.state?.selectedContract.seller.account[0].cnpj_pagto.replace(
-            //         /\.|-|\//g,
-            //         ""
-            //     ),
-            // sellerNickname: location.state?.selectedContract.seller.nickname,
-            // buyerNickname: location.state?.selectedContract.buyer.nickname,
-            // razaoSocial: location.state?.selectedContract.seller.name,
-            // endereco: location.state?.selectedContract.seller.address,
-            // numeroEndereco: location.state?.selectedContract.seller.number,
-            // bairro: location.state?.selectedContract.seller.district,
-            // cidade: location.state?.selectedContract.seller.city,
-            // uf: location.state?.selectedContract.seller.state,
-            // cep: location.state?.selectedContract.seller.zip_code,
-            // email: "",
-            // bankName:
-            //     location.state?.selectedContract.seller.account[0].bank_name,
-            // bankNumber:
-            //     location.state?.selectedContract.seller.account[0].bank_number,
-            // agency: location.state?.selectedContract.seller.account[0].agency,
-            // accountNumber:
-            //     location.state?.selectedContract.seller.account[0]
-            //         .account_number,
-            // name_pagto:
-            //     location.state?.selectedContract.seller.account[0].name_pagto,
             service_discrim: `Intermediação de Negócios:
 
 CTR. ${location.state?.selectedContract.number_contract}
@@ -187,36 +155,16 @@ Depositar no Banco Bradesco S.A. (237)       Ag. 0108-2       C/C. 132.362-8`,
         formData.service_liquid_value,
     ]);
 
-    // const checkCNPJ = (e: React.ChangeEvent<HTMLInputElement>) => {
-    //     //console.log("CNPJ a consultar", e.target.value);
-    //     const cnpj = e.target.value.replace(/\D/g, "");
-    //     fetch(
-    //         // "https://receitaws.com.br/v1/cnpj/"
-    //         "http://localhost:4000/cnpj/" +
-    //             cnpj.replace(".", "").replace("/", "").replace("-", "")
-    //     )
-    //         .then((res) => res.json())
-    //         .then((data) => {
-    //             formData.name = data.nome;
-    //             formData.address = data.logradouro;
-    //             formData.number = data.numero;
-    //             formData.district = data.bairro;
-    //             formData.city = data.municipio;
-    //             formData.state = data.uf;
-    //             formData.zip_code = data.cep;
-    //         });
-
-    //     //fetchData();
-    // };
-
     const checkCNPJ = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (cnpjFound) return;
+
         const cnpj = e.target.value
             .replace(/\D/g, "")
             .replace(".", "")
             .replace("/", "")
             .replace("-", "");
 
-        fetch(`${process.env.REACT_APP_URL_RECEITAWS}/${cnpj}`)
+        fetch(`/api-cnpj/cnpj/${cnpj}`)
             .then((res) => res.json())
             .then((data) => {
                 setFormData((prev) => ({
@@ -231,45 +179,6 @@ Depositar no Banco Bradesco S.A. (237)       Ag. 0108-2       C/C. 132.362-8`,
                 }));
             });
     };
-
-    // const handleCreate = async () => {
-    //     if (!formData.rps_number) {
-    //         toast.error("Por favor, preencha todos os campos.");
-    //         return;
-    //     }
-    //     try {
-    //         const newRPS = await invoiceContext.createInvoice({
-    //             rps_number: formData.rps_number,
-    //             rps_emission_date: formData.rps_emission_date,
-    //             service_code: formData.service_code,
-    //             aliquot: formData.aliquot,
-    //             cpf_cnpj: formData.cpf_cnpj,
-    //             name: formData.name,
-    //             address: formData.address,
-    //             number: formData.number,
-    //             district: formData.district,
-    //             city: formData.city,
-    //             state: formData.state,
-    //             zip_code: formData.zip_code,
-    //             email: formData.email,
-    //             service_discrim: formData.service_discrim,
-    //             service_value: formData.service_value,
-    //             name_adjust1: formData.name_adjust1,
-    //             value_adjust1: formData.value_adjust1,
-    //             irrf_value: formData.irrf_value,
-    //             service_liquid_value: formData.service_liquid_value,
-    //             deduction_value: formData.deduction_value,
-    //         });
-    //         toast.success(
-    //             `RPS ${formData.rps_number}, foi gravada com sucesso!`
-    //         );
-    //         //navigate("/clientes");
-    //         // handleClean();
-    //         return newRPS;
-    //     } catch (error) {
-    //         toast.error(`Erro ao tentar criar a RPS, ${error}`);
-    //     }
-    // };
 
     const handleCreate = async () => {
         try {
