@@ -33,6 +33,7 @@ export const SContainer = styled.div`
     display: flex;
     justify-content: flex-end;
     padding-top: 30px;
+    max-width: 980px;
     max-height: 500px;
 
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));

@@ -6,7 +6,7 @@ import { IColumn } from "../../../../components/CustomTable/types";
 import { ContractContext } from "../../../../contexts/ContractContext";
 import { toast } from "react-toastify";
 import { IContractData } from "../../../../contexts/ContractContext/types";
-import { SContainerSearchAndButton, STitle } from "./styles";
+import { SContainer, SContainerSearchAndButton, STitle } from "./styles";
 import CustomButton from "../../../../components/CustomButton";
 
 export function GrainsVol() {
@@ -26,6 +26,7 @@ export function GrainsVol() {
             const filteredContracts = response.data.filter(
                 (contract: {
                     total_contract_value: any;
+                    price: any;
                     commission_seller: any;
                     commission_buyer: any;
                     type_commission_seller: any;
@@ -36,6 +37,8 @@ export function GrainsVol() {
                     quantity: any;
                     product: any;
                     name_product: any;
+                    day_exchange_rate: any;
+                    type_currency: any;
                 }) =>
                     (contract.name_product &&
                         contract.name_product.toUpperCase() ===
@@ -47,6 +50,7 @@ export function GrainsVol() {
 
             const updatedContracts = filteredContracts.map(
                 (contract: {
+                    price: any;
                     total_contract_value: any;
                     commission_seller: any;
                     commission_buyer: any;
@@ -58,6 +62,8 @@ export function GrainsVol() {
                     quantity: any;
                     product: any;
                     name_product: any;
+                    day_exchange_rate: any;
+                    type_currency: any;
                 }) => {
                     // 02/01/2025 - Carlos - Farelo e Óleo não divide por 60
                     // Só iremos remover essa regra das siglas, caso o cliente aceite a sugestão da reunião do dia 09/04/2025
@@ -66,9 +72,26 @@ export function GrainsVol() {
                         ? Number(contract.quantity) / 1
                         : Number(contract.quantity) / 1000;
 
-                    const total = Number(
-                        contract.total_contract_value.replace(/[,]/g, ".")
-                    );
+                    const total =
+                        contract.type_currency == "Dólar"
+                            ? Number(
+                                  contract.total_contract_value.replace(
+                                      /[,]/g,
+                                      "."
+                                  )
+                              ) *
+                              Number(
+                                  contract.day_exchange_rate.replace(
+                                      /[,]/g,
+                                      "."
+                                  )
+                              )
+                            : Number(
+                                  contract.total_contract_value.replace(
+                                      /[,]/g,
+                                      "."
+                                  )
+                              );
 
                     const commission = Number(
                         contract.commission_seller == 0
@@ -98,10 +121,44 @@ export function GrainsVol() {
                     const formattedCommission = commissionValue.toLocaleString(
                         "pt-BR",
                         {
-                            style: "currency",
-                            currency: "BRL",
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
                         }
                     );
+
+                    const formattedTotal = total.toLocaleString("pt-BR", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                    });
+
+                    const formattedPrice = Number(
+                        contract.type_currency == "Dólar"
+                            ? Number(contract.price.replace(/[,]/g, ".")) *
+                                  Number(
+                                      contract.day_exchange_rate.replace(
+                                          /[,]/g,
+                                          "."
+                                      )
+                                  )
+                            : contract.price
+                    ).toLocaleString("pt-BR", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                    });
+
+                    const formattedDayExchange =
+                        contract.day_exchange_rate != 0 ||
+                        contract.type_currency == "Dólar"
+                            ? Number(
+                                  contract.day_exchange_rate.replace(
+                                      /[,]/g,
+                                      "."
+                                  )
+                              ).toLocaleString("pt-BR", {
+                                  minimumFractionDigits: 4,
+                                  maximumFractionDigits: 4,
+                              })
+                            : "";
 
                     return {
                         ...contract,
@@ -110,6 +167,9 @@ export function GrainsVol() {
                         resp_commission: resp_commission,
                         commission: commission,
                         commission_value: formattedCommission,
+                        total_contract_real: formattedTotal,
+                        price_real: formattedPrice,
+                        day_exchange_formatted: formattedDayExchange,
                     };
                 }
             );
@@ -173,14 +233,29 @@ export function GrainsVol() {
             },
             {
                 field: "quantity",
-                header: "QUANTIDADE",
+                header: "QUANTIDADE (TON)",
                 width: "150px",
                 sortable: true,
             },
             {
-                field: "price",
-                header: "PREÇO",
+                field: "price_real",
+                header: "PREÇO R$",
                 width: "150px",
+            },
+            {
+                field: "type_currency",
+                header: "MOEDA",
+                width: "20px",
+            },
+            {
+                field: "day_exchange_formatted",
+                header: "TAXA",
+                width: "20px",
+            },
+            {
+                field: "total_contract_real",
+                header: "VALOR CONTRATO R$",
+                width: "20px",
             },
             {
                 field: "type_commission",
@@ -199,7 +274,7 @@ export function GrainsVol() {
             },
             {
                 field: "commission_value",
-                header: "COMISSÃO EM R$",
+                header: "COMISSÃO R$",
                 width: "130px",
             },
         ],
@@ -230,23 +305,11 @@ export function GrainsVol() {
         return sorted;
     }, [filteredData, order, orderBy]);
 
-    // const sortedData = [...filteredData].sort((a, b) => {
-    //     const qA = Number(a.quantity) || 0;
-    //     const qB = Number(b.quantity) || 0;
-    //     return qA - qB;
-    // });
-
     const handlePrint = (): void => {
         const printWindow = window.open("", "_blank");
         if (!printWindow) return;
 
         const pageSize = 25;
-
-        // const sortedPrint = [...filteredData].sort((a, b) => {
-        //     const qA = Number(a.quantity) || 0;
-        //     const qB = Number(b.quantity) || 0;
-        //     return qA - qB;
-        // });
 
         printWindow.document.write(`
         <html>
@@ -394,19 +457,21 @@ export function GrainsVol() {
                     Exportar CSV
                 </CustomButton>
             </SContainerSearchAndButton>
-            <CustomTable
-                isLoading={isLoading}
-                data={sortedData}
-                columns={nameColumns}
-                hasPagination={true}
-                //maxChars={15}
-                page={page}
-                setPage={setPage}
-                order={order}
-                orderBy={orderBy}
-                setOrder={setOrder}
-                setOrderBy={setOrderBy}
-            />
+            <SContainer>
+                <CustomTable
+                    isLoading={isLoading}
+                    data={sortedData}
+                    columns={nameColumns}
+                    hasPagination={true}
+                    //maxChars={15}
+                    page={page}
+                    setPage={setPage}
+                    order={order}
+                    orderBy={orderBy}
+                    setOrder={setOrder}
+                    setOrderBy={setOrderBy}
+                />
+            </SContainer>
         </>
     );
 }
