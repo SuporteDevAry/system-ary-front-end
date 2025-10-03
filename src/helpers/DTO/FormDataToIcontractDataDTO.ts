@@ -52,5 +52,11 @@ export const FormDataToIContractDataDTO = (
     complement_destination: data?.complement_destination,
     type_quantity: data?.type_quantity,
     table_id: data?.table_id,
+    final_quantity: Number(data?.final_quantity),
+    status_received: data?.status_received,
+    commission_contract: data?.commission_contract,
+    charge_date: data?.charge_date,
+    expected_receipt_date: data?.expected_receipt_date,
+    total_received: data?.total_received,
   };
 };

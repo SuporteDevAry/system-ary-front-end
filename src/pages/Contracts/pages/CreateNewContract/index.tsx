@@ -103,6 +103,12 @@ export const CreateNewContract: React.FC = () => {
     internal_communication: "",
     type_quantity: "",
     table_id: "",
+    final_quantity: "",
+    status_received: "",
+    commission_contract: 0,
+    charge_date: "",
+    expected_receipt_date: "",
+    total_received: 0,
   });
   const { canConsult } = useUserPermissions();
 

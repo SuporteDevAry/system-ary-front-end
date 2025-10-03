@@ -81,6 +81,12 @@ export interface IContractData {
   complement_destination?: string;
   type_quantity?: string;
   table_id?: string;
+  final_quantity?: number;
+  status_received?: string;
+  commission_contract?: number;
+  charge_date?: string;
+  expected_receipt_date?: string;
+  total_received?: number;
 }
 
 export interface IContractContext {
@@ -96,5 +102,9 @@ export interface IContractContext {
   deleteContract: (
     contractId: string,
     contractData: IContractData
+  ) => Promise<any>;
+  updateContractAdjustments: (
+    contractId: string,
+    contractData: Partial<IContractData>
   ) => Promise<any>;
 }

@@ -4,6 +4,7 @@ import {
     SBox,
     SCardInfo,
     SCardInfoActions,
+    SCardInfoAdjust,
     SCardInfoNumber,
     SContainer,
     SKeyContainer,
@@ -33,9 +34,11 @@ import { Modal } from "../../../../../../components/Modal";
 import { CustomStatusIndicator } from "../../../../../../components/CustomStatusIndicator";
 import { CustomSelect } from "../../../../../../components/CustomSelect";
 import { formatQuantity } from "../../../CreateNewContract/components/Step3/hooks";
+import { ModalEditQuantity } from "./components/ModalEditQuantity";
 
 export function ViewContract(): JSX.Element {
-    const { deleteContract, updateContract } = ContractContext();
+    const { deleteContract, updateContract, updateContractAdjustments } =
+        ContractContext();
     const location = useLocation();
     const navigate = useNavigate();
     const { dataUserInfo } = useInfo();
@@ -43,6 +46,8 @@ export function ViewContract(): JSX.Element {
     const [dataClient, setDataClient] = useState<IContractData | null>(null);
     const [modalContent, setModalContent] = useState<string>("");
     const [isDeleteModal, setDeleteModal] = useState<boolean>(false);
+    const [isEditQuantityModal, setEditQuantityModal] =
+        useState<boolean>(false);
     const [isChangeStatusModal, setChangeStatusModal] =
         useState<boolean>(false);
     const [selectedStatus, setSelectedStatus] = useState(
@@ -53,6 +58,7 @@ export function ViewContract(): JSX.Element {
 
     useEffect(() => {
         const contractForView: IContractData = location.state?.contractForView;
+
         setDataClient(contractForView);
     }, [location]);
 
@@ -86,6 +92,23 @@ export function ViewContract(): JSX.Element {
             // Remove o container temporário após a geração do PDF
             document.body.removeChild(container);
         }, 1000);
+    };
+
+    // handleChange genérico
+    const handleChange = (
+        e:
+            | React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+            | { target: { name: string; value: any } }
+    ) => {
+        const { name, value } = e.target;
+        setDataClient((prev) =>
+            prev
+                ? {
+                      ...prev,
+                      [name]: name === "final_quantity" ? Number(value) : value,
+                  }
+                : prev
+        );
     };
 
     const handleOpenDeleteModal = () => {
@@ -201,32 +224,141 @@ export function ViewContract(): JSX.Element {
         }
     };
 
+    const handleOpenEditQuantityModal = () => {
+        setEditQuantityModal(true);
+    };
+    const handleCloseEditQuantityModal = () => {
+        setEditQuantityModal(false);
+    };
+
+    const handleEditQuantity = async () => {
+        if (!dataClient || !dataClient.id) {
+            toast.error("Id do Contrato não encontrado.");
+            return;
+        }
+        // Aqui vou ter uma classe de status para o financeiro!
+        // if (!selectedStatus) {
+        //   toast.error("Por favor, selecione um status.");
+        //   return;
+        // }
+
+        // const newDate = formattedDate();
+        // const newTime = formattedTime();
+
+        // const newStatusEntry = {
+        //   date: newDate,
+        //   time: newTime,
+        //   status: selectedStatus,
+        //   owner_change: {
+        //     name: dataUserInfo?.name || "",
+        //     email: dataUserInfo?.email || "",
+        //   },
+        // };
+
+        // const updatedStatus = {
+        //   status_current: selectedStatus,
+        //   history: [...dataClient.status.history, newStatusEntry],
+        // };
+
+        // const updatedContract = {
+        //   ...dataClient,
+        //   status: updatedStatus,
+        // };
+
+        // Monta um objeto apenas com os ajustes válidos
+        const adjustments: Partial<IContractData> = {};
+
+        if (
+            dataClient.final_quantity !== undefined &&
+            dataClient.final_quantity !== null
+        )
+            adjustments.final_quantity = dataClient.final_quantity;
+
+        if (dataClient.payment_date)
+            adjustments.payment_date = dataClient.payment_date;
+
+        if (dataClient.charge_date)
+            adjustments.charge_date = dataClient.charge_date;
+
+        if (dataClient.expected_receipt_date)
+            adjustments.expected_receipt_date =
+                dataClient.expected_receipt_date;
+
+        if (
+            dataClient.status_received !== undefined &&
+            dataClient.status_received !== null &&
+            dataClient.status_received !== ""
+        )
+            adjustments.status_received = dataClient.status_received;
+
+        if (
+            dataClient.internal_communication !== undefined &&
+            dataClient.internal_communication !== null &&
+            dataClient.internal_communication !== ""
+        )
+            adjustments.internal_communication =
+                dataClient.internal_communication;
+
+        // Se nenhum campo foi alterado
+        if (Object.keys(adjustments).length === 0) {
+            toast.warn("Nenhum ajuste foi informado.");
+            return;
+        }
+
+        try {
+            await updateContractAdjustments(dataClient?.id, adjustments);
+            toast.success(`Contrato atualizado com sucesso`);
+            setEditQuantityModal(false);
+            navigate("/contratos/historico");
+        } catch (error) {
+            toast.error(`Erro ao atualizar status: ${error}`);
+        }
+    };
+
     // Função para formatar a quantidade
     const typeQuantity = dataClient?.type_quantity;
 
     const formattedValue = formatQuantity(
         Number(dataClient?.quantity || 0).toString()
     );
+
+    const formattedValueFinal = formatQuantity(
+        Number(dataClient?.final_quantity || 0).toString()
+    );
     const quantityValue =
         typeQuantity === "toneladas métricas"
             ? Number(dataClient?.quantity)
             : formattedValue;
 
-    const contractFields = [
-        { label: "Produto", value: dataClient?.name_product },
+    const finalQuantityValue =
+        typeQuantity === "toneladas métricas"
+            ? Number(dataClient?.final_quantity)
+            : formattedValueFinal;
+
+    const contractSellerAndBuyer = [
         { label: "Vendedor", value: dataClient?.seller.name },
         { label: "Comprador", value: dataClient?.buyer.name },
+    ];
+
+    const commission =
+        (
+            dataClient?.type_commission_seller ||
+            dataClient?.type_commission_buyer
+        )?.toLocaleLowerCase() === "percentual"
+            ? `${dataClient?.commission_seller}%`
+            : `R$ ${dataClient?.commission_seller}`;
+
+    const contractFields = [
         {
-            label: "Preço",
+            label: "Preço:",
             value: formatCurrency(
                 dataClient?.price?.toString() ?? "0",
                 dataClient?.type_currency ?? "Real"
             ),
         },
-        {
-            label: "Quantidade",
-            value: `${quantityValue} ${typeQuantity}`,
-        },
+        { label: "", value: "" }, //[x]: Não remover!!!
+        { label: "Produto:", value: dataClient?.name_product },
+        { label: "", value: "" }, //[x]: Não remover!!!
         {
             label: "Total do Contrato",
             value: formatCurrency(
@@ -234,12 +366,51 @@ export function ViewContract(): JSX.Element {
                 dataClient?.type_currency ?? "Real"
             ),
         },
-    ];
-
-    const contractComunication = [
+        { label: "", value: "" }, //[x]: Não remover!!!
         {
-            label: "Comunicado Interno",
-            value: dataClient?.internal_communication,
+            label: "Quantidade",
+            value: `${quantityValue} ${typeQuantity}`,
+        },
+        {
+            label: "Quantidade Final",
+            value: `${finalQuantityValue} ${typeQuantity}`,
+        },
+
+        {
+            label: "Comissão",
+            value: commission,
+        },
+        {
+            label: "Valor Comissão",
+            value: formatCurrency(
+                dataClient?.commission_contract?.toString() ?? "0",
+                "Real"
+            ),
+        },
+
+        {
+            label: "Total Recebido",
+            value: formatCurrency(
+                dataClient?.total_received?.toString() ?? "0",
+                "Real"
+            ),
+        },
+        {
+            label: "Data do Pagamento",
+            value: dataClient?.payment_date,
+        },
+        {
+            label: "Data da Cobrança",
+            value: dataClient?.charge_date || "-",
+        },
+        {
+            label: "Data Prevista Recebimento",
+            value: dataClient?.expected_receipt_date || "-",
+        },
+
+        {
+            label: "Liquidado",
+            value: dataClient?.status_received?.toString() || "",
         },
     ];
 
@@ -280,7 +451,7 @@ export function ViewContract(): JSX.Element {
                             {canChangeStatus && (
                                 <CustomButton
                                     $variant="success"
-                                    width="120px"
+                                    width="140px"
                                     onClick={handleOpenChangeStatusModal}
                                     disabled={!canChangeStatus}
                                 >
@@ -290,19 +461,32 @@ export function ViewContract(): JSX.Element {
 
                             <CustomButton
                                 $variant="secondary"
-                                width="100px"
+                                width="120px"
                                 onClick={handleViewPDF}
                             >
                                 Visualizar
                             </CustomButton>
-                            <CustomButton
-                                $variant={"primary"}
-                                width="100px"
-                                onClick={handleEdit}
-                                disabled={forDisabled}
-                            >
-                                Editar
-                            </CustomButton>
+
+                            {dataClient?.status.status_current === "ENVIADO" ? (
+                                <CustomButton
+                                    $variant={"primary"}
+                                    width="100px"
+                                    onClick={handleOpenEditQuantityModal}
+                                    disabled={forDisabled}
+                                >
+                                    Alterar
+                                </CustomButton>
+                            ) : (
+                                <CustomButton
+                                    $variant={"primary"}
+                                    width="100px"
+                                    onClick={handleEdit}
+                                    disabled={forDisabled}
+                                >
+                                    Editar
+                                </CustomButton>
+                            )}
+
                             <CustomButton
                                 $variant="danger"
                                 width="100px"
@@ -316,7 +500,7 @@ export function ViewContract(): JSX.Element {
                 </SBox>
 
                 <SCardInfo>
-                    {contractFields.map((field, index) => (
+                    {contractSellerAndBuyer.map((field, index) => (
                         <SKeyContainer key={index}>
                             <SkeyName>
                                 {field.label}:
@@ -325,15 +509,27 @@ export function ViewContract(): JSX.Element {
                         </SKeyContainer>
                     ))}
                 </SCardInfo>
-                <SCardInfo>
-                    {contractComunication.map((field, index) => (
+
+                <SCardInfoAdjust>
+                    {contractFields.map((field, index) => (
                         <SKeyContainer key={index}>
                             <SkeyName>
-                                {field.label}:
+                                {field.label}
                                 <SKeyValue>{field.value}</SKeyValue>
                             </SkeyName>
                         </SKeyContainer>
                     ))}
+                </SCardInfoAdjust>
+
+                <SCardInfo>
+                    <SKeyContainer>
+                        <SkeyName>
+                            Comunicado Interno:
+                            <SKeyValue>
+                                {dataClient?.internal_communication}
+                            </SKeyValue>
+                        </SkeyName>
+                    </SKeyContainer>
                 </SCardInfo>
             </SContainer>
             <ModalDelete
@@ -342,6 +538,14 @@ export function ViewContract(): JSX.Element {
                 onConfirm={handleContractDelete}
                 content={modalContent}
             />
+            <ModalEditQuantity
+                open={isEditQuantityModal}
+                dataContract={dataClient}
+                onClose={handleCloseEditQuantityModal}
+                onConfirm={handleEditQuantity}
+                onHandleChange={handleChange}
+            />
+
             <Modal
                 titleText={`Selecione um novo status para o contrato ${dataClient?.number_contract}`}
                 open={isChangeStatusModal}
@@ -364,7 +568,6 @@ export function ViewContract(): JSX.Element {
                         { label: "Em Pausa", value: "EM PAUSA" },
                         { label: "Cancelado", value: "CANCELADO" },
                         { label: "Deletado", value: "DELETADO" },
-                        { label: "Cobrança", value: "COBRANCA" },
                     ]}
                     onSelectChange={(value) => setSelectedStatus(value)}
                     value={selectedStatus}
