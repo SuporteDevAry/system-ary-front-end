@@ -1,5 +1,3 @@
-import { ApiResponse } from "../../services/api";
-
 export interface IBillingsProvider {
     children: JSX.Element;
 }
@@ -32,18 +30,4 @@ export interface IUpdateBillingsData
 
 export interface IListBillings extends IBillings {
     [key: string]: any;
-}
-
-export interface IBillingContext {
-    listBillings: () => Promise<any>;
-    getBillingById: (billingId: string) => Promise<ApiResponse<IBillings>>;
-    getBillingByRps: (billingId: string) => Promise<ApiResponse<IBillings>>;
-    getBillingByNfs: (billingId: string) => Promise<ApiResponse<IBillings>>;
-    getBillingByNumberContract: (number_contractId: string) => Promise<ApiResponse<IBillings>>;
-    createProduct: (billingData: IBillings) => Promise<any>;
-    updateProduct: (
-        billingId: string,
-        billingData: IBillings
-    ) => Promise<any>;
-    deleteProduct: (billingId: string) => Promise<any>;
 }
