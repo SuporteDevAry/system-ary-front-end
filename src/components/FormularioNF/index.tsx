@@ -62,18 +62,16 @@ export function FormularioNF({
             name === "irrf_value" ||
             name === "value_adjust1"
         ) {
-            const service =
-                parseFloat(
-                    name === "service_value" ? value : formData.service_value
-                ) || 0;
-            const irrf =
-                parseFloat(
-                    name === "irrf_value" ? value : formData.irrf_value
-                ) || 0;
-            const value_adjust1 =
-                parseFloat(
-                    name === "value_adjust1" ? value : formData.value_adjust1
-                ) || 0;
+            const service = Number(
+                name === "service_value" ? value : formData.service_value || 0
+            );
+            const irrf = Number(
+                name === "irrf_value" ? value : formData.irrf_value || 0
+            );
+            const value_adjust1 = Number(
+                name === "value_adjust1" ? value : formData.value_adjust1 || 0
+            );
+
             const liquid = (service - irrf - value_adjust1).toFixed(2);
 
             // Atualiza o valor líquido chamando o mesmo onChange do pai
@@ -107,16 +105,6 @@ export function FormularioNF({
                     onBlur={onCheckCNPJ}
                     onChange={onChange}
                 />
-                {/* <CustomInput
-                    type="text"
-                    label="Número RPS:"
-                    $labelPosition="top"
-                    name="rps_number"
-                    width="90%"
-                    value={formData.rps_number}
-                    onChange={onChange}
-                    readOnly
-                /> */}
                 <CustomDatePicker
                     type="text"
                     label="Data Emissão:"
@@ -126,26 +114,6 @@ export function FormularioNF({
                     value={formData.rps_emission_date}
                     onChange={handleDateChange}
                 />
-                {/* <CustomInput
-                    type="text"
-                    label="Cód.Serviço:"
-                    $labelPosition="top"
-                    name="codigoServico"
-                    width="70%"
-                    value={formData.codigoServico}
-                    onChange={onChange}
-                    readOnly
-                />
-                <CustomInput
-                    type="text"
-                    label="Alíquota ISS:"
-                    $labelPosition="top"
-                    name="aliquota"
-                    width="70%"
-                    value={formData.aliquota}
-                    onChange={onChange}
-                    readOnly
-                /> */}
             </div>
             <SBox>
                 <SCardInfo>
@@ -188,7 +156,7 @@ export function FormularioNF({
                     $labelPosition="top"
                     name="service_value"
                     width="100%"
-                    value={formData.service_value}
+                    value={formData.service_value.toString()}
                     onChange={handleChangeValue}
                 />
                 <CustomInput
@@ -197,26 +165,16 @@ export function FormularioNF({
                     $labelPosition="top"
                     name="irrf_value"
                     width="100%"
-                    value={formData.irrf_value}
+                    value={formData.irrf_value.toString()}
                     onChange={handleChangeValue}
                 />
-                {/* <CustomInput
-                    type="number"
-                    label="Valor Dedução:"
-                    $labelPosition="top"
-                    name="valorDeducao"
-                    width="100%"
-                    value={formData.valorDeducao}
-                    onChange={onChange}
-                    readOnly
-                /> */}
                 <CustomInput
                     type="number"
                     label="Valor Líquido:"
                     $labelPosition="top"
                     name="service_liquid_value"
                     width="100%"
-                    value={formData.service_liquid_value}
+                    value={formData.service_liquid_value.toString()}
                     onChange={onChange}
                     readOnly
                 />
@@ -243,7 +201,7 @@ export function FormularioNF({
                     $labelPosition="top"
                     name="value_adjust1"
                     width="100%"
-                    value={formData.value_adjust1}
+                    value={formData.value_adjust1.toString()}
                     onChange={handleChangeValue}
                 />
             </div>

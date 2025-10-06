@@ -33,7 +33,6 @@ export const BillingsProvider = ({ children }: IBillingsProvider) => {
     async function listBillings(): Promise<any> {
         try {
             const response = await Api.get("/billings");
-
             return response;
         } catch (error) {
             const err = error as AxiosError;

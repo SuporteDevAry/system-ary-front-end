@@ -23,8 +23,6 @@ export function BillingsContract() {
 
             const response = await billingContext.listBillings();
 
-            console.log("response:", response);
-
             const filteredContracts = response.data;
 
             // const filteredContracts = response.data
@@ -45,7 +43,7 @@ export function BillingsContract() {
 
     useEffect(() => {
         fetchData();
-    }, [fetchData]);
+    }, []);
 
     const { filteredData, handleSearch } = useTableSearch({
         data: listbillings,
