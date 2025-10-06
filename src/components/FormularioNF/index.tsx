@@ -37,11 +37,53 @@ export function FormularioNF({
     ];
 
     const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-        return { ...formData, service_discrim: e.target.value };
+        return {
+            ...formData,
+            service_discrim: e.target.value,
+        };
     };
 
     const handleDateChange = (newDate: string) => {
-        return { ...formData, rps_emission_date: newDate };
+        return {
+            ...formData,
+            rps_emission_date: newDate,
+        };
+    };
+
+    const handleChangeValue = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+
+        // Atualiza normalmente o campo alterado
+        onChange(e);
+
+        // Calcula o líquido automaticamente
+        if (
+            name === "service_value" ||
+            name === "irrf_value" ||
+            name === "value_adjust1"
+        ) {
+            const service =
+                parseFloat(
+                    name === "service_value" ? value : formData.service_value
+                ) || 0;
+            const irrf =
+                parseFloat(
+                    name === "irrf_value" ? value : formData.irrf_value
+                ) || 0;
+            const value_adjust1 =
+                parseFloat(
+                    name === "value_adjust1" ? value : formData.value_adjust1
+                ) || 0;
+            const liquid = (service - irrf - value_adjust1).toFixed(2);
+
+            // Atualiza o valor líquido chamando o mesmo onChange do pai
+            onChange({
+                target: {
+                    name: "service_liquid_value",
+                    value: liquid,
+                },
+            } as any);
+        }
     };
 
     return (
@@ -147,7 +189,7 @@ export function FormularioNF({
                     name="service_value"
                     width="100%"
                     value={formData.service_value}
-                    onChange={onChange}
+                    onChange={handleChangeValue}
                 />
                 <CustomInput
                     type="number"
@@ -156,7 +198,7 @@ export function FormularioNF({
                     name="irrf_value"
                     width="100%"
                     value={formData.irrf_value}
-                    onChange={onChange}
+                    onChange={handleChangeValue}
                 />
                 {/* <CustomInput
                     type="number"
@@ -176,6 +218,7 @@ export function FormularioNF({
                     width="100%"
                     value={formData.service_liquid_value}
                     onChange={onChange}
+                    readOnly
                 />
             </div>
             <div
@@ -201,7 +244,7 @@ export function FormularioNF({
                     name="value_adjust1"
                     width="100%"
                     value={formData.value_adjust1}
-                    onChange={onChange}
+                    onChange={handleChangeValue}
                 />
             </div>
             <SCustomTextArea

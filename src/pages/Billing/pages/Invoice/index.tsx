@@ -7,8 +7,8 @@ import CustomButton from "../../../../components/CustomButton";
 import CustomTable from "../../../../components/CustomTable";
 import { IColumn } from "../../../../components/CustomTable/types";
 import {
-    BoxContainer,
     SButtonContainer,
+    SCardContrato,
     SCardInfo,
     SContainer,
     SContainerSearchAndButton,
@@ -28,15 +28,22 @@ export function Invoice() {
     const invoiceContext = InvoiceContext();
     //const billingContext = BillingContext();
     const [listInvoices, setListInvoices] = useState<IInvoices[]>([]);
+    const [listInvoicesTable, setListInvoicesTable] = useState<IInvoices[]>([]);
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [listcontracts, setListContracts] = useState<IContractData[]>([]);
-    const [selectedContract, setSelectedContract] = useState<IContractData[]>();
+    const [selectedContract, setSelectedContract] = useState<
+        IContractData | undefined
+    >(undefined);
     const [searchTerm, setSearchTerm] = useState("");
-    const [page, setPage] = useState(5);
+    const [page, setPage] = useState(0);
     const [order, setOrder] = useState<"asc" | "desc">("desc");
     const [orderBy, setOrderBy] = useState<string>("payment_date");
     const currentDate = dayjs().format("YYYYMMDD");
+    const [isLoadingRPS, setIsLoadingRPS] = useState<boolean>(true);
+    const [pageRPS, setPageRPS] = useState(0);
+    const [orderRPS, setOrderRPS] = useState<"asc" | "desc">("desc");
+    const [orderByRPS, setOrderByRPS] = useState<string>("rps_number");
 
     // const [modalContent, setModalContent] = useState<string>("");
     // const [selectedBilling, setSelectedBilling] = useState<IBillings | null>(
@@ -54,16 +61,18 @@ export function Invoice() {
 
             const filteredContracts = response.data.filter(
                 (contract: { status: { status_current: string } }) =>
-                    contract.status.status_current === "COBRANCA"
+                    contract.status.status_current === "COBRANÇA"
             );
 
             setListContracts(filteredContracts);
 
+            setIsLoadingRPS(false);
             const responseInvoice = await invoiceContext.listInvoices();
 
             const invoices = responseInvoice.data.filter(
                 (invoice: { nfs_number: string }) => invoice.nfs_number == ""
             );
+
             setListInvoices(invoices);
         } catch (error) {
             toast.error(
@@ -261,6 +270,14 @@ export function Invoice() {
         URL.revokeObjectURL(url);
     };
 
+    useEffect(() => {
+        // const filteredInvoices = listInvoices.forEach(
+        //     (invoice) => invoice.service_code === selectedContract.number_contract
+        // );
+
+        setListInvoicesTable(listInvoices);
+    }, [listInvoicesTable]);
+
     // const handleUpdateBillingModal = (billing: IBillings) => {
     //     setUpdateModalBilling(true);
     //     setSelectedBilling(billing);
@@ -306,9 +323,12 @@ export function Invoice() {
 
     const nameColumnsFromRPS = useMemo(
         () => [
-            { field: "rps_number", header: "RPS", sortable: true },
-            { field: "nfs_number", header: "NF", sortable: true },
-            { field: "number_contract", header: "CONTRATO", sortable: true },
+            { field: "rps_number", header: "RPS" },
+            { field: "rps_emission_date", header: "DATA RPS" },
+            { field: "service_code", header: "CONTRATO" },
+            { field: "cpf_cnpj", header: "CNPJ/CPF" },
+            { field: "name", header: "NOME" },
+            { field: "service_liquid_value", header: "TOTAL" },
         ],
         []
     );
@@ -339,70 +359,65 @@ export function Invoice() {
 
     return (
         <SContainer>
-            <STitle>Emissão de RPS</STitle>
-
-            <SContainerSearchAndButton>
-                <CustomSearch
-                    width="400px"
-                    placeholder="Digite Nº Contrato ou Vendedor"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                />
-                <CustomButton
-                    $variant="success"
-                    width="180px"
-                    onClick={handleGeraRPS}
-                >
-                    Gravar RPS
-                </CustomButton>
-                <CustomButton
-                    $variant="success"
-                    width="180px"
-                    onClick={handleGeraNF}
-                >
-                    Gerar Arquivo RPS
-                </CustomButton>
-            </SContainerSearchAndButton>
-            <CustomTable
-                isLoading={isLoading}
-                data={filteredData}
-                columns={nameColumns}
-                hasPagination
-                hasCheckbox
-                dateFields={["created_at"]}
-                maxChars={15}
-                page={page}
-                setPage={setPage}
-                order={order}
-                orderBy={orderBy}
-                setOrder={setOrder}
-                setOrderBy={setOrderBy}
-                onRowClick={(rowData) => setSelectedContract(rowData)}
-            />
-
             <SCardInfo>
-                <STitle>RPS Geradas</STitle>
-                <BoxContainer>
+                <STitle>Emissão de RPS</STitle>
+                <SContainerSearchAndButton>
                     <CustomSearch
                         width="400px"
-                        placeholder="Digite o Nome ou E-mail"
+                        placeholder="Digite Nº Contrato ou Vendedor"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
-                </BoxContainer>
-                <CardContent>
+                    <CustomButton
+                        $variant="success"
+                        width="180px"
+                        onClick={handleGeraRPS}
+                    >
+                        Gravar RPS
+                    </CustomButton>
+                    <CustomButton
+                        $variant="success"
+                        width="180px"
+                        onClick={handleGeraNF}
+                    >
+                        Gerar Arquivo RPS
+                    </CustomButton>
+                </SContainerSearchAndButton>
+                <SCardContrato>
                     <CustomTable
-                        data={listInvoices}
-                        columns={nameColumnsFromRPS}
                         isLoading={isLoading}
-                        hasPagination={true}
-                        actionButtons={renderActionButtons}
+                        data={filteredData}
+                        columns={nameColumns}
+                        hasPagination
+                        hasCheckbox
+                        //dateFields={["created_at"]}
+                        maxChars={15}
                         page={page}
                         setPage={setPage}
                         order={order}
                         orderBy={orderBy}
                         setOrder={setOrder}
                         setOrderBy={setOrderBy}
+                        onRowClick={(rowData) => setSelectedContract(rowData)}
+                    />
+                </SCardContrato>
+            </SCardInfo>
+
+            <SCardInfo>
+                <STitle>RPS Geradas</STitle>
+                <CardContent>
+                    <CustomTable
+                        data={listInvoices}
+                        columns={nameColumnsFromRPS}
+                        isLoading={isLoadingRPS}
+                        hasPagination={true}
+                        actionButtons={renderActionButtons}
+                        page={pageRPS}
+                        setPage={setPageRPS}
+                        order={orderRPS}
+                        orderBy={orderByRPS}
+                        setOrder={setOrderRPS}
+                        setOrderBy={setOrderByRPS}
                     />
                 </CardContent>
             </SCardInfo>

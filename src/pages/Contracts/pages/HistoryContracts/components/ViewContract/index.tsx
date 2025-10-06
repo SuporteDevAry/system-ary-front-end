@@ -565,6 +565,7 @@ export function ViewContract(): JSX.Element {
                         { label: "Validado", value: "VALIDADO" },
                         { label: "Enviado", value: "ENVIADO" },
                         { label: "Editado", value: "EDITADO" },
+                        { label: "Cobrança", value: "COBRANÇA" },
                         { label: "Em Pausa", value: "EM PAUSA" },
                         { label: "Cancelado", value: "CANCELADO" },
                         { label: "Deletado", value: "DELETADO" },

@@ -182,7 +182,10 @@ Depositar no Banco Bradesco S.A. (237)       Ag. 0108-2       C/C. 132.362-8`,
 
     const handleCreate = async () => {
         try {
-            const newRPS = await invoiceContext.createInvoice({ ...formData });
+            const newRPS = await invoiceContext.createInvoice({
+                ...formData,
+                service_code: location.state?.selectedContract.number_contract,
+            });
             toast.success(
                 `RPS ${formData.rps_number} foi gravada com sucesso!`
             );

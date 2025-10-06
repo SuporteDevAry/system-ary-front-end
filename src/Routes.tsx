@@ -31,10 +31,10 @@ import { Receipt } from "./pages/Billing/pages/Receipt";
 import { NotaFiscal } from "./pages/Billing/pages/NotaFiscal";
 import { Invoice } from "./pages/Billing/pages/Invoice";
 import { CreateInvoice } from "./pages/Billing/pages/Invoice/components/CreateInvoice";
-import { ViewReceipt } from "./pages/Billing/pages/Receipt/components/ViewReceipt";
 import { ReceiptMap } from "./pages/Billing/pages/ReceiptMap";
 import { PaymentContract } from "./pages/Billing/pages/PaymentContract";
 import { BillingsContract } from "./pages/Billing/pages/BillingsContract";
+import { ViewBilling } from "./pages/Billing/pages/Receipt/components/ViewBilling";
 
 export function RoutesForPages() {
     return (
@@ -235,7 +235,7 @@ export function RoutesForPages() {
                 element={
                     <ProtectedLayout>
                         <Layout>
-                            <ViewReceipt />
+                            <ViewBilling />
                         </Layout>
                     </ProtectedLayout>
                 }

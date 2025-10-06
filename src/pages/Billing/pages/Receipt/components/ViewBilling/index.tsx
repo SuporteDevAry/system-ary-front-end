@@ -19,15 +19,16 @@ import CustomButton from "../../../../../../components/CustomButton";
 //import { formatCurrency } from "../../../../../../helpers/currencyFormat";
 import { CustomStatusIndicator } from "../../../../../../components/CustomStatusIndicator";
 import CustomTable from "../../../../../../components/CustomTable";
-import { ModalCreateNewReceipt } from "../modalNewReceipt";
+
 import { createRoot } from "react-dom/client";
 import ContratoTemplate from "../../../../../../templates/contrato";
 import PdfGenerator from "../../../../../../helpers/PDFGenerator";
 import { BillingContext } from "../../../../../../contexts/BillingContext";
 import { IBillings } from "../../../../../../contexts/BillingContext/types";
 import { toast } from "react-toastify";
+import { ModalCreateNewBilling } from "../ModalCreateNewBilling";
 
-export function ViewReceipt(): JSX.Element {
+export function ViewBilling(): JSX.Element {
     const location = useLocation();
     const [dataClient, setDataClient] = useState<IContractData | null>(null);
     const [isNewReceiptModalOpen, setNewReceiptModalOpen] =
@@ -58,6 +59,24 @@ export function ViewReceipt(): JSX.Element {
 
         fetchData();
     }, [location]);
+
+    const handleChange = (
+        e:
+            | React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+            | { target: { name: string; value: any } }
+    ) => {
+        const { name, value } = e.target;
+        setDataClient((prev) =>
+            prev
+                ? {
+                      ...prev,
+                      [name]: name === "final_quantity" ? Number(value) : value,
+                  }
+                : prev
+        );
+    };
+
+    const handleEditBilling = async () => {};
 
     const handleCreateNewReceipt = async () => {
         setNewReceiptModalOpen(true);
@@ -292,9 +311,12 @@ export function ViewReceipt(): JSX.Element {
                     setOrderBy={setOrderBy}
                 />
             </SContainer>
-            <ModalCreateNewReceipt
+            <ModalCreateNewBilling
                 open={isNewReceiptModalOpen}
+                dataBillings={[]}
                 onClose={handleCloseNewReceipt}
+                onConfirm={handleEditBilling}
+                onHandleChange={handleChange}
             />
         </>
     );

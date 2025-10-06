@@ -13,7 +13,7 @@ export const SContainerSearchAndButton = styled.div`
   flex-direction: row;
   padding-top: ${V.smSpacing};
   padding-bottom: ${V.mdSpacing};
-  margin-left: -16px;
+  //margin-left: -16px;
 `;
 
 // export const SContainer = styled.div`
@@ -24,9 +24,17 @@ export const SContainerSearchAndButton = styled.div`
 //   align-items: start;
 // `;
 
+export const SCardContrato = styled.div`
+  padding: 16px;
+  //width: 850px;
+  border-radius: 16px;
+  background-color: ${(props) => props.theme["white"]};
+  box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.16);
+`;
+
 export const SCardInfo = styled.div`
   padding: 16px;
-  width: 935px;
+  //width: 935px;
   border-radius: 16px;
   background-color: ${(props) => props.theme["white"]};
   box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.16);

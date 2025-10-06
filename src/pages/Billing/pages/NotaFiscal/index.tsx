@@ -27,7 +27,7 @@ export function NotaFiscal() {
 
             const filteredContracts = response.data.filter(
                 (contract: { status: { status_current: string } }) =>
-                    contract.status.status_current === "COBRANCA"
+                    contract.status.status_current === "COBRANÇA"
             );
 
             setListContracts(filteredContracts);

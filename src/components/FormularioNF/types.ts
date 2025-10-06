@@ -13,14 +13,14 @@ export interface IFormNF {
     zip_code: string;
     email: string;
     service_discrim: string;
-    service_value: number;
+    service_value: string;
     name_adjust1: string;
-    value_adjust1: number;
+    value_adjust1: string;
     name_adjust2: string;
-    value_adjust2: number;
-    irrf_value: number;
-    service_liquid_value: number;
-    deduction_value: number;
+    value_adjust2: string;
+    irrf_value: string;
+    service_liquid_value: string;
+    deduction_value: string;
 }
 
 export interface IFormNFProps {
