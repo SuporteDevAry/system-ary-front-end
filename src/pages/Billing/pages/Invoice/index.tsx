@@ -398,7 +398,9 @@ export function Invoice() {
                         orderBy={orderBy}
                         setOrder={setOrder}
                         setOrderBy={setOrderBy}
-                        onRowClick={(rowData) => setSelectedContract(rowData)}
+                        onRowClick={(rowData) =>
+                            setSelectedContract(rowData as IContractData)
+                        }
                     />
                 </SCardContrato>
             </SCardInfo>
