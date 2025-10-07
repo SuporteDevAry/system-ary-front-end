@@ -26,6 +26,7 @@ import {
     AiOutlineTeam,
     AiOutlineHome,
     AiOutlineSetting,
+    AiOutlineDollar,
 } from "react-icons/ai";
 import { LiaUserShieldSolid, LiaFileContractSolid } from "react-icons/lia";
 import { BiSearchAlt2 } from "react-icons/bi";
@@ -75,6 +76,11 @@ export function Permissions() {
                 label: "Execução",
                 icon: <AiOutlineIdcard size={40} />,
                 key: "EXECUCAO",
+            },
+            {
+                label: "Cobrança",
+                icon: <AiOutlineDollar size={40} />,
+                key: "COBRANCA",
             },
             {
                 label: "Relatórios",
