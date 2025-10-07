@@ -21,6 +21,7 @@ import {
     AiOutlineLeft,
     AiOutlineRight,
     AiOutlineSetting,
+    AiOutlineDollar,
 } from "react-icons/ai";
 
 import { LiaFileContractSolid } from "react-icons/lia";
@@ -69,6 +70,13 @@ export function Sidebar() {
             label: "Execução",
             icon: <AiOutlineIdcard />,
             to: "/execucao",
+            notification: 0,
+        },
+        {
+            id: "COBRANCA",
+            label: "Cobrança",
+            icon: <AiOutlineDollar />,
+            to: "/cobranca",
             notification: 0,
         },
         {
