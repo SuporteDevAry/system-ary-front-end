@@ -39,6 +39,7 @@ export function ViewBilling(): JSX.Element {
     const billingContext = BillingContext();
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [listBillings, setListBillings] = useState<IBillings[]>([]);
+    const [formData, setFormData] = useState<IBillings | null>(null);
 
     const fetchData = useCallback(async () => {
         try {
@@ -83,8 +84,25 @@ export function ViewBilling(): JSX.Element {
     };
 
     const handleCloseNewReceipt = () => {
+        setFormData({
+            number_contract: "",
+            product_name: "",
+            number_broker: "",
+            year: "",
+            receipt_date: "",
+            internal_receipt_number: "",
+            rps_number: "",
+            nfs_number: "",
+            total_service_value: "",
+            irrf_value: "",
+            adjustment_value: "",
+            liquid_value: "",
+            liquid_contract: "",
+            expected_receipt_date: "",
+            liquid_contract_date: "",
+            owner_record: "",
+        } as IBillings);
         setNewReceiptModalOpen(false);
-        //fetchData();
     };
 
     const handleEditReceipt = (row: any) => {
@@ -313,7 +331,7 @@ export function ViewBilling(): JSX.Element {
             </SContainer>
             <ModalCreateNewBilling
                 open={isNewReceiptModalOpen}
-                dataBillings={[]}
+                formData={formData}
                 onClose={handleCloseNewReceipt}
                 onConfirm={handleEditBilling}
                 onHandleChange={handleChange}

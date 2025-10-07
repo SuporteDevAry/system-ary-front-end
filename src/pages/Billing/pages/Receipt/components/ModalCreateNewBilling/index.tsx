@@ -8,11 +8,30 @@ import { IModalCreateNewBillingProps } from "./types";
 
 export function ModalCreateNewBilling({
     open,
-    dataBillings,
+    formData,
     onClose,
     onConfirm,
     onHandleChange,
 }: IModalCreateNewBillingProps) {
+    // const [formData, setFormData] = useState({
+    //     number_contract: "",
+    //     product_name: "",
+    //     number_broker: "",
+    //     year: "",
+    //     receipt_date: "",
+    //     internal_receipt_number: "",
+    //     rps_number: "",
+    //     nfs_number: "",
+    //     total_service_value: "",
+    //     irrf_value: "",
+    //     adjustment_value: "",
+    //     liquid_value: "",
+    //     liquid_contract: "",
+    //     expected_receipt_date: "",
+    //     liquid_contract_date: "",
+    //     owner_record: "",
+    // });
+
     const currentDate = dayjs().format("DD/MM/YYYY");
 
     const handleClose = () => {
@@ -39,18 +58,15 @@ export function ModalCreateNewBilling({
             <SContainer>
                 <CustomDatePicker
                     type="text"
-                    name="dataCobranca"
+                    name="receipt_date"
                     label="Data:"
                     $labelPosition="top"
                     onChange={(newValue) =>
                         onHandleChange({
-                            target: {
-                                name: "receipt_date",
-                                value: newValue,
-                            },
+                            target: { name: "receipt_date", value: newValue },
                         })
                     }
-                    value={dataBillings?.receipt_date ?? currentDate}
+                    value={formData?.receipt_date ?? currentDate}
                     disableWeekends
                 />
 
@@ -61,53 +77,82 @@ export function ModalCreateNewBilling({
                     $labelPosition="top"
                     onChange={(newValue) =>
                         onHandleChange({
-                            target: {
-                                name: "rps_number",
-                                value: newValue,
-                            },
+                            target: { name: "rps_number", value: newValue },
                         })
                     }
-                    value={dataBillings?.rps_number}
+                    value={formData?.rps_number}
                 />
                 <CustomInput
                     type="text"
                     name="nfs_number"
                     label="Nota Fiscal:"
                     $labelPosition="top"
-                    onChange={onHandleChange}
-                    value={dataBillings?.nfs_number}
+                    onChange={(newValue) =>
+                        onHandleChange({
+                            target: { name: "nfs_number", value: newValue },
+                        })
+                    }
+                    value={formData?.nfs_number}
                 />
                 <CustomInput
                     type="text"
                     name="internal_receipt_number"
                     label="Recibo:"
                     $labelPosition="top"
-                    onChange={onHandleChange}
-                    value={dataBillings?.internal_receipt_number}
+                    onChange={(newValue) =>
+                        onHandleChange({
+                            target: {
+                                name: "internal_receipt_number",
+                                value: newValue,
+                            },
+                        })
+                    }
+                    value={formData?.internal_receipt_number}
                 />
                 <CustomInput
                     type="text"
                     name="total_service_value"
                     label="Valor Bruto:"
                     $labelPosition="top"
-                    onChange={onHandleChange}
-                    value={dataBillings?.total_service_value}
+                    onChange={(newValue) =>
+                        onHandleChange({
+                            target: {
+                                name: "total_service_value",
+                                value: newValue,
+                            },
+                        })
+                    }
+                    value={formData?.total_service_value}
                 />
                 <CustomInput
                     type="text"
                     name="irrf_value"
                     label="Valor IRRF:"
                     $labelPosition="top"
-                    onChange={onHandleChange}
-                    value={dataBillings?.irrf_value}
+                    onChange={(newValue) =>
+                        onHandleChange({
+                            target: {
+                                name: "irrf_value",
+                                value: newValue,
+                            },
+                        })
+                    }
+                    value={formData?.irrf_value}
                 />
                 <CustomInput
                     type="text"
                     name="liquid_value"
                     label="Valor Liquido:"
                     $labelPosition="top"
-                    onChange={onHandleChange}
-                    value={dataBillings?.liquid_value}
+                    onChange={(newValue) =>
+                        onHandleChange({
+                            target: {
+                                name: "liquid_value",
+                                value: newValue,
+                            },
+                        })
+                    }
+                    value={formData?.liquid_value}
                 />
             </SContainer>
         </Modal>

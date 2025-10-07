@@ -2,7 +2,7 @@ import { IBillings } from "../../../../../../contexts/BillingContext/types";
 
 export interface IModalCreateNewBillingProps {
     open: boolean;
-    dataBillings: IBillings | null;
+    formData: IBillings | null;
     onClose: () => void;
     onConfirm: () => void;
     onHandleChange: (

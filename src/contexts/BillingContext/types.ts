@@ -3,7 +3,6 @@ export interface IBillingsProvider {
 }
 
 export interface IBillings {
-    id: string;
     number_contract: string;
     product_name: string;
     number_broker: string;
