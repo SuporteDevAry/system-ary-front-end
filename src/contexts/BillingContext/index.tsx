@@ -1,35 +1,20 @@
 import { createContext, useContext } from "react";
-import {
-    IBillingsProvider,
-    ICreateBillingsData,
-    IUpdateBillingsData,
-} from "./types";
+import { IBillingProvider, IBillingData, IBillingContext } from "./types";
 import { Api } from "../../services/api";
 import { AxiosError } from "axios";
 
-interface IBillingContext {
-    listBillings: () => Promise<any>;
-    createBilling: (BillingData: ICreateBillingsData) => Promise<any>;
-    updateBilling: (billingId: string, updateBillingData: any) => void;
-    deleteBilling: (billingId: string) => void;
-    getBillingById: (billingId: string) => Promise<any>;
-    getBillingByRps: (billingRps: string) => Promise<any>;
-    getBillingByNfs: (billingNfs: string) => Promise<any>;
-    getBillingByNumberContract: (billingNfs: string) => Promise<any>;
-}
-
 const newContext = createContext<IBillingContext>({
-    listBillings: () => Promise.resolve(),
-    createBilling: () => Promise.resolve(),
-    updateBilling: () => {},
-    deleteBilling: () => {},
+    listBillings: () => Promise.resolve({ data: [] }),
+    createBilling: () => Promise.resolve({ data: {} as IBillingData }),
+    updateBilling: () => Promise.resolve({ data: {} as IBillingData }),
+    deleteBilling: () => Promise.resolve({ data: {} as IBillingData }),
     getBillingById: () => Promise.resolve(),
     getBillingByRps: () => Promise.resolve(),
     getBillingByNfs: () => Promise.resolve(),
     getBillingByNumberContract: () => Promise.resolve(),
 });
 
-export const BillingsProvider = ({ children }: IBillingsProvider) => {
+export const BillingsProvider = ({ children }: IBillingProvider) => {
     async function listBillings(): Promise<any> {
         try {
             const response = await Api.get("/billings");
@@ -45,15 +30,12 @@ export const BillingsProvider = ({ children }: IBillingsProvider) => {
         }
     }
 
-    async function createBilling(
-        billingData: ICreateBillingsData
-    ): Promise<any> {
+    async function createBilling(billingData: IBillingData): Promise<any> {
         try {
             const response = await Api.post("/billings", billingData);
 
             return response;
         } catch (error) {
-            console.log("### error", error);
             const err = error as AxiosError;
 
             if (err.response && err.response.data) {
@@ -66,7 +48,7 @@ export const BillingsProvider = ({ children }: IBillingsProvider) => {
 
     async function updateBilling(
         billingId: string,
-        updateBillingData: IUpdateBillingsData
+        updateBillingData: IBillingData
     ) {
         try {
             const response = await Api.patch(

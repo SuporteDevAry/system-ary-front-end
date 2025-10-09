@@ -231,7 +231,7 @@ export function RoutesForPages() {
                 }
             />
             <Route
-                path="/cobranca/visualizar-contrato"
+                path="/cobranca/visualizar-recebimento"
                 element={
                     <ProtectedLayout>
                         <Layout>

@@ -1,8 +1,8 @@
-export interface IBillingsProvider {
+export interface IBillingProvider {
     children: JSX.Element;
 }
 
-export interface IBillings {
+export interface IBillingData {
     number_contract: string;
     product_name: string;
     number_broker: string;
@@ -20,13 +20,16 @@ export interface IBillings {
     liquid_contract_date: string;
     owner_record: string;
 }
-
-export interface ICreateBillingsData
-    extends Omit<IBillings, "id" | "created_at" | "updated_at"> { }
-
-export interface IUpdateBillingsData
-    extends Omit<IBillings, "id" | "created_at" | "updated_at"> { }
-
-export interface IListBillings extends IBillings {
-    [key: string]: any;
+export interface IBillingContext {
+    listBillings: () => Promise<any>;
+    createBilling: (BillingData: IBillingData) => Promise<any>;
+    updateBilling: (
+        billingId: string,
+        updateBillingData: IBillingData
+    ) => void;
+    deleteBilling: (billingId: string) => void;
+    getBillingById: (billingId: string) => Promise<any>;
+    getBillingByRps: (billingRps: string) => Promise<any>;
+    getBillingByNfs: (billingNfs: string) => Promise<any>;
+    getBillingByNumberContract: (billingNfs: string) => Promise<any>;
 }

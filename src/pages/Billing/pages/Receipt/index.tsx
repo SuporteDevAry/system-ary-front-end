@@ -10,8 +10,8 @@ import { IContractData } from "../../../../contexts/ContractContext/types";
 import { useNavigate } from "react-router-dom";
 import useTableSearch from "../../../../hooks/useTableSearch";
 import { CustomTimeline } from "../../../Contracts/pages/HistoryContracts/components/CustomTimeline";
-import Checkbox from "@mui/material/Checkbox";
-import FormControlLabel from "@mui/material/FormControlLabel";
+// import Checkbox from "@mui/material/Checkbox";
+// import FormControlLabel from "@mui/material/FormControlLabel";
 
 export function Receipt() {
     const contractContext = ContractContext();
@@ -63,77 +63,43 @@ export function Receipt() {
     }, [searchTerm, handleSearch]);
 
     const handleViewContract = (contract: IContractData) => {
-        navigate("/cobranca/visualizar-contrato", {
+        navigate("/cobranca/visualizar-recebimento", {
             state: { contractForView: contract },
         });
     };
 
     const nameColumns: IColumn[] = useMemo(
         () => [
-            // {
-            //     field: "status.status_current",
-            //     header: "Status",
-            //     width: "90px",
-            //     sortable: true,
-            // },
             {
                 field: "contract_emission_date",
-                header: "DATA",
+                header: "Data",
                 width: "100px",
-                sortable: true,
             },
             {
                 field: "number_contract",
-                header: "Nº CONTRATO",
+                header: "Nº Contrato",
                 width: "100px",
-                sortable: true,
             },
             {
                 field: "seller.name",
-                header: "VENDEDOR",
+                header: "Vendedor",
                 width: "160px",
-                sortable: true,
             },
             {
                 field: "buyer.name",
-                header: "COMPRADOR",
+                header: "Comprador",
                 width: "160px",
-                sortable: true,
             },
             {
                 field: "payment_date",
                 header: "DT.PAGTO.",
                 width: "150px",
-                sortable: true,
             },
             {
                 field: "expected_receipt_date",
                 header: "PREV.PAGTO",
                 width: "150px",
             },
-            {
-                field: "charge_date",
-                header: "DT.COBRANÇA",
-                width: "150px",
-            },
-            // {
-            //     field: "rpsGerada",
-            //     header: "Nr.RPS",
-            //     width: "100px",
-            //     sortable: true,
-            // },
-            // {
-            //     field: "notaFiscal",
-            //     header: "NF",
-            //     width: "100px",
-            //     sortable: true,
-            // },
-            // {
-            //     field: "recibo",
-            //     header: "Recibo",
-            //     width: "100px",
-            //     sortable: true,
-            // },
         ],
         []
     );
@@ -159,10 +125,10 @@ export function Receipt() {
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
-                <FormControlLabel
+                {/* <FormControlLabel
                     control={<Checkbox defaultChecked />}
                     label="Somente Pagamento no mês corrente"
-                />
+                /> */}
             </SContainerSearchAndButton>
             <CustomTable
                 isLoading={isLoading}
