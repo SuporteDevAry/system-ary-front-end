@@ -13,7 +13,7 @@ const statusColors: Record<string, string> = {
     "EM PAUSA": "#7C7C8A",
     CANCELADO: "black",
     DELETADO: "red",
-    COBANCA: "green",
+    COBRANÇA: "purple",
 };
 
 export const CustomStatusIndicator: React.FC<StatusIndicatorProps> = ({

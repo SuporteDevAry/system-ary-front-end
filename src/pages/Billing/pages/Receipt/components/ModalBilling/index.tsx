@@ -11,6 +11,11 @@ import { ContractContext } from "../../../../../../contexts/ContractContext";
 import { IContractData } from "../../../../../../contexts/ContractContext/types";
 import { formatCurrency } from "../../../../../../helpers/currencyFormat";
 import { useNavigate } from "react-router-dom";
+import {
+    formattedDate,
+    formattedTime,
+} from "../../../../../../helpers/dateFormat";
+import { useInfo } from "../../../../../../hooks";
 
 export function ModalBilling({
     open,
@@ -23,6 +28,7 @@ export function ModalBilling({
     const currentDate = dayjs().format("DD/MM/YYYY");
     const [editingField, setEditingField] = useState<string | null>(null);
     const navigate = useNavigate();
+    const { dataUserInfo } = useInfo();
 
     const handleFocusValue = (e: React.FocusEvent<HTMLInputElement>) => {
         setEditingField(e.target.name);
@@ -168,6 +174,81 @@ export function ModalBilling({
                             contractRead.id,
                             updatedContract
                         );
+
+                    // Grava contrato como Liquidado
+                    if (
+                        formData.liquid_contract == "Sim" &&
+                        resContract.status !== "LIQUIDADO"
+                    ) {
+                        const newDate = formattedDate();
+                        const newTime = formattedTime();
+
+                        const newStatusEntry = {
+                            date: newDate,
+                            time: newTime,
+                            status: "LIQUIDADO",
+                            owner_change: {
+                                name: dataUserInfo?.name || "",
+                                email: dataUserInfo?.email || "",
+                            },
+                        };
+                        const updatedStatus = {
+                            status_current: "LIQUIDADO",
+                            history: [
+                                resContract.status.history,
+                                newStatusEntry,
+                            ],
+                        };
+                        const updatedContract = {
+                            ...(resContract.data as IContractData),
+                            status: updatedStatus,
+                        };
+
+                        console.log("1 updatedContract", updatedContract);
+
+                        await contractContext.updateContract(
+                            contractRead.id,
+                            updatedContract
+                        );
+                    }
+
+                    // Retornar contrato para Cobranca caso volte de Liquidado
+                    if (
+                        formData.liquid_contract == "Não" &&
+                        resContract.status === "LIQUIDADO"
+                    ) {
+                        const newDate = formattedDate();
+                        const newTime = formattedTime();
+
+                        const newStatusEntry = {
+                            date: newDate,
+                            time: newTime,
+                            status: "COBRANCA",
+                            owner_change: {
+                                name: dataUserInfo?.name || "",
+                                email: dataUserInfo?.email || "",
+                            },
+                        };
+                        const updatedStatus = {
+                            status_current: "COBRANCA",
+                            history: [
+                                resContract.data.status.history,
+                                newStatusEntry,
+                            ],
+                        };
+                        const updatedContract = {
+                            ...(resContract.data as IContractData),
+                            status: updatedStatus,
+                        };
+
+                        console.log("2 updatedContract", updatedContract);
+
+                        await contractContext.updateContract(
+                            contractRead.id,
+                            updatedContract
+                        );
+                    }
+
                     navigate("/cobranca/visualizar-recebimento", {
                         state: { contractForView: resContract.data },
                     });
@@ -199,6 +280,79 @@ export function ModalBilling({
                             contractRead.id,
                             updatedContract
                         );
+
+                    // Grava contrato como Liquidado
+                    if (
+                        formData.liquid_contract == "Sim" &&
+                        resContract.status !== "LIQUIDADO"
+                    ) {
+                        const newDate = formattedDate();
+                        const newTime = formattedTime();
+
+                        const newStatusEntry = {
+                            date: newDate,
+                            time: newTime,
+                            status: "LIQUIDADO",
+                            owner_change: {
+                                name: dataUserInfo?.name || "",
+                                email: dataUserInfo?.email || "",
+                            },
+                        };
+                        const updatedStatus = {
+                            status_current: "LIQUIDADO",
+                            history: [
+                                ...resContract.data.status.history,
+                                newStatusEntry,
+                            ],
+                        };
+                        const updatedContract = {
+                            ...(resContract.data as IContractData),
+                            status: updatedStatus,
+                        };
+
+                        console.log("3 updatedContract", updatedContract);
+                        await contractContext.updateContract(
+                            contractRead.id,
+                            updatedContract
+                        );
+                    }
+                    // Retornar contrato para Cobranca caso volte de Liquidado
+                    if (
+                        formData.liquid_contract == "Não" &&
+                        resContract.status === "LIQUIDADO"
+                    ) {
+                        const newDate = formattedDate();
+                        const newTime = formattedTime();
+
+                        const newStatusEntry = {
+                            date: newDate,
+                            time: newTime,
+                            status: "COBRANCA",
+                            owner_change: {
+                                name: dataUserInfo?.name || "",
+                                email: dataUserInfo?.email || "",
+                            },
+                        };
+                        const updatedStatus = {
+                            status_current: "COBRANCA",
+                            history: [
+                                resContract.data.status.history,
+                                newStatusEntry,
+                            ],
+                        };
+                        const updatedContract = {
+                            ...(resContract.data as IContractData),
+                            status: updatedStatus,
+                        };
+
+                        console.log("4 updatedContract", updatedContract);
+
+                        await contractContext.updateContract(
+                            contractRead.id,
+                            updatedContract
+                        );
+                    }
+
                     navigate("/cobranca/visualizar-recebimento", {
                         state: { contractForView: resContract.data },
                     });

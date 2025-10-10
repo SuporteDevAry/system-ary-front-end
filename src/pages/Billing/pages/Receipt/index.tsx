@@ -92,12 +92,12 @@ export function Receipt() {
             },
             {
                 field: "payment_date",
-                header: "DT.PAGTO.",
+                header: "Dt.Pagto.",
                 width: "150px",
             },
             {
                 field: "expected_receipt_date",
-                header: "PREV.PAGTO",
+                header: "Prev.Recbto.",
                 width: "150px",
             },
         ],
