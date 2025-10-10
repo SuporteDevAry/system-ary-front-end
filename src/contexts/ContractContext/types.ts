@@ -97,7 +97,7 @@ export interface IContractContext {
   createContract: (contractData: IContractData) => Promise<any>;
   updateContract: (
     contractId: string,
-    contractData: IContractData | Partial<IContractData>
+    contractData: IContractData
   ) => Promise<any>;
   deleteContract: (
     contractId: string,
