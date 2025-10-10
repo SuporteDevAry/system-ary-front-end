@@ -1,10 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 import {
+    BoxContainer,
     SBox,
     SButtonContainer,
     SCardInfo,
     SCardInfoActions,
+    SCardInfoAdjust,
     SCardInfoNumber,
+    SCardInfoParts,
     SContainer,
     SKeyContainer,
     SkeyName,
@@ -16,99 +19,134 @@ import {
 import { useLocation } from "react-router-dom";
 import { IContractData } from "../../../../../../contexts/ContractContext/types";
 import CustomButton from "../../../../../../components/CustomButton";
-//import { formatCurrency } from "../../../../../../helpers/currencyFormat";
 import { CustomStatusIndicator } from "../../../../../../components/CustomStatusIndicator";
 import CustomTable from "../../../../../../components/CustomTable";
-
 import { createRoot } from "react-dom/client";
 import ContratoTemplate from "../../../../../../templates/contrato";
 import PdfGenerator from "../../../../../../helpers/PDFGenerator";
 import { BillingContext } from "../../../../../../contexts/BillingContext";
-import { IBillings } from "../../../../../../contexts/BillingContext/types";
 import { toast } from "react-toastify";
-import { ModalCreateNewBilling } from "../ModalCreateNewBilling";
+import { ModalBilling } from "../ModalBilling";
+import { formatQuantity } from "../../../../../Contracts/pages/CreateNewContract/components/Step3/hooks";
+import { formatCurrency } from "../../../../../../helpers/currencyFormat";
+import { IBillingData } from "../../../../../../contexts/BillingContext/types";
+import { ModalDelete } from "../../../../../../components/ModalDelete";
 
 export function ViewBilling(): JSX.Element {
     const location = useLocation();
     const [dataClient, setDataClient] = useState<IContractData | null>(null);
-    const [isNewReceiptModalOpen, setNewReceiptModalOpen] =
+    const [isNewBillingModalOpen, setNewBillingModalOpen] =
         useState<boolean>(false);
     const [page, setPage] = useState(0);
     const [order, setOrder] = useState<"asc" | "desc">("desc");
     const [orderBy, setOrderBy] = useState<string>("data");
     const billingContext = BillingContext();
-    const [isLoading, setIsLoading] = useState<boolean>(true);
-    const [listBillings, setListBillings] = useState<IBillings[]>([]);
-    const [formData, setFormData] = useState<IBillings | null>(null);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [listBillings, setListBillings] = useState<IBillingData[]>([]);
+    const [modalContent, setModalContent] = useState<string>("");
+    const [billingToEdit, setBillingToEdit] = useState<IBillingData | null>(
+        null
+    );
+    const [billingIdForDelete, setBillingIdForDelete] = useState();
+    const [isDeleteBillingModal, setDeleteBillingModal] =
+        useState<boolean>(false);
 
     const fetchData = useCallback(async () => {
         try {
+            if (!dataClient?.number_contract) return;
+
             setIsLoading(true);
             const response = await billingContext.listBillings();
-
-            setListBillings(response.data);
+            const filteredBillings = response.data
+                .filter(
+                    (billings: { number_contract: any }) =>
+                        billings.number_contract === dataClient?.number_contract
+                )
+                .map((bill: any) => ({
+                    ...bill,
+                    // Tirei formatCurrency, pq o R$ nào permite a ediçào em input number
+                    // total_service_value: formatCurrency(
+                    //     bill.total_service_value || 0,
+                    //     "Real"
+                    // ),
+                    total_service_value: Number(
+                        bill.total_service_value
+                    ).toFixed(2),
+                    irrf_value: Number(bill.irrf_value).toFixed(2),
+                    adjustment_value: Number(bill.adjustment_value).toFixed(2),
+                    liquid_value: Number(bill.liquid_value).toFixed(2),
+                    number_contract: dataClient.number_contract,
+                    product_name: dataClient.name_product,
+                    number_broker: dataClient.number_broker,
+                    year: dataClient.number_contract?.split("/")[1],
+                    contractId: dataClient.id,
+                }));
+            setListBillings(filteredBillings);
         } catch (error) {
             toast.error(`Erro ao tentar ler Recebimentos: ${error}`);
         } finally {
             setIsLoading(false);
         }
-    }, [listBillings]);
+    }, [dataClient]);
 
     useEffect(() => {
         const contractForView: IContractData = location.state?.contractForView;
         setDataClient(contractForView);
 
         fetchData();
-    }, [location]);
+    }, [location, dataClient]);
 
-    const handleChange = (
-        e:
-            | React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-            | { target: { name: string; value: any } }
-    ) => {
-        const { name, value } = e.target;
-        setDataClient((prev) =>
-            prev
-                ? {
-                      ...prev,
-                      [name]: name === "final_quantity" ? Number(value) : value,
-                  }
-                : prev
+    const handleCreateNewBilling = () => {
+        if (!dataClient) return;
+
+        const newBillingData: Partial<IBillingData> = {
+            number_contract: dataClient.number_contract,
+            product_name: dataClient.name_product,
+            number_broker: dataClient.number_broker,
+            year: dataClient.number_contract?.split("/")[1],
+        };
+
+        setBillingToEdit(newBillingData as IBillingData);
+        setNewBillingModalOpen(true);
+    };
+
+    const handleEditBilling = (billing: IBillingData) => {
+        setBillingToEdit(billing);
+        setNewBillingModalOpen(true);
+    };
+
+    const handleCloseNewBilling = () => {
+        setBillingToEdit(null);
+        setNewBillingModalOpen(false);
+        fetchData();
+    };
+
+    const handleOpenDeleteBillingModal = (billing: any) => {
+        setModalContent(
+            `Deletar o recebimento selecionado: ${billing?.rps_number} ?`
         );
+        setBillingIdForDelete(billing.id);
+        setDeleteBillingModal(true);
     };
 
-    const handleEditBilling = async () => {};
-
-    const handleCreateNewReceipt = async () => {
-        setNewReceiptModalOpen(true);
+    const handleCloseDeleteModal = () => {
+        setDeleteBillingModal(false);
     };
 
-    const handleCloseNewReceipt = () => {
-        setFormData({
-            number_contract: "",
-            product_name: "",
-            number_broker: "",
-            year: "",
-            receipt_date: "",
-            internal_receipt_number: "",
-            rps_number: "",
-            nfs_number: "",
-            total_service_value: "",
-            irrf_value: "",
-            adjustment_value: "",
-            liquid_value: "",
-            liquid_contract: "",
-            expected_receipt_date: "",
-            liquid_contract_date: "",
-            owner_record: "",
-        } as IBillings);
-        setNewReceiptModalOpen(false);
-    };
+    const handleDeleteBilling = async () => {
+        try {
+            if (!billingIdForDelete) return;
 
-    const handleEditReceipt = (row: any) => {
-        const dadosEdit = row;
-        console.log(dadosEdit);
-        setNewReceiptModalOpen(true);
+            await billingContext.deleteBilling(billingIdForDelete);
+            toast.success(<div>Recebimento deletado com sucesso!</div>);
+            fetchData();
+        } catch (error) {
+            toast.error(
+                `Erro ao tentar deletar recebimento ID: ${billingIdForDelete}, contacte o administrador do sistema ${error}`
+            );
+        } finally {
+            setDeleteBillingModal(false);
+        }
     };
 
     const handleViewPDF = () => {
@@ -142,36 +180,39 @@ export function ViewBilling(): JSX.Element {
             <CustomButton
                 $variant="secondary"
                 width="75px"
-                onClick={() => handleEditReceipt(row)}
+                onClick={() => handleEditBilling(row)}
             >
                 Editar
+            </CustomButton>
+            <CustomButton
+                $variant={"danger"}
+                width="80px"
+                onClick={() => handleOpenDeleteBillingModal(row)}
+            >
+                Deletar
             </CustomButton>
         </SButtonContainer>
     );
 
-    // const formatValor = (value: number | bigint) => {
-    //     return new Intl.NumberFormat("pt-BR", {
-    //         style: "currency",
-    //         currency: "BRL",
-    //         minimumFractionDigits: 2,
-    //     }).format(value);
-    // };
-
     const nameCols = [
         {
             field: "receipt_date",
-            header: "DATA",
+            header: "Data",
+            width: "100px",
+        },
+        {
+            field: "rps_number",
+            header: "Nr.RPS",
             width: "100px",
         },
         {
             field: "nfs_number",
-            header: "NRO.NF",
+            header: "Nr.NF",
             width: "100px",
-            sortable: true,
         },
         {
             field: "total_service_value",
-            header: "VALOR TOTAL",
+            header: "Valor Total",
             width: "100px",
         },
         {
@@ -179,55 +220,115 @@ export function ViewBilling(): JSX.Element {
             header: "I.R.",
             width: "100px",
         },
-        // {
-        //     field: "liquid_value",
-        //     header: "VALOR LIQ.",
-        //     width: "100px",
-        //     value: formatValor(recebtos[0].valor_liq),
-        // },
+        {
+            field: "liquid_value",
+            header: "Valor Liquido",
+            width: "100px",
+        },
+        {
+            field: "liquid_contract",
+            header: "Liquidado",
+            width: "100px",
+        },
     ];
 
-    const contractFieldsCol1 = [
-        { label: "Produto", value: dataClient?.name_product },
-        { label: "Vendedor", value: dataClient?.seller.name?.split(" ")[0] },
+    const typeQuantity = dataClient?.type_quantity;
+
+    const formattedValue = formatQuantity(
+        Number(dataClient?.quantity || 0).toString()
+    );
+
+    const formattedValueFinal = formatQuantity(
+        Number(dataClient?.final_quantity || 0).toString()
+    );
+    const quantityValue =
+        typeQuantity === "toneladas métricas"
+            ? Number(dataClient?.quantity)
+            : formattedValue;
+
+    const finalQuantityValue =
+        typeQuantity === "toneladas métricas"
+            ? Number(dataClient?.final_quantity)
+            : formattedValueFinal;
+
+    const contractSellerAndBuyer = [
+        { label: "Vendedor", value: dataClient?.seller.name },
+        { label: "Comprador", value: dataClient?.buyer.name },
+    ];
+
+    const commission =
+        (
+            dataClient?.type_commission_seller ||
+            dataClient?.type_commission_buyer
+        )?.toLocaleLowerCase() === "percentual"
+            ? `${dataClient?.commission_seller}%`
+            : `R$ ${dataClient?.commission_seller}`;
+
+    const contractFields = [
+        {
+            label: "Preço:",
+            value: formatCurrency(
+                dataClient?.price?.toString() ?? "0",
+                dataClient?.type_currency ?? "Real"
+            ),
+        },
+        { label: "", value: "" }, //[x]: Não remover!!!
+        { label: "Produto:", value: dataClient?.name_product },
+        { label: "", value: "" }, //[x]: Não remover!!!
+        {
+            label: "Total do Contrato",
+            value: formatCurrency(
+                dataClient?.total_contract_value?.toString() ?? "0",
+                dataClient?.type_currency ?? "Real"
+            ),
+        },
+        { label: "", value: "" }, //[x]: Não remover!!!
         {
             label: "Quantidade",
-            value: dataClient?.quantity,
+            value: `${quantityValue} ${typeQuantity}`,
         },
-        // {
-        //     label: "Valor Comissão",
-        //     value: formatCurrency(
-        //         dataClient?.commission_contract ?? "0",
-        //         dataClient?.commission_contract ?? "Real"
-        //     ),
-        // },
-        // {
-        //     label: "Total Recebido",
-        //     value: formatCurrency(
-        //         dataClient?.total_received?.toString() ?? "0",
-        //         dataClient?.total_received ?? "Real"
-        //     ),
-        // },
-    ];
-
-    const contractFieldsCol2 = [
-        {
-            label: "Data Pagamento",
-            value: dataClient?.payment_date,
-        },
-        { label: "Comprador", value: dataClient?.buyer.name?.split(" ")[0] },
         {
             label: "Quantidade Final",
-            value: dataClient?.quantity.toString() ?? "0",
+            value: `${finalQuantityValue} ${typeQuantity}`,
+        },
+
+        {
+            label: "Comissão",
+            value: commission,
         },
         {
+            label: "Valor Comissão",
+            value: formatCurrency(
+                dataClient?.commission_contract?.toString() ?? "0",
+                "Real"
+            ),
+        },
+
+        {
+            label: "Total Recebido",
+            value: formatCurrency(
+                dataClient?.total_received?.toString() ?? "0",
+                "Real"
+            ),
+        },
+        {
+            label: "Data do Pagamento",
+            value: dataClient?.payment_date,
+        },
+        {
+            label: "Data da Cobrança",
+            value: dataClient?.charge_date || "-",
+        },
+        {
+            label: "Data Prevista Recebimento",
+            value: dataClient?.expected_receipt_date || "-",
+        },
+
+        {
             label: "Liquidado",
-            value: "", //dataClient?.status_received,
+            value: dataClient?.status_received?.toString() || "",
         },
     ];
-
-    const column1 = contractFieldsCol1;
-    const column2 = contractFieldsCol2;
 
     return (
         <>
@@ -260,60 +361,60 @@ export function ViewBilling(): JSX.Element {
                                         }
                                     />
                                 </SKeyValue>
-                                <br></br>
-                                <CustomButton
-                                    $variant="secondary"
-                                    width="100px"
-                                    onClick={handleViewPDF}
-                                >
-                                    Visualizar
-                                </CustomButton>
                             </SkeyName>
                         </SKeyContainer>
+                        <BoxContainer>
+                            <CustomButton
+                                $variant="secondary"
+                                width="120px"
+                                onClick={handleViewPDF}
+                            >
+                                Visualizar
+                            </CustomButton>
+                            <CustomButton
+                                $variant={"success"}
+                                width="200px"
+                                onClick={handleCreateNewBilling}
+                            >
+                                Novo Recebimento
+                            </CustomButton>
+                        </BoxContainer>
                     </SCardInfoActions>
                 </SBox>
-                <SBox>
-                    <SCardInfo>
-                        <div
-                            style={{
-                                gap: "10px",
-                                width: "50%",
-                            }}
-                        >
-                            {column1.map((field, index) => (
-                                <SKeyContainer key={index}>
-                                    <SkeyName>
-                                        {field.label}:
-                                        <SKeyValue>{field.value}</SKeyValue>
-                                    </SkeyName>
-                                </SKeyContainer>
-                            ))}
-                        </div>
-                        <div
-                            style={{
-                                gap: "10px",
-                                width: "50%",
-                            }}
-                        >
-                            {column2.map((field, index) => (
-                                <SKeyContainer key={index}>
-                                    <SkeyName>
-                                        {field.label}:
-                                        <SKeyValue>{field.value}</SKeyValue>
-                                    </SkeyName>
-                                </SKeyContainer>
-                            ))}
-                        </div>
-                    </SCardInfo>
-                </SBox>
+                <SCardInfoParts>
+                    {contractSellerAndBuyer.map((field, index) => (
+                        <SKeyContainer key={index}>
+                            <SkeyName>
+                                {field.label}:
+                                <SKeyValue>{field.value}</SKeyValue>
+                            </SkeyName>
+                        </SKeyContainer>
+                    ))}
+                </SCardInfoParts>
 
-                <CustomButton
-                    $variant={"success"}
-                    width="200px"
-                    onClick={handleCreateNewReceipt}
-                >
-                    Novo Recebimento
-                </CustomButton>
+                <SCardInfoAdjust>
+                    {contractFields.map((field, index) => (
+                        <SKeyContainer key={index}>
+                            <SkeyName>
+                                {field.label}
+                                <SKeyValue>{field.value}</SKeyValue>
+                            </SkeyName>
+                        </SKeyContainer>
+                    ))}
+                </SCardInfoAdjust>
+
+                <SCardInfo>
+                    <SKeyContainer>
+                        <SkeyName>
+                            Comunicado Interno:
+                            <SKeyValue>
+                                {dataClient?.internal_communication}
+                            </SKeyValue>
+                        </SkeyName>
+                    </SKeyContainer>
+                </SCardInfo>
+            </SContainer>
+            <SCardInfo>
                 <CustomTable
                     isLoading={isLoading}
                     data={listBillings}
@@ -328,13 +429,18 @@ export function ViewBilling(): JSX.Element {
                     setOrder={setOrder}
                     setOrderBy={setOrderBy}
                 />
-            </SContainer>
-            <ModalCreateNewBilling
-                open={isNewReceiptModalOpen}
-                formData={formData}
-                onClose={handleCloseNewReceipt}
-                onConfirm={handleEditBilling}
-                onHandleChange={handleChange}
+            </SCardInfo>
+            <ModalBilling
+                open={isNewBillingModalOpen}
+                billingToEdit={billingToEdit}
+                onClose={handleCloseNewBilling}
+                contractRead={dataClient}
+            />
+            <ModalDelete
+                open={isDeleteBillingModal}
+                onClose={handleCloseDeleteModal}
+                onConfirm={handleDeleteBilling}
+                content={modalContent}
             />
         </>
     );

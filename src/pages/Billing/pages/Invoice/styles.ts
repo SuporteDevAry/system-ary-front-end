@@ -16,14 +16,6 @@ export const SContainerSearchAndButton = styled.div`
   //margin-left: -16px;
 `;
 
-// export const SContainer = styled.div`
-//   display: flex;
-//   flex-direction: column;
-//   gap: 16px;
-//   justify-content: center;
-//   align-items: start;
-// `;
-
 export const SCardContrato = styled.div`
   padding: 16px;
   //width: 850px;
@@ -38,20 +30,6 @@ export const SCardInfo = styled.div`
   border-radius: 16px;
   background-color: ${(props) => props.theme["white"]};
   box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.16);
-`;
-
-export const SCardContainer = styled.span`
-  display: inline-block;
-  padding-right: 8px;
-  margin-top: 8px;
-  padding-left: 16px;
-`;
-
-export const BoxContainer = styled.div`
-  display: flex;
-  justify-content: space-between;
-  padding-top: 16px;
-  padding-right: 16px;
 `;
 
 export const SButtonContainer = styled.div`

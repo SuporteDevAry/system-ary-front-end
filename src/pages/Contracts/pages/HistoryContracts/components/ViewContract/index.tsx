@@ -317,11 +317,8 @@ export function ViewContract(): JSX.Element {
 
     // Função para formatar a quantidade
     const typeQuantity = dataClient?.type_quantity;
-    const unityMeasure =
-        typeQuantity === "toneladas métricas"
-            ? "Tm"
-            : "Kg";
-    
+    const unityMeasure = typeQuantity === "toneladas métricas" ? "Tm" : "Kg";
+
     const formattedValue = formatQuantity(
         Number(dataClient?.quantity || 0).toString()
     );
@@ -373,11 +370,15 @@ export function ViewContract(): JSX.Element {
         { label: "", value: "" }, //[x]: Não remover!!!
         {
             label: "Quantidade",
-            value: `${formatQuantity(quantityValue.toString())} ${unityMeasure}`,
+            value: `${formatQuantity(
+                quantityValue.toString()
+            )} ${unityMeasure}`,
         },
         {
             label: "Quantidade Final",
-            value: `${formatQuantity(finalQuantityValue.toString())} ${unityMeasure}`,
+            value: `${formatQuantity(
+                finalQuantityValue.toString()
+            )} ${unityMeasure}`,
         },
 
         {
@@ -477,7 +478,8 @@ export function ViewContract(): JSX.Element {
                                 Visualizar
                             </CustomButton>
 
-                            {dataClient?.status.status_current === "ENVIADO" ? (
+                            {dataClient?.status.status_current === "ENVIADO" ||
+                            dataClient?.status.status_current === "COBRANÇA" ? (
                                 <CustomButton
                                     $variant={"primary"}
                                     width="100px"
