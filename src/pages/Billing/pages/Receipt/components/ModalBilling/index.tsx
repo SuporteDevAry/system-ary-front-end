@@ -9,6 +9,7 @@ import { IModalBillingProps } from "./types";
 import { BillingContext } from "../../../../../../contexts/BillingContext";
 import { ContractContext } from "../../../../../../contexts/ContractContext";
 import { IContractData } from "../../../../../../contexts/ContractContext/types";
+import { formatCurrency } from "../../../../../../helpers/currencyFormat";
 
 export function ModalBilling({
     open,
@@ -19,6 +20,42 @@ export function ModalBilling({
     const billingContext = BillingContext();
     const contractContext = ContractContext();
     const currentDate = dayjs().format("DD/MM/YYYY");
+    const [editingField, setEditingField] = useState<string | null>(null);
+
+    const handleFocusValue = (e: React.FocusEvent<HTMLInputElement>) => {
+        setEditingField(e.target.name);
+    };
+
+    const handleBlurValue = () => {
+        setEditingField(null);
+    };
+
+    const handleChangeValue = (
+        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    ) => {
+        const { name, value } = e.target;
+        const isNumericField = [
+            "total_service_value",
+            "irrf_value",
+            "adjustment_value",
+        ].includes(name);
+
+        if (isNumericField) {
+            const numericValue =
+                value.replace(/[^\d.,-]/g, "").replace(",", ".") == ""
+                    ? 0
+                    : value;
+            setFormData({
+                ...formData,
+                [name]: numericValue,
+            });
+        } else {
+            setFormData({
+                ...formData,
+                [name]: value,
+            });
+        }
+    };
 
     const initialFormData = {
         receipt_date: currentDate,
@@ -70,15 +107,15 @@ export function ModalBilling({
     }, [billingToEdit, open]);
 
     useEffect(() => {
-        const liq_value: number =
-            Number(formData.total_service_value) -
-            Number(formData.irrf_value) +
-            Number(formData.adjustment_value);
+        const total = Number(formData.total_service_value) || 0;
+        const irrf = Number(formData.irrf_value) || 0;
+        const ajuste = Number(formData.adjustment_value) || 0;
+        const liq_value = total - irrf + ajuste;
 
-        setFormData({
-            ...formData,
+        setFormData((prevData) => ({
+            ...prevData,
             liquid_value: liq_value,
-        });
+        }));
     }, [
         formData.total_service_value,
         formData.irrf_value,
@@ -217,7 +254,6 @@ export function ModalBilling({
                     value={formData?.receipt_date ?? currentDate}
                     disableWeekends
                 />
-
                 <CustomInput
                     type="text"
                     name="rps_number"
@@ -243,36 +279,63 @@ export function ModalBilling({
                     value={formData?.internal_receipt_number}
                 />
                 <CustomInput
-                    type="number"
+                    type="text"
                     name="total_service_value"
                     label="Valor Bruto:"
                     $labelPosition="top"
-                    onChange={handleChange}
-                    value={formData?.total_service_value}
+                    onChange={handleChangeValue}
+                    onFocus={handleFocusValue}
+                    onBlur={handleBlurValue}
+                    value={
+                        editingField === "total_service_value"
+                            ? formData.total_service_value
+                            : formatCurrency(
+                                  formData.total_service_value,
+                                  "Real"
+                              )
+                    }
                 />
                 <CustomInput
-                    type="number"
+                    type="text"
                     name="irrf_value"
                     label="Valor IRRF:"
                     $labelPosition="top"
-                    onChange={handleChange}
-                    value={formData?.irrf_value}
+                    onChange={handleChangeValue}
+                    onFocus={handleFocusValue}
+                    onBlur={handleBlurValue}
+                    value={
+                        editingField === "irrf_value"
+                            ? formData.irrf_value
+                            : formatCurrency(formData.irrf_value, "Real")
+                    }
                 />
                 <CustomInput
-                    type="number"
+                    type="text"
                     name="adjustment_value"
                     label="Valor Ajuste:"
                     $labelPosition="top"
-                    onChange={handleChange}
-                    value={formData?.adjustment_value}
+                    onChange={handleChangeValue}
+                    onFocus={handleFocusValue}
+                    onBlur={handleBlurValue}
+                    value={
+                        editingField === "adjustment_value"
+                            ? formData.adjustment_value
+                            : formatCurrency(formData.adjustment_value, "Real")
+                    }
                 />
                 <CustomInput
-                    type="number"
+                    type="text"
                     name="liquid_value"
-                    label="Valor Liquido:"
+                    label="Valor Líquido:"
                     $labelPosition="top"
-                    onChange={handleChange}
-                    value={formData?.liquid_value}
+                    onChange={handleChangeValue}
+                    onFocus={handleFocusValue}
+                    onBlur={handleBlurValue}
+                    value={
+                        editingField === "liquid_value"
+                            ? formData.liquid_value
+                            : formatCurrency(formData.liquid_value, "Real")
+                    }
                 />
                 <CustomInput
                     name="liquid_contract"
