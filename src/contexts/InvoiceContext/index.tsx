@@ -54,7 +54,6 @@ export const InvoicesProvider = ({ children }: IInvoicesProvider) => {
 
             return response;
         } catch (error) {
-            console.log("### error", error);
             const err = error as AxiosError;
 
             if (err.response && err.response.data) {

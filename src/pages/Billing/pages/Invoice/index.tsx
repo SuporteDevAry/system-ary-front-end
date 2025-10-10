@@ -19,7 +19,6 @@ import { IContractData } from "../../../../contexts/ContractContext/types";
 import dayjs from "dayjs";
 import { InvoiceContext } from "../../../../contexts/InvoiceContext";
 import { IInvoices } from "../../../../contexts/InvoiceContext/types";
-import CardContent from "@mui/material/CardContent";
 //import { IBillings } from "../../../../contexts/BillingContext/types";
 //import { BillingContext } from "../../../../contexts/BillingContext";
 
@@ -102,39 +101,23 @@ export function Invoice() {
             {
                 field: "status.status_current",
                 header: "Status",
-                width: "50px",
-                sortable: true,
             },
             {
                 field: "number_contract",
                 header: "Nº Contrato",
-                width: "100px",
-                sortable: true,
             },
             {
                 field: "contract_emission_date",
                 header: "Dt.Emissão",
-                width: "50px",
-                sortable: true,
             },
             {
                 field: "seller.name",
                 header: "Vendedor",
-                width: "160px",
-                sortable: true,
             },
             {
                 field: "payment_date",
                 header: "Dt.Pagto",
-                width: "100px",
-                sortable: true,
             },
-            // {
-            //     field: "rpsGerada",
-            //     header: "Nr.RPS",
-            //     width: "100px",
-            //     sortable: true,
-            // },
         ],
         []
     );
@@ -324,11 +307,11 @@ export function Invoice() {
     const nameColumnsFromRPS = useMemo(
         () => [
             { field: "rps_number", header: "RPS" },
-            { field: "rps_emission_date", header: "DATA RPS" },
-            { field: "service_code", header: "CONTRATO" },
-            { field: "cpf_cnpj", header: "CNPJ/CPF" },
-            { field: "name", header: "NOME" },
-            { field: "service_liquid_value", header: "TOTAL" },
+            { field: "rps_emission_date", header: "Dt.RPS" },
+            { field: "service_code", header: "Contrato" },
+            { field: "cpf_cnpj", header: "CNPJ/CPF", width: "150px" },
+            { field: "name", header: "Nome", width: "150px" },
+            { field: "service_liquid_value", header: "Vlr.Líquido" },
         ],
         []
     );
@@ -407,21 +390,19 @@ export function Invoice() {
 
             <SCardInfo>
                 <STitle>RPS Geradas</STitle>
-                <CardContent>
-                    <CustomTable
-                        data={listInvoices}
-                        columns={nameColumnsFromRPS}
-                        isLoading={isLoadingRPS}
-                        hasPagination={true}
-                        actionButtons={renderActionButtons}
-                        page={pageRPS}
-                        setPage={setPageRPS}
-                        order={orderRPS}
-                        orderBy={orderByRPS}
-                        setOrder={setOrderRPS}
-                        setOrderBy={setOrderByRPS}
-                    />
-                </CardContent>
+                <CustomTable
+                    data={listInvoices}
+                    columns={nameColumnsFromRPS}
+                    isLoading={isLoadingRPS}
+                    hasPagination={true}
+                    actionButtons={renderActionButtons}
+                    page={pageRPS}
+                    setPage={setPageRPS}
+                    order={orderRPS}
+                    orderBy={orderByRPS}
+                    setOrder={setOrderRPS}
+                    setOrderBy={setOrderByRPS}
+                />
             </SCardInfo>
         </SContainer>
     );

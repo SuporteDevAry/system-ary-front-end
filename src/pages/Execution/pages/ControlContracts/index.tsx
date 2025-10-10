@@ -216,22 +216,26 @@ export function ControlContracts() {
                 width: "150px",
             },
             {
-                field: "data_pagto",
-                header: "Data Pagto.",
+                field: "charge_date",
+                header: "Data Cobrança",
                 width: "150px",
             },
             {
-                field: "qtde_entrega",
-                header: "Qtde. Entregue",
+                field: "expected_receipt_date",
+                header: "Dt.Prev.Recbto.",
                 width: "150px",
             },
             {
-                field: "qtde_saldo",
-                header: "Qtde. Saldo",
+                field: "total_received",
+                header: "Vlr.Tot.Recebido",
                 width: "150px",
             },
             {
-                field: "observacao",
+                field: "status_received",
+                header: "Liquidado",
+            },
+            {
+                field: "observation",
                 header: "Observações",
                 width: "200px",
             },
@@ -334,7 +338,8 @@ export function ControlContracts() {
                         col.field === "quantity" ||
                         col.field === "price" ||
                         col.field === "total_contract_value" ||
-                        col.field === "commission"
+                        col.field === "commission" ||
+                        col.field === "total_received"
                     ) {
                         const number = parseFloat(
                             String(value).replace(",", ".")
