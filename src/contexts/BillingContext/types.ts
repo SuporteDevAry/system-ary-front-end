@@ -26,7 +26,7 @@ export interface IBillingContext {
     updateBilling: (
         billingId: string,
         updateBillingData: IBillingData
-    ) => void;
+    ) => Promise<any>;
     deleteBilling: (billingId: string) => void;
     getBillingById: (billingId: string) => Promise<any>;
     getBillingByRps: (billingRps: string) => Promise<any>;

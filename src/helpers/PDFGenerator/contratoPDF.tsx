@@ -28,7 +28,6 @@ const contratoPDF = (
 
         const iframeWindow = iframe.contentWindow;
         if (!iframeWindow) {
-            console.log("Falha ao acessar o contentWindow do iframe.");
             return;
         }
 

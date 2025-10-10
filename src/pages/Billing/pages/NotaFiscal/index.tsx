@@ -116,7 +116,8 @@ export function NotaFiscal() {
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (file) {
-            console.log("Arquivo selecionado:", file.name);
+            // TODO: Montar lógica para leitura do arquivo e gravação das NFS
+            //console.log("Arquivo selecionado:", file.name);
             // aqui você pode fazer upload ou qualquer outra lógica
         }
     };

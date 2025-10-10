@@ -10,6 +10,7 @@ import { BillingContext } from "../../../../../../contexts/BillingContext";
 import { ContractContext } from "../../../../../../contexts/ContractContext";
 import { IContractData } from "../../../../../../contexts/ContractContext/types";
 import { formatCurrency } from "../../../../../../helpers/currencyFormat";
+import { useNavigate } from "react-router-dom";
 
 export function ModalBilling({
     open,
@@ -21,6 +22,7 @@ export function ModalBilling({
     const contractContext = ContractContext();
     const currentDate = dayjs().format("DD/MM/YYYY");
     const [editingField, setEditingField] = useState<string | null>(null);
+    const navigate = useNavigate();
 
     const handleFocusValue = (e: React.FocusEvent<HTMLInputElement>) => {
         setEditingField(e.target.name);
@@ -128,6 +130,7 @@ export function ModalBilling({
     };
 
     const handleSubmit = async () => {
+        // TODO: VERIFICAR QUAIS CAMPOS DEVERAO SER VALIDADOS.
         // if (
         //     !formData.receipt_date ||
         //     !formData.total_service_value ||
@@ -140,36 +143,41 @@ export function ModalBilling({
         // }
         try {
             if (billingToEdit.id) {
-                await billingContext.updateBilling(billingToEdit?.id || "", {
-                    ...formData,
-                    liquid_contract_date:
-                        formData.liquid_contract == "Sim"
-                            ? formData.receipt_date
-                            : "",
-                });
+                const res = await billingContext.updateBilling(
+                    billingToEdit?.id || "",
+                    {
+                        ...formData,
+                        liquid_contract_date:
+                            formData.liquid_contract == "Sim"
+                                ? formData.receipt_date
+                                : "",
+                    }
+                );
 
-                const adjustTotal_received: Partial<IContractData> = {};
-
-                if (
-                    formData.liquid_value !== undefined &&
-                    formData.liquid_value !== null
-                )
-                    adjustTotal_received.total_received =
+                if (res.status === 200) {
+                    const totalReceived =
                         Number(contractRead.total_received) +
                         Number(formData.liquid_value);
+                    const updatedContract: Partial<IContractData> = {
+                        total_received: totalReceived,
+                        status_received: formData.liquid_contract,
+                    };
 
-                adjustTotal_received.status_received = formData.liquid_contract;
-
-                await contractContext.updateContractAdjustments(
-                    contractRead.id,
-                    adjustTotal_received
-                );
+                    const resContract =
+                        await contractContext.updateContractAdjustments(
+                            contractRead.id,
+                            updatedContract
+                        );
+                    navigate("/cobranca/visualizar-recebimento", {
+                        state: { contractForView: resContract.data },
+                    });
+                }
 
                 toast.success(
                     `Recebimento ${formData.rps_number} foi atualizado com sucesso!`
                 );
             } else {
-                await billingContext.createBilling({
+                const res = await billingContext.createBilling({
                     ...formData,
                     liquid_contract_date:
                         formData.liquid_contract == "Sim"
@@ -177,24 +185,24 @@ export function ModalBilling({
                             : "",
                 });
 
-                const adjustTotal_received: Partial<IContractData> = {};
-
-                if (
-                    formData.liquid_value !== undefined &&
-                    formData.liquid_value !== null
-                )
-                    adjustTotal_received.total_received = Number(
+                if (res.status === 201) {
+                    const totalReceived =
                         Number(contractRead.total_received) +
-                            Number(formData.liquid_value)
-                    );
+                        Number(formData.liquid_value);
+                    const updatedContract: Partial<IContractData> = {
+                        total_received: totalReceived,
+                        status_received: formData.liquid_contract,
+                    };
 
-                adjustTotal_received.status_received = formData.liquid_contract;
-
-                await contractContext.updateContractAdjustments(
-                    contractRead.id,
-                    adjustTotal_received
-                );
-
+                    const resContract =
+                        await contractContext.updateContractAdjustments(
+                            contractRead.id,
+                            updatedContract
+                        );
+                    navigate("/cobranca/visualizar-recebimento", {
+                        state: { contractForView: resContract.data },
+                    });
+                }
                 toast.success(
                     `Recebimento ${formData.rps_number} foi criado com sucesso!`
                 );

@@ -6,12 +6,12 @@ import { IColumn } from "../../../../components/CustomTable/types";
 import { toast } from "react-toastify";
 import useTableSearch from "../../../../hooks/useTableSearch";
 import { BillingContext } from "../../../../contexts/BillingContext";
-import { IBillings } from "../../../../contexts/BillingContext/types";
+import { IBillingData } from "../../../../contexts/BillingContext/types";
 
 export function BillingsContract() {
     const billingContext = BillingContext();
     const [isLoading, setIsLoading] = useState<boolean>(true);
-    const [listbillings, setListBillings] = useState<IBillings[]>([]);
+    const [listbillings, setListBillings] = useState<IBillingData[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [page, setPage] = useState(0);
     const [order, setOrder] = useState<"asc" | "desc">("desc");
