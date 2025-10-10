@@ -317,7 +317,11 @@ export function ViewContract(): JSX.Element {
 
     // Função para formatar a quantidade
     const typeQuantity = dataClient?.type_quantity;
-
+    const unityMeasure =
+        typeQuantity === "toneladas métricas"
+            ? "Tm"
+            : "Kg";
+    
     const formattedValue = formatQuantity(
         Number(dataClient?.quantity || 0).toString()
     );
@@ -369,11 +373,11 @@ export function ViewContract(): JSX.Element {
         { label: "", value: "" }, //[x]: Não remover!!!
         {
             label: "Quantidade",
-            value: `${quantityValue} ${typeQuantity}`,
+            value: `${formatQuantity(quantityValue.toString())} ${unityMeasure}`,
         },
         {
             label: "Quantidade Final",
-            value: `${finalQuantityValue} ${typeQuantity}`,
+            value: `${formatQuantity(finalQuantityValue.toString())} ${unityMeasure}`,
         },
 
         {
@@ -426,6 +430,12 @@ export function ViewContract(): JSX.Element {
                                 <SNumberContract>
                                     {dataClient?.number_contract}
                                 </SNumberContract>
+                            </SkeyName>
+                            <SkeyName>
+                                Emissão:
+                                <SKeyValue>
+                                    {dataClient?.contract_emission_date}
+                                </SKeyValue>
                             </SkeyName>
                         </SKeyContainer>
                     </SCardInfoNumber>

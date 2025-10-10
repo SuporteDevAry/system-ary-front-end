@@ -85,8 +85,8 @@ export const BoxContainer = styled.div`
 export const SNumberContract = styled.span`
   display: flex;
   font-weight: 500;
-  padding-top: 16px;
-  font-size: 30px;
+  padding-bottom: 16px;
+  font-size: 26px;
   color: ${(props) => props.theme["black-300"]};
   justify-content: end;
 `;
