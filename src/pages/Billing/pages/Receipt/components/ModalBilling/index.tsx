@@ -204,8 +204,6 @@ export function ModalBilling({
                             status: updatedStatus,
                         };
 
-                        console.log("1 updatedContract", updatedContract);
-
                         await contractContext.updateContract(
                             contractRead.id,
                             updatedContract
@@ -240,8 +238,6 @@ export function ModalBilling({
                             ...(resContract.data as IContractData),
                             status: updatedStatus,
                         };
-
-                        console.log("2 updatedContract", updatedContract);
 
                         await contractContext.updateContract(
                             contractRead.id,
@@ -310,7 +306,6 @@ export function ModalBilling({
                             status: updatedStatus,
                         };
 
-                        console.log("3 updatedContract", updatedContract);
                         await contractContext.updateContract(
                             contractRead.id,
                             updatedContract
@@ -344,8 +339,6 @@ export function ModalBilling({
                             ...(resContract.data as IContractData),
                             status: updatedStatus,
                         };
-
-                        console.log("4 updatedContract", updatedContract);
 
                         await contractContext.updateContract(
                             contractRead.id,
