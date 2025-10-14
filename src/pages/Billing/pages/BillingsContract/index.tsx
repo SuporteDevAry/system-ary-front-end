@@ -1,7 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { CustomSearch } from "../../../../components/CustomSearch";
 import CustomTable from "../../../../components/CustomTable";
-import { SContainer, SContainerSearchAndButton, STitle } from "./styles";
+import {
+    SContainer,
+    SContainerSearchAndButton,
+    SCustomTableWrapper,
+    STitle,
+} from "./styles";
 import { IColumn } from "../../../../components/CustomTable/types";
 import { toast } from "react-toastify";
 import useTableSearch from "../../../../hooks/useTableSearch";
@@ -23,13 +28,29 @@ export function BillingsContract() {
 
             const response = await billingContext.listBillings();
 
-            const filteredContracts = response.data;
-
-            // const filteredContracts = response.data
-            //     .filter
-            //     // (contract: { status: { status_current: string } }) =>
-            //     //     contract.status.status_current === "COBRANCA"
-            //     ();
+            const filteredContracts = response.data.map((item: any) => ({
+                ...item,
+                total_service_value: item.total_service_value
+                    ? Number(item.total_service_value).toLocaleString("pt-BR", {
+                          minimumFractionDigits: 2,
+                      })
+                    : "",
+                irrf_value: item.irrf_value
+                    ? Number(item.irrf_value).toLocaleString("pt-BR", {
+                          minimumFractionDigits: 2,
+                      })
+                    : "",
+                adjustment_value: item.adjustment_value
+                    ? Number(item.adjustment_value).toLocaleString("pt-BR", {
+                          minimumFractionDigits: 2,
+                      })
+                    : "",
+                liquid_value: item.liquid_value
+                    ? Number(item.liquid_value).toLocaleString("pt-BR", {
+                          minimumFractionDigits: 2,
+                      })
+                    : "",
+            }));
 
             setListBillings(filteredContracts);
         } catch (error) {
@@ -59,47 +80,75 @@ export function BillingsContract() {
         () => [
             {
                 field: "number_contract",
-                header: "NR.CONTRATO",
+                header: "Nr.Contrato",
                 width: "150px",
             },
             {
                 field: "receipt_date",
-                header: "DATA RECBTO.",
+                header: "Dt.Recbto.",
                 width: "150px",
             },
             {
                 field: "rps_number",
-                header: "NR.RPS",
+                header: "Nr.RPS",
                 width: "150px",
             },
             {
                 field: "nfs_number",
-                header: "NOTA FISCAL",
+                header: "Nr.NF",
                 width: "150px",
             },
             {
                 field: "total_service_value",
-                header: "VALOR TOTAL",
+                header: "Vlr. Total",
                 width: "50px",
+                align: "right",
+                render: (value: string | null) =>
+                    value != null && value !== ""
+                        ? Number(value).toLocaleString("pt-BR", {
+                              minimumFractionDigits: 2,
+                          })
+                        : "",
             },
             {
                 field: "irrf_value",
-                header: "VLR.IR",
+                header: "Vlr.IR",
                 width: "160px",
+                align: "right",
+                render: (value: string | null) =>
+                    value != null && value !== ""
+                        ? Number(value).toLocaleString("pt-BR", {
+                              minimumFractionDigits: 2,
+                          })
+                        : "",
             },
             {
                 field: "adjustment_value",
-                header: "VALOR AJUSTE",
+                header: "Valor Ajuste",
                 width: "160px",
+                align: "right",
+                render: (value: string | null) =>
+                    value != null && value !== ""
+                        ? Number(value).toLocaleString("pt-BR", {
+                              minimumFractionDigits: 2,
+                          })
+                        : "",
             },
             {
                 field: "liquid_value",
-                header: "VALOR LIQUIDO",
+                header: "Valor Líquido",
                 width: "160px",
+                align: "right",
+                render: (value: string | null) =>
+                    value != null && value !== ""
+                        ? Number(value).toLocaleString("pt-BR", {
+                              minimumFractionDigits: 2,
+                          })
+                        : "",
             },
             {
-                field: "liquid_contract",
-                header: "LIQUIDADO",
+                field: "status_received",
+                header: "Liquidado",
                 width: "160px",
             },
         ],
@@ -118,20 +167,22 @@ export function BillingsContract() {
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
             </SContainerSearchAndButton>
-            <CustomTable
-                isLoading={isLoading}
-                data={filteredData}
-                columns={nameColumns}
-                hasPagination
-                dateFields={["created_at"]}
-                maxChars={15}
-                page={page}
-                setPage={setPage}
-                order={order}
-                orderBy={orderBy}
-                setOrder={setOrder}
-                setOrderBy={setOrderBy}
-            />
+            <SCustomTableWrapper>
+                <CustomTable
+                    isLoading={isLoading}
+                    data={filteredData}
+                    columns={nameColumns}
+                    hasPagination
+                    dateFields={["created_at"]}
+                    maxChars={15}
+                    page={page}
+                    setPage={setPage}
+                    order={order}
+                    orderBy={orderBy}
+                    setOrder={setOrder}
+                    setOrderBy={setOrderBy}
+                />
+            </SCustomTableWrapper>
         </SContainer>
     );
 }

@@ -20,7 +20,7 @@ export function PaymentContract() {
     const [searchTerm, setSearchTerm] = useState("");
     const [page, setPage] = useState(0);
     const [order, setOrder] = useState<"asc" | "desc">("desc");
-    const [orderBy, setOrderBy] = useState("created_at");
+    const [orderBy, setOrderBy] = useState("charge_date");
     const [isSelectionModal, setSelectionModal] = useState<boolean>(false);
 
     type SelectState = {
@@ -102,7 +102,8 @@ export function PaymentContract() {
         }
 
         processedData.sort((a, b) => {
-            const convertToISO = (dateString: string) => {
+            const convertToISO = (dateString: string | undefined) => {
+                if (!dateString) return ""; // evita erro se estiver undefined
                 const [day, month, year] = dateString.split("/");
                 return `${year}-${month.padStart(2, "0")}-${day.padStart(
                     2,
@@ -110,12 +111,8 @@ export function PaymentContract() {
                 )}`;
             };
 
-            const aDate = new Date(
-                convertToISO(a.contract_emission_date)
-            ).getTime();
-            const bDate = new Date(
-                convertToISO(b.contract_emission_date)
-            ).getTime();
+            const aDate = new Date(convertToISO(a.charge_date)).getTime();
+            const bDate = new Date(convertToISO(b.charge_date)).getTime();
 
             return order === "asc" ? aDate - bDate : bDate - aDate;
         });
@@ -139,7 +136,7 @@ export function PaymentContract() {
                 : null;
 
             const filteredContracts = response.data.filter(
-                (contract: { seller: any; contract_emission_date: string }) => {
+                (contract: { seller: any; charge_date: string }) => {
                     if (
                         typeof contract.seller.name !== "string" ||
                         !contract.seller.name.trim()
@@ -150,9 +147,9 @@ export function PaymentContract() {
                         .toLowerCase()
                         .includes(searchSeller);
 
-                    if (!contract.contract_emission_date) return false;
+                    if (!contract.charge_date) return false;
 
-                    const [day, month, year] = contract.contract_emission_date
+                    const [day, month, year] = contract.charge_date
                         .split("/")
                         .map(Number);
                     const emissionDate = new Date(year, month - 1, day);
@@ -184,28 +181,38 @@ export function PaymentContract() {
         () => [
             {
                 field: "contract_emission_date",
-                header: "DATA",
+                header: "Data",
                 width: "100px",
             },
             {
                 field: "number_contract",
-                header: "CONTRATO",
+                header: "Contrato",
                 width: "180px",
                 sortable: true,
             },
             {
                 field: "seller.name",
-                header: "VENDEDOR",
+                header: "Vendedor",
                 width: "200px",
             },
             {
                 field: "buyer.name",
-                header: "COMPRADOR",
+                header: "Comprador",
                 width: "200px",
             },
             {
+                field: "payment_date",
+                header: "Dt.Vencto.",
+                width: "130px",
+            },
+            {
                 field: "charge_date",
-                header: "VENCIMENTO",
+                header: "Dt.Cobrança",
+                width: "130px",
+            },
+            {
+                field: "expected_receipt_date",
+                header: "Dt.Prev.Recbto.",
                 width: "130px",
             },
         ],
@@ -273,7 +280,7 @@ export function PaymentContract() {
                 >
                     <SFormContainer>
                         <TextField
-                            label="Data Início"
+                            label="Data Cobrança Inicial"
                             type="date"
                             InputLabelProps={{ shrink: true }}
                             variant="outlined"
@@ -283,7 +290,7 @@ export function PaymentContract() {
                             onChange={handleChangeSelect}
                         />
                         <TextField
-                            label="Data Final"
+                            label="Data Cobrança Final"
                             type="date"
                             InputLabelProps={{ shrink: true }}
                             variant="outlined"
@@ -309,7 +316,9 @@ export function PaymentContract() {
                 <CustomButton
                     $variant="success"
                     width="150px"
-                    onClick={() => window.print()}
+                    onClick={() =>
+                        toast.success("Imprimir ainda não implementado")
+                    }
                 >
                     Imprimir
                 </CustomButton>

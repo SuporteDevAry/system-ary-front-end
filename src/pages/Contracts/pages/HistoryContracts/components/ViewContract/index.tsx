@@ -54,7 +54,9 @@ export function ViewContract(): JSX.Element {
         dataClient?.status.status_current || ""
     );
 
-    const forDisabled = dataClient?.status.status_current === "DELETADO";
+    const forDisabled =
+        dataClient?.status.status_current === "DELETADO" ||
+        dataClient?.status.status_current === "LIQUIDADO";
 
     useEffect(() => {
         const contractForView: IContractData = location.state?.contractForView;

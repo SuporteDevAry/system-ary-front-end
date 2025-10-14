@@ -1,11 +1,5 @@
 import { styled } from "styled-components";
 
-// export const SContainer = styled.div`
-//   display: flex;
-//   flex-direction: column;
-//   gap: 8px;
-// `;
-
 export const SContainer = styled.div`
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -16,24 +10,6 @@ export const SContainer = styled.div`
         grid-template-columns: 1fr; /* apenas uma coluna no mobile */
     }
 `;
-
-// export const SContainer = styled.div`
-//     display: grid;
-//     grid-template-columns: repeat(2, 1fr); /* duas colunas */
-//     gap: 16px;
-//     width: 100%;
-
-//     /* o primeiro elemento (Data) ocupa as duas colunas */
-//     & > :first-child {
-//         grid-column: span 2;
-//     }
-
-//     @media (max-width: 768px) {
-//         grid-template-columns: 1fr; /* responsivo */
-//     }
-// `;
-
-
 
 export const SText = styled.h4`
   font-family: "Roboto", sans-serif;
