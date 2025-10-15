@@ -43,3 +43,22 @@ export const SCustomTableWrapper = styled.div`
     text-align: right;
   }
 `;
+
+export const SFormContainer = styled.div`
+  display: flex;
+  gap: ${V.mdSpacing};
+  padding-top: ${V.smSpacing};
+  padding-bottom: ${V.mdSpacing};
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 350px;
+
+  /*display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center; 
+  flex-wrap: wrap;
+  padding: 10px 0;
+  gap: 4px;
+  width: 400px; */
+`;

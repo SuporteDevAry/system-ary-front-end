@@ -188,7 +188,6 @@ export function PaymentContract() {
                 field: "number_contract",
                 header: "Contrato",
                 width: "180px",
-                sortable: true,
             },
             {
                 field: "seller.name",
@@ -233,6 +232,134 @@ export function PaymentContract() {
             (selectData.SelectSeller?.trim() ?? "") === ""
         );
     }, [selectData]);
+
+    const handlePrint = (): void => {
+        const printWindow = window.open("", "_blank");
+        if (!printWindow) return;
+
+        // Quantidade de registros por página
+        const pageSize = 30;
+
+        // Função utilitária para extrair campo (suporta "a.b.c")
+        const getValue = (row: any, field?: string) => {
+            if (!field) return "";
+            const parts = field.split(".");
+            let value: any = row;
+            for (const p of parts) {
+                value = value?.[p];
+                if (value === undefined || value === null) break;
+            }
+            // Formate datas se necessário (exemplo simples)
+            return value ?? "";
+        };
+
+        // Gera o HTML do cabeçalho usando nameColumns
+        const headerHtml = `<tr>
+        ${nameColumns
+            .map(
+                (col) =>
+                    `<th style="border:1px solid black;padding:4px;font-size:9px;">${col.header}</th>`
+            )
+            .join("")}
+    </tr>`;
+
+        // Gera linhas a partir de processedContracts
+        const allRowsHtml = processedContracts.map((row) => {
+            const cols = nameColumns
+                .map((col) => {
+                    const raw = getValue(row, col.field);
+                    // escape simples
+                    const cell = String(raw ?? "")
+                        .replace(/</g, "&lt;")
+                        .replace(/>/g, "&gt;");
+                    return `<td style="border:1px solid black;padding:4px;font-size:9px;">${cell}</td>`;
+                })
+                .join("");
+            return `<tr>${cols}</tr>`;
+        });
+
+        // Começa a montar o documento
+        printWindow.document.write(`
+        <html>
+            <head>
+                <title>Contratos por Vencimento</title>
+                <style>
+                    @page { size: A4 portrait; margin: 10mm; }
+                    body { font-family: Arial, sans-serif; margin: 0; padding: 10mm; }
+                    table { width: 100%; border-collapse: collapse; margin-bottom: 10mm; }
+                    th, td { border: 1px solid black; padding: 4px; font-size: 9px; }
+                    th { background-color: #f0f0f0; }
+                    .page-break { page-break-after: always; }
+                    h3 { text-align: left; margin: 0 0 8px 0; }
+                    h2 { text-align: center; margin: 0 0 12px 0; }
+                </style>
+            </head>
+            <body>
+                <h3>Ary Oleofar</h3>
+                <h2>Contratos por Vencimento</h2>
+    `);
+
+        // Escreve as páginas
+        for (let i = 0; i < allRowsHtml.length; i += pageSize) {
+            const pageRows = allRowsHtml.slice(i, i + pageSize).join("");
+            printWindow.document.write(`<table>`);
+            printWindow.document.write(`<thead>${headerHtml}</thead>`);
+            printWindow.document.write(`<tbody>${pageRows}</tbody>`);
+            printWindow.document.write(`</table>`);
+
+            if (i + pageSize < allRowsHtml.length) {
+                printWindow.document.write(`<div class="page-break"></div>`);
+            }
+        }
+
+        printWindow.document.write(`
+            </body>
+        </html>
+    `);
+
+        printWindow.document.close();
+        // Pequena proteção para garantir que o conteúdo seja carregado antes de mandar imprimir
+        printWindow.onload = () => {
+            printWindow.focus();
+            printWindow.print();
+            printWindow.close();
+        };
+    };
+
+    const handleExportCSV = () => {
+        const headers = nameColumns
+            .filter((col) => col.field)
+            .map((col) => `"${col.header}"`)
+            .join(";");
+
+        const rows = processedContracts.map((row) => {
+            return nameColumns
+                .filter((col) => col.field)
+                .map((col) => {
+                    const fields = col.field!.split(".");
+                    let value: any = row;
+                    for (const f of fields) {
+                        value = value?.[f];
+                    }
+                    return `"${value ?? ""}"`;
+                })
+                .join(";");
+        });
+
+        const BOM = "\uFEFF"; // UTF-8 BOM
+        const csvContent = [headers, ...rows].join("\n");
+        const blob = new Blob([BOM + csvContent], {
+            type: "text/csv;charset=utf-8;",
+        });
+        const url = URL.createObjectURL(blob);
+
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", "contratos-vencimento.csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
 
     return (
         <>
@@ -316,9 +443,7 @@ export function PaymentContract() {
                 <CustomButton
                     $variant="success"
                     width="150px"
-                    onClick={() =>
-                        toast.success("Imprimir ainda não implementado")
-                    }
+                    onClick={handlePrint}
                 >
                     Imprimir
                 </CustomButton>
@@ -326,9 +451,7 @@ export function PaymentContract() {
                 <CustomButton
                     $variant="success"
                     width="150px"
-                    onClick={() =>
-                        toast.success("Exportar CSV ainda não implementado")
-                    }
+                    onClick={handleExportCSV}
                 >
                     Exportar CSV
                 </CustomButton>
