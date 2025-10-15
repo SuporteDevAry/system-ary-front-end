@@ -164,7 +164,8 @@ Depositar no Banco Bradesco S.A. (237)       Ag. 0108-2       C/C. 132.362-8`,
             .replace("/", "")
             .replace("-", "");
 
-        fetch(`/api-cnpj/cnpj/${cnpj}`)
+        //fetch(`${process.env.REACT_APP_URL_CNPJ}/${cnpj}`)
+        fetch(` /api-cnpj/cnpj/${cnpj}`)
             .then((res) => res.json())
             .then((data) => {
                 setFormData((prev) => ({

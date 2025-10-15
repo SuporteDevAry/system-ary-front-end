@@ -19,11 +19,13 @@ export function Billing() {
             label: "Emissão de RPS",
             icon: <IoReceiptOutline size={64} />,
             to: "/cobranca/notafiscal",
+            disabled: true,
         },
         {
             label: "Importação de NF",
             icon: <IoReceiptSharp size={64} />,
             to: "/cobranca/AtualizaNF",
+            disabled: true,
         },
     ];
     const cardLinks2 = [
@@ -41,30 +43,66 @@ export function Billing() {
             label: "Mapa de Recebimento",
             icon: <TbMapDollar size={64} />,
             to: "/cobranca/mapa-recebimento",
+            disabled: true,
         },
     ];
     return (
         <>
             <STitle>Cobrança</STitle>
             <SContainer>
-                {cardLinks1.map(({ icon, label, to }) => (
-                    <Link to={to} key={label}>
-                        <SCard>
-                            <SCardIcon>{icon}</SCardIcon>
-                            <SContent>{label}</SContent>
-                        </SCard>
-                    </Link>
-                ))}
+                {cardLinks1.map(({ icon, label, to, disabled }) => {
+                    if (disabled) {
+                        return (
+                            <div
+                                key={label}
+                                aria-disabled="true"
+                                role="link"
+                                tabIndex={-1}
+                            >
+                                <SCard disabled>
+                                    <SCardIcon>{icon}</SCardIcon>
+                                    <SContent>{label}</SContent>
+                                </SCard>
+                            </div>
+                        );
+                    }
+                    return (
+                        <Link to={to} key={label}>
+                            <SCard>
+                                <SCardIcon>{icon}</SCardIcon>
+                                <SContent>{label}</SContent>
+                            </SCard>
+                        </Link>
+                    );
+                })}
             </SContainer>
+
             <SContainer>
-                {cardLinks2.map(({ icon, label, to }) => (
-                    <Link to={to} key={label}>
-                        <SCard>
-                            <SCardIcon>{icon}</SCardIcon>
-                            <SContent>{label}</SContent>
-                        </SCard>
-                    </Link>
-                ))}
+                {cardLinks2.map(({ icon, label, to, disabled }) => {
+                    if (disabled) {
+                        return (
+                            <div
+                                key={label}
+                                aria-disabled="true"
+                                role="link"
+                                tabIndex={-1}
+                            >
+                                <SCard disabled>
+                                    <SCardIcon>{icon}</SCardIcon>
+                                    <SContent>{label}</SContent>
+                                </SCard>
+                            </div>
+                        );
+                    }
+                    return (
+                        <Link to={to} key={label}>
+                            <SCard>
+                                <SCardIcon>{icon}</SCardIcon>
+                                <SContent>{label}</SContent>
+                            </SCard>
+                        </Link>
+                    );
+                })}
             </SContainer>
         </>
     );

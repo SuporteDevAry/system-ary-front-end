@@ -235,8 +235,8 @@ export function ControlContracts() {
                 header: "Liquidado",
             },
             {
-                field: "observation",
-                header: "Observações",
+                field: "internal_communication",
+                header: "Comunicação Interna",
                 width: "200px",
             },
         ],
@@ -372,7 +372,7 @@ export function ControlContracts() {
 
         const link = document.createElement("a");
         link.href = url;
-        link.setAttribute("download", "controle-contratos-exeucao.csv");
+        link.setAttribute("download", "controle-contratos-execucao.csv");
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
