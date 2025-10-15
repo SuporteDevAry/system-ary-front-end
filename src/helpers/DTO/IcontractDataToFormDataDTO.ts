@@ -4,6 +4,11 @@ import { FormDataContract } from "../../pages/Contracts/pages/CreateNewContract/
 export const IContractDataToFormDataDTO = (
   data: IContractData
 ): FormDataContract => {
+  console.log(
+    "Convertendo IContractData para FormData s2:",
+    data.quantity,
+    data.final_quantity
+  );
   return {
     id: data.id,
     number_contract: data.number_contract,
@@ -16,16 +21,16 @@ export const IContractDataToFormDataDTO = (
     name_product: data.name_product,
     crop: data.crop,
     quality: data.quality,
-    quantity: data.quantity.toString(),
+    quantity: data.quantity?.toString() ?? "",
     type_currency: data.type_currency,
-    price: data.price.toString(),
+    price: data.price?.toString() ?? "",
     type_icms: data.type_icms,
     icms: data.icms,
     payment: data.payment,
     type_commission_seller: data?.type_commission_seller,
-    commission_seller: data?.commission_seller?.toString(),
+    commission_seller: data?.commission_seller?.toString() ?? "",
     type_commission_buyer: data?.type_commission_buyer,
-    commission_buyer: data?.commission_buyer?.toString(),
+    commission_buyer: data?.commission_buyer?.toString() ?? "",
     type_pickup: data.type_pickup,
     pickup: data.pickup,
     pickup_location: data.pickup_location,
@@ -52,7 +57,7 @@ export const IContractDataToFormDataDTO = (
     complement_destination: data.complement_destination,
     type_quantity: data?.type_quantity,
     table_id: data?.table_id,
-    final_quantity: data?.final_quantity?.toString(),
+    final_quantity: data?.final_quantity?.toString() ?? "",
     status_received: data?.status_received,
     commission_contract: data?.commission_contract,
     charge_date: data?.charge_date,

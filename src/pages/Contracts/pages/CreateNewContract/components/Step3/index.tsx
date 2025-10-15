@@ -11,9 +11,13 @@ import {
   usePriceHandlers,
   useExchangeRateHandlers,
   useCommissionHandlers,
-  useQuantityHandlers,
 } from "./hooks";
 import { CustomTextArea } from "../../../../../../components/CustomTextArea";
+import {
+  cleanAndParse,
+  replaceLastDotWithComma,
+  useQuantitiesInput,
+} from "../../../../../../hooks/useQuantitiesInput.ts";
 
 export const Step3: React.FC<StepProps> = ({
   id,
@@ -35,12 +39,26 @@ export const Step3: React.FC<StepProps> = ({
     useCommissionHandlers();
 
   const {
-    isEditingQuantity,
-    handleQuantityChange,
-    handleQuantityFocus,
-    handleQuantityBlur,
-    formatQuantity,
-  } = useQuantityHandlers(formData, updateFormData);
+    displayValue: displayQuantityValue,
+    onChange: handleQuantityChange,
+    onFocus: handleQuantityFocus,
+    onBlur: handleQuantityBlur,
+    value: quantityNumber,
+  } = useQuantitiesInput(
+    formData?.quantity != null && formData.quantity !== ""
+      ? Number(String(formData.quantity).replace(",", "."))
+      : null
+  );
+
+  useEffect(() => {
+    const currentFormDataValue = cleanAndParse(formData.quantity);
+
+    if (currentFormDataValue !== quantityNumber) {
+      updateFormData?.({
+        quantity: quantityNumber !== null ? String(quantityNumber) : undefined,
+      });
+    }
+  }, [quantityNumber, updateFormData, formData.quantity]);
 
   const modeSave = isEditMode ? false : true;
 
@@ -144,15 +162,10 @@ export const Step3: React.FC<StepProps> = ({
   );
 
   useEffect(() => {
-    const price = parseFloat(formData.price.replace(",", "."));
-    /*Todo:Esse código abaixo, poderá ser utilizado no futuro!
-     *Number(formData.quantity.replace(",", ".")) * 1000;
-     */
+    const price = cleanAndParse(formData.price);
+    const quantityToKG = cleanAndParse(formData.quantity);
 
-    const quantityToKG = Number(formData.quantity.replace(/[.]/g, ""));
-
-    // 02/01/2025 - Carlos - Farelo e Óleo não divide por 60
-    // Só iremos remover essa regra das siglas, caso o cliente aceite a sugestão da reunião do dia 09/04/2025
+    // TODO: esse grupo será colocando no backend futuramente
     const validProducts = ["O", "F", "OC", "OA", "SB", "EP"];
     const quantityToBag = validProducts.includes(formData.product)
       ? (Number(quantityToKG) / 1).toFixed(3)
@@ -168,7 +181,13 @@ export const Step3: React.FC<StepProps> = ({
         quantity_bag: Number(quantityToBag),
       });
     }
-  }, [formData.price, formData.quantity, formData.type_currency]);
+  }, [
+    formData.price,
+    formData.quantity,
+    formData.type_currency,
+    updateFormData,
+    formData.product,
+  ]);
 
   const handleNumericInputChange = (
     event: React.ChangeEvent<HTMLInputElement>
@@ -300,14 +319,10 @@ export const Step3: React.FC<StepProps> = ({
         name="quantity"
         label="Quantidade:"
         $labelPosition="top"
-        onChange={handleQuantityChange}
+        value={replaceLastDotWithComma(displayQuantityValue)}
         onFocus={handleQuantityFocus}
         onBlur={handleQuantityBlur}
-        value={
-          isEditingQuantity
-            ? formData.quantity
-            : formatQuantity(formData.quantity)
-        }
+        onChange={handleQuantityChange}
         radioOptions={[
           { label: "Quilos", value: "quilos" },
           { label: "Toneladas métricas", value: "toneladas métricas" },

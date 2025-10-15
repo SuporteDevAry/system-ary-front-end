@@ -3,7 +3,10 @@ import { Extenso } from "../helpers/Extenso";
 import { insertMaskInCnpj } from "../helpers/front-end/insertMaskInCnpj";
 import logoContrato from "../assets/img/Logo_Ary_Completo.jpg";
 import { formatDateWithLongMonth } from "../helpers/dateFormat";
-import { formatQuantity } from "../pages/Contracts/pages/CreateNewContract/components/Step3/hooks";
+import {
+  formatValue,
+  replaceLastDotWithComma,
+} from "../hooks/useQuantitiesInput.ts";
 
 interface ContratoTemplateProps {
   formData: any;
@@ -18,15 +21,13 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
   const today = new Date();
   const currentYear = today.getFullYear().toString().substr(-2);
 
-  let quantity_aux = modeSave
-    ? !formData.quantity.match(/,/g)
-      ? formData.quantity.replace(/[.]/g, "")
-      : formData.quantity.replace(/[,]/g, ".")
-    : formData.quantity;
+  const quantity_num = formData.quantity;
 
-  let formattedQtd = formatQuantity(quantity_aux);
+  console.log(quantity_num);
 
-  const qtde_extenso = Extenso(quantity_aux);
+  let formattedQtd = formatValue(quantity_num);
+
+  const qtde_extenso = Extenso(quantity_num);
   let formattedExtenso = `(${qtde_extenso})`;
 
   let formattedSellerCNPJ = formData.seller.cnpj_cpf
@@ -251,7 +252,7 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
         </p>
         <p style={{ textAlign: "justify" }}>
           <strong>
-            {formattedQtd} {formattedExtenso}{" "}
+            {replaceLastDotWithComma(formattedQtd)} {formattedExtenso}{" "}
           </strong>
           {formattedMetrica}
         </p>

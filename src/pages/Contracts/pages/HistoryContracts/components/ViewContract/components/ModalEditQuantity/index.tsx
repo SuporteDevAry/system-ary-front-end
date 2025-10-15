@@ -5,7 +5,12 @@ import CustomTooltipLabel from "../../../../../../../../components/CustomTooltip
 import { Modal } from "../../../../../../../../components/Modal";
 import { SBoxDatePicker, SContainer, SText, STextArea } from "./styles";
 import { IModalEditQuantityProps } from "./types";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
+import {
+  cleanAndParse,
+  replaceLastDotWithComma,
+  useQuantitiesInput,
+} from "../../../../../../../../hooks/useQuantitiesInput.ts";
 
 export function ModalEditQuantity({
   open,
@@ -15,6 +20,31 @@ export function ModalEditQuantity({
   onHandleChange,
 }: IModalEditQuantityProps) {
   const currentDate = dayjs().format("DD/MM/YYYY");
+
+  const initialQuantity = cleanAndParse(dataContract?.final_quantity);
+
+  const {
+    displayValue: displayFinalQuantityValue,
+    onChange: handleFinalQuantityChange,
+    onFocus: handleFinalQuantityFocus,
+    onBlur: handleFinalQuantityBlur,
+    value: finalQuantityNumber,
+  } = useQuantitiesInput(initialQuantity);
+
+  useEffect(() => {
+    const currentHookValue = finalQuantityNumber;
+    const currentContractValue = cleanAndParse(dataContract?.final_quantity);
+
+    if (currentHookValue !== currentContractValue) {
+      onHandleChange?.({
+        target: {
+          name: "final_quantity",
+          // CORREÇÃO: Deve enviar o valor do hook para o estado pai.
+          value: currentHookValue !== null ? String(currentHookValue) : null, // <-- Certo!
+        },
+      });
+    }
+  }, [finalQuantityNumber, dataContract?.final_quantity, onHandleChange]);
 
   const handleRadioChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>, name: string) => {
@@ -39,6 +69,12 @@ export function ModalEditQuantity({
   const handleConfirm = async () => {
     await onConfirm();
   };
+
+  useEffect(() => {
+    console.log("ModalEditQuantity opened", Number(displayFinalQuantityValue));
+
+    // Quando o modal abrir, podemos inicializar ou resetar estados se necessário
+  }, [open]);
 
   return (
     <Modal
@@ -106,9 +142,10 @@ export function ModalEditQuantity({
           name="final_quantity"
           label="Quantidade Final:"
           $labelPosition="top"
-          value={dataContract?.final_quantity?.toString() || ""}
-          onChange={onHandleChange}
-          radioPosition="inline"
+          value={displayFinalQuantityValue}
+          onFocus={handleFinalQuantityFocus}
+          onBlur={handleFinalQuantityBlur}
+          onChange={handleFinalQuantityChange}
         />
 
         <CustomInput

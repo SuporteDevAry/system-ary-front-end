@@ -1,6 +1,23 @@
 import { IContractData } from "../../contexts/ContractContext/types";
 import { FormDataContract } from "../../pages/Contracts/pages/CreateNewContract/types";
 
+const parseToNumber = (
+  value: string | number | null | undefined
+): number | undefined => {
+  if (value === null || value === undefined || value === "") {
+    return undefined;
+  }
+
+  const strValue = String(value);
+  let cleaned = strValue.replace(/\./g, ""); // Remove ponto de milhar
+  cleaned = cleaned.replace(",", "."); // Troca vírgula por ponto decimal
+
+  const num = parseFloat(cleaned);
+
+  // Retorna undefined se for NaN ou o número limpo (com ponto)
+  return isNaN(num) ? undefined : num;
+};
+
 export const FormDataToIContractDataDTO = (
   data: FormDataContract
 ): IContractData => {
@@ -16,9 +33,7 @@ export const FormDataToIContractDataDTO = (
     name_product: data.name_product,
     crop: data.crop,
     quality: data.quality,
-    quantity: Number(data.quantity.replace(/[.]/g, "")),
     type_currency: data.type_currency,
-    price: parseFloat(data.price.replace(",", ".")),
     type_icms: data.type_icms,
     icms: data.icms,
     payment: data.payment,
@@ -52,11 +67,13 @@ export const FormDataToIContractDataDTO = (
     complement_destination: data?.complement_destination,
     type_quantity: data?.type_quantity,
     table_id: data?.table_id,
-    final_quantity: Number(data?.final_quantity),
     status_received: data?.status_received,
     commission_contract: data?.commission_contract,
     charge_date: data?.charge_date,
     expected_receipt_date: data?.expected_receipt_date,
     total_received: data?.total_received,
+    quantity: parseToNumber(data.quantity) ?? 0,
+    final_quantity: parseToNumber(data.final_quantity) ?? 0,
+    price: parseToNumber(data.price) ?? 0,
   };
 };
