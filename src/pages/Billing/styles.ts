@@ -1,4 +1,4 @@
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 import Card from "@mui/material/Card";
 import { V } from "../../styles/variables";
 
@@ -18,7 +18,7 @@ export const SContainer = styled.div`
   }
 `;
 
-export const SCard = styled(Card)`
+export const SCard = styled(Card) <{ disabled?: boolean }> `
   height: 150px;
   width: 200px;
   padding: ${V.mdSpacing};
@@ -27,6 +27,18 @@ export const SCard = styled(Card)`
   border-radius: 8px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   transition: box-shadow 0.3s ease;
+
+  ${({ disabled }) =>
+    disabled &&
+    css`
+      opacity: 0.45;
+      pointer-events: none; /* previne qualquer interação */
+      cursor: not-allowed;
+      transform: none;
+      &:hover {
+        transform: none;
+      }
+    `}
 
   &:hover {
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
@@ -41,6 +53,30 @@ export const SCard = styled(Card)`
     width: 100px;
   }
 `;
+
+// export const SCard = styled(Card)`
+//   height: 150px;
+//   width: 200px;
+//   padding: ${V.mdSpacing};
+//   margin: ${V.mdSpacing};
+
+//   border-radius: 8px;
+//   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+//   transition: box-shadow 0.3s ease;
+
+//   &:hover {
+//     box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+//   }
+
+//   &.MuiCard-root {
+//     background-color: ${(props) => props.theme["yellow-200"]};
+//   }
+
+//   @media (max-width: 420px), handheld and (orientation: landscape) {
+//     height: 100px;
+//     width: 100px;
+//   }
+// `;
 
 export const SCardIcon = styled.div`
   display: flex;
