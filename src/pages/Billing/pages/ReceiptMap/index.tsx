@@ -49,8 +49,6 @@ export function ReceiptMap() {
                 "0"
             )}-${String(d.getDate()).padStart(2, "0")}`;
 
-        console.log(fmt(firstDay), fmt(today));
-
         return {
             SelectDateStart: fmt(firstDay),
             SelectDateEnd: fmt(today),
@@ -221,6 +219,15 @@ export function ReceiptMap() {
             fetchSelectData();
         }
     }, [allBillings, isInitialFilter, fetchSelectData]);
+
+    useEffect(() => {
+        if (isSelectionModal) {
+            const input = document.querySelector(
+                'input[name="SelectDateStart"]'
+            );
+            (input as HTMLInputElement)?.focus();
+        }
+    }, [isSelectionModal]);
 
     const { filteredData } = useTableSearch({
         data: listBillings,
