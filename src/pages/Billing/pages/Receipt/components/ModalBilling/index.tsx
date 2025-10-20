@@ -55,6 +55,9 @@ export function ModalBilling({
             if (prev[name] !== undefined) return prev; // já no modo edição
             return { ...prev, [name]: stringForEdit(formData?.[name]) };
         });
+        setTimeout(() => {
+            e.target.select();
+        }, 0);
     };
 
     // onChange: atualiza editingValues[name] permitindo vírgula

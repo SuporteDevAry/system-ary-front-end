@@ -43,7 +43,7 @@ export function Billing() {
             label: "Mapa de Recebimento",
             icon: <TbMapDollar size={64} />,
             to: "/cobranca/mapa-recebimento",
-            disabled: true,
+            disabled: false,
         },
     ];
     return (

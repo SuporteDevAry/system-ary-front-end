@@ -217,7 +217,7 @@ export function BillingsContract() {
                 align: "right",
             },
             { field: "liquid_value", header: "Valor Líquido", align: "right" },
-            { field: "status_received", header: "Liquidado" },
+            { field: "liquid_contract", header: "Liquidado" },
         ],
         []
     );
