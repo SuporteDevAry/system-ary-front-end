@@ -1,5 +1,6 @@
 import { IContractData } from "../../contexts/ContractContext/types";
 import { FormDataContract } from "../../pages/Contracts/pages/CreateNewContract/types";
+import { parseQuantityToNumber } from "../quantityFormat";
 
 export const FormDataToIContractDataDTO = (
   data: FormDataContract
@@ -16,7 +17,7 @@ export const FormDataToIContractDataDTO = (
     name_product: data.name_product,
     crop: data.crop,
     quality: data.quality,
-    quantity: Number(data.quantity.replace(/[.]/g, "")),
+    quantity: parseQuantityToNumber(data.quantity),
     type_currency: data.type_currency,
     price: parseFloat(data.price.replace(",", ".")),
     type_icms: data.type_icms,
@@ -52,7 +53,7 @@ export const FormDataToIContractDataDTO = (
     complement_destination: data?.complement_destination,
     type_quantity: data?.type_quantity,
     table_id: data?.table_id,
-    final_quantity: Number(data?.final_quantity),
+    final_quantity: parseQuantityToNumber(data?.final_quantity || "0"),
     status_received: data?.status_received,
     commission_contract: data?.commission_contract,
     charge_date: data?.charge_date,

@@ -5,7 +5,8 @@ import CustomTooltipLabel from "../../../../../../../../components/CustomTooltip
 import { Modal } from "../../../../../../../../components/Modal";
 import { SBoxDatePicker, SContainer, SText, STextArea } from "./styles";
 import { IModalEditQuantityProps } from "./types";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
+import { numberToQuantityString } from "../../../../../../../../helpers/quantityFormat";
 
 export function ModalEditQuantity({
   open,
@@ -15,6 +16,7 @@ export function ModalEditQuantity({
   onHandleChange,
 }: IModalEditQuantityProps) {
   const currentDate = dayjs().format("DD/MM/YYYY");
+  const [isEditingQuantity, setIsEditingQuantity] = useState<boolean>(false);
 
   const handleRadioChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>, name: string) => {
@@ -31,6 +33,29 @@ export function ModalEditQuantity({
     },
     []
   );
+
+  const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawValue = e.target.value;
+
+    if (/^[\d.,]*$/.test(rawValue)) {
+      onHandleChange?.(e);
+    }
+  };
+
+  const handleQuantityFocus = () => {
+    setIsEditingQuantity(true);
+  };
+
+  const handleQuantityBlur = () => {
+    setIsEditingQuantity(false);
+    const formattedValue = numberToQuantityString(
+      dataContract?.final_quantity || 0
+    );
+
+    onHandleChange?.({
+      target: { name: "final_quantity", value: formattedValue },
+    });
+  };
 
   const handleClose = () => {
     onClose();
@@ -106,8 +131,14 @@ export function ModalEditQuantity({
           name="final_quantity"
           label="Quantidade Final:"
           $labelPosition="top"
-          value={dataContract?.final_quantity?.toString() || ""}
-          onChange={onHandleChange}
+          value={
+            isEditingQuantity
+              ? String(dataContract?.final_quantity ?? "")
+              : numberToQuantityString(dataContract?.final_quantity || 0)
+          }
+          onChange={handleQuantityChange}
+          onFocus={handleQuantityFocus}
+          onBlur={handleQuantityBlur}
           radioPosition="inline"
         />
 

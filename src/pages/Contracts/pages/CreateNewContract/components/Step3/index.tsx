@@ -145,20 +145,17 @@ export const Step3: React.FC<StepProps> = ({
 
   useEffect(() => {
     const price = parseFloat(formData.price.replace(",", "."));
-    /*Todo:Esse código abaixo, poderá ser utilizado no futuro!
-     *Number(formData.quantity.replace(",", ".")) * 1000;
-     */
-
-    const quantityToKG = Number(formData.quantity.replace(/[.]/g, ""));
+    const quantityToKG =
+      parseFloat(formData.quantity.replace(/\./g, "").replace(",", ".")) || 0;
 
     // 02/01/2025 - Carlos - Farelo e Óleo não divide por 60
     // Só iremos remover essa regra das siglas, caso o cliente aceite a sugestão da reunião do dia 09/04/2025
     const validProducts = ["O", "F", "OC", "OA", "SB", "EP"];
     const quantityToBag = validProducts.includes(formData.product)
-      ? (Number(quantityToKG) / 1).toFixed(3)
-      : (Number(quantityToKG) / 60).toFixed(3);
+      ? (quantityToKG / 1).toFixed(3)
+      : (quantityToKG / 60).toFixed(3);
 
-    const totalContractValue = Number(price * Number(quantityToBag)).toFixed(3);
+    const totalContractValue = (price * Number(quantityToBag)).toFixed(3);
 
     if (totalContractValue) {
       updateFormData?.({

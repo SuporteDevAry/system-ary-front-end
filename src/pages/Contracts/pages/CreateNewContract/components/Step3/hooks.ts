@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { FormDataContract } from "../../types";
+import { formatQuantityWithDecimal } from "../../../../../../helpers/quantityFormat";
 
 export const usePriceHandlers = (
   formData: FormDataContract,
@@ -67,8 +68,7 @@ export const useCommissionHandlers = () => {
 };
 
 export const formatQuantity = (value: string): string => {
-  const numericValue = value.replace(/\D/g, ""); // Remove qualquer caractere não numérico
-  return numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, "."); // Adiciona o separador de milhares
+  return formatQuantityWithDecimal(value);
 };
 
 export const useQuantityHandlers = (
@@ -79,9 +79,10 @@ export const useQuantityHandlers = (
 
   const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const rawValue = e.target.value;
-    const formattedValue = formatQuantity(rawValue);
 
-    updateFormData?.({ ...formData, quantity: formattedValue });
+    if (/^[\d.,]*$/.test(rawValue)) {
+      updateFormData?.({ ...formData, quantity: rawValue });
+    }
   };
 
   const handleQuantityFocus = () => {
@@ -90,6 +91,8 @@ export const useQuantityHandlers = (
 
   const handleQuantityBlur = () => {
     setIsEditingQuantity(false);
+    const formattedValue = formatQuantityWithDecimal(formData.quantity);
+    updateFormData?.({ ...formData, quantity: formattedValue });
   };
 
   return {
