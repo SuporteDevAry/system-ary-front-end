@@ -76,18 +76,20 @@ export function ViewContract(): JSX.Element {
       dataClient?.number_contract === undefined
         ? ""
         : dataClient.number_contract;
-    // TODO: Preciso ver o quantidade do contrato quando visualiza.
-    console.log("Dentro do ViewPDF", dataClient?.quantity);
 
-    // Cria um container temporário invisível
     const container = document.createElement("div");
     container.style.display = "none";
     document.body.appendChild(container);
 
+    const dataToPdf = {
+      ...dataClient,
+      quantity: numberToQuantityString(dataClient?.quantity ?? 0),
+    };
+
     // Renderiza o ContratoTemplate dentro do container usando createRoot
     const root = createRoot(container);
     root.render(
-      <ContratoTemplate formData={dataClient} nomeArquivo={nomePDF} />
+      <ContratoTemplate formData={dataToPdf} nomeArquivo={nomePDF} />
     );
 
     // Aguarda a renderização e, então, gera o PDF
