@@ -343,10 +343,7 @@ export function ViewContract(): JSX.Element {
   const contractFields = [
     {
       label: "Preço:",
-      value: formatCurrency(
-        dataClient?.price?.toString() ?? "0",
-        dataClient?.type_currency ?? "Real"
-      ),
+      value: formatCurrency(dataClient?.price?.toString() ?? "0", "Real"),
     },
     { label: "", value: "" }, //[x]: Não remover!!!
     { label: "Produto:", value: dataClient?.name_product },
@@ -355,7 +352,7 @@ export function ViewContract(): JSX.Element {
       label: "Total do Contrato",
       value: formatCurrency(
         dataClient?.total_contract_value?.toString() ?? "0",
-        dataClient?.type_currency ?? "Real"
+        "Real"
       ),
     },
     { label: "", value: "" }, //[x]: Não remover!!!
