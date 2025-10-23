@@ -22,24 +22,7 @@ export const Step3: React.FC<StepProps> = ({
   updateFormData,
   isEditMode,
 }) => {
-  const modeSave = isEditMode ? false : true;
-
-  // const priceEditedWithDollar = useCallback(() => {
-  //   if (modeSave && formData.type_currency === "Dolar") {
-  //     const priceToDollar = Number(
-  //       Number(formData.price.replace(",", ".")) /
-  //         Number(formData.day_exchange_rate)
-  //     ).toFixed(2);
-
-  //     console.log("opaaa", priceToDollar);
-  //     updateFormData?.({ ...formData, price: priceToDollar });
-  //   }
-  // }, [
-  //   formData.price,
-  //   formData.day_exchange_rate,
-  //   formData.type_currency,
-  //   modeSave,
-  // ]);
+  const modeSave: boolean = isEditMode ? false : true;
 
   const { isEditingPrice, handlePriceFocus, handlePriceBlur } =
     usePriceHandlers(formData, updateFormData);
