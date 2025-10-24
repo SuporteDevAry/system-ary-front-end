@@ -306,6 +306,21 @@ export function ViewContract(): JSX.Element {
     )
       adjustments.internal_communication = dataClient.internal_communication;
 
+    if (
+      dataClient.day_exchange_rate !== undefined &&
+      dataClient.day_exchange_rate !== null &&
+      dataClient.day_exchange_rate !== ""
+    )
+      adjustments.day_exchange_rate = dataClient.day_exchange_rate;
+
+    if (
+      dataClient.number_external_contract_buyer !== undefined &&
+      dataClient.number_external_contract_buyer !== null &&
+      dataClient.number_external_contract_buyer !== ""
+    )
+      adjustments.number_external_contract_buyer =
+        dataClient.number_external_contract_buyer;
+
     // Se nenhum campo foi alterado
     if (Object.keys(adjustments).length === 0) {
       toast.warn("Nenhum ajuste foi informado.");
@@ -343,13 +358,16 @@ export function ViewContract(): JSX.Element {
   const contractFields = [
     {
       label: "Preço:",
-      value: formatCurrency(dataClient?.price?.toString() ?? "0", "Real"),
+      value: formatCurrency(
+        dataClient?.price?.toString() ?? "0",
+        dataClient?.type_currency ?? "Real"
+      ),
     },
     { label: "", value: "" }, //[x]: Não remover!!!
     { label: "Produto:", value: dataClient?.name_product },
     { label: "", value: "" }, //[x]: Não remover!!!
     {
-      label: "Total do Contrato",
+      label: "Total do Contrato:",
       value: formatCurrency(
         dataClient?.total_contract_value?.toString() ?? "0",
         "Real"
@@ -357,20 +375,20 @@ export function ViewContract(): JSX.Element {
     },
     { label: "", value: "" }, //[x]: Não remover!!!
     {
-      label: "Quantidade",
+      label: "Quantidade:",
       value: `${numberToQuantityString(quantityValue)} ${unityMeasure}`,
     },
     {
-      label: "Quantidade Final",
+      label: "Quantidade Final:",
       value: `${numberToQuantityString(finalQuantityValue)} ${unityMeasure}`,
     },
 
     {
-      label: "Comissão",
+      label: "Comissão:",
       value: commission,
     },
     {
-      label: "Valor Comissão",
+      label: "Valor Comissão:",
       value: formatCurrency(
         dataClient?.commission_contract?.toString() ?? "0",
         "Real"
@@ -378,29 +396,38 @@ export function ViewContract(): JSX.Element {
     },
 
     {
-      label: "Total Recebido",
+      label: "Total Recebido:",
       value: formatCurrency(
         dataClient?.total_received?.toString() ?? "0",
         "Real"
       ),
     },
     {
-      label: "Data do Pagamento",
+      label: "Data do Pagamento:",
       value: dataClient?.payment_date,
     },
     {
-      label: "Data da Cobrança",
+      label: "Data da Cobrança:",
       value: dataClient?.charge_date || "-",
     },
     {
-      label: "Data Prevista Recebimento",
+      label: "Data Prevista Recebimento:",
       value: dataClient?.expected_receipt_date || "-",
     },
 
     {
-      label: "Liquidado",
+      label: "Liquidado:",
       value: dataClient?.status_received?.toString() || "",
     },
+
+    ...(dataClient?.type_currency === "Dólar"
+      ? [
+          {
+            label: "Cotação Negociada:",
+            value: dataClient?.day_exchange_rate || "-",
+          },
+        ]
+      : []),
   ];
 
   return (

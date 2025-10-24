@@ -53,7 +53,7 @@ export const IContractDataToFormDataDTO = (
     complement_destination: data.complement_destination,
     type_quantity: data?.type_quantity,
     table_id: data?.table_id,
-    final_quantity: numberToQuantityString(data?.final_quantity || 0),
+    final_quantity: numberToQuantityString(data?.final_quantity),
     status_received: data?.status_received,
     commission_contract: data?.commission_contract,
     charge_date: data?.charge_date,

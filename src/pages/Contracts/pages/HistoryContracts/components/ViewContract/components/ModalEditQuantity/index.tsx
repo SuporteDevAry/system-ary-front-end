@@ -6,7 +6,7 @@ import { Modal } from "../../../../../../../../components/Modal";
 import { SBoxDatePicker, SContainer, SText, STextArea } from "./styles";
 import { IModalEditQuantityProps } from "./types";
 import { useCallback, useState } from "react";
-import { numberToQuantityString } from "../../../../../../../../helpers/quantityFormat";
+import { formatQuantityWithDecimal } from "../../../../../../../../helpers/quantityFormat";
 
 export function ModalEditQuantity({
   open,
@@ -35,11 +35,7 @@ export function ModalEditQuantity({
   );
 
   const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const rawValue = e.target.value;
-
-    if (/^[\d.,]*$/.test(rawValue)) {
-      onHandleChange?.(e);
-    }
+    onHandleChange?.(e);
   };
 
   const handleQuantityFocus = () => {
@@ -48,10 +44,9 @@ export function ModalEditQuantity({
 
   const handleQuantityBlur = () => {
     setIsEditingQuantity(false);
-    const formattedValue = numberToQuantityString(
-      dataContract?.final_quantity || 0
+    const formattedValue = formatQuantityWithDecimal(
+      String(dataContract?.final_quantity || "")
     );
-
     onHandleChange?.({
       target: { name: "final_quantity", value: formattedValue },
     });
@@ -134,7 +129,9 @@ export function ModalEditQuantity({
           value={
             isEditingQuantity
               ? String(dataContract?.final_quantity ?? "")
-              : numberToQuantityString(dataContract?.final_quantity || 0)
+              : formatQuantityWithDecimal(
+                  String(dataContract?.final_quantity || "")
+                )
           }
           onChange={handleQuantityChange}
           onFocus={handleQuantityFocus}
@@ -155,6 +152,26 @@ export function ModalEditQuantity({
           onRadioChange={(e) => handleRadioChange(e, "status_received")}
           selectedRadio={dataContract?.status_received || "Não"}
         />
+
+        <CustomInput
+          type="text"
+          name="number_external_contract_buyer"
+          label="Nº Contrato Externo Comprador:"
+          $labelPosition="top"
+          value={dataContract?.number_external_contract_buyer || ""}
+          onChange={onHandleChange}
+        />
+
+        {dataContract?.type_currency === "Dólar" && (
+          <CustomInput
+            type="text"
+            name="day_exchange_rate"
+            label="Cotação Negociada:"
+            $labelPosition="top"
+            value={dataContract?.day_exchange_rate || ""}
+            onChange={onHandleChange}
+          />
+        )}
 
         <CustomTooltipLabel
           title={`As informações deste campo não serão exibidas no contrato.`}

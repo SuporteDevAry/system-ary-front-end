@@ -2,7 +2,7 @@ import { StepProps } from "../../types";
 import { SContainer, SText, STextArea } from "./styles";
 import { CustomSelect } from "../../../../../../components/CustomSelect";
 //import { ProductType, productInfo } from "./types"; será removido junto com arquivo 01/09/25.
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { generateCropYears } from "./helpers";
 import { CustomInput } from "../../../../../../components/CustomInput";
 import { TableProductContext } from "../../../../../../contexts/TablesProducts";
@@ -16,7 +16,7 @@ export const Step2: React.FC<StepProps> = ({
   handleChange,
   formData,
   updateFormData,
-  isEditMode,
+  //isEditMode,
 }) => {
   const cropYearOptions = useMemo(generateCropYears, []);
 
