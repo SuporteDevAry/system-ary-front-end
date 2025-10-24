@@ -240,34 +240,7 @@ export function ViewContract(): JSX.Element {
       toast.error("Id do Contrato não encontrado.");
       return;
     }
-    // Aqui vou ter uma classe de status para o financeiro!
-    // if (!selectedStatus) {
-    //   toast.error("Por favor, selecione um status.");
-    //   return;
-    // }
-
-    // const newDate = formattedDate();
-    // const newTime = formattedTime();
-
-    // const newStatusEntry = {
-    //   date: newDate,
-    //   time: newTime,
-    //   status: selectedStatus,
-    //   owner_change: {
-    //     name: dataUserInfo?.name || "",
-    //     email: dataUserInfo?.email || "",
-    //   },
-    // };
-
-    // const updatedStatus = {
-    //   status_current: selectedStatus,
-    //   history: [...dataClient.status.history, newStatusEntry],
-    // };
-
-    // const updatedContract = {
-    //   ...dataClient,
-    //   status: updatedStatus,
-    // };
+   
 
     // Monta um objeto apenas com os ajustes válidos
     const adjustments: Partial<IContractData> = {};

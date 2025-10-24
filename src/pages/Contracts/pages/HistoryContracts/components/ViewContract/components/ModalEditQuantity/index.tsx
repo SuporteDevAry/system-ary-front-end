@@ -6,7 +6,8 @@ import { Modal } from "../../../../../../../../components/Modal";
 import { SBoxDatePicker, SContainer, SText, STextArea } from "./styles";
 import { IModalEditQuantityProps } from "./types";
 import { useCallback, useState } from "react";
-import { formatQuantityWithDecimal } from "../../../../../../../../helpers/quantityFormat";
+import { numberToQuantityString } from "../../../../../../../../helpers/quantityFormat";
+import { formatQuantity } from "../../../../../CreateNewContract/components/Step3/hooks";
 
 export function ModalEditQuantity({
   open,
@@ -44,8 +45,8 @@ export function ModalEditQuantity({
 
   const handleQuantityBlur = () => {
     setIsEditingQuantity(false);
-    const formattedValue = formatQuantityWithDecimal(
-      String(dataContract?.final_quantity || "")
+    const formattedValue = formatQuantity(
+      numberToQuantityString(dataContract?.final_quantity ?? 0)
     );
     onHandleChange?.({
       target: { name: "final_quantity", value: formattedValue },
@@ -129,8 +130,8 @@ export function ModalEditQuantity({
           value={
             isEditingQuantity
               ? String(dataContract?.final_quantity ?? "")
-              : formatQuantityWithDecimal(
-                  String(dataContract?.final_quantity || "")
+              : formatQuantity(
+                  numberToQuantityString(dataContract?.final_quantity ?? 0)
                 )
           }
           onChange={handleQuantityChange}
@@ -156,7 +157,7 @@ export function ModalEditQuantity({
         <CustomInput
           type="text"
           name="number_external_contract_buyer"
-          label="Nº Contrato Externo Comprador:"
+          label="Nº Ctr. Comprador:"
           $labelPosition="top"
           value={dataContract?.number_external_contract_buyer || ""}
           onChange={onHandleChange}
