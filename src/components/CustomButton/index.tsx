@@ -8,6 +8,8 @@ const CustomButton: React.FC<CustomButtonProps> = ({
   disabled,
   onClick,
   children,
+  backgroundColor,
+  color,
 }) => {
   return (
     <SButton
@@ -16,6 +18,10 @@ const CustomButton: React.FC<CustomButtonProps> = ({
       height={height}
       disabled={disabled}
       onClick={onClick}
+      style={{
+        ...(backgroundColor && { backgroundColor }),
+        ...(color && { color }),
+      }}
     >
       {children}
     </SButton>

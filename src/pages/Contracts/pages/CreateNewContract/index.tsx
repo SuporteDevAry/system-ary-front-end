@@ -113,12 +113,13 @@ export const CreateNewContract: React.FC = () => {
   const { canConsult } = useUserPermissions();
 
   useEffect(() => {
-    if (location.state?.isEditMode) {
-      setIsEditMode(true);
-      const contractDataForEdit = location.state.contractData as IContractData;
-      if (contractDataForEdit) {
-        const dataForm = IContractDataToFormDataDTO(contractDataForEdit);
-
+    if (location.state?.isEditMode || location.state?.isDuplicateMode) {
+      if (location.state?.isEditMode) {
+        setIsEditMode(true);
+      }
+      const contractData = location.state.contractData as IContractData;
+      if (contractData) {
+        const dataForm = IContractDataToFormDataDTO(contractData);
         setFormData({
           ...dataForm,
         });

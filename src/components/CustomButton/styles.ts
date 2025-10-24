@@ -1,13 +1,13 @@
 import styled, { DefaultTheme } from "styled-components";
 import { ButtonVariant, CustomButtonProps } from "./types";
 
-const getColor = (theme: DefaultTheme, type: ButtonVariant) =>
+const getColor = (theme: DefaultTheme, type?: ButtonVariant) =>
   ({
     primary: theme["gray-300"],
     secondary: theme["green-500"],
     success: theme["yellow-600"],
     danger: theme["red-500"],
-  }[type]);
+  }[type ?? "primary"]);
 
 export const SButton = styled.button<CustomButtonProps>`
   color: ${({ theme, $variant }) =>
