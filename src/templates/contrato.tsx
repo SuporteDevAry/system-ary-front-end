@@ -3,7 +3,10 @@ import { Extenso } from "../helpers/Extenso";
 import { insertMaskInCnpj } from "../helpers/front-end/insertMaskInCnpj";
 import logoContrato from "../assets/img/Logo_Ary_Completo.jpg";
 import { formatDateWithLongMonth } from "../helpers/dateFormat";
-import { formatQuantity } from "../pages/Contracts/pages/CreateNewContract/components/Step3/hooks";
+import {
+  parseQuantityToNumber,
+  numberToQuantityString,
+} from "../helpers/quantityFormat";
 
 interface ContratoTemplateProps {
   formData: any;
@@ -18,16 +21,46 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
   const today = new Date();
   const currentYear = today.getFullYear().toString().substr(-2);
 
-  let quantity_aux = modeSave
-    ? !formData.quantity.match(/,/g)
-      ? formData.quantity.replace(/[.]/g, "")
-      : formData.quantity.replace(/[,]/g, ".")
-    : formData.quantity;
+  const quantityValue =
+    typeof formData.quantity === "number"
+      ? formData.quantity
+      : parseQuantityToNumber(formData.quantity);
 
-  let formattedQtd = formatQuantity(quantity_aux);
+  const formattedQtd = numberToQuantityString(quantityValue);
 
-  const qtde_extenso = Extenso(quantity_aux);
-  let formattedExtenso = `(${qtde_extenso})`;
+  // montar extenso dependendo do tipo de quantidade
+  let formattedExtenso = "";
+
+  if (formData.type_quantity === "toneladas métricas") {
+    // tratar como toneladas métricas: parte inteira = toneladas, parte decimal = quilos (3 casas decimais)
+    const raw = String(formData.quantity)
+      .trim()
+      .replace(/\./g, "")
+      .replace(/,/g, ".");
+    const parts = raw.split(".");
+    const inteiro = Number(parts[0]) || 0;
+    const decimais = parts[1] ? parts[1].padEnd(3, "0").slice(0, 3) : ""; // gramas/quilos em 3 dígitos
+
+    const toneladasText =
+      inteiro > 0
+        ? Extenso(inteiro, "F") +
+          (inteiro === 1 ? " tonelada métrica" : " toneladas métricas")
+        : "";
+    const kilosFromDecimals = decimais ? Number(decimais) : 0;
+    const kilosText =
+      kilosFromDecimals > 0
+        ? Extenso(kilosFromDecimals, "M") +
+          (kilosFromDecimals === 1 ? " quilo" : " quilos")
+        : "";
+
+    const combined = [toneladasText, kilosText].filter(Boolean).join(" e ");
+    formattedExtenso = combined ? `(${combined})` : "";
+  } else {
+    // tratar como quilos (masculino)
+    const inteiro = Math.round(quantityValue);
+    const ext = Extenso(inteiro, "M");
+    formattedExtenso = `(${ext})`;
+  }
 
   let formattedSellerCNPJ = formData.seller.cnpj_cpf
     ? insertMaskInCnpj(formData.seller.cnpj_cpf)
@@ -102,9 +135,7 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
     : ` - Safra: ${formData.crop}`;
 
   let formattedMetrica =
-    formData.type_quantity === "toneladas métricas"
-      ? ` toneladas métricas.`
-      : ` quilos.`;
+    formData.type_quantity === "toneladas métricas" ? `.` : ` quilos.`;
 
   let Dot =
     formData.destination === "Nenhum" ||

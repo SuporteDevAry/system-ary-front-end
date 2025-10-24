@@ -5,7 +5,8 @@ import CustomTooltipLabel from "../../../../../../../../components/CustomTooltip
 import { Modal } from "../../../../../../../../components/Modal";
 import { SBoxDatePicker, SContainer, SText, STextArea } from "./styles";
 import { IModalEditQuantityProps } from "./types";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
+import { formatQuantityWithDecimal } from "../../../../../../../../helpers/quantityFormat";
 
 export function ModalEditQuantity({
   open,
@@ -15,6 +16,7 @@ export function ModalEditQuantity({
   onHandleChange,
 }: IModalEditQuantityProps) {
   const currentDate = dayjs().format("DD/MM/YYYY");
+  const [isEditingQuantity, setIsEditingQuantity] = useState<boolean>(false);
 
   const handleRadioChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>, name: string) => {
@@ -31,6 +33,24 @@ export function ModalEditQuantity({
     },
     []
   );
+
+  const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onHandleChange?.(e);
+  };
+
+  const handleQuantityFocus = () => {
+    setIsEditingQuantity(true);
+  };
+
+  const handleQuantityBlur = () => {
+    setIsEditingQuantity(false);
+    const formattedValue = formatQuantityWithDecimal(
+      String(dataContract?.final_quantity || "")
+    );
+    onHandleChange?.({
+      target: { name: "final_quantity", value: formattedValue },
+    });
+  };
 
   const handleClose = () => {
     onClose();
@@ -106,8 +126,16 @@ export function ModalEditQuantity({
           name="final_quantity"
           label="Quantidade Final:"
           $labelPosition="top"
-          value={dataContract?.final_quantity?.toString() || ""}
-          onChange={onHandleChange}
+          value={
+            isEditingQuantity
+              ? String(dataContract?.final_quantity ?? "")
+              : formatQuantityWithDecimal(
+                  String(dataContract?.final_quantity || "")
+                )
+          }
+          onChange={handleQuantityChange}
+          onFocus={handleQuantityFocus}
+          onBlur={handleQuantityBlur}
           radioPosition="inline"
         />
 
@@ -124,6 +152,26 @@ export function ModalEditQuantity({
           onRadioChange={(e) => handleRadioChange(e, "status_received")}
           selectedRadio={dataContract?.status_received || "Não"}
         />
+
+        <CustomInput
+          type="text"
+          name="number_external_contract_buyer"
+          label="Nº Contrato Externo Comprador:"
+          $labelPosition="top"
+          value={dataContract?.number_external_contract_buyer || ""}
+          onChange={onHandleChange}
+        />
+
+        {dataContract?.type_currency === "Dólar" && (
+          <CustomInput
+            type="text"
+            name="day_exchange_rate"
+            label="Cotação Negociada:"
+            $labelPosition="top"
+            value={dataContract?.day_exchange_rate || ""}
+            onChange={onHandleChange}
+          />
+        )}
 
         <CustomTooltipLabel
           title={`As informações deste campo não serão exibidas no contrato.`}

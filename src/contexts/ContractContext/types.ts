@@ -81,7 +81,7 @@ export interface IContractData {
   complement_destination?: string;
   type_quantity?: string;
   table_id?: string;
-  final_quantity?: number;
+  final_quantity: number;
   status_received?: string;
   commission_contract?: number;
   charge_date?: string;
