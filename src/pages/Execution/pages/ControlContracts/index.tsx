@@ -152,7 +152,7 @@ export function ControlContracts() {
             },
             {
                 field: "number_external_contract_buyer",
-                header: "Nro.Comprador",
+                header: "Nº Ctr. Comprador",
                 width: "100px",
             },
             {

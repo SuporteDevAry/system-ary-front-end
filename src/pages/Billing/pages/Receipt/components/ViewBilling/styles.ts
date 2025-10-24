@@ -5,31 +5,18 @@ export const STitle = styled.h2``;
 export const SContainer = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 16px;
   justify-content: center;
   align-items: start;
 `;
 
-export const SCardInfoParts = styled.div`
-  padding: 10px;
-  //width: 740px;
-  border-radius: 16px;
-  background-color: ${(props) => props.theme["white"]};
-  box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.16);
-  //margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-`;
-
 export const SCardInfo = styled.div`
-  padding: 10px;
-  //width: 740px;
+  padding: 16px;
+  width: 740px;
   border-radius: 16px;
   background-color: ${(props) => props.theme["white"]};
   box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.16);
   margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
 `;
 
 export const SCardBase = styled.div`
@@ -42,14 +29,10 @@ export const SCardBase = styled.div`
 
 export const SCardInfoNumber = styled(SCardBase)`
   width: 262px;
-  display: flex;
-  flex-direction: row;
-  gap: 16px;  
 `;
 
 export const SCardInfoActions = styled(SCardBase)`
- // width: 462px;
-  
+  width: 462px;
 `;
 
 export const SBox = styled.div`
@@ -73,7 +56,6 @@ export const SCardContainer = styled.span`
 `;
 
 export const SkeyName = styled.span`
-
   font-weight: bold;
   color: ${(props) => props.theme["black"]};
 `;
@@ -103,8 +85,8 @@ export const BoxContainer = styled.div`
 export const SNumberContract = styled.span`
   display: flex;
   font-weight: 500;
-  padding-top: 16px;
-  font-size: 30px;
+  padding-bottom: 16px;
+  font-size: 26px;
   color: ${(props) => props.theme["black-300"]};
   justify-content: end;
 `;

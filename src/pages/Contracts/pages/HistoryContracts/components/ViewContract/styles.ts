@@ -104,4 +104,3 @@ export const SCardInfoAdjust = styled(SCardInfo)`
   }
 `;
 
-///Modal Edit Quantity
