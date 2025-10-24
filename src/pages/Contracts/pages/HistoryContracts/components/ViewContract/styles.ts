@@ -12,7 +12,7 @@ export const SContainer = styled.div`
 
 export const SCardInfo = styled.div`
   padding: 16px;
-  width: 740px;
+  width: 878px;
   border-radius: 16px;
   background-color: ${(props) => props.theme["white"]};
   box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.16);
@@ -32,7 +32,7 @@ export const SCardInfoNumber = styled(SCardBase)`
 `;
 
 export const SCardInfoActions = styled(SCardBase)`
-  width: 462px;
+  max-width: 600px;
 `;
 
 export const SBox = styled.div`
@@ -103,4 +103,3 @@ export const SCardInfoAdjust = styled(SCardInfo)`
     flex: 1 1 45%; // Permite que cada item ocupe aproximadamente metade da largura (45% para incluir o gap)
   }
 `;
-
