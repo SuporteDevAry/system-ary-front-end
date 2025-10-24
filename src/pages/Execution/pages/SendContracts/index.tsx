@@ -101,6 +101,7 @@ export const SendContracts: React.FC = () => {
     internal_communication: "",
     type_quantity: "",
     copy_correct: "",
+    final_quantity: 0,
   });
 
   const [modalContent, setModalContent] = useState<string>("");

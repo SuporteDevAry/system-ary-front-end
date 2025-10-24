@@ -16,6 +16,7 @@ export const Step2: React.FC<StepProps> = ({
   handleChange,
   formData,
   updateFormData,
+  //isEditMode,
 }) => {
   const cropYearOptions = useMemo(generateCropYears, []);
 
@@ -27,6 +28,51 @@ export const Step2: React.FC<StepProps> = ({
   const [selectedTable, setSelectedTable] = useState<ITableProductsData | null>(
     null
   );
+
+  //TODO: Validar se essa lógica de deconversão do preço não deveria estar aqui também.
+  // const deconvertedRef = useRef<boolean>(false);
+
+  // //[x]: Regra para deconverter o preço quando em modo de edição e a moeda for Dólar.
+  // // Isso evita que o preço seja salvo incorretamente após a conversão.
+  // // Se o preço já foi deconvertido, não faz nada.
+  // useEffect(() => {
+  //   deconvertedRef.current = false;
+  // }, [id]);
+
+  // useEffect(() => {
+  //   if (deconvertedRef.current) return;
+
+  //   if (
+  //     isEditMode &&
+  //     formData.type_currency === "Dólar" &&
+  //     formData.day_exchange_rate
+  //   ) {
+  //     const exchange = Number(
+  //       String(formData.day_exchange_rate).replace(",", ".")
+  //     );
+  //     const storedPrice = Number(String(formData.price).replace(",", "."));
+
+  //     if (!exchange || !Number.isFinite(storedPrice)) {
+  //       deconvertedRef.current = true;
+  //       return;
+  //     }
+
+  //     const priceToDollar = (storedPrice / exchange).toFixed(2);
+  //     deconvertedRef.current = true;
+
+  //     if (Number(priceToDollar) !== Number(formData.price)) {
+  //       updateFormData?.({ ...formData, price: priceToDollar.toString() });
+  //     }
+  //   }
+  // }, [
+  //   isEditMode,
+  //   formData.type_currency,
+  //   formData.day_exchange_rate,
+  //   updateFormData,
+  //   id,
+  //   formData.price,
+  //   formData,
+  // ]);
 
   useEffect(() => {
     const fetchTablesAndProducts = async () => {

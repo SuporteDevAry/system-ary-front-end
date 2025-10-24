@@ -22,6 +22,8 @@ export const Step3: React.FC<StepProps> = ({
   updateFormData,
   isEditMode,
 }) => {
+  const modeSave: boolean = isEditMode ? false : true;
+
   const { isEditingPrice, handlePriceFocus, handlePriceBlur } =
     usePriceHandlers(formData, updateFormData);
 
@@ -41,8 +43,6 @@ export const Step3: React.FC<StepProps> = ({
     handleQuantityBlur,
     formatQuantity,
   } = useQuantityHandlers(formData, updateFormData);
-
-  const modeSave = isEditMode ? false : true;
 
   const [initialPickupDate, SetInitialPickupDate] = useState<string>(
     formData.initial_pickup_date
@@ -142,33 +142,6 @@ export const Step3: React.FC<StepProps> = ({
     },
     [formData, updateFormData, handleChange, handleFieldPickupChange]
   );
-
-  useEffect(() => {
-    const price = parseFloat(formData.price.replace(",", "."));
-    /*Todo:Esse código abaixo, poderá ser utilizado no futuro!
-     *Number(formData.quantity.replace(",", ".")) * 1000;
-     */
-
-    const quantityToKG = Number(formData.quantity.replace(/[.]/g, ""));
-
-    // 02/01/2025 - Carlos - Farelo e Óleo não divide por 60
-    // Só iremos remover essa regra das siglas, caso o cliente aceite a sugestão da reunião do dia 09/04/2025
-    const validProducts = ["O", "F", "OC", "OA", "SB", "EP"];
-    const quantityToBag = validProducts.includes(formData.product)
-      ? (Number(quantityToKG) / 1).toFixed(3)
-      : (Number(quantityToKG) / 60).toFixed(3);
-
-    const totalContractValue = Number(price * Number(quantityToBag)).toFixed(3);
-
-    if (totalContractValue) {
-      updateFormData?.({
-        ...formData,
-        total_contract_value: parseFloat(totalContractValue),
-        quantity_kg: quantityToKG,
-        quantity_bag: Number(quantityToBag),
-      });
-    }
-  }, [formData.price, formData.quantity, formData.type_currency]);
 
   const handleNumericInputChange = (
     event: React.ChangeEvent<HTMLInputElement>
