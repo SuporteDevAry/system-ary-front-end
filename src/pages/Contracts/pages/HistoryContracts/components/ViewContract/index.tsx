@@ -65,6 +65,35 @@ export function ViewContract(): JSX.Element {
     setDataClient(contractForView);
   }, [location]);
 
+  const handleDuplicate = () => {
+    if (!dataClient) return;
+
+    // [x]:Para Duplicar um contrato, reseta campos específicos que devem ser novos no contrato duplicado.
+    const duplicatedContract = {
+      ...dataClient,
+      id: "",
+      number_contract: "",
+      contract_emission_date: formattedDate(),
+      status: {
+        status_current: "A CONFERIR",
+        history: [],
+      },
+      final_quantity: "",
+      status_received: "",
+      total_received: 0,
+      charge_date: "",
+      expected_receipt_date: "",
+      internal_communication: "",
+      number_external_contract_buyer: "",
+      number_external_contract_seller: "",
+      day_exchange_rate: "",
+    };
+
+    navigate("/contratos/novo-contrato", {
+      state: { contractData: duplicatedContract, isDuplicateMode: true },
+    });
+  };
+
   const handleEdit = () => {
     navigate("/contratos/editar-contrato", {
       state: { contractData: dataClient, isEditMode: true },
@@ -240,7 +269,6 @@ export function ViewContract(): JSX.Element {
       toast.error("Id do Contrato não encontrado.");
       return;
     }
-   
 
     // Monta um objeto apenas com os ajustes válidos
     const adjustments: Partial<IContractData> = {};
@@ -450,6 +478,15 @@ export function ViewContract(): JSX.Element {
                 onClick={handleViewPDF}
               >
                 Visualizar
+              </CustomButton>
+
+              <CustomButton
+                $variant="secondary"
+                backgroundColor="#FF5C00"
+                width="120px"
+                onClick={handleDuplicate}
+              >
+                Duplicar
               </CustomButton>
 
               {dataClient?.status.status_current === "ENVIADO" ||
