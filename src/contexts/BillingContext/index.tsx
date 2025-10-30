@@ -133,9 +133,9 @@ export const BillingsProvider = ({ children }: IBillingProvider) => {
 
     async function getBillingByNumberContract(billingNumberContract: string) {
         try {
-            const response = await Api.get(
-                `/billings/nfs/${billingNumberContract}`
-            );
+            const response = await Api.post(`/billings/number-contract/`, {
+                number_contract: billingNumberContract,
+            });
 
             return response;
         } catch (error) {

@@ -31,5 +31,5 @@ export interface IBillingContext {
     getBillingById: (billingId: string) => Promise<any>;
     getBillingByRps: (billingRps: string) => Promise<any>;
     getBillingByNfs: (billingNfs: string) => Promise<any>;
-    getBillingByNumberContract: (billingNfs: string) => Promise<any>;
+    getBillingByNumberContract: (billingNumberContract: string) => Promise<any>;
 }
