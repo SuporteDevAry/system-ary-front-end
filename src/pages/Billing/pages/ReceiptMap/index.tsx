@@ -232,7 +232,7 @@ export function ReceiptMap() {
     const { filteredData } = useTableSearch({
         data: listBillings,
         searchTerm,
-        searchableFields: ["receipt_date"],
+        searchableFields: ["receipt_date", "number_contract"],
     });
 
     const nameColumns: IColumn[] = useMemo(

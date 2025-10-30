@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Modal } from "../../../../../../components/Modal";
 import { CustomInput } from "../../../../../../components/CustomInput";
 import { SContainer } from "./styles";
@@ -18,12 +18,14 @@ export function ModalBilling({
 }: IModalBillingProps) {
     const currentDate = dayjs().format("DD/MM/YYYY");
 
-    // editingValues guarda strings enquanto o usuário digita: { total_service_value: "123,45", ... }
+    const [currencyExpectsCents, setCurrencyExpectsCents] = useState<
+        boolean | null
+    >(null);
     const [editingValues, setEditingValues] = useState<Record<string, string>>(
         {}
     );
+    const skipRecalcRef = useRef(false); // evita recalculo imediato após init
 
-    // Helper: converte qualquer entrada (string com vírgula, número, valor formatado) para number seguro
     const toNumberSafe = (val: any) => {
         if (val === null || val === undefined || val === "") return 0;
         if (typeof val === "number" && !isNaN(val)) return val;
@@ -33,7 +35,7 @@ export function ModalBilling({
             .replace(/\./g, "")
             .replace(",", ".");
         const n = parseFloat(cleaned);
-        return isNaN(n) ? 0 : n;
+        return isNaN(n) ? 0 : n / 100;
     };
 
     // Retorna string para editar: "123,45" (sem R$ e sem pontos)
@@ -48,7 +50,6 @@ export function ModalBilling({
             .replace(/\./g, "");
     };
 
-    // onFocus: cria entrada em editingValues com string para edição
     const handleFocusValue = (e: React.FocusEvent<HTMLInputElement>) => {
         const name = e.target.name;
         setEditingValues((prev) => {
@@ -60,26 +61,36 @@ export function ModalBilling({
         }, 0);
     };
 
-    // onChange: atualiza editingValues[name] permitindo vírgula
     const handleChangeValue = (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
     ) => {
         const { name, value } = e.target;
+
         const numericFields = [
             "total_service_value",
             "irrf_value",
             "adjustment_value",
             "liquid_value",
         ];
+
         if (numericFields.includes(name)) {
-            // permite dígitos, vírgula e pontos (usuário pode digitar 1.234,56)
-            // mas simplificamos: só removemos caracteres inválidos
-            const clean = String(value).replace(/[^\d,\.]/g, "");
+            let clean;
+
+            if (name === "adjustment_value") {
+                // ✅ Permite sinal de menos (apenas no começo)
+                clean = String(value)
+                    .replace(/(?!^-)[^\d,\.]/g, "") // remove tudo, exceto dígitos, vírgula, ponto e um único "-" no início
+                    .replace(/(?!^)-/g, ""); // garante que "-" só possa aparecer no início
+            } else {
+                // outros campos: só números, vírgula e ponto
+                clean = String(value).replace(/[^\d,\.]/g, "");
+            }
+
             setEditingValues((prev) => ({ ...prev, [name]: clean }));
             return;
         }
 
-        // outros campos normais
+        // campos normais (não numéricos)
         setFormData((prev: any) => ({ ...prev, [name]: value }));
     };
 
@@ -156,44 +167,72 @@ export function ModalBilling({
         expected_receipt_date: contractRead?.expected_receipt_date || "",
     };
 
-    // quando abrir/editar, inicializa formData com números seguros
+    useEffect(() => {
+        try {
+            const sample = formatCurrency("1", "Real"); // formato retornado para 1
+            // Ajuste a checagem conforme formato que o formatCurrency retorna no seu projeto.
+            // Ex.: se formatCurrency(1) === "R$ 0,01" então ele espera centavos.
+            if (typeof sample === "string" && sample.includes("0,01")) {
+                setCurrencyExpectsCents(true);
+            } else {
+                setCurrencyExpectsCents(false);
+            }
+        } catch (err) {
+            console.error("Erro ao testar formatCurrency:", err);
+            setCurrencyExpectsCents(false);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     useEffect(() => {
         if (billingToEdit) {
+            skipRecalcRef.current = true;
+
             setFormData({
                 ...initialFormData,
                 ...billingToEdit,
                 total_service_value: toNumberSafe(
-                    billingToEdit.total_service_value
+                    billingToEdit.total_service_value ?? 0
                 ),
-                irrf_value: toNumberSafe(billingToEdit.irrf_value),
-                adjustment_value: toNumberSafe(billingToEdit.adjustment_value),
-                liquid_value: toNumberSafe(billingToEdit.liquid_value),
+                irrf_value: toNumberSafe(billingToEdit.irrf_value ?? 0),
+                adjustment_value: toNumberSafe(
+                    billingToEdit.adjustment_value ?? 0
+                ),
+                liquid_value: toNumberSafe(billingToEdit.liquid_value ?? 0),
+                receipt_date:
+                    billingToEdit.receipt_date ?? initialFormData.receipt_date,
             });
+            setEditingValues((prev) => ({
+                ...prev,
+            }));
         } else {
             setFormData(initialFormData);
+            setEditingValues({});
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [billingToEdit, open]);
 
-    // recalcula liquid_value a partir de números seguros
     useEffect(() => {
         const total = toNumberSafe(formData.total_service_value);
         const irrf = toNumberSafe(formData.irrf_value);
         const ajuste = toNumberSafe(formData.adjustment_value);
         const liq_value = total - irrf + ajuste;
+        const liq_value_fixed = Number(liq_value.toFixed(2));
 
         setFormData((prevData: any) => ({
             ...prevData,
-            total_service_value: total,
-            irrf_value: irrf,
-            adjustment_value: ajuste,
-            liquid_value: Number(liq_value.toFixed(2)),
+            // total_service_value: total,
+            // irrf_value: irrf,
+            // adjustment_value: ajuste,
+            liquid_value: liq_value_fixed,
         }));
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [
         formData.total_service_value,
         formData.irrf_value,
         formData.adjustment_value,
+        // editingValues.total_service_value,
+        // editingValues.irrf_value,
+        // editingValues.adjustment_value,
     ]);
 
     const handleClose = () => {
@@ -209,10 +248,37 @@ export function ModalBilling({
         setEditingValues({});
     };
 
-    // Renderiza valor: se estiver em edição usa editingValues[name], senão formatCurrency
     const valueToShow = (name: string) => {
-        if (editingValues[name] !== undefined) return editingValues[name];
-        return formatCurrency(formData?.[name], "Real");
+        const numericNames = [
+            "total_service_value",
+            "irrf_value",
+            "adjustment_value",
+            "liquid_value",
+        ];
+
+        const calculatedFields = ["liquid_value"];
+        if (
+            !calculatedFields.includes(name) &&
+            editingValues[name] !== undefined &&
+            editingValues[name] !== null
+        ) {
+            return editingValues[name];
+        }
+
+        const raw = formData?.[name] ?? (numericNames.includes(name) ? 0 : "");
+        if (!numericNames.includes(name)) {
+            return raw;
+        }
+
+        if (currencyExpectsCents === null) {
+            return formatCurrency(raw, "Real");
+        }
+
+        const valueForFormatter = currencyExpectsCents
+            ? Math.round(Number(raw) * 100)
+            : Number(raw);
+
+        return formatCurrency(valueForFormatter.toString(), "Real");
     };
 
     return (
@@ -304,7 +370,7 @@ export function ModalBilling({
                     $labelPosition="top"
                     onChange={handleChangeValue}
                     onFocus={handleFocusValue}
-                    onBlur={handleBlurValue}
+                    // onBlur={handleBlurValue}
                     value={valueToShow("liquid_value")}
                 />
 
