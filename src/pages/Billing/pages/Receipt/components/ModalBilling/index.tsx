@@ -74,7 +74,7 @@ export function ModalBilling({
         ];
 
         if (numericFields.includes(name)) {
-            let clean;
+            let clean: string;
 
             if (name === "adjustment_value") {
                 // ✅ Permite sinal de menos (apenas no começo)
