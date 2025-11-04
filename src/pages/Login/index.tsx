@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -40,14 +40,38 @@ export function Login() {
   };
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
 
+  const emailRef = useRef<HTMLInputElement | null>(null);
+  const passwordRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    const checkAutofill = () => {
+      const email = emailRef.current?.value ?? formData.email;
+      const password = passwordRef.current?.value ?? formData.password;
+
+      if (
+        (email || password) &&
+        (email !== formData.email || password !== formData.password)
+      ) {
+        setFormData({ email, password });
+      }
+
+      setIsButtonDisabled(!(email && password));
+    };
+
+    checkAutofill();
+    const t = window.setTimeout(checkAutofill, 200);
+
+    return () => clearTimeout(t);
+  }, []);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
 
-    setIsButtonDisabled(!(formData.email && formData.password));
+    setFormData((prevData) => {
+      const next = { ...prevData, [name]: value } as typeof prevData;
+      setIsButtonDisabled(!(next.email && next.password));
+      return next;
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -89,7 +113,7 @@ export function Login() {
         <LoginContainer>
           <LogoImage src={logoAryLogin} alt="logo da empresa" />
 
-          <form onSubmit={handleSubmit} autoComplete="off" action="">
+          <form onSubmit={handleSubmit} autoComplete="on" action="">
             <FormContainer>
               <BoxInputUser>
                 <FaUserCircle size={20} />
@@ -98,6 +122,8 @@ export function Login() {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
+                  ref={emailRef}
+                  autoComplete="username"
                 />
               </BoxInputUser>
               <BoxInputPassword
@@ -109,6 +135,8 @@ export function Login() {
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
+                  ref={passwordRef}
+                  autoComplete="current-password"
                 />
 
                 {formData?.password.length > 0 ? (
