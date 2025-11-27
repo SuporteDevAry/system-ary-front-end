@@ -11,6 +11,7 @@ const useUserPermissions = () => {
   const canConsult = hasPermission("CONSULTA");
   const canChangeStatus = hasPermission("EXECUCAO");
   const canDashFinance = hasPermission("DASHFINANCE");
+  const canDevelop = hasPermission("DEV");
 
   // Pode ser implementado no futuro!
   //   const canWrite = hasPermission("ESCREVER");
@@ -20,6 +21,7 @@ const useUserPermissions = () => {
     canConsult,
     canChangeStatus,
     canDashFinance,
+    canDevelop,
     hasPermission, // Também pode retornar a função geral para verificar outras permissões caso necessário
   };
 };
