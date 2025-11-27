@@ -74,6 +74,7 @@ export function ViewContract(): JSX.Element {
       id: "",
       number_contract: "",
       contract_emission_date: formattedDate(),
+      owner_contract: dataUserInfo?.email || "",
       status: {
         status_current: "A CONFERIR",
         history: [],

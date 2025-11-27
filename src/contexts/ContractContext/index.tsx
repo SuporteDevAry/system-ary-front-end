@@ -1,161 +1,192 @@
 import { createContext, useContext } from "react";
 import { Api, ApiResponse } from "../../services/api";
-import { IContractContext, IContractData, IContractsProvider } from "./types";
+import {
+  IContractContext,
+  IContractData,
+  IContractsProvider,
+  IContractReportFilters,
+} from "./types";
 import { AxiosError } from "axios";
 
 const newContext = createContext<IContractContext>({
-    getGrainContractById: () => Promise.resolve({ data: {} as IContractData }),
-    listContracts: () => Promise.resolve({ data: [] }),
-    createContract: () => Promise.resolve({ data: {} as IContractData }),
-    updateContract: () => Promise.resolve({ data: {} as IContractData }),
-    deleteContract: () => Promise.resolve({ data: {} as IContractData }),
-    updateContractAdjustments: () =>
-        Promise.resolve({ data: {} as IContractData }),
+  getGrainContractById: () => Promise.resolve({ data: {} as IContractData }),
+  reportContracts: () => Promise.resolve({ data: [] as IContractData[] }),
+  listContracts: () => Promise.resolve({ data: [] }),
+  createContract: () => Promise.resolve({ data: {} as IContractData }),
+  updateContract: () => Promise.resolve({ data: {} as IContractData }),
+  deleteContract: () => Promise.resolve({ data: {} as IContractData }),
+  updateContractAdjustments: () =>
+    Promise.resolve({ data: {} as IContractData }),
 });
 
 export const ContractProvider = ({ children }: IContractsProvider) => {
-    async function getGrainContractById(
-        contractId: string
-    ): Promise<ApiResponse<IContractData>> {
-        try {
-            const response = await Api.get(`/grain-contracts/${contractId}`);
+  async function getGrainContractById(
+    contractId: string
+  ): Promise<ApiResponse<IContractData>> {
+    try {
+      const response = await Api.get(`/grain-contracts/${contractId}`);
 
-            return response;
-        } catch (error) {
-            const err = error as AxiosError;
+      return response;
+    } catch (error) {
+      const err = error as AxiosError;
 
-            if (err.response && err.response.data) {
-                const errorMessage = (err.response.data as { message: string })
-                    .message;
-                throw new Error(errorMessage);
-            }
-            return Promise.reject(error);
-        }
+      if (err.response && err.response.data) {
+        const errorMessage = (err.response.data as { message: string }).message;
+        throw new Error(errorMessage);
+      }
+      return Promise.reject(error);
     }
+  }
 
-    async function listContracts(): Promise<ApiResponse<IContractData[]>> {
-        try {
-            const response = await Api.get("/grain-contracts");
-            return response;
-        } catch (error) {
-            const err = error as AxiosError;
+  async function listContracts(): Promise<ApiResponse<IContractData[]>> {
+    try {
+      const response = await Api.get("/grain-contracts");
+      return response;
+    } catch (error) {
+      const err = error as AxiosError;
 
-            if (err.response && err.response.data) {
-                const errorMessage = (err.response.data as { message: string })
-                    .message;
-                throw new Error(errorMessage);
-            }
-            return Promise.reject(error);
-        }
+      if (err.response && err.response.data) {
+        const errorMessage = (err.response.data as { message: string }).message;
+        throw new Error(errorMessage);
+      }
+      return Promise.reject(error);
     }
+  }
 
-    async function createContract(
-        contractData: IContractData
-    ): Promise<ApiResponse<IContractData>> {
-        try {
-            const response = await Api.post("/grain-contracts", contractData);
+  async function createContract(
+    contractData: IContractData
+  ): Promise<ApiResponse<IContractData>> {
+    try {
+      const response = await Api.post("/grain-contracts", contractData);
 
-            return response;
-        } catch (error) {
-            const err = error as AxiosError;
+      return response;
+    } catch (error) {
+      const err = error as AxiosError;
 
-            if (err.response && err.response.data) {
-                const errorMessage = (err.response.data as { message: string })
-                    .message;
-                throw new Error(errorMessage);
-            }
-            return Promise.reject(error);
-        }
+      if (err.response && err.response.data) {
+        const errorMessage = (err.response.data as { message: string }).message;
+        throw new Error(errorMessage);
+      }
+      return Promise.reject(error);
     }
+  }
 
-    async function updateContract(
-        contractId: string,
-        contractData: IContractData
-    ): Promise<ApiResponse<IContractData>> {
-        try {
-            const response = await Api.patch(
-                `/grain-contracts/${contractId}`,
-                contractData
-            );
+  async function updateContract(
+    contractId: string,
+    contractData: IContractData
+  ): Promise<ApiResponse<IContractData>> {
+    try {
+      const response = await Api.patch(
+        `/grain-contracts/${contractId}`,
+        contractData
+      );
 
-            return response;
-        } catch (error) {
-            const err = error as AxiosError;
+      return response;
+    } catch (error) {
+      const err = error as AxiosError;
 
-            if (err.response && err.response.data) {
-                const errorMessage = (err.response.data as { message: string })
-                    .message;
-                throw new Error(errorMessage);
-            }
-            return Promise.reject(error);
-        }
+      if (err.response && err.response.data) {
+        const errorMessage = (err.response.data as { message: string }).message;
+        throw new Error(errorMessage);
+      }
+      return Promise.reject(error);
     }
+  }
 
-    async function deleteContract(
-        contractId: string,
-        contractData: IContractData
-    ): Promise<ApiResponse<IContractData>> {
-        try {
-            const response = await Api.patch(
-                `/grain-contracts/${contractId}`,
-                contractData
-            );
+  async function deleteContract(
+    contractId: string,
+    contractData: IContractData
+  ): Promise<ApiResponse<IContractData>> {
+    try {
+      const response = await Api.patch(
+        `/grain-contracts/${contractId}`,
+        contractData
+      );
 
-            return response;
-        } catch (error) {
-            const err = error as AxiosError;
+      return response;
+    } catch (error) {
+      const err = error as AxiosError;
 
-            if (err.response && err.response.data) {
-                const errorMessage = (err.response.data as { message: string })
-                    .message;
-                throw new Error(errorMessage);
-            }
+      if (err.response && err.response.data) {
+        const errorMessage = (err.response.data as { message: string }).message;
+        throw new Error(errorMessage);
+      }
 
-            return Promise.reject(error);
-        }
+      return Promise.reject(error);
     }
+  }
 
-    async function updateContractAdjustments(
-        contractId: string,
-        contractData: Partial<IContractData>
-    ): Promise<ApiResponse<Partial<IContractData>>> {
-        try {
-            const response = await Api.patch(
-                `/grain-contracts/update-contract-adjustments/${contractId}`,
-                contractData
-            );
+  async function updateContractAdjustments(
+    contractId: string,
+    contractData: Partial<IContractData>
+  ): Promise<ApiResponse<Partial<IContractData>>> {
+    try {
+      const response = await Api.patch(
+        `/grain-contracts/update-contract-adjustments/${contractId}`,
+        contractData
+      );
 
-            return response;
-        } catch (error) {
-            const err = error as AxiosError;
+      return response;
+    } catch (error) {
+      const err = error as AxiosError;
 
-            if (err.response && err.response.data) {
-                const errorMessage = (err.response.data as { message: string })
-                    .message;
-                throw new Error(errorMessage);
-            }
-            return Promise.reject(error);
-        }
+      if (err.response && err.response.data) {
+        const errorMessage = (err.response.data as { message: string }).message;
+        throw new Error(errorMessage);
+      }
+      return Promise.reject(error);
     }
+  }
 
-    return (
-        <newContext.Provider
-            value={{
-                listContracts,
-                getGrainContractById,
-                createContract,
-                updateContract,
-                deleteContract,
-                updateContractAdjustments,
-            }}
-        >
-            {children}
-        </newContext.Provider>
-    );
+  async function reportContracts(
+    filters: IContractReportFilters
+  ): Promise<ApiResponse<IContractData[]>> {
+    try {
+      const params: any = { ...filters };
+
+      if (params.seller && Array.isArray(params.seller)) {
+        params.seller = params.seller.join(",");
+      }
+
+      if (params.buyer && Array.isArray(params.buyer)) {
+        params.buyer = params.buyer.join(",");
+      }
+
+      const response = await Api.get("/grain-contracts/report", {
+        params,
+      });
+
+      return response;
+    } catch (error) {
+      const err = error as AxiosError;
+
+      if (err.response && err.response.data) {
+        const errorMessage = (err.response.data as { message: string }).message;
+        throw new Error(errorMessage);
+      }
+      return Promise.reject(error);
+    }
+  }
+
+  return (
+    <newContext.Provider
+      value={{
+        listContracts,
+        getGrainContractById,
+        createContract,
+        updateContract,
+        deleteContract,
+        updateContractAdjustments,
+        reportContracts,
+      }}
+    >
+      {children}
+    </newContext.Provider>
+  );
 };
 
 export const ContractContext = () => {
-    const context = useContext(newContext);
+  const context = useContext(newContext);
 
-    return context;
+  return context;
 };

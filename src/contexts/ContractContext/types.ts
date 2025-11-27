@@ -89,10 +89,22 @@ export interface IContractData {
   total_received?: number;
 }
 
+export type IContractReportFilters = {
+  seller?: string | string[];
+  buyer?: string | string[];
+  year?: number | string;
+  month?: number | string;
+  product?: string;
+  name_product?: string;
+};
+
 export interface IContractContext {
   getGrainContractById: (
     contractId: string
   ) => Promise<ApiResponse<IContractData>>;
+  reportContracts: (
+    filters: IContractReportFilters
+  ) => Promise<ApiResponse<IContractData[]>>;
   listContracts: () => Promise<any>;
   createContract: (contractData: IContractData) => Promise<any>;
   updateContract: (
