@@ -98,6 +98,12 @@ export function ControlContracts() {
   const nameColumns: IColumn[] = useMemo(
     () => [
       {
+        field: "status.status_current",
+        header: "Status",
+        width: "90px",
+        sortable: true,
+      },
+      {
         field: "contract_emission_date",
         header: "Data",
         width: "50px",
