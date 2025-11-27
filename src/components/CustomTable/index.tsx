@@ -27,6 +27,7 @@ import {
   compareValues,
   extractNumberFromContract,
   getNestedValue,
+  parseBrazilianDate,
 } from "./helpers";
 import { CustomTruncateText } from "../CustomTruncateText";
 import useTableSearch from "../../hooks/useTableSearch";
@@ -234,6 +235,13 @@ const CustomTable: React.FC<ICustomTableProps> = ({
     return filteredData.slice().sort((a, b) => {
       const aValue = getNestedValue(a, orderBy);
       const bValue = getNestedValue(b, orderBy);
+
+      if (orderBy === "contract_emission_date") {
+        const aDate = parseBrazilianDate(aValue);
+        const bDate = parseBrazilianDate(bValue);
+
+        return order === "asc" ? aDate - bDate : bDate - aDate;
+      }
 
       if (orderBy === "number_contract") {
         const aContractNumber = extractNumberFromContract(aValue);
