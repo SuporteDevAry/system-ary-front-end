@@ -20,3 +20,14 @@ export const compareValues = (
   }
   return 0;
 };
+
+export const parseBrazilianDate = (
+  dateStr: string | null | undefined
+): number => {
+  if (!dateStr) return 0;
+
+  const [day, month, year] = dateStr.split("/");
+  const date = new Date(Number(year), Number(month) - 1, Number(day));
+
+  return date.getTime() || 0;
+};
