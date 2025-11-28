@@ -16,7 +16,6 @@ import IconButton from "@mui/material/IconButton";
 import { TbFilter, TbFilterOff, TbInfinity } from "react-icons/tb";
 import { PiScroll } from "react-icons/pi";
 
-
 export function HistoryContracts() {
   const contractContext = ContractContext();
   const navigate = useNavigate();
@@ -337,7 +336,7 @@ export function HistoryContracts() {
             onClick={() => setUseInfiniteScroll((prev) => !prev)}
             sx={{ color: "#E7B10A" }}
           >
-            {useInfiniteScroll ? <PiScroll /> : <TbInfinity />}
+            {!useInfiniteScroll ? <PiScroll /> : <TbInfinity />}
           </IconButton>
         </Tooltip>
       </SContainerSearchAndButton>
@@ -345,8 +344,8 @@ export function HistoryContracts() {
         isLoading={isLoading}
         data={filteredData}
         columns={nameColumns}
-        hasPagination={!useInfiniteScroll}
-        hasInfiniteScroll={useInfiniteScroll}
+        hasInfiniteScroll={!useInfiniteScroll}
+        hasPagination={useInfiniteScroll}
         collapsible
         renderChildren={(row) => (
           <CustomTimeline events={row.status.history || []} />

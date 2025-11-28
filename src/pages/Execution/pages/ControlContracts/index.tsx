@@ -422,7 +422,7 @@ export function ControlContracts() {
               onClick={() => setUseInfiniteScroll((prev) => !prev)}
               sx={{ color: "#E7B10A" }}
             >
-              {useInfiniteScroll ? <PiScroll /> : <TbInfinity />}
+              {!useInfiniteScroll ? <PiScroll /> : <TbInfinity />}
             </IconButton>
           </Tooltip>
         </SContainerSearchAndButton>
@@ -431,8 +431,8 @@ export function ControlContracts() {
           isLoading={isLoading}
           data={filteredData}
           columns={nameColumns}
-          hasPagination={!useInfiniteScroll}
-          hasInfiniteScroll={useInfiniteScroll}
+          hasInfiniteScroll={!useInfiniteScroll}
+          hasPagination={useInfiniteScroll}
           maxChars={15}
           page={page}
           setPage={setPage}
