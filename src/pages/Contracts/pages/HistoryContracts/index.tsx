@@ -13,7 +13,9 @@ import useTableSearch from "../../../../hooks/useTableSearch";
 import { ReportFilter } from "../../../../components/ReportFilter";
 import Tooltip from "@mui/material/Tooltip";
 import IconButton from "@mui/material/IconButton";
-import { TbFilter, TbFilterOff } from "react-icons/tb";
+import { TbFilter, TbFilterOff, TbInfinity } from "react-icons/tb";
+import { PiScroll } from "react-icons/pi";
+
 
 export function HistoryContracts() {
   const contractContext = ContractContext();
@@ -26,6 +28,7 @@ export function HistoryContracts() {
   const [order, setOrder] = useState<"asc" | "desc">("desc");
   const [orderBy, setOrderBy] = useState<string>("contract_emission_date");
   const [isSelectionModal, setSelectionModal] = useState<boolean>(false);
+  const [useInfiniteScroll, setUseInfiniteScroll] = useState<boolean>(false);
 
   type SelectState = {
     date?: string;
@@ -322,12 +325,28 @@ export function HistoryContracts() {
         >
           Exportar CSV
         </CustomButton>
+
+        <Tooltip
+          title={
+            useInfiniteScroll
+              ? "Voltar para paginação"
+              : "Ativar scroll infinito"
+          }
+        >
+          <IconButton
+            onClick={() => setUseInfiniteScroll((prev) => !prev)}
+            sx={{ color: "#E7B10A" }}
+          >
+            {useInfiniteScroll ? <PiScroll /> : <TbInfinity />}
+          </IconButton>
+        </Tooltip>
       </SContainerSearchAndButton>
       <CustomTable
         isLoading={isLoading}
         data={filteredData}
         columns={nameColumns}
-        hasPagination
+        hasPagination={!useInfiniteScroll}
+        hasInfiniteScroll={useInfiniteScroll}
         collapsible
         renderChildren={(row) => (
           <CustomTimeline events={row.status.history || []} />

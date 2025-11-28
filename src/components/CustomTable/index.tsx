@@ -40,6 +40,7 @@ const CustomTable: React.FC<ICustomTableProps> = ({
   columns,
   isLoading,
   hasPagination = false,
+  hasInfiniteScroll = false,
   hasCheckbox = false,
   collapsible = false,
   dateFields,
@@ -59,6 +60,7 @@ const CustomTable: React.FC<ICustomTableProps> = ({
   const [openRows, setOpenRows] = useState<number[]>([]);
   const [selectedRowId, setSelectedRowId] = useState<number | null>(null);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [visibleCount, setVisibleCount] = useState(30); // primeiros itens
 
   const { filteredData, handleSearch } = useTableSearch({
     data,
@@ -126,7 +128,17 @@ const CustomTable: React.FC<ICustomTableProps> = ({
     }
   };
 
-  var typeCommission = "";
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+
+    const isBottom = scrollTop + clientHeight >= scrollHeight - 30;
+
+    if (isBottom) {
+      setVisibleCount((prev) => prev + 30);
+    }
+  };
+
+  let typeCommission = "";
   const formatCellValue = (
     row: any,
     column: { field: string }
@@ -253,15 +265,44 @@ const CustomTable: React.FC<ICustomTableProps> = ({
     });
   }, [filteredData, order, orderBy]);
 
+  // TODO []: SERÁ REMOVIDO POR SUPORTE
   // Onde fazemos a paginação nos dados da tabela
-  const paginatedData = useMemo(() => {
-    const startIndex = page * rowsPerPage;
-    const endIndex = startIndex + rowsPerPage;
-    return sortedData.slice(startIndex, endIndex);
-  }, [sortedData, page, rowsPerPage]);
+  // const paginatedData = useMemo(() => {
+  //   const startIndex = page * rowsPerPage;
+  //   const endIndex = startIndex + rowsPerPage;
+  //   return sortedData.slice(startIndex, endIndex);
+  // }, [sortedData, page, rowsPerPage]);
+
+  const tableData = useMemo(() => {
+    if (hasPagination) {
+      const startIndex = page * rowsPerPage;
+      const endIndex = startIndex + rowsPerPage;
+      return sortedData.slice(startIndex, endIndex);
+    }
+
+    if (hasInfiniteScroll) {
+      return sortedData.slice(0, visibleCount);
+    }
+
+    return sortedData;
+  }, [
+    sortedData,
+    page,
+    rowsPerPage,
+    visibleCount,
+    hasPagination,
+    hasInfiniteScroll,
+  ]);
 
   return (
-    <TableContainer component={Paper}>
+    <TableContainer
+      component={Paper}
+      sx={{
+        maxHeight: hasInfiniteScroll ? 700 : "auto",
+        overflowY: hasInfiniteScroll ? "auto" : "visible",
+      }}
+      onScroll={hasInfiniteScroll ? handleScroll : undefined}
+    >
       <Table size="small">
         <STableHead>
           <TableRow>
@@ -304,7 +345,7 @@ const CustomTable: React.FC<ICustomTableProps> = ({
               </TableCell>
             </TableRow>
           ) : (
-            paginatedData.map((row) => (
+            tableData.map((row) => (
               <React.Fragment key={row.id}>
                 <TableRow
                   onClick={() => {
@@ -367,7 +408,7 @@ const CustomTable: React.FC<ICustomTableProps> = ({
           )}
         </TableBody>
       </Table>
-      {hasPagination && (
+      {hasPagination && !hasInfiniteScroll && (
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"
@@ -377,6 +418,8 @@ const CustomTable: React.FC<ICustomTableProps> = ({
           onPageChange={handleChangePage}
           onRowsPerPageChange={handleChangeRowsPerPage}
           labelRowsPerPage="Linhas por página:"
+          showFirstButton
+          showLastButton
         />
       )}
     </TableContainer>
