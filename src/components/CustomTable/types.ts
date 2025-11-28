@@ -16,6 +16,7 @@ export interface ICustomTableProps {
   columns: IColumn[];
   data: any[];
   hasPagination?: boolean;
+  hasInfiniteScroll?: boolean;
   hasCheckbox?: boolean;
   collapsible?: boolean;
   isLoading?: boolean;
