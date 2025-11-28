@@ -14,6 +14,9 @@ export const SCheckbox = styled(Checkbox)`
 `;
 
 export const STableHead = styled(TableHead)`
+  position: sticky;
+  top: 0;
+  z-index: 10;
   background-color: ${(props) => props.theme["gray-800"]};
 `;
 

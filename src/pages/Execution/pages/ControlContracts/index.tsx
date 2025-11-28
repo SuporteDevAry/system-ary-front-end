@@ -10,8 +10,8 @@ import { SCard, SContainer, SContainerSearchAndButton, STitle } from "./styles";
 import CustomButton from "../../../../components/CustomButton";
 import ReportFilter from "../../../../components/ReportFilter";
 import { SelectState } from "../../../../components/ReportFilter/types";
-import { TbFilterOff } from "react-icons/tb";
-import { TbFilter } from "react-icons/tb";
+import { TbFilter, TbFilterOff, TbInfinity } from "react-icons/tb";
+import { PiScroll } from "react-icons/pi";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
 
@@ -36,6 +36,7 @@ export function ControlContracts() {
   const [page, setPage] = useState(0);
   const [order, setOrder] = useState<"asc" | "desc">("desc");
   const [orderBy, setOrderBy] = useState("contract_emission_date");
+  const [useInfiniteScroll, setUseInfiniteScroll] = useState<boolean>(false);
 
   const handleOpenFilter = () => setSelectionModal(true);
   const handleCloseFilter = () => setSelectionModal(false);
@@ -410,13 +411,28 @@ export function ControlContracts() {
           >
             Exportar CSV
           </CustomButton>
+          <Tooltip
+            title={
+              useInfiniteScroll
+                ? "Voltar para paginação"
+                : "Ativar scroll infinito"
+            }
+          >
+            <IconButton
+              onClick={() => setUseInfiniteScroll((prev) => !prev)}
+              sx={{ color: "#E7B10A" }}
+            >
+              {useInfiniteScroll ? <PiScroll /> : <TbInfinity />}
+            </IconButton>
+          </Tooltip>
         </SContainerSearchAndButton>
 
         <CustomTable
           isLoading={isLoading}
           data={filteredData}
           columns={nameColumns}
-          hasPagination
+          hasPagination={!useInfiniteScroll}
+          hasInfiniteScroll={useInfiniteScroll}
           maxChars={15}
           page={page}
           setPage={setPage}
