@@ -25,7 +25,7 @@ export function HistoryContracts() {
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(0);
   const [order, setOrder] = useState<"asc" | "desc">("desc");
-  const [orderBy, setOrderBy] = useState<string>("contract_emission_date");
+  const [orderBy, setOrderBy] = useState<string>("created_at");
   const [isSelectionModal, setSelectionModal] = useState<boolean>(false);
   const [useInfiniteScroll, setUseInfiniteScroll] = useState<boolean>(false);
 
