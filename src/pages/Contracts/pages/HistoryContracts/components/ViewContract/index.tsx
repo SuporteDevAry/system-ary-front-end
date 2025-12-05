@@ -23,6 +23,7 @@ import { formatCurrency } from "../../../../../../helpers/currencyFormat";
 import { useInfo, useUserPermissions } from "../../../../../../hooks";
 import { ContractContext } from "../../../../../../contexts/ContractContext";
 import {
+  convertToCustomFormat,
   formattedDate,
   formattedTime,
 } from "../../../../../../helpers/dateFormat";
@@ -40,6 +41,7 @@ import {
 import { ModalEditQuantity } from "./components/ModalEditQuantity";
 
 export function ViewContract(): JSX.Element {
+  const locale = "pt-BR";
   const { deleteContract, updateContract, updateContractAdjustments } =
     ContractContext();
   const location = useLocation();
@@ -445,7 +447,14 @@ export function ViewContract(): JSX.Element {
               </SkeyName>
               <SkeyName>
                 Emissão:
-                <SKeyValue>{dataClient?.contract_emission_date}</SKeyValue>
+                <SKeyValue>
+                  {dataClient?.contract_emission_date
+                    ? convertToCustomFormat(
+                        dataClient?.contract_emission_date,
+                        locale
+                      )
+                    : ""}
+                </SKeyValue>
               </SkeyName>
             </SKeyContainer>
           </SCardInfoNumber>

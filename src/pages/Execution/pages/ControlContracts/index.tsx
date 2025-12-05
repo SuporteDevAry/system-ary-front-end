@@ -440,6 +440,7 @@ export function ControlContracts() {
           orderBy={orderBy}
           setOrder={setOrder}
           setOrderBy={setOrderBy}
+          dateFields={["contract_emission_date"]}
         />
       </SCard>
     </SContainer>
