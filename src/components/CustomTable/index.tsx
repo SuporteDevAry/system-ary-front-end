@@ -152,7 +152,7 @@ const CustomTable: React.FC<ICustomTableProps> = ({
     }
     if (dateFields?.includes(column.field)) {
       if (column.field === "contract_emission_date") {
-        return value;
+        return convertToCustomFormat(value, locale);
       }
       return convertToCustomFormat(value, locale);
     }
