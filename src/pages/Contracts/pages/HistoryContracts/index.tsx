@@ -237,7 +237,7 @@ export function HistoryContracts() {
         sortable: false,
       },
       {
-        field: "contract_emission_date",
+        field: "created_at",
         header: "Data",
         width: "50px",
         sortable: false,
@@ -350,7 +350,7 @@ export function HistoryContracts() {
         renderChildren={(row) => (
           <CustomTimeline events={row.status.history || []} />
         )}
-        dateFields={["contract_emission_date"]}
+        dateFields={["created_at"]}
         actionButtons={renderActionButtons}
         maxChars={15}
         page={page}
