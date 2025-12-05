@@ -450,7 +450,9 @@ export function ViewContract(): JSX.Element {
                 <SKeyValue>
                   {dataClient?.contract_emission_date
                     ? convertToCustomFormat(
-                        dataClient?.contract_emission_date,
+                        dataClient.contract_emission_date instanceof Date
+                          ? dataClient.contract_emission_date.toISOString()
+                          : dataClient.contract_emission_date,
                         locale
                       )
                     : ""}

@@ -2,6 +2,22 @@ import { IContractData } from "../../contexts/ContractContext/types";
 import { FormDataContract } from "../../pages/Contracts/pages/CreateNewContract/types";
 import { parseQuantityToNumber } from "../quantityFormat";
 
+// Função auxiliar para converter "DD/MM/AAAA" para "AAAA-MM-DD"
+export const convertToISODateForEmission = (
+  dateString: string | Date | undefined
+): string | undefined => {
+  if (typeof dateString === "string" && dateString.includes("/")) {
+    const [day, month, year] = dateString.split("/");
+    // Retorna a string no formato AAAA-MM-DD, que o backend pode parsear corretamente.
+    return `${year}-${month}-${day}`;
+  }
+
+  if (dateString instanceof Date) {
+    return dateString.toISOString().split("T")[0]; // Opcional: garantir formato AAAA-MM-DD
+  }
+  return dateString as string | undefined;
+};
+
 export const FormDataToIContractDataDTO = (
   data: FormDataContract
 ): IContractData => {
@@ -40,7 +56,8 @@ export const FormDataToIContractDataDTO = (
       status_current: data.status.status_current || "",
       history: data.status.history || [],
     },
-    contract_emission_date: data.contract_emission_date,
+    contract_emission_date:
+      convertToISODateForEmission(data.contract_emission_date) || "",
     destination: data.destination,
     number_external_contract_buyer: data.number_external_contract_buyer,
     number_external_contract_seller: data.number_external_contract_seller,

@@ -68,7 +68,7 @@ export interface IContractData {
   quantity_bag: number;
   status: ContractStatus;
   number_contract?: string;
-  contract_emission_date: string;
+  contract_emission_date: Date | string;
   destination: string;
   number_external_contract_buyer: string;
   number_external_contract_seller: string;

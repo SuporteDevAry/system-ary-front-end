@@ -1,6 +1,7 @@
 import { IContractData } from "../../contexts/ContractContext/types";
 import { FormDataContract } from "../../pages/Contracts/pages/CreateNewContract/types";
 import { numberToQuantityString } from "../quantityFormat";
+import { convertToISODateForEmission } from "./FormDataToIcontractDataDTO";
 
 export const IContractDataToFormDataDTO = (
   data: IContractData
@@ -40,7 +41,8 @@ export const IContractDataToFormDataDTO = (
       status_current: data.status.status_current || "",
       history: data.status.history || [],
     },
-    contract_emission_date: data.contract_emission_date,
+    contract_emission_date:
+      convertToISODateForEmission(data.contract_emission_date) || "",
     destination: data.destination,
     number_external_contract_buyer: data.number_external_contract_buyer,
     number_external_contract_seller: data.number_external_contract_seller,

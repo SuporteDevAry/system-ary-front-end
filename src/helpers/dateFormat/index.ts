@@ -1,5 +1,5 @@
 export function convertToCustomFormat(
-  isoDate: string,
+  isoDate: string | Date,
   locale: string,
   includeTime: boolean = false
 ): string {
