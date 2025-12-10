@@ -135,7 +135,7 @@ export function Receipt() {
         data={filteredData}
         columns={nameColumns}
         hasPagination
-        dateFields={["contract_emission_date"]}
+        dateFields={["contract_emission_datetime"]}
         actionButtons={renderActionButtons}
         collapsible
         renderChildren={(row) => (
