@@ -71,7 +71,7 @@ export function Receipt() {
   const nameColumns: IColumn[] = useMemo(
     () => [
       {
-        field: "contract_emission_date",
+        field: "contract_emission_datetime",
         header: "Data",
         width: "100px",
       },
