@@ -87,6 +87,7 @@ export interface IContractData {
   charge_date?: string;
   expected_receipt_date?: string;
   total_received?: number;
+  contract_emission_datetime?: string;
 }
 
 export type IContractReportFilters = {
