@@ -151,7 +151,10 @@ const CustomTable: React.FC<ICustomTableProps> = ({
         : insertMaskInCnpj(value);
     }
     if (dateFields?.includes(column.field)) {
-      if (column.field === "contract_emission_date") {
+      if (
+        column.field === "contract_emission_date" ||
+        column.field === "contract_emission_datetime"
+      ) {
         return convertToCustomFormat(value, locale);
       }
       return convertToCustomFormat(value, locale);
