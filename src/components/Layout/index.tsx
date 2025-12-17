@@ -3,8 +3,8 @@ import { Sidebar } from "../Sidebar";
 import { SCardContainer } from "../CardContainer";
 import { LayoutProps } from "./types";
 import { NotificationCenter } from "../NotificationCenter";
-// import { CustomBreadcrumbs } from "../CustomBreadCrumbs";
-// import { breadcrumbMap } from "../CustomBreadCrumbs/breadcrumbMap";
+import { CustomBreadcrumbs } from "../CustomBreadCrumbs";
+import { breadcrumbMap } from "../CustomBreadCrumbs/breadcrumbMap";
 
 export function Layout({ children }: LayoutProps) {
   return (
@@ -12,7 +12,7 @@ export function Layout({ children }: LayoutProps) {
       <Sidebar />
 
       <SCardContainer>
-        {/* <CustomBreadcrumbs map={breadcrumbMap} /> */}
+        <CustomBreadcrumbs map={breadcrumbMap} />
         {children}
       </SCardContainer>
       <NotificationCenter></NotificationCenter>
