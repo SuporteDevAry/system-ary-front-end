@@ -1,35 +1,81 @@
-import { Link, useLocation } from "react-router-dom";
+import { useLocation, Link as RouterLink } from "react-router-dom";
+import { Breadcrumbs } from "@mui/material";
+import HomeIcon from "@mui/icons-material/Home";
+import NavigateNextIcon from "@mui/icons-material/NavigateNext";
+import { StyledBreadcrumbLink, StyledHomeBreadcrumbLink } from "./styles";
 
 interface BreadcrumbMap {
   [key: string]: string;
 }
 
 interface CustomBreadcrumbsProps {
-  map: BreadcrumbMap; // Mapear rotas para nomes amigáveis
+  map: BreadcrumbMap;
 }
 
 export function CustomBreadcrumbs({ map }: CustomBreadcrumbsProps) {
   const location = useLocation();
   const pathnames = location.pathname.split("/").filter((x) => x);
 
-  return (
-    <nav style={{ marginBottom: "16px" }}>
-      <Link to="/dashboard">Home</Link>
-      {pathnames.map((value, index) => {
-        const isLast = index === pathnames.length - 1;
-        const to = `/${pathnames.slice(0, index + 1).join("/")}`;
+  //[x] Não mostrar breadcrumbs em páginas de autenticação
+  if (
+    location.pathname === "/" ||
+    location.pathname === "/login" ||
+    location.pathname === "/logout"
+  ) {
+    return null;
+  }
 
-        return (
-          <span key={to}>
-            {" / "}
-            {isLast ? (
-              <span>{map[value] || value}</span>
-            ) : (
-              <Link to={to}>{map[value] || value}</Link>
-            )}
+  return (
+    <Breadcrumbs
+      separator={<NavigateNextIcon fontSize="small" />}
+      aria-label="breadcrumb"
+      sx={{ mb: 3 }}
+    >
+      {/* Home breadcrumb - sempre clicável */}
+      <StyledHomeBreadcrumbLink
+        component={RouterLink}
+        to="/dashboard"
+        underline="hover"
+        sx={{
+          color: "text.primary",
+        }}
+      >
+        <HomeIcon sx={{ mr: 0.5 }} fontSize="small" />
+        Home
+      </StyledHomeBreadcrumbLink>
+
+      {/* Breadcrumbs intermediários todos clicáveis */}
+      {pathnames.map((value, index) => {
+        const to = `/${pathnames.slice(0, index + 1).join("/")}`;
+        const isLast = index === pathnames.length - 1;
+        const label = map[value] || value;
+
+        return isLast ? (
+          // Último breadcrumb - não clicável (página atual)
+          <span
+            key={to}
+            style={{
+              color: "inherit",
+              fontWeight: 500,
+            }}
+          >
+            {label}
           </span>
+        ) : (
+          // Breadcrumbs intermediários - clicáveis
+          <StyledBreadcrumbLink
+            key={to}
+            component={RouterLink}
+            to={to}
+            underline="hover"
+            sx={{
+              color: "inherit",
+            }}
+          >
+            {label}
+          </StyledBreadcrumbLink>
         );
       })}
-    </nav>
+    </Breadcrumbs>
   );
 }
