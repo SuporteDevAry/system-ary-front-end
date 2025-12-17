@@ -448,9 +448,9 @@ export function ViewContract(): JSX.Element {
               <SkeyName>
                 Emissão:
                 <SKeyValue>
-                  {dataClient?.contract_emission_date
+                  {dataClient?.contract_emission_datetime
                     ? convertToCustomFormat(
-                        dataClient?.contract_emission_date,
+                        dataClient?.contract_emission_datetime,
                         locale
                       )
                     : ""}
