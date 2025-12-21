@@ -18,11 +18,13 @@ export interface ICustomTableProps {
   hasPagination?: boolean;
   hasInfiniteScroll?: boolean;
   hasCheckbox?: boolean;
+  multiSelect?: boolean;
   collapsible?: boolean;
   isLoading?: boolean;
   dateFields?: string[];
   renderChildren?: (row: TableDataProps) => ReactNode;
   onRowClick?: (row: TableDataProps) => void;
+  onSelectionChange?: (selectedRows: any[]) => void;
   actionButtons?: (row: TableDataProps) => ReactNode;
   maxChars?: number;
   page?: number;
