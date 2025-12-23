@@ -16,10 +16,16 @@ export function Billing() {
             to: "/cobranca/contrato-vencto",
         },
         {
-            label: "Emissão de RPS",
+            label: "Emissão NFSe",
+            icon: <IoReceiptOutline size={64} />,
+            to: "/cobranca/NFSe",
+            disabled: false,
+        },
+        {
+            label: "Enviar NFSe",
             icon: <IoReceiptOutline size={64} />,
             to: "/cobranca/notafiscal",
-            disabled: true,
+            disabled: false,
         },
         {
             label: "Importação de NF",
