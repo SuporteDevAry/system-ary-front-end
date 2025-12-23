@@ -42,6 +42,7 @@ const CustomTable: React.FC<ICustomTableProps> = ({
   hasPagination = false,
   hasInfiniteScroll = false,
   hasCheckbox = false,
+  multiSelect = false,
   collapsible = false,
   dateFields,
   maxChars = 18,
@@ -49,6 +50,7 @@ const CustomTable: React.FC<ICustomTableProps> = ({
   setPage,
   renderChildren,
   onRowClick,
+  onSelectionChange,
   actionButtons,
   order,
   orderBy,
@@ -59,6 +61,7 @@ const CustomTable: React.FC<ICustomTableProps> = ({
 }) => {
   const [openRows, setOpenRows] = useState<number[]>([]);
   const [selectedRowId, setSelectedRowId] = useState<number | null>(null);
+  const [selectedRowIds, setSelectedRowIds] = useState<number[]>([]);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [visibleCount, setVisibleCount] = useState(30); // primeiros itens
 
@@ -95,13 +98,43 @@ const CustomTable: React.FC<ICustomTableProps> = ({
   };
 
   const handleRowClick = (id: number) => {
-    if (selectedRowId === id) {
-      setSelectedRowId(null);
-      setOpenRows(openRows.filter((rowId) => rowId !== id));
+    if (multiSelect && hasCheckbox) {
+      // Modo de seleção múltipla
+      const isSelected = selectedRowIds.includes(id);
+      let newSelectedIds: number[];
+
+      if (isSelected) {
+        newSelectedIds = selectedRowIds.filter((rowId) => rowId !== id);
+      } else {
+        newSelectedIds = [...selectedRowIds, id];
+      }
+
+      setSelectedRowIds(newSelectedIds);
+
+      // Notifica sobre a mudança de seleção
+      if (onSelectionChange) {
+        const selectedRows = data.filter((row) =>
+          newSelectedIds.includes(row.id)
+        );
+        onSelectionChange(selectedRows);
+      }
     } else {
-      setSelectedRowId(id);
-      if (collapsible) {
-        setOpenRows((prevOpenRows) => [...prevOpenRows, id]);
+      // Modo de seleção única
+      if (selectedRowId === id) {
+        setSelectedRowId(null);
+        setOpenRows(openRows.filter((rowId) => rowId !== id));
+        if (onSelectionChange) {
+          onSelectionChange([]);
+        }
+      } else {
+        setSelectedRowId(id);
+        if (collapsible) {
+          setOpenRows((prevOpenRows) => [...prevOpenRows, id]);
+        }
+        if (onSelectionChange) {
+          const selectedRow = data.find((row) => row.id === id);
+          onSelectionChange(selectedRow ? [selectedRow] : []);
+        }
       }
     }
   };
@@ -363,7 +396,11 @@ const CustomTable: React.FC<ICustomTableProps> = ({
                   {hasCheckbox && (
                     <TableCell>
                       <SCheckbox
-                        checked={selectedRowId === row.id}
+                        checked={
+                          multiSelect
+                            ? selectedRowIds.includes(row.id)
+                            : selectedRowId === row.id
+                        }
                         onChange={() => handleRowClick(row.id)}
                       />
                     </TableCell>
