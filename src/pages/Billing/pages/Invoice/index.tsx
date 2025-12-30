@@ -84,104 +84,107 @@ export function Invoice() {
     const gerarXML = () => {
         const rpsList = listInvoices;
 
-        const xmlHeader = `<?xml version="1.0" encoding="UTF-8"?>`;
+        const totalServicos = rpsList.reduce(
+            (sum, rps) => sum + Number(rps.service_value || 0),
+            0
+        );
 
-        const xml =
-            `${xmlHeader}
-<EnviarLoteRpsEnvio xmlns="http://www.abrasf.org.br/nfse.xsd">
- <LoteRps Id="LOTE${Date.now()}" versao="2.04">
-  <NumeroLote>${Date.now()}</NumeroLote>
-  <CpfCnpj>
-    <Cnpj>${PRESTADOR.CNPJ}</Cnpj>
-  </CpfCnpj>
-  <InscricaoMunicipal>${PRESTADOR.IM}</InscricaoMunicipal>
-  <QuantidadeRps>${rpsList.length}</QuantidadeRps>
-  <ListaRps>
-` +
-            rpsList
-                .map((rps) => {
-                    // Limpa quebras de linha e faz o escape XML na descrição
-                    const serviceDiscrimEscaped = escapeXml(
-                        rps.service_discrim.replace(/(\r\n|\n|\r)/g, "|")
-                    );
+        const totalDeducoes = rpsList.reduce(
+            (sum, rps) => sum + Number(rps.deduction_value || 0),
+            0
+        );
 
-                    // CORREÇÃO DO ERRO: Converte para Number e trata valores inválidos/nulos
-                    const serviceValueNumber = Number(rps.service_value);
-                    const deductionValueNumber = Number(rps.deduction_value);
+        const dataInicio = dayjs().format("YYYY-MM-DD");
+        const dataFim = dataInicio;
 
-                    const valorServicos =
-                        Number.isNaN(serviceValueNumber) ||
-                        rps.service_value === null
-                            ? "0.00"
-                            : serviceValueNumber.toFixed(2);
+        let xml = `<?xml version="1.0" encoding="UTF-8"?>
+<PedidoEnvioRPS xmlns="http://www.prefeitura.sp.gov.br/nfe">
+  <Cabecalho Versao="2">
+    <CPFCNPJRemetente>
+      <CNPJ>${PRESTADOR.CNPJ}</CNPJ>
+    </CPFCNPJRemetente>
+    <transacao>true</transacao>
+    <dtInicio>${dataInicio}</dtInicio>
+    <dtFim>${dataFim}</dtFim>
+    <QtdRPS>${rpsList.length}</QtdRPS>
+    <ValorTotalServicos>${totalServicos.toFixed(2)}</ValorTotalServicos>
+    <ValorTotalDeducoes>${totalDeducoes.toFixed(2)}</ValorTotalDeducoes>
+  </Cabecalho>
+`;
 
-                    const valorDeducoes =
-                        Number.isNaN(deductionValueNumber) ||
-                        rps.deduction_value === null
-                            ? "0.00"
-                            : deductionValueNumber.toFixed(2);
+        rpsList.forEach((rps) => {
+            const discriminacao = escapeXml(
+                rps.service_discrim.replace(/(\r\n|\n|\r)/g, " ")
+            );
 
-                    return `
-  <Rps>
-    <InfRps Id="R${rps.rps_number}">
-      <IdentificacaoRps>
-        <Numero>${rps.rps_number}</Numero>
-        <Serie>${PRESTADOR.SERIE}</Serie>
-        <Tipo>1</Tipo>
-      </IdentificacaoRps>
-      <DataEmissao>${dayjs(rps.rps_emission_date).format(
-          "YYYY-MM-DD"
-      )}</DataEmissao>
-      <NaturezaOperacao>1</NaturezaOperacao>
-      <RegimeEspecialTributacao>6</RegimeEspecialTributacao>
-      <OptanteSimplesNacional>2</OptanteSimplesNacional>
-      <IncentivadorCultural>2</IncentivadorCultural>
-      <Status>1</Status>
-      <Servico>
-        <Valores>
-          <ValorServicos>${valorServicos}</ValorServicos>
-          <ValorDeducoes>${valorDeducoes}</ValorDeducoes>
-        </Valores>
-        <ItemListaServico>${escapeXml(rps.service_code)}</ItemListaServico>
-        <Discriminacao>${serviceDiscrimEscaped}</Discriminacao>
-        <CodigoMunicipio>${PRESTADOR.MUNICIPIO}</CodigoMunicipio>
-      </Servico>
-      <Prestador>
-        <CpfCnpj><Cnpj>${PRESTADOR.CNPJ}</Cnpj></CpfCnpj>
-        <InscricaoMunicipal>${PRESTADOR.IM}</InscricaoMunicipal>
-      </Prestador>
-      <Tomador>
-        <IdentificacaoTomador>
-          <CpfCnpj>
-            ${
-                rps.cpf_cnpj.length === 14
-                    ? `<Cnpj>${rps.cpf_cnpj}</Cnpj>`
-                    : `<Cpf>${rps.cpf_cnpj}</Cpf>`
-            }
-          </CpfCnpj>
-        </IdentificacaoTomador>
-        <RazaoSocial>${escapeXml(rps.name)}</RazaoSocial>
-        <Endereco>
-          <Endereco>${escapeXml(rps.address)}</Endereco>
-          <Numero>${escapeXml(rps.number)}</Numero>
-          <Complemento>${escapeXml(rps.complement || "")}</Complemento>
-          <Bairro>${escapeXml(rps.district)}</Bairro>
-          <CodigoMunicipio>${escapeXml(rps.city)}</CodigoMunicipio>
-          <Uf>${escapeXml(rps.state)}</Uf>
-          <Cep>${rps.zip_code.replace("-", "")}</Cep>
-        </Endereco>
-        <Contato>
-          <Email>${escapeXml(rps.email)}</Email>
-        </Contato>
-      </Tomador>
-    </InfRps>
-  </Rps>`;
-                })
-                .join("\n") +
-            `
-  </ListaRps>
- </LoteRps>
-</EnviarLoteRpsEnvio>`;
+            const valorServico = Number(rps.service_value || 0).toFixed(2);
+            const valorDeducao = Number(rps.deduction_value || 0).toFixed(2);
+
+            xml += `
+ <RPS Id="RPS${rps.rps_number}">
+    <Assinatura></Assinatura>
+    <ChaveRPS>
+      <InscricaoPrestador>${PRESTADOR.IM}</InscricaoPrestador>
+      <SerieRPS>${PRESTADOR.SERIE}</SerieRPS>
+      <NumeroRPS>${rps.rps_number}</NumeroRPS>
+    </ChaveRPS>
+
+    <TipoRPS>RPS</TipoRPS>
+    <DataEmissao>${dayjs(rps.rps_emission_date).format(
+        "YYYY-MM-DD"
+    )}</DataEmissao>
+    <StatusRPS>N</StatusRPS>
+
+    <Servico>
+      <Valores>
+        <ValorServicos>${valorServico}</ValorServicos>
+        <ValorDeducoes>${valorDeducao}</ValorDeducoes>
+      </Valores>
+      <ItemListaServico>${escapeXml(rps.service_code)}</ItemListaServico>
+      <Discriminacao>${discriminacao}</Discriminacao>
+      <CodigoMunicipio>${PRESTADOR.MUNICIPIO}</CodigoMunicipio>
+    </Servico>
+
+    <Prestador>
+      <CPFCNPJ>
+        <CNPJ>${PRESTADOR.CNPJ}</CNPJ>
+      </CPFCNPJ>
+      <InscricaoMunicipal>${PRESTADOR.IM}</InscricaoMunicipal>
+    </Prestador>
+
+    <Tomador>
+      <IdentificacaoTomador>
+        <CPFCNPJ>
+          ${
+              rps.cpf_cnpj.length === 14
+                  ? `<CNPJ>${rps.cpf_cnpj}</CNPJ>`
+                  : `<CPF>${rps.cpf_cnpj}</CPF>`
+          }
+        </CPFCNPJ>
+      </IdentificacaoTomador>
+
+      <RazaoSocial>${escapeXml(rps.name)}</RazaoSocial>
+
+      <Endereco>
+        <Endereco>${escapeXml(rps.address)}</Endereco>
+        <Numero>${escapeXml(rps.number)}</Numero>
+        <Complemento>${escapeXml(rps.complement || "")}</Complemento>
+        <Bairro>${escapeXml(rps.district)}</Bairro>
+        <CodigoMunicipio>${escapeXml(rps.city)}</CodigoMunicipio>
+        <UF>${escapeXml(rps.state)}</UF>
+        <CEP>${rps.zip_code.replace(/\D/g, "")}</CEP>
+      </Endereco>
+
+      <Contato>
+        <Email>${escapeXml(rps.email)}</Email>
+      </Contato>
+    </Tomador>
+  </RPS>
+`;
+        });
+
+        xml += `
+</PedidoEnvioRPS>`;
 
         return xml;
     };
@@ -324,6 +327,7 @@ export function Invoice() {
                     <STitle>RPS Geradas</STitle>
                     <CustomTable
                         hasCheckbox
+                        multiSelect
                         data={dataFilteredBySearch}
                         columns={nameColumnsFromRPS}
                         isLoading={isLoadingRPS}
