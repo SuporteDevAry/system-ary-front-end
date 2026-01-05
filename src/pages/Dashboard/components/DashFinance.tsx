@@ -90,12 +90,19 @@ export function DashFinance() {
     //     );
     // });
 
-    const contractYear = listcontracts;
-    const contractMonth = listcontracts.filter((contract) => {
-        let partes = contract.contract_emission_date.split("/");
-        let mesEmissao = parseInt(partes[1], 10);
+    const contractYear = listcontracts.filter((contract) => {
+        const partes = contract.contract_emission_date.split("/");
+        const anoEmissao = parseInt(partes[2], 10);
 
-        return mesEmissao === currentMonth;
+        return anoEmissao === currentYear;
+    });
+
+    const contractMonth = listcontracts.filter((contract) => {
+        const partes = contract.contract_emission_date.split("/");
+        const mesEmissao = parseInt(partes[1], 10);
+        const anoEmissao = parseInt(partes[2], 10);
+
+        return mesEmissao === currentMonth && anoEmissao === currentYear;
     });
 
     const validProducts = ["O", "F", "OC", "OA", "SB", "EP"];
