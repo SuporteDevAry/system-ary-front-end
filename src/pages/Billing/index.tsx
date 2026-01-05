@@ -16,13 +16,13 @@ export function Billing() {
             to: "/cobranca/contrato-vencto",
         },
         {
-            label: "Emissão NFSe",
+            label: "Cadastro NFSe",
             icon: <IoReceiptOutline size={64} />,
             to: "/cobranca/NFSe",
             disabled: false,
         },
         {
-            label: "Enviar NFSe",
+            label: "Emissão NFSe",
             icon: <IoReceiptOutline size={64} />,
             to: "/cobranca/notafiscal",
             disabled: false,

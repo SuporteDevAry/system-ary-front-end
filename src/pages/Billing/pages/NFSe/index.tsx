@@ -3,7 +3,7 @@ import { SBox, SContainer } from "./styles";
 import { useNavigate } from "react-router-dom";
 import { FormularioNF } from "../../../../components/FormularioNF";
 import { toast } from "react-toastify";
-import { ClienteContext } from "../../../../contexts/ClienteContext";
+//import { ClienteContext } from "../../../../contexts/ClienteContext";
 import { InvoiceContext } from "../../../../contexts/InvoiceContext";
 import dayjs from "dayjs";
 
@@ -71,7 +71,7 @@ export function NFSe(): JSX.Element {
         deduction_value: 0,
     });
 
-    const clienteContext = ClienteContext();
+    //const clienteContext = ClienteContext();
 
     const fetchData = useCallback(async () => {
         const cnpj = "";
@@ -95,21 +95,20 @@ export function NFSe(): JSX.Element {
         }));
 
         try {
-            const response = await clienteContext.getClientByCnpj_cpf(cnpj);
-
-            if (response.status == "200") {
-                setFormData((prev) => ({
-                    ...prev,
-                    cpf_cnpj: cnpj,
-                    name: response.data.name || "",
-                    address: response.data.address || "",
-                    number: response.data.number || "",
-                    district: response.data.district || "",
-                    city: response.data.city || "",
-                    state: response.data.state || "",
-                    zip_code: response.data.zip_code || "",
-                }));
-            }
+            //const response = await clienteContext.getClientByCnpj_cpf(cnpj);
+            // if (response.status == "200") {
+            //     setFormData((prev) => ({
+            //         ...prev,
+            //         cpf_cnpj: cnpj,
+            //         name: response.data.name || "",
+            //         address: response.data.address || "",
+            //         number: response.data.number || "",
+            //         district: response.data.district || "",
+            //         city: response.data.city || "",
+            //         state: response.data.state || "",
+            //         zip_code: response.data.zip_code || "",
+            //     }));
+            // }
         } catch (error) {
             setCnpjFound(false);
             setFormData((prev) => ({
@@ -186,29 +185,30 @@ Depositar no Banco Bradesco S.A. (237)       Ag. 0108-2       C/C. 132.362-8`,
             .replace("-", "");
 
         //fetch(`${process.env.REACT_APP_URL_CNPJ}/${cnpj}`)
-        fetch(` /api-cnpj/cnpj/${cnpj}`)
-            .then((res) => res.json())
-            .then((data) => {
-                if (data.status == "ERROR") {
-                    toast.error(`${data.message}`);
-                    setFormData({
-                        ...initialformData,
-                        cpf_cnpj: cnpj,
-                    });
-                    return;
-                }
+        if (cnpj.length > 11) {
+            fetch(` /api-cnpj/cnpj/${cnpj}`)
+                .then((res) => res.json())
+                .then((data) => {
+                    if (data.status == "ERROR") {
+                        toast.error(`${data.message}`);
+                        setFormData({
+                            ...initialformData,
+                            cpf_cnpj: cnpj,
+                        });
+                    }
 
-                setFormData((prev) => ({
-                    ...prev,
-                    name: data.nome || "",
-                    address: data.logradouro || "",
-                    number: data.numero || "",
-                    district: data.bairro || "",
-                    city: data.municipio || "",
-                    state: data.uf || "",
-                    zip_code: data.cep || "",
-                }));
-            });
+                    setFormData((prev) => ({
+                        ...prev,
+                        name: data.nome || "",
+                        address: data.logradouro || "",
+                        number: data.numero || "",
+                        district: data.bairro || "",
+                        city: data.municipio || "",
+                        state: data.uf || "",
+                        zip_code: data.cep || "",
+                    }));
+                });
+        }
     };
 
     const handleCreate = async () => {
@@ -240,7 +240,7 @@ Depositar no Banco Bradesco S.A. (237)       Ag. 0108-2       C/C. 132.362-8`,
             <SContainer>
                 <SBox>
                     <FormularioNF
-                        titleText={"Emissor NFSe"}
+                        titleText={"Cadastro NFSe"}
                         data={formData}
                         onHandleCreate={handleCreate}
                         onChange={handleChange}
