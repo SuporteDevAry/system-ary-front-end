@@ -1,12 +1,7 @@
 import {
     BoxContainer,
-    SBox,
-    SCardInfo,
     SCustomTextArea,
     SFormContainer,
-    SKeyContainer,
-    SkeyName,
-    SKeyValue,
     STitle,
 } from "./styles";
 import { IFormNFProps } from "./types";
@@ -23,38 +18,39 @@ export function FormularioNF({
     onCheckCNPJ,
 }: IFormNFProps) {
     const navigate = useNavigate();
-
     const formData = data;
-
-    const contractFields = [
-        { label: "Razão Social", value: formData?.name, cols: 3 },
-        { label: "Endereço", value: formData?.address, cols: 2 },
-        { label: "Número", value: formData?.number, cols: 1 },
-        { label: "Bairro", value: formData?.district, cols: 3 },
-        { label: "Cidade", value: formData?.city, cols: 1 },
-        { label: "UF", value: formData?.state, cols: 1 },
-        { label: "CEP", value: formData?.zip_code, cols: 1 },
-    ];
-
     const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-        return {
-            ...formData,
-            service_discrim: e.target.value,
-        };
+        // Aqui você deve chamar a função onChange que veio das props
+        // para atualizar o estado no componente pai.
+        onChange({
+            target: {
+                name: e.target.name, // Garante que o nome do campo seja passado
+                value: e.target.value,
+            },
+        } as any); // Usando 'as any' para forçar o tipo de evento, como nos outros handlers
     };
 
     const handleDateChange = (newDate: string) => {
-        return {
-            ...formData,
-            rps_emission_date: newDate,
-        };
+        // Chamamos a função onChange do pai para atualizar o campo de data.
+        onChange({
+            target: {
+                name: "rps_emission_date",
+                value: newDate,
+            },
+        } as any);
     };
 
     const handleChangeValue = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
 
         // Atualiza normalmente o campo alterado
-        onChange(e);
+        //onChange(e);
+        onChange({
+            target: {
+                name: name,
+                value: value.toUpperCase(),
+            },
+        } as any);
 
         // Calcula o líquido automaticamente
         if (
@@ -115,33 +111,77 @@ export function FormularioNF({
                     onChange={handleDateChange}
                 />
             </div>
-            <SBox>
-                <SCardInfo>
-                    <div
-                        style={{
-                            display: "grid",
-                            gridTemplateColumns: "repeat(3, 1fr)", // até 3 colunas
-                            gap: "5px",
-                        }}
-                    >
-                        {contractFields.map((field, index) => (
-                            <div
-                                key={index}
-                                style={{
-                                    gridColumn: `span ${field.cols ?? 1}`, // ocupa 1, 2 ou 3 colunas
-                                }}
-                            >
-                                <SKeyContainer>
-                                    <SkeyName>
-                                        {field.label}:
-                                        <SKeyValue>{field.value}</SKeyValue>
-                                    </SkeyName>
-                                </SKeyContainer>
-                            </div>
-                        ))}
-                    </div>
-                </SCardInfo>
-            </SBox>
+            <div
+                style={{
+                    display: "grid",
+                    gap: "5px",
+                    alignItems: "flex-start",
+                }}
+            >
+                <CustomInput
+                    type="text"
+                    label="Razão Social:"
+                    $labelPosition="top"
+                    name="name"
+                    width="100%"
+                    value={formData.name.toString()}
+                    onChange={handleChangeValue}
+                />
+                <CustomInput
+                    type="text"
+                    label="CEP:"
+                    $labelPosition="top"
+                    name="zip_code"
+                    width="30%"
+                    value={formData.zip_code}
+                    onChange={handleChangeValue}
+                />
+                <CustomInput
+                    type="text"
+                    label="Endereço:"
+                    $labelPosition="top"
+                    name="address"
+                    width="80%"
+                    value={formData.address}
+                    onChange={handleChangeValue}
+                />{" "}
+                <CustomInput
+                    type="text"
+                    label="Número:"
+                    $labelPosition="top"
+                    name="number"
+                    width="20%"
+                    value={formData.number}
+                    onChange={handleChangeValue}
+                />{" "}
+                <CustomInput
+                    type="text"
+                    label="Bairro:"
+                    $labelPosition="top"
+                    name="district"
+                    width="50%"
+                    value={formData.district.toString()}
+                    onChange={handleChangeValue}
+                />{" "}
+                <CustomInput
+                    type="text"
+                    label="Cidade:"
+                    $labelPosition="top"
+                    name="city"
+                    width="50%"
+                    value={formData.city.toString()}
+                    onChange={handleChangeValue}
+                />{" "}
+                <CustomInput
+                    type="text"
+                    label="UF:"
+                    $labelPosition="top"
+                    name="state"
+                    width="20%"
+                    value={formData.state.toString()}
+                    onChange={handleChangeValue}
+                />
+            </div>
 
             <div
                 style={{
@@ -217,7 +257,7 @@ export function FormularioNF({
                 <CustomButton
                     $variant={"primary"}
                     width="80px"
-                    onClick={() => navigate("/cobranca/notafiscal")}
+                    onClick={() => navigate("/cobranca")}
                 >
                     Cancelar
                 </CustomButton>
