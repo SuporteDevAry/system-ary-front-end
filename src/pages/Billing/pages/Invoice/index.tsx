@@ -19,8 +19,8 @@ const escapeXml = (unsafe: string | number) => {
     if (typeof unsafe !== "string") {
         unsafe = String(unsafe);
     }
-    // Substitui caracteres que quebram o XML pelas entidades correspondentes
-    return unsafe.replace(/[<>&"]/g, function (c) {
+    // Adicionado o escape para ' (aspa simples)
+    return unsafe.replace(/[<>&"']/g, function (c) {
         switch (c) {
             case "<":
                 return "&lt;";
@@ -30,10 +30,17 @@ const escapeXml = (unsafe: string | number) => {
                 return "&amp;";
             case '"':
                 return "&quot;";
+            case "'":
+                return "&apos;"; // <--- Importante para nomes e endereços
             default:
                 return c;
         }
     });
+};
+
+const cleanData = (text: string) => {
+    if (typeof text !== "string") return text;
+    return text.replace(/[.\/\-\s]/g, "");
 };
 
 export function Invoice() {
@@ -94,9 +101,7 @@ export function Invoice() {
         const dataInicio = dayjs().format("YYYY-MM-DD");
         const dataFim = dataInicio;
 
-        let xml = `<?xml version="1.0" encoding="UTF-8"?>
-<PedidoEnvioLoteRPS xmlns="http://www.prefeitura.sp.gov.br/nfe">
-  <Cabecalho Versao="1" xmlns="">
+        let xml = `<Cabecalho Versao="1" xmlns="">
     <CPFCNPJRemetente>
       <CNPJ>${PRESTADOR.CNPJ}</CNPJ>
     </CPFCNPJRemetente>
@@ -110,7 +115,11 @@ export function Invoice() {
 
         rpsList?.forEach((rps) => {
             const discriminacao = escapeXml(
-                rps.service_discrim.replace(/(\r\n|\n|\r)/g, "|")
+                rps.service_discrim
+                    .replace(/(\r\n|\n|\r)/g, "|") // Transforma enter em pipe
+                    .replace(/\t/g, " ") // Remove tabs
+                    .replace(/\u00A0/g, " ") // Remove non-breaking spaces
+                    .replace(/\s+/g, " ") // Transforma múltiplos espaços em um só
             );
             const valorServico = Number(rps.service_value || 0).toFixed(2);
             const codServico = String(rps.service_code).padStart(5, "0");
@@ -147,14 +156,14 @@ export function Invoice() {
     <CPFCNPJTomador>
       ${
           rps.cpf_cnpj.length === 14
-              ? `<CNPJ>${rps.cpf_cnpj}</CNPJ>`
-              : `<CPF>${rps.cpf_cnpj}</CPF>`
+              ? `<CNPJ>${cleanData(rps.cpf_cnpj)}</CNPJ>`
+              : `<CPF>${cleanData(rps.cpf_cnpj)}</CPF>`
       }
     </CPFCNPJTomador>
     <RazaoSocialTomador>${escapeXml(rps.name)}</RazaoSocialTomador>
     <EnderecoTomador>
       <TipoLogradouro>RUA</TipoLogradouro>
-      <Logradouro>${escapeXml(rps.address)}</Logradouro>
+      <Logradouro>${escapeXml(rps.address.trim())}</Logradouro>
       <NumeroEndereco>${escapeXml(rps.number)}</NumeroEndereco>
       <ComplementoEndereco>${escapeXml(
           rps.complement || ""
@@ -168,26 +177,17 @@ export function Invoice() {
     <MunicipioPrestacao>3550308</MunicipioPrestacao>
     <NumeroEncapsulamento>0</NumeroEncapsulamento>
     <ValorTotalRecebido>${valorServico}</ValorTotalRecebido>
-    <IBSCBS>
-      <finNFSe>0</finNFSe>
-      <indFinal>0</indFinal>
-      <cIndOp>020101</cIndOp>
-      <indDest>1</indDest>
-      <valores>
-        <trib>
-          <gIBSCBS>
-            <cClassTrib>000001</cClassTrib>
-          </gIBSCBS>
-        </trib>
-      </valores>
-    </IBSCBS>
   </RPS>`;
         });
 
-        xml += `
-</PedidoEnvioLoteRPS>`;
+        // No final da sua função gerarXML()
+        const xmlBruto = `<?xml version="1.0" encoding="UTF-8"?><PedidoEnvioLoteRPS xmlns="http://www.prefeitura.sp.gov.br/nfe">${xml}</PedidoEnvioLoteRPS>`;
 
-        return xml;
+        // ADICIONE ISSO ANTES DO RETURN:
+        return xmlBruto
+            .replace(/>\s+</g, "><")
+            .replace(/\r?\n|\r/g, "")
+            .trim();
     };
 
     // ===================================

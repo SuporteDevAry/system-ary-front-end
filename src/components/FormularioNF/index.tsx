@@ -5,7 +5,7 @@ import {
     STitle,
 } from "./styles";
 import { IFormNFProps } from "./types";
-//import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import CustomButton from "../CustomButton";
 import { CustomInput } from "../CustomInput";
 import CustomDatePicker from "../CustomDatePicker";
@@ -17,7 +17,7 @@ export function FormularioNF({
     onHandleCreate,
     onCheckCNPJ,
 }: IFormNFProps) {
-    //const navigate = useNavigate();
+    const navigate = useNavigate();
     const formData = data;
     const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         // Aqui você deve chamar a função onChange que veio das props
@@ -257,7 +257,7 @@ export function FormularioNF({
                 <CustomButton
                     $variant={"primary"}
                     width="80px"
-                    // onClick={() => navigate("/cobranca/NFSe")}
+                    onClick={() => navigate("/cobranca")}
                 >
                     Cancelar
                 </CustomButton>

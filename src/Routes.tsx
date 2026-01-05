@@ -36,7 +36,7 @@ import { PaymentContract } from "./pages/Billing/pages/PaymentContract";
 import { BillingsContract } from "./pages/Billing/pages/BillingsContract";
 import { ViewBilling } from "./pages/Billing/pages/Receipt/components/ViewBilling";
 import { ReportsAllContracts } from "./pages/Reports/pages/ReportsAllContracts";
-import { NFSe } from "./pages/Billing/pages/NFSe";
+import { RPS } from "./pages/Billing/pages/RPS";
 
 export function RoutesForPages() {
     return (
@@ -193,11 +193,11 @@ export function RoutesForPages() {
                 }
             />
             <Route
-                path="/cobranca/NFSe"
+                path="/cobranca/RPS"
                 element={
                     <ProtectedLayout>
                         <Layout>
-                            <NFSe />
+                            <RPS />
                         </Layout>
                     </ProtectedLayout>
                 }

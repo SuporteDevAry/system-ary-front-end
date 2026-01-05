@@ -7,7 +7,7 @@ import { toast } from "react-toastify";
 import { InvoiceContext } from "../../../../contexts/InvoiceContext";
 import dayjs from "dayjs";
 
-export function NFSe(): JSX.Element {
+export function RPS(): JSX.Element {
     const navigate = useNavigate();
     const invoiceContext = InvoiceContext();
     //const location = useLocation();
@@ -240,7 +240,7 @@ Depositar no Banco Bradesco S.A. (237)       Ag. 0108-2       C/C. 132.362-8`,
             <SContainer>
                 <SBox>
                     <FormularioNF
-                        titleText={"Cadastro NFSe"}
+                        titleText={"Cadastro RPS"}
                         data={formData}
                         onHandleCreate={handleCreate}
                         onChange={handleChange}

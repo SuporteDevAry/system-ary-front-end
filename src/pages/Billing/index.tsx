@@ -7,26 +7,36 @@ import { IoReceiptSharp } from "react-icons/io5";
 import { TbMapDollar } from "react-icons/tb";
 import { IoTodayOutline } from "react-icons/io5";
 import { TbReceipt2 } from "react-icons/tb";
+import useUserPermissions from "../../hooks/useUserPermissions";
 
 export function Billing() {
+    const { canDevelop } = useUserPermissions();
     const cardLinks1 = [
         {
             label: "Contratos por Vencimento",
             icon: <IoTodayOutline size={64} />,
             to: "/cobranca/contrato-vencto",
         },
-        {
-            label: "Cadastro NFSe",
-            icon: <IoReceiptOutline size={64} />,
-            to: "/cobranca/NFSe",
-            disabled: false,
-        },
-        {
-            label: "Emissão NFSe",
-            icon: <IoReceiptOutline size={64} />,
-            to: "/cobranca/notafiscal",
-            disabled: false,
-        },
+        ...(canDevelop
+            ? [
+                  {
+                      label: "Cadastro RPS",
+                      icon: <IoReceiptOutline size={64} />,
+                      to: "/cobranca/RPS",
+                      disabled: false,
+                  },
+              ]
+            : []),
+        ...(canDevelop
+            ? [
+                  {
+                      label: "Emissão NFSe",
+                      icon: <IoReceiptOutline size={64} />,
+                      to: "/cobranca/notafiscal",
+                      disabled: false,
+                  },
+              ]
+            : []),
         {
             label: "Importação de NF",
             icon: <IoReceiptSharp size={64} />,
