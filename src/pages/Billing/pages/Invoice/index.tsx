@@ -190,6 +190,121 @@ export function Invoice() {
             .trim();
     };
 
+    const gerarJSON = () => {
+        const rpsList = selectedInvoice;
+
+        const listaFormatada = rpsList?.map((rps) => {
+            // Valores base
+            const valorServicos = Number(
+                rps.service_value || rps.servico?.valor_servicos || 0
+            );
+
+            // Simulação de alíquotas (ajuste conforme a sua regra de negócio ou banco de dados)
+            // Geralmente esses valores vêm do cadastro do serviço ou do cliente
+            const aliquotas = {
+                pis: 0.0065, // 0.65%
+                cofins: 0.03, // 3%
+                csll: 0.01, // 1%
+                ir: 0.015, // 1.5%
+                iss: Number(rps.aliquota || 0.05), // 5%
+            };
+
+            // Tratamento da discriminação
+            const discriminacaoLimpa = (
+                rps.service_discrim ||
+                rps.servico?.discriminacao ||
+                ""
+            )
+                .replace(/(\r\n|\n|\r)/g, "|")
+                .replace(/\s+/g, " ")
+                .trim();
+
+            return {
+                natureza_operacao: rps.natureza_operacao || "1",
+                optante_simples_nacional: rps.optante_simples_nacional ?? true,
+                data_emissao: rps.rps_emission_date
+                    ? dayjs(rps.rps_emission_date).format(
+                          "YYYY-MM-DDTHH:mm:ssZ"
+                      )
+                    : dayjs().format("YYYY-MM-DDTHH:mm:ssZ"),
+
+                prestador: {
+                    cnpj: cleanData(PRESTADOR.CNPJ),
+                    inscricao_municipal: PRESTADOR.IM,
+                },
+
+                tomador: {
+                    razao_social: rps.name || rps.tomador?.razao_social,
+                    cnpj: cleanData(rps.cpf_cnpj || rps.tomador?.cnpj),
+                    endereco: {
+                        logradouro: (
+                            rps.address ||
+                            rps.tomador?.endereco?.logradouro ||
+                            ""
+                        ).trim(),
+                        numero: rps.number || rps.tomador?.endereco?.numero,
+                        bairro: rps.district || rps.tomador?.endereco?.bairro,
+                        codigo_municipio:
+                            rps.city_ibge ||
+                            rps.tomador?.endereco?.codigo_municipio ||
+                            "3550308",
+                        uf: rps.state || rps.tomador?.endereco?.uf,
+                        cep: (
+                            rps.zip_code ||
+                            rps.tomador?.endereco?.cep ||
+                            ""
+                        ).replace(/\D/g, ""),
+                    },
+                },
+
+                servico: {
+                    valor_servicos: valorServicos,
+                    valor_deducoes: Number(rps.deduction_value || 0),
+                    valor_iss: Number(
+                        (valorServicos * aliquotas.iss).toFixed(2)
+                    ),
+                    valor_pis: Number(
+                        rps.valor_pis ||
+                            (valorServicos * aliquotas.pis).toFixed(2)
+                    ),
+                    valor_cofins: Number(
+                        rps.valor_cofins ||
+                            (valorServicos * aliquotas.cofins).toFixed(2)
+                    ),
+                    valor_inss: Number(rps.valor_inss || 0),
+                    valor_csll: Number(
+                        rps.valor_csll ||
+                            (valorServicos * aliquotas.csll).toFixed(2)
+                    ),
+                    item_lista_servico:
+                        rps.service_code || rps.servico?.item_lista_servico,
+                    codigo_tributacao_municipio:
+                        rps.service_code ||
+                        rps.servico?.codigo_tributacao_municipio,
+                    discriminacao: discriminacaoLimpa,
+                    codigo_municipio: rps.city_ibge || "3550308",
+
+                    // Bloco de Impostos e Retenções
+                    retencoes: {
+                        iss_retido: rps.iss_retido ?? false,
+                        valor_iss_retido: rps.iss_retido
+                            ? Number((valorServicos * aliquotas.iss).toFixed(2))
+                            : 0,
+                        valor_ir: Number(
+                            rps.valor_ir ||
+                                (valorServicos * aliquotas.ir).toFixed(2)
+                        ),
+                    },
+
+                    // Valor líquido que o prestador recebe
+                    valor_liquido: 0, // Pode ser calculado subtraindo as retenções do valor_servicos
+                },
+            };
+        });
+
+        return listaFormatada;
+    };
+
     // ===================================
     // SALVAR XML EM ARQUIVO PARA DOWNLOAD
     // ===================================
@@ -213,6 +328,25 @@ export function Invoice() {
 
         URL.revokeObjectURL(url);
         toast.success("Arquivo XML gerado com sucesso!");
+
+        // imprmir o JSON para conferencia
+        const objetoDados = gerarJSON();
+        const arqJson = JSON.stringify(objetoDados, null, 2);
+        const blobJson = new Blob([arqJson], {
+            type: "application/json;charset=utf-8",
+        });
+        const urlJson = URL.createObjectURL(blobJson);
+        const linkJson = document.createElement("a");
+
+        linkJson.href = urlJson;
+
+        const nomeArquivoJson = `json_rps_${dayjs().format(
+            "YYYYMMDD_HHmmss"
+        )}.json`;
+        linkJson.download = nomeArquivoJson;
+        linkJson.click();
+
+        URL.revokeObjectURL(urlJson);
     };
 
     // dentro do seu componente React (Invoice)
