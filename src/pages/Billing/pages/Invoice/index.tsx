@@ -384,24 +384,27 @@ export function Invoice() {
   );
 
   const renderActionButtons = useCallback(
-    (rowData: IListInvoices) => (
-      <SButtonContainer>
-        <CustomButton
-          $variant={"primary"}
-          width="80px"
-          onClick={() => handleEditInvoice(rowData)}
-        >
-          Editar
-        </CustomButton>
-        <CustomButton
-          $variant={"danger"}
-          width="80px"
-          onClick={() => handleDeleteInvoice(rowData)}
-        >
-          Deletar
-        </CustomButton>
-      </SButtonContainer>
-    ),
+    (rowData: any) => {
+      const invoice = rowData as IListInvoices;
+      return (
+        <SButtonContainer>
+          <CustomButton
+            $variant={"primary"}
+            width="80px"
+            onClick={() => handleEditInvoice(invoice)}
+          >
+            Editar
+          </CustomButton>
+          <CustomButton
+            $variant={"danger"}
+            width="80px"
+            onClick={() => handleDeleteInvoice(invoice)}
+          >
+            Deletar
+          </CustomButton>
+        </SButtonContainer>
+      );
+    },
     [handleEditInvoice, handleDeleteInvoice]
   );
 
