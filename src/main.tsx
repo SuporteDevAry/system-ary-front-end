@@ -12,31 +12,34 @@ import { ProductProvider } from "./contexts/Products/index.tsx";
 import { TableProductsProvider } from "./contexts/TablesProducts/index.tsx";
 import { InvoicesProvider } from "./contexts/InvoiceContext/index.tsx";
 import { BillingsProvider } from "./contexts/BillingContext/index.tsx";
+import { NfseProvider } from "./contexts/NfseContext/index.tsx";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
-    <React.StrictMode>
-        <AuthProvider>
-            <SendEmailProvider>
-                <UserProvider>
-                    <ClientesProvider>
-                        <ContatosProvider>
-                            <NotificationsProvider>
-                                <ContractProvider>
-                                    <ProductProvider>
-                                        <TableProductsProvider>
-                                            <InvoicesProvider>
-                                                <BillingsProvider>
-                                                    <App />
-                                                </BillingsProvider>
-                                            </InvoicesProvider>
-                                        </TableProductsProvider>
-                                    </ProductProvider>
-                                </ContractProvider>
-                            </NotificationsProvider>
-                        </ContatosProvider>
-                    </ClientesProvider>
-                </UserProvider>
-            </SendEmailProvider>
-        </AuthProvider>
-    </React.StrictMode>
+  <React.StrictMode>
+    <AuthProvider>
+      <SendEmailProvider>
+        <UserProvider>
+          <ClientesProvider>
+            <ContatosProvider>
+              <NotificationsProvider>
+                <ContractProvider>
+                  <ProductProvider>
+                    <TableProductsProvider>
+                      <InvoicesProvider>
+                        <BillingsProvider>
+                          <NfseProvider>
+                            <App />
+                          </NfseProvider>
+                        </BillingsProvider>
+                      </InvoicesProvider>
+                    </TableProductsProvider>
+                  </ProductProvider>
+                </ContractProvider>
+              </NotificationsProvider>
+            </ContatosProvider>
+          </ClientesProvider>
+        </UserProvider>
+      </SendEmailProvider>
+    </AuthProvider>
+  </React.StrictMode>
 );

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 import { CustomSearch } from "../../../../components/CustomSearch";
 import CustomButton from "../../../../components/CustomButton";
 import CustomTable from "../../../../components/CustomTable";
@@ -13,6 +14,7 @@ import {
 import dayjs from "dayjs";
 import { InvoiceContext } from "../../../../contexts/InvoiceContext";
 import { IListInvoices } from "../../../../contexts/InvoiceContext/types";
+import { NfseContext } from "../../../../contexts/NfseContext";
 
 // Função auxiliar para escapar caracteres especiais do XML (MELHORIA: ROBUSTEZ)
 const escapeXml = (unsafe: string | number) => {
@@ -45,6 +47,8 @@ const cleanData = (text: string) => {
 
 export function Invoice() {
     const invoiceContext = InvoiceContext();
+    const nfseContext = NfseContext();
+    const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState("");
 
     const [listInvoices, setListInvoices] = useState<IListInvoices[]>([]);
@@ -62,7 +66,7 @@ export function Invoice() {
             const responseInvoice = await invoiceContext.listInvoices();
 
             const filteredListInvoices = responseInvoice.data.filter(
-                (invoice: { nfs_number: string }) => invoice.nfs_number == ""
+                (invoice: { nfs_number: string }) => invoice.nfs_number == "",
             );
 
             setListInvoices(filteredListInvoices);
@@ -82,235 +86,178 @@ export function Invoice() {
     // ============================
 
     const PRESTADOR = {
-        CNPJ: "05668724000121",
-        IM: "67527655",
+        CNPJ: "43025030000165",
+        IM: "85333700",
         MUNICIPIO: "3550308",
         SERIE: "A",
+        CODIGO_SERVICO: "06298",
     };
 
     const gerarXML = () => {
         const rpsList = selectedInvoice;
-        const totalServicos = rpsList?.reduce(
+
+        if (!rpsList || rpsList.length === 0) {
+            throw new Error("Nenhuma RPS selecionada");
+        }
+
+        const totalServicos = rpsList.reduce(
             (sum, rps) => sum + Number(rps?.service_value || 0),
-            0
+            0,
         );
-        const totalDeducoes = rpsList?.reduce(
-            (sum, rps) => sum + Number(rps.deduction_value || 0),
-            0
-        );
+        //  const totalDeducoes = rpsList.reduce(
+        //      (sum, rps) => sum + Number(rps.deduction_value || 0),
+        //      0,
+        // );
         const dataInicio = dayjs().format("YYYY-MM-DD");
         const dataFim = dataInicio;
 
-        let xml = `<Cabecalho Versao="1" xmlns="">
-    <CPFCNPJRemetente>
-      <CNPJ>${PRESTADOR.CNPJ}</CNPJ>
-    </CPFCNPJRemetente>
-    <transacao>false</transacao>
-    <dtInicio>${dataInicio}</dtInicio>
-    <dtFim>${dataFim}</dtFim>
-    <QtdRPS>${rpsList?.length}</QtdRPS>
-    <ValorTotalServicos>${totalServicos?.toFixed(2)}</ValorTotalServicos>
-    <ValorTotalDeducoes>${totalDeducoes?.toFixed(2)}</ValorTotalDeducoes>
-  </Cabecalho>`;
+        // ✅ IMPORTANTE: Elemento raiz COM namespace
+        let xml = `<?xml version="1.0" encoding="UTF-8"?>`;
+        xml += `<PedidoEnvioLoteRPS xmlns="http://www.prefeitura.sp.gov.br/nfe">`;
 
-        rpsList?.forEach((rps) => {
+        // ✅ IMPORTANTE: Cabecalho COM xmlns="" - Versao="2" (Reforma Tributária 2026)
+        xml += `<Cabecalho Versao="2" xmlns="">`;
+        xml += `<CPFCNPJRemetente><CNPJ>${PRESTADOR.CNPJ}</CNPJ></CPFCNPJRemetente>`;
+        xml += `<transacao>false</transacao>`;
+        xml += `<dtInicio>${dataInicio}</dtInicio>`;
+        xml += `<dtFim>${dataFim}</dtFim>`;
+        xml += `<QtdRPS>${rpsList.length}</QtdRPS>`;
+        xml += `<ValorTotalServicos>${totalServicos.toFixed(
+            2,
+        )}</ValorTotalServicos>`;
+        // xml += `<ValorTotalDeducoes>${totalDeducoes.toFixed(
+        //     2,
+        // )}</ValorTotalDeducoes>`;
+        xml += `</Cabecalho>`;
+
+        rpsList.forEach((rps) => {
             const discriminacao = escapeXml(
                 rps.service_discrim
-                    .replace(/(\r\n|\n|\r)/g, "|") // Transforma enter em pipe
+                    .replace(/(\r\n|\n|\r)/g, "|") // Remove quebras de linha
                     .replace(/\t/g, " ") // Remove tabs
                     .replace(/\u00A0/g, " ") // Remove non-breaking spaces
-                    .replace(/\s+/g, " ") // Transforma múltiplos espaços em um só
+                    .replace(/\s+/g, " ") // Múltiplos espaços em um só
+                    .trim(),
             );
+
             const valorServico = Number(rps.service_value || 0).toFixed(2);
-            const codServico = String(rps.service_code).padStart(5, "0");
-            const codCidadeIBGE = rps.city_ibge || "3550308";
+            const codServico = PRESTADOR.CODIGO_SERVICO;
+            const codCidadeIBGE = rps.city_ibge || PRESTADOR.MUNICIPIO;
 
-            xml += `
-  <RPS xmlns="">
-    <Assinatura></Assinatura>
-    <ChaveRPS>
-      <InscricaoPrestador>${PRESTADOR.IM}</InscricaoPrestador>
-      <SerieRPS>${PRESTADOR.SERIE}</SerieRPS>
-      <NumeroRPS>${rps.rps_number}</NumeroRPS>
-    </ChaveRPS>
-    <TipoRPS>RPS</TipoRPS>
-    <DataEmissao>${dayjs(rps.rps_emission_date).format(
-        "YYYY-MM-DD"
-    )}</DataEmissao>
-    <StatusRPS>N</StatusRPS>
-    <TributacaoRPS>T</TributacaoRPS>
-    <ValorServicos>${valorServico}</ValorServicos>
-    <ValorDeducoes>${Number(rps.deduction_value || 0).toFixed(
-        2
-    )}</ValorDeducoes>
-    <ValorPIS>${Number(rps.valor_pis || 0).toFixed(2)}</ValorPIS>
-    <ValorCOFINS>${Number(rps.valor_cofins || 0).toFixed(2)}</ValorCOFINS>
-    <ValorINSS>${Number(rps.valor_inss || 0).toFixed(2)}</ValorINSS>
-    <ValorIR>${Number(rps.valor_ir || 0).toFixed(2)}</ValorIR>
-    <ValorCSLL>${Number(rps.valor_csll || 0).toFixed(2)}</ValorCSLL>
-    <CodigoServico>${codServico}</CodigoServico>
-    <AliquotaServicos>${Number(rps.aliquota || 0.05).toFixed(
-        4
-    )}</AliquotaServicos>
-    <ISSRetido>${rps.iss_retido ? "true" : "false"}</ISSRetido>
-    <CPFCNPJTomador>
-      ${
-          rps.cpf_cnpj.length === 14
-              ? `<CNPJ>${cleanData(rps.cpf_cnpj)}</CNPJ>`
-              : `<CPF>${cleanData(rps.cpf_cnpj)}</CPF>`
-      }
-    </CPFCNPJTomador>
-    <RazaoSocialTomador>${escapeXml(rps.name)}</RazaoSocialTomador>
-    <EnderecoTomador>
-      <TipoLogradouro>RUA</TipoLogradouro>
-      <Logradouro>${escapeXml(rps.address.trim())}</Logradouro>
-      <NumeroEndereco>${escapeXml(rps.number)}</NumeroEndereco>
-      <ComplementoEndereco>${escapeXml(
-          rps.complement || ""
-      )}</ComplementoEndereco>
-      <Bairro>${escapeXml(rps.district)}</Bairro>
-      <Cidade>${codCidadeIBGE}</Cidade>
-      <UF>${escapeXml(rps.state)}</UF>
-      <CEP>${rps.zip_code.replace(/\D/g, "")}</CEP>
-    </EnderecoTomador>
-    <Discriminacao>${discriminacao}</Discriminacao>
-    <MunicipioPrestacao>3550308</MunicipioPrestacao>
-    <NumeroEncapsulamento>0</NumeroEncapsulamento>
-    <ValorTotalRecebido>${valorServico}</ValorTotalRecebido>
-  </RPS>`;
+            const aliquota = Number(rps.aliquota || 5); // Padrão 5% para SP
+            const aliquotaFormatada = aliquota;
+            aliquota > 1 ? (aliquota / 100).toFixed(4) : aliquota.toFixed(4);
+
+            const cpfCnpjLimpo = cleanData(rps.cpf_cnpj);
+            const dataBanco = rps.rps_emission_date;
+            const dataIso = dataBanco.split("/").reverse().join("-");
+
+            // ✅ RPS COM xmlns="" (Id será gerenciado pelo backend)
+            xml += `<RPS xmlns="">`;
+            xml += `<Assinatura></Assinatura>`;
+            xml += `<ChaveRPS>`;
+            xml += `<InscricaoPrestador>${PRESTADOR.IM}</InscricaoPrestador>`;
+            xml += `<SerieRPS>${PRESTADOR.SERIE}</SerieRPS>`;
+            xml += `<NumeroRPS>${rps.rps_number}</NumeroRPS>`;
+            xml += `</ChaveRPS>`;
+            xml += `<TipoRPS>RPS</TipoRPS>`;
+            xml += `<DataEmissao>${dayjs(dataIso).format(
+                "YYYY-MM-DD",
+            )}</DataEmissao>`;
+            xml += `<StatusRPS>N</StatusRPS>`;
+            xml += `<TributacaoRPS>T</TributacaoRPS>`;
+            xml += `<Servico>`;
+            xml += `<ValorServicos>${valorServico}</ValorServicos>`;
+            xml += `<ValorDeducoes>${Number(rps.deduction_value || 0).toFixed(
+                2,
+            )}</ValorDeducoes>`;
+            xml += `<ValorPIS>${Number(rps.valor_pis || 0).toFixed(
+                2,
+            )}</ValorPIS>`;
+            xml += `<ValorCOFINS>${Number(rps.valor_cofins || 0).toFixed(
+                2,
+            )}</ValorCOFINS>`;
+            xml += `<ValorINSS>${Number(rps.valor_inss || 0).toFixed(
+                2,
+            )}</ValorINSS>`;
+            xml += `<ValorIR>${Number(rps.valor_ir || 0).toFixed(2)}</ValorIR>`;
+            xml += `<ValorCSLL>${Number(rps.valor_csll || 0).toFixed(
+                2,
+            )}</ValorCSLL>`;
+            xml += `<CodigoServico>${codServico}</CodigoServico>`;
+            xml += `<ValorISS>0</ValorISS>`;
+            xml += `<AliquotaServicos>${aliquotaFormatada}</AliquotaServicos>`;
+            xml += `<ISSRetido>${
+                rps.iss_retido === true ? "true" : "false"
+            }</ISSRetido>`;
+            xml += `</Servico>`;
+            xml += `<CPFCNPJTomador>`;
+
+            if (cpfCnpjLimpo.length === 14) {
+                xml += `<CNPJ>${cpfCnpjLimpo}</CNPJ>`;
+            } else {
+                xml += `<CPF>${cpfCnpjLimpo}</CPF>`;
+            }
+
+            xml += `</CPFCNPJTomador>`;
+            xml += `<RazaoSocialTomador>${escapeXml(
+                rps.name,
+            )}</RazaoSocialTomador>`;
+
+            // Adiciona email do tomador se existir
+            if (rps.email && rps.email.trim()) {
+                xml += `<EmailTomador>${escapeXml(
+                    rps.email.trim(),
+                )}</EmailTomador>`;
+            }
+
+            xml += `<EnderecoTomador>`;
+            xml += `<TipoLogradouro>RUA</TipoLogradouro>`;
+            xml += `<Logradouro>${escapeXml(rps.address.trim())}</Logradouro>`;
+            xml += `<NumeroEndereco>${escapeXml(rps.number)}</NumeroEndereco>`;
+            xml += `<ComplementoEndereco>${escapeXml(
+                rps.complement || "",
+            )}</ComplementoEndereco>`;
+            xml += `<Bairro>${escapeXml(rps.district)}</Bairro>`;
+            xml += `<Cidade>${codCidadeIBGE}</Cidade>`;
+            xml += `<UF>${escapeXml(rps.state).toUpperCase()}</UF>`;
+            xml += `<CEP>${rps.zip_code.replace(/\D/g, "")}</CEP>`;
+            xml += `</EnderecoTomador>`;
+            xml += `<Discriminacao>${discriminacao}</Discriminacao>`;
+            // xml += `<MunicipioPrestacao>${PRESTADOR.MUNICIPIO}</MunicipioPrestacao>`;
+            //xml += `<NumeroEncapsulamento>0</NumeroEncapsulamento>`;
+            //xml += `<ValorTotalRecebido>${valorServico}</ValorTotalRecebido>`;
+            xml += `</RPS>`;
         });
 
-        // No final da sua função gerarXML()
-        const xmlBruto = `<?xml version="1.0" encoding="UTF-8"?><PedidoEnvioLoteRPS xmlns="http://www.prefeitura.sp.gov.br/nfe">${xml}</PedidoEnvioLoteRPS>`;
+        xml += `</PedidoEnvioLoteRPS>`;
 
-        // ADICIONE ISSO ANTES DO RETURN:
-        return xmlBruto
-            .replace(/>\s+</g, "><")
-            .replace(/\r?\n|\r/g, "")
-            .trim();
-    };
-
-    const gerarJSON = () => {
-        const rpsList = selectedInvoice;
-
-        const listaFormatada = rpsList?.map((rps) => {
-            // Valores base
-            const valorServicos = Number(
-                rps.service_value || rps.servico?.valor_servicos || 0
-            );
-
-            // Simulação de alíquotas (ajuste conforme a sua regra de negócio ou banco de dados)
-            // Geralmente esses valores vêm do cadastro do serviço ou do cliente
-            const aliquotas = {
-                pis: 0.0065, // 0.65%
-                cofins: 0.03, // 3%
-                csll: 0.01, // 1%
-                ir: 0.015, // 1.5%
-                iss: Number(rps.aliquota || 0.05), // 5%
-            };
-
-            // Tratamento da discriminação
-            const discriminacaoLimpa = (
-                rps.service_discrim ||
-                rps.servico?.discriminacao ||
-                ""
-            )
-                .replace(/(\r\n|\n|\r)/g, "|")
-                .replace(/\s+/g, " ")
-                .trim();
-
-            return {
-                natureza_operacao: rps.natureza_operacao || "1",
-                optante_simples_nacional: rps.optante_simples_nacional ?? true,
-                data_emissao: rps.rps_emission_date
-                    ? dayjs(rps.rps_emission_date).format(
-                          "YYYY-MM-DDTHH:mm:ssZ"
-                      )
-                    : dayjs().format("YYYY-MM-DDTHH:mm:ssZ"),
-
-                prestador: {
-                    cnpj: cleanData(PRESTADOR.CNPJ),
-                    inscricao_municipal: PRESTADOR.IM,
-                },
-
-                tomador: {
-                    razao_social: rps.name || rps.tomador?.razao_social,
-                    cnpj: cleanData(rps.cpf_cnpj || rps.tomador?.cnpj),
-                    endereco: {
-                        logradouro: (
-                            rps.address ||
-                            rps.tomador?.endereco?.logradouro ||
-                            ""
-                        ).trim(),
-                        numero: rps.number || rps.tomador?.endereco?.numero,
-                        bairro: rps.district || rps.tomador?.endereco?.bairro,
-                        codigo_municipio:
-                            rps.city_ibge ||
-                            rps.tomador?.endereco?.codigo_municipio ||
-                            "3550308",
-                        uf: rps.state || rps.tomador?.endereco?.uf,
-                        cep: (
-                            rps.zip_code ||
-                            rps.tomador?.endereco?.cep ||
-                            ""
-                        ).replace(/\D/g, ""),
-                    },
-                },
-
-                servico: {
-                    valor_servicos: valorServicos,
-                    valor_deducoes: Number(rps.deduction_value || 0),
-                    valor_iss: Number(
-                        (valorServicos * aliquotas.iss).toFixed(2)
-                    ),
-                    valor_pis: Number(
-                        rps.valor_pis ||
-                            (valorServicos * aliquotas.pis).toFixed(2)
-                    ),
-                    valor_cofins: Number(
-                        rps.valor_cofins ||
-                            (valorServicos * aliquotas.cofins).toFixed(2)
-                    ),
-                    valor_inss: Number(rps.valor_inss || 0),
-                    valor_csll: Number(
-                        rps.valor_csll ||
-                            (valorServicos * aliquotas.csll).toFixed(2)
-                    ),
-                    item_lista_servico:
-                        rps.service_code || rps.servico?.item_lista_servico,
-                    codigo_tributacao_municipio:
-                        rps.service_code ||
-                        rps.servico?.codigo_tributacao_municipio,
-                    discriminacao: discriminacaoLimpa,
-                    codigo_municipio: rps.city_ibge || "3550308",
-
-                    // Bloco de Impostos e Retenções
-                    retencoes: {
-                        iss_retido: rps.iss_retido ?? false,
-                        valor_iss_retido: rps.iss_retido
-                            ? Number((valorServicos * aliquotas.iss).toFixed(2))
-                            : 0,
-                        valor_ir: Number(
-                            rps.valor_ir ||
-                                (valorServicos * aliquotas.ir).toFixed(2)
-                        ),
-                    },
-
-                    // Valor líquido que o prestador recebe
-                    valor_liquido: 0, // Pode ser calculado subtraindo as retenções do valor_servicos
-                },
-            };
-        });
-
-        return listaFormatada;
+        // NÃO minifique aqui - deixe o back-end fazer isso
+        return xml;
     };
 
     // ===================================
     // SALVAR XML EM ARQUIVO PARA DOWNLOAD
     // ===================================
     const handleGeraNF_XML = () => {
-        if (selectedInvoice?.length === 0) {
+        if (!selectedInvoice || selectedInvoice.length === 0) {
             toast.error("Nenhuma RPS encontrada para gerar XML.");
+            return;
+        }
+
+        // Validações básicas antes de gerar XML
+        const invalidRPS = selectedInvoice.find(
+            (rps) =>
+                !rps.rps_number ||
+                !rps.service_value ||
+                !rps.cpf_cnpj ||
+                !rps.name,
+        );
+
+        if (invalidRPS) {
+            toast.error(
+                "Existem RPSs com dados obrigatórios faltando. Verifique os dados.",
+            );
             return;
         }
 
@@ -328,25 +275,6 @@ export function Invoice() {
 
         URL.revokeObjectURL(url);
         toast.success("Arquivo XML gerado com sucesso!");
-
-        // imprmir o JSON para conferencia
-        const objetoDados = gerarJSON();
-        const arqJson = JSON.stringify(objetoDados, null, 2);
-        const blobJson = new Blob([arqJson], {
-            type: "application/json;charset=utf-8",
-        });
-        const urlJson = URL.createObjectURL(blobJson);
-        const linkJson = document.createElement("a");
-
-        linkJson.href = urlJson;
-
-        const nomeArquivoJson = `json_rps_${dayjs().format(
-            "YYYYMMDD_HHmmss"
-        )}.json`;
-        linkJson.download = nomeArquivoJson;
-        linkJson.click();
-
-        URL.revokeObjectURL(urlJson);
     };
 
     // dentro do seu componente React (Invoice)
@@ -354,37 +282,61 @@ export function Invoice() {
         // Verifica se há dados para enviar
         if (!selectedInvoice || selectedInvoice.length === 0) {
             toast.error(
-                "Por favor, selecione ao menos uma RPS na lista para enviar."
+                "Por favor, selecione ao menos uma RPS na lista para enviar.",
+            );
+            return;
+        }
+
+        // Validações básicas antes de enviar
+        const invalidRPS = selectedInvoice.find(
+            (rps) =>
+                !rps.rps_number ||
+                !rps.service_value ||
+                !rps.cpf_cnpj ||
+                !rps.name,
+        );
+
+        if (invalidRPS) {
+            toast.error(
+                "Existem RPSs com dados obrigatórios faltando. Verifique os dados antes de enviar.",
             );
             return;
         }
 
         const xml = gerarXML(); // assume que gerarXML() retorna o XML bruto não-assinado
+
+        // 🔍 DEBUG: Verifica valores antes de enviar
+        console.log(
+            "📤 XML gerado (primeiros 500 chars):",
+            xml.substring(0, 500),
+        );
+        console.log("📊 Total RPS:", selectedInvoice.length);
+        console.log(
+            "💰 Valor total:",
+            selectedInvoice
+                .reduce((sum, rps) => sum + Number(rps?.service_value || 0), 0)
+                .toFixed(2),
+        );
+
         try {
             setIsLoadingRPS(true);
-            const resp = await fetch(
-                "http://localhost:3030/api/nfse/enviar-lote",
-                {
-                    method: "POST",
-                    //headers: { "Content-Type": "application/xml" },
-                    headers: { "Content-Type": "application/json" },
-                    //body: xml,
-                    body: JSON.stringify({ xml: xml }),
-                }
-            );
+            const result = await nfseContext.enviarLote({ xml });
 
-            const json = await resp.json();
-            if (!resp.ok) {
-                toast.error(
-                    "Erro no envio: " + (json.error || JSON.stringify(json))
-                );
-            } else {
-                toast.success("Lote enviado com sucesso (resposta recebida).");
-                console.log("Resposta servidor:", json);
-            }
+            // Mostra qual provider foi usado
+            const providerMsg =
+                result.provider === "focusnfe"
+                    ? " (via Focus NFe)"
+                    : " (via Prefeitura)";
+
+            toast.success("✅ Lote enviado com sucesso" + providerMsg);
+            console.log("Resposta servidor:", result);
+            console.log("Provider usado:", result.provider);
+            console.log("Protocolo:", result.protocolo);
         } catch (err) {
             console.error(err);
-            toast.error("Falha na conexão com o servidor de NFSe.");
+            const errorMsg =
+                err instanceof Error ? err.message : "Erro desconhecido";
+            toast.error(`Erro no envio: ${errorMsg}`);
         } finally {
             setIsLoadingRPS(false);
         }
@@ -402,9 +354,44 @@ export function Invoice() {
             (invoice) =>
                 // Filtra por service_code (Contrato) ou name (Nome)
                 invoice.service_code?.toLowerCase().includes(lowerCaseSearch) ||
-                invoice.name?.toLowerCase().includes(lowerCaseSearch)
+                invoice.name?.toLowerCase().includes(lowerCaseSearch),
         );
     }, [listInvoices, searchTerm]);
+
+    // ===================================
+    // AÇÕES DE EDIÇÃO E EXCLUSÃO
+    // ===================================
+    const handleEditInvoice = useCallback(
+        (invoice: IListInvoices) => {
+            navigate("/cobranca/RPS", { state: { editingInvoice: invoice } });
+        },
+        [navigate],
+    );
+
+    const handleDeleteInvoice = useCallback(
+        async (invoice: IListInvoices) => {
+            toast.warning(
+                `Deletando RPS ${invoice.rps_number} de ${invoice.name}...`,
+                { autoClose: 2000 },
+            );
+
+            try {
+                setIsLoadingRPS(true);
+                await invoiceContext.deleteInvoice(invoice.id);
+                toast.success(
+                    `RPS ${invoice.rps_number} deletada com sucesso!`,
+                );
+                // Recarrega a lista
+                fetchData();
+            } catch (error) {
+                console.error("Erro ao deletar RPS:", error);
+                toast.error(`Erro ao deletar RPS: ${error}`);
+            } finally {
+                setIsLoadingRPS(false);
+            }
+        },
+        [invoiceContext, fetchData],
+    );
 
     const nameColumnsFromRPS = useMemo(
         () => [
@@ -415,21 +402,33 @@ export function Invoice() {
             { field: "name", header: "Nome", width: "150px" },
             { field: "service_liquid_value", header: "Vlr.Líquido" },
         ],
-        []
+        [],
     );
 
     const renderActionButtons = useCallback(
-        () => (
-            <SButtonContainer>
-                <CustomButton $variant={"primary"} width="80px">
-                    Editar
-                </CustomButton>
-                <CustomButton $variant={"danger"} width="80px">
-                    Deletar
-                </CustomButton>
-            </SButtonContainer>
-        ),
-        []
+        (rowData: any) => {
+            // Alterado de IListInvoices para any
+            const invoice = rowData as IListInvoices; // Cast interno para manter o autocomplete
+            return (
+                <SButtonContainer>
+                    <CustomButton
+                        $variant={"primary"}
+                        width="80px"
+                        onClick={() => handleEditInvoice(invoice)}
+                    >
+                        Editar
+                    </CustomButton>
+                    <CustomButton
+                        $variant={"danger"}
+                        width="80px"
+                        onClick={() => handleDeleteInvoice(invoice)}
+                    >
+                        Deletar
+                    </CustomButton>
+                </SButtonContainer>
+            );
+        },
+        [handleEditInvoice, handleDeleteInvoice],
     );
 
     return (
