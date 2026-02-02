@@ -143,11 +143,6 @@ export function Invoice() {
             const valorServico = Number(rps.service_value || 0).toFixed(2);
             const codServico = PRESTADOR.CODIGO_SERVICO;
             const codCidadeIBGE = rps.city_ibge || PRESTADOR.MUNICIPIO;
-
-            const aliquota = Number(rps.aliquota || 5); // Padrão 5% para SP
-            const aliquotaFormatada = aliquota;
-            aliquota > 1 ? (aliquota / 100).toFixed(4) : aliquota.toFixed(4);
-
             const cpfCnpjLimpo = cleanData(rps.cpf_cnpj);
             const dataBanco = rps.rps_emission_date;
             const dataIso = dataBanco.split("/").reverse().join("-");
@@ -167,29 +162,28 @@ export function Invoice() {
             xml += `<StatusRPS>N</StatusRPS>`;
             xml += `<TributacaoRPS>T</TributacaoRPS>`;
             xml += `<Servico>`;
-            xml += `<ValorServicos>${valorServico}</ValorServicos>`;
-            xml += `<ValorDeducoes>${Number(rps.deduction_value || 0).toFixed(
-                2,
-            )}</ValorDeducoes>`;
-            xml += `<ValorPIS>${Number(rps.valor_pis || 0).toFixed(
-                2,
-            )}</ValorPIS>`;
-            xml += `<ValorCOFINS>${Number(rps.valor_cofins || 0).toFixed(
-                2,
-            )}</ValorCOFINS>`;
-            xml += `<ValorINSS>${Number(rps.valor_inss || 0).toFixed(
-                2,
-            )}</ValorINSS>`;
-            xml += `<ValorIR>${Number(rps.valor_ir || 0).toFixed(2)}</ValorIR>`;
-            xml += `<ValorCSLL>${Number(rps.valor_csll || 0).toFixed(
-                2,
-            )}</ValorCSLL>`;
-            xml += `<CodigoServico>${codServico}</CodigoServico>`;
-            xml += `<ValorISS>0</ValorISS>`;
-            xml += `<AliquotaServicos>${aliquotaFormatada}</AliquotaServicos>`;
             xml += `<ISSRetido>${
                 rps.iss_retido === true ? "true" : "false"
             }</ISSRetido>`;
+            xml += `<ValorServicos>${valorServico}</ValorServicos>`;
+            // xml += `<ValorDeducoes>${Number(rps.deduction_value || 0).toFixed(
+            //     2,
+            // )}</ValorDeducoes>`;
+            // xml += `<ValorPIS>${Number(rps.valor_pis || 0).toFixed(
+            //     2,
+            // )}</ValorPIS>`;
+            // xml += `<ValorCOFINS>${Number(rps.valor_cofins || 0).toFixed(
+            //     2,
+            // )}</ValorCOFINS>`;
+            // xml += `<ValorINSS>${Number(rps.valor_inss || 0).toFixed(
+            //     2,
+            // )}</ValorINSS>`;
+            // xml += `<ValorIR>${Number(rps.valor_ir || 0).toFixed(2)}</ValorIR>`;
+            // xml += `<ValorCSLL>${Number(rps.valor_csll || 0).toFixed(
+            //     2,
+            // )}</ValorCSLL>`;
+            xml += `<CodigoServico>${codServico}</CodigoServico>`;
+            xml += `<Discriminacao>${discriminacao}</Discriminacao>`;
             xml += `</Servico>`;
             xml += `<CPFCNPJTomador>`;
 
@@ -223,7 +217,6 @@ export function Invoice() {
             xml += `<UF>${escapeXml(rps.state).toUpperCase()}</UF>`;
             xml += `<CEP>${rps.zip_code.replace(/\D/g, "")}</CEP>`;
             xml += `</EnderecoTomador>`;
-            xml += `<Discriminacao>${discriminacao}</Discriminacao>`;
             // xml += `<MunicipioPrestacao>${PRESTADOR.MUNICIPIO}</MunicipioPrestacao>`;
             //xml += `<NumeroEncapsulamento>0</NumeroEncapsulamento>`;
             //xml += `<ValorTotalRecebido>${valorServico}</ValorTotalRecebido>`;
