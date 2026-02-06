@@ -69,25 +69,109 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
     ? insertMaskInCnpj(formData.buyer.cnpj_cpf)
     : "";
 
-  let formattedCSeller = formData.commission_seller
-    ? formData.type_commission_seller === "Percentual"
-      ? `${formData.commission_seller}%`
-      : `${formatCurrency(
+  // Formatação da comissão do vendedor
+  let formattedCSeller = "";
+  if (formData.commission_seller) {
+    if (formData.type_commission_seller === "Percentual") {
+      formattedCSeller = `${formData.commission_seller}%`;
+    } else if (formData.type_commission_seller === "Fixo") {
+      if (
+        formData.type_commission_seller_currency === "Dólar" &&
+        formData.commission_seller_contract_value
+      ) {
+        // Fixo em Dólar: mostra o valor convertido em reais
+        const valueInBRL =
+          typeof formData.commission_seller_contract_value === "number"
+            ? formData.commission_seller_contract_value
+                .toFixed(2)
+                .replace(".", ",")
+            : String(formData.commission_seller_contract_value).replace(
+                ".",
+                ",",
+              );
+        formattedCSeller = `R$ ${valueInBRL}`;
+      } else {
+        // Fixo em Real: mostra o valor fixo
+        formattedCSeller = formatCurrency(
           formData.commission_seller,
-          formData.type_currency,
-          true
-        )} por saca,`
-    : "";
+          "Real",
+          true,
+        );
+      }
+    } else if (formData.type_commission_seller === "Por Saca") {
+      if (
+        formData.type_commission_seller_currency === "Dólar" &&
+        formData.commission_seller_contract_value
+      ) {
+        // Por Saca em Dólar: mostra o valor total convertido em reais
+        const valueInBRL =
+          typeof formData.commission_seller_contract_value === "number"
+            ? formData.commission_seller_contract_value
+                .toFixed(2)
+                .replace(".", ",")
+            : String(formData.commission_seller_contract_value).replace(
+                ".",
+                ",",
+              );
+        formattedCSeller = `R$ ${valueInBRL}`;
+      } else {
+        // Por Saca em Real: mostra o valor por saca
+        formattedCSeller = `${formatCurrency(formData.commission_seller, "Real", true)} por saca,`;
+      }
+    }
+  }
 
-  let formattedCBuyer = formData.commission_buyer
-    ? formData.type_commission_buyer === "Percentual"
-      ? `${formData.commission_buyer}%`
-      : `${formatCurrency(
+  // Formatação da comissão do comprador
+  let formattedCBuyer = "";
+  if (formData.commission_buyer) {
+    if (formData.type_commission_buyer === "Percentual") {
+      formattedCBuyer = `${formData.commission_buyer}%`;
+    } else if (formData.type_commission_buyer === "Fixo") {
+      if (
+        formData.type_commission_buyer_currency === "Dólar" &&
+        formData.commission_buyer_contract_value
+      ) {
+        // Fixo em Dólar: mostra o valor convertido em reais
+        const valueInBRL =
+          typeof formData.commission_buyer_contract_value === "number"
+            ? formData.commission_buyer_contract_value
+                .toFixed(2)
+                .replace(".", ",")
+            : String(formData.commission_buyer_contract_value).replace(
+                ".",
+                ",",
+              );
+        formattedCBuyer = `R$ ${valueInBRL}`;
+      } else {
+        // Fixo em Real: mostra o valor fixo
+        formattedCBuyer = formatCurrency(
           formData.commission_buyer,
-          formData.type_currency,
-          true
-        )} por saca,`
-    : "";
+          "Real",
+          true,
+        );
+      }
+    } else if (formData.type_commission_buyer === "Por Saca") {
+      if (
+        formData.type_commission_buyer_currency === "Dólar" &&
+        formData.commission_buyer_contract_value
+      ) {
+        // Por Saca em Dólar: mostra o valor total convertido em reais
+        const valueInBRL =
+          typeof formData.commission_buyer_contract_value === "number"
+            ? formData.commission_buyer_contract_value
+                .toFixed(2)
+                .replace(".", ",")
+            : String(formData.commission_buyer_contract_value).replace(
+                ".",
+                ",",
+              );
+        formattedCBuyer = `R$ ${valueInBRL}`;
+      } else {
+        // Por Saca em Real: mostra o valor por saca
+        formattedCBuyer = `${formatCurrency(formData.commission_buyer, "Real", true)} por saca,`;
+      }
+    }
+  }
 
   // Só iremos remover essa regra das siglas, caso o cliente aceite a sugestão da reunião do dia 09/04/2025
   const listProducts = ["O", "OC", "OA", "SB", "EP"];
@@ -127,7 +211,7 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
   }
   const listProductsForMetricTon = ["O", "F", "OC", "OA", "SB", "EP"];
   const validProductsForMetricTon = listProductsForMetricTon.includes(
-    formData.product
+    formData.product,
   );
 
   let formattedSafra = validProductsForMetricTon
@@ -297,12 +381,12 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
               ? formatCurrency(
                   formData.price,
                   formData.type_currency,
-                  modeSave
+                  modeSave,
                 ).replace("$", "US$ ")
               : formatCurrency(
                   formData.price,
                   formData.type_currency,
-                  modeSave
+                  modeSave,
                 )}
           </strong>{" "}
           {/* por saca de 60(sessenta) quilos, */}
