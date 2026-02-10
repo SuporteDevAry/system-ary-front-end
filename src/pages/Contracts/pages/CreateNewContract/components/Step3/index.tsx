@@ -291,8 +291,23 @@ export const Step3: React.FC<StepProps> = ({
         let calculatedValue: number;
 
         if (formData.type_commission_seller_currency === "Real") {
-          // Em Real: o valor é o próprio commission_seller
-          calculatedValue = commissionValue;
+          // Em Real
+          if (formData.type_commission_seller === "Fixo") {
+            // Fixo em Real: o valor é o próprio commission_seller
+            calculatedValue = commissionValue;
+          } else {
+            // Por Saca em Real: (quantidade / 60) * valor_comissao
+            const quantity = parseFloat(
+              formData.quantity.replace(/\./g, "").replace(",", "."),
+            );
+            if (!isNaN(quantity)) {
+              calculatedValue = parseFloat(
+                ((quantity / 60) * commissionValue).toFixed(2),
+              );
+            } else {
+              return;
+            }
+          }
         } else if (formData.type_commission_seller_currency === "Dólar") {
           // Em Dólar: precisa da taxa de câmbio
           if (!formData.commission_seller_exchange_rate) {
@@ -311,7 +326,9 @@ export const Step3: React.FC<StepProps> = ({
               );
             } else {
               // Em Dólar por saca: (quantidade / 60) * valor_comissao * taxa_cambio
-              const quantity = parseFloat(formData.quantity.replace(",", "."));
+              const quantity = parseFloat(
+                formData.quantity.replace(/\./g, "").replace(",", "."),
+              );
               if (!isNaN(quantity)) {
                 calculatedValue = parseFloat(
                   ((quantity / 60) * commissionValue * exchangeRate).toFixed(2),
@@ -359,8 +376,23 @@ export const Step3: React.FC<StepProps> = ({
         let calculatedValue: number;
 
         if (formData.type_commission_buyer_currency === "Real") {
-          // Em Real: o valor é o próprio commission_buyer
-          calculatedValue = commissionValue;
+          // Em Real
+          if (formData.type_commission_buyer === "Fixo") {
+            // Fixo em Real: o valor é o próprio commission_buyer
+            calculatedValue = commissionValue;
+          } else {
+            // Por Saca em Real: (quantidade / 60) * valor_comissao
+            const quantity = parseFloat(
+              formData.quantity.replace(/\./g, "").replace(",", "."),
+            );
+            if (!isNaN(quantity)) {
+              calculatedValue = parseFloat(
+                ((quantity / 60) * commissionValue).toFixed(2),
+              );
+            } else {
+              return;
+            }
+          }
         } else if (formData.type_commission_buyer_currency === "Dólar") {
           // Em Dólar: precisa da taxa de câmbio
           if (!formData.commission_buyer_exchange_rate) {
@@ -379,7 +411,9 @@ export const Step3: React.FC<StepProps> = ({
               );
             } else {
               // Em Dólar por saca: (quantidade / 60) * valor_comissao * taxa_cambio
-              const quantity = parseFloat(formData.quantity.replace(",", "."));
+              const quantity = parseFloat(
+                formData.quantity.replace(/\./g, "").replace(",", "."),
+              );
               if (!isNaN(quantity)) {
                 calculatedValue = parseFloat(
                   ((quantity / 60) * commissionValue * exchangeRate).toFixed(2),

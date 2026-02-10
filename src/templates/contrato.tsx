@@ -99,11 +99,8 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
         );
       }
     } else if (formData.type_commission_seller === "Por Saca") {
-      if (
-        formData.type_commission_seller_currency === "Dólar" &&
-        formData.commission_seller_contract_value
-      ) {
-        // Por Saca em Dólar: mostra o valor total convertido em reais
+      // Se o valor calculado existir (contrato já salvo), usa ele
+      if (formData.commission_seller_contract_value) {
         const valueInBRL =
           typeof formData.commission_seller_contract_value === "number"
             ? formData.commission_seller_contract_value
@@ -114,9 +111,43 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
                 ",",
               );
         formattedCSeller = `R$ ${valueInBRL}`;
-      } else {
-        // Por Saca em Real: mostra o valor por saca
-        formattedCSeller = `${formatCurrency(formData.commission_seller, "Real", true)} por saca,`;
+      } else if (formData.commission_seller && formData.quantity) {
+        // Fallback: calcula localmente no review (antes de salvar)
+        const qty =
+          typeof formData.quantity === "number"
+            ? formData.quantity
+            : parseFloat(
+                String(formData.quantity).replace(/\./g, "").replace(",", "."),
+              );
+
+        let sacas = 0;
+        const typeQty = (formData.type_quantity || "quilos").toLowerCase();
+
+        if (typeQty.includes("kg") || typeQty.includes("quilo")) {
+          sacas = qty / 60;
+        } else if (typeQty.includes("tm") || typeQty.includes("tonelada")) {
+          sacas = (qty * 1000) / 60;
+        }
+
+        const commissionNum =
+          typeof formData.commission_seller === "number"
+            ? formData.commission_seller
+            : parseFloat(String(formData.commission_seller).replace(",", "."));
+
+        // Se for Dólar, multiplica pela taxa de câmbio
+        let total = sacas * commissionNum;
+        if (formData.type_commission_seller_currency === "Dólar") {
+          const exchangeRate =
+            formData.commission_seller_exchange_rate ||
+            formData.day_exchange_rate;
+          if (exchangeRate) {
+            const rate = parseFloat(String(exchangeRate).replace(",", "."));
+            total = total * rate;
+          }
+        }
+
+        const valueInBRL = total.toFixed(2).replace(".", ",");
+        formattedCSeller = `R$ ${valueInBRL}`;
       }
     }
   }
@@ -151,11 +182,8 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
         );
       }
     } else if (formData.type_commission_buyer === "Por Saca") {
-      if (
-        formData.type_commission_buyer_currency === "Dólar" &&
-        formData.commission_buyer_contract_value
-      ) {
-        // Por Saca em Dólar: mostra o valor total convertido em reais
+      // Se o valor calculado existir (contrato já salvo), usa ele
+      if (formData.commission_buyer_contract_value) {
         const valueInBRL =
           typeof formData.commission_buyer_contract_value === "number"
             ? formData.commission_buyer_contract_value
@@ -166,13 +194,46 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
                 ",",
               );
         formattedCBuyer = `R$ ${valueInBRL}`;
-      } else {
-        // Por Saca em Real: mostra o valor por saca
-        formattedCBuyer = `${formatCurrency(formData.commission_buyer, "Real", true)} por saca,`;
+      } else if (formData.commission_buyer && formData.quantity) {
+        // Fallback: calcula localmente no review (antes de salvar)
+        const qty =
+          typeof formData.quantity === "number"
+            ? formData.quantity
+            : parseFloat(
+                String(formData.quantity).replace(/\./g, "").replace(",", "."),
+              );
+
+        let sacas = 0;
+        const typeQty = (formData.type_quantity || "quilos").toLowerCase();
+
+        if (typeQty.includes("kg") || typeQty.includes("quilo")) {
+          sacas = qty / 60;
+        } else if (typeQty.includes("tm") || typeQty.includes("tonelada")) {
+          sacas = (qty * 1000) / 60;
+        }
+
+        const commissionNum =
+          typeof formData.commission_buyer === "number"
+            ? formData.commission_buyer
+            : parseFloat(String(formData.commission_buyer).replace(",", "."));
+
+        // Se for Dólar, multiplica pela taxa de câmbio
+        let total = sacas * commissionNum;
+        if (formData.type_commission_buyer_currency === "Dólar") {
+          const exchangeRate =
+            formData.commission_buyer_exchange_rate ||
+            formData.day_exchange_rate;
+          if (exchangeRate) {
+            const rate = parseFloat(String(exchangeRate).replace(",", "."));
+            total = total * rate;
+          }
+        }
+
+        const valueInBRL = total.toFixed(2).replace(".", ",");
+        formattedCBuyer = `R$ ${valueInBRL}`;
       }
     }
   }
-
   // Só iremos remover essa regra das siglas, caso o cliente aceite a sugestão da reunião do dia 09/04/2025
   const listProducts = ["O", "OC", "OA", "SB", "EP"];
   const validProducts = listProducts.includes(formData.product);
