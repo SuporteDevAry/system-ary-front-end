@@ -2,11 +2,18 @@ import { useCallback, useEffect, useState } from "react";
 import { CustomInput } from "../../../../../../components/CustomInput";
 import { formatCurrency } from "../../../../../../helpers/currencyFormat";
 import { StepProps } from "../../types";
-import { SContainer, SContentBox } from "./styles";
+import {
+  SContainer,
+  SContentBox,
+  SCommissionWrapper,
+  SRadioGroup,
+  SRadioOption,
+  SLabel,
+  SCustomInput,
+} from "./styles";
 import { fieldInfo, FieldType } from "./types";
 import CustomDatePicker from "../../../../../../components/CustomDatePicker";
 import { insertMaskInCnpj } from "../../../../../../helpers/front-end/insertMaskInCnpj";
-import { getCommissionFormat } from "./helpers";
 import {
   usePriceHandlers,
   useExchangeRateHandlers,
@@ -33,7 +40,7 @@ export const Step3: React.FC<StepProps> = ({
     handleExchangeRateBlur,
   } = useExchangeRateHandlers();
 
-  const { isEditingCommission, handleCommissionFocus, handleCommissionBlur } =
+  const { handleCommissionFocus, handleCommissionBlur } =
     useCommissionHandlers();
 
   const {
@@ -45,10 +52,10 @@ export const Step3: React.FC<StepProps> = ({
   } = useQuantityHandlers(formData, updateFormData);
 
   const [initialPickupDate, SetInitialPickupDate] = useState<string>(
-    formData.initial_pickup_date
+    formData.initial_pickup_date,
   );
   const [finalPickupDate, SetFinalPickupDate] = useState<string>(
-    formData.final_pickup_date
+    formData.final_pickup_date,
   );
 
   const concatenatedPickupText =
@@ -58,7 +65,7 @@ export const Step3: React.FC<StepProps> = ({
 
   const handleFieldPickupChange = (
     value: string,
-    concatenatedPickupText: string
+    concatenatedPickupText: string,
   ) => {
     const info = fieldInfo[value as FieldType];
 
@@ -96,6 +103,11 @@ export const Step3: React.FC<StepProps> = ({
         updateFormData?.({
           ...formData,
           type_commission_seller: value,
+          // Define moeda padrão ao mudar tipo de comissão
+          type_commission_seller_currency:
+            value === "Fixo" || value === "Por Saca"
+              ? formData.type_commission_seller_currency || "Real"
+              : formData.type_commission_seller_currency,
         });
         return;
       }
@@ -104,6 +116,22 @@ export const Step3: React.FC<StepProps> = ({
         updateFormData?.({
           ...formData,
           type_commission_buyer: value,
+        });
+        return;
+      }
+
+      if (name === "type_commission_seller_currency") {
+        updateFormData?.({
+          ...formData,
+          type_commission_seller_currency: value,
+        });
+        return;
+      }
+
+      if (name === "type_commission_buyer_currency") {
+        updateFormData?.({
+          ...formData,
+          type_commission_buyer_currency: value,
         });
         return;
       }
@@ -140,11 +168,11 @@ export const Step3: React.FC<StepProps> = ({
         },
       });
     },
-    [formData, updateFormData, handleChange, handleFieldPickupChange]
+    [formData, updateFormData, handleChange, handleFieldPickupChange],
   );
 
   const handleNumericInputChange = (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const { name, value } = event.target;
 
@@ -169,7 +197,7 @@ export const Step3: React.FC<StepProps> = ({
     cpfCnpj: string,
     bankName: string,
     accountNumber: string,
-    agency: string
+    agency: string,
   ) => {
     return `No dia ${date}, via Banco ${bankName || "...."}, Ag. nr. ${
       agency || "...."
@@ -192,8 +220,8 @@ export const Step3: React.FC<StepProps> = ({
         const cpfCnpj = dataBank[0].cnpj_pagto
           ? insertMaskInCnpj(dataBank[0].cnpj_pagto)
           : formData.seller?.cnpj_cpf
-          ? insertMaskInCnpj(formData.seller.cnpj_cpf)
-          : "00.000.000/0000-00";
+            ? insertMaskInCnpj(formData.seller.cnpj_cpf)
+            : "00.000.000/0000-00";
 
         const {
           bank_name: bankName,
@@ -208,7 +236,7 @@ export const Step3: React.FC<StepProps> = ({
             cpfCnpj,
             bankName,
             accountNumber,
-            agency
+            agency,
           );
 
           updateFormData({
@@ -224,7 +252,7 @@ export const Step3: React.FC<StepProps> = ({
           cpfCnpj,
           bankName,
           accountNumber,
-          agency
+          agency,
         );
 
         if (formData.type_currency === "Dólar") {
@@ -238,7 +266,7 @@ export const Step3: React.FC<StepProps> = ({
         });
       }
     },
-    [updateFormData, formData.seller]
+    [updateFormData, formData.seller],
   );
 
   useEffect(() => {
@@ -246,6 +274,176 @@ export const Step3: React.FC<StepProps> = ({
       handleFieldPickupChange(formData.type_pickup, concatenatedPickupText);
     }
   }, [initialPickupDate, finalPickupDate, formData.type_pickup]);
+
+  // Cálculo automático da comissão do vendedor em Reais
+  useEffect(() => {
+    if (
+      (formData.type_commission_seller === "Fixo" ||
+        formData.type_commission_seller === "Por Saca") &&
+      formData.type_commission_seller_currency &&
+      formData.commission_seller
+    ) {
+      const commissionValue = parseFloat(
+        formData.commission_seller.replace(",", "."),
+      );
+
+      if (!isNaN(commissionValue)) {
+        let calculatedValue: number;
+
+        if (formData.type_commission_seller_currency === "Real") {
+          // Em Real
+          if (formData.type_commission_seller === "Fixo") {
+            // Fixo em Real: o valor é o próprio commission_seller
+            calculatedValue = commissionValue;
+          } else {
+            // Por Saca em Real: (quantidade / 60) * valor_comissao
+            const quantity = parseFloat(
+              formData.quantity.replace(/\./g, "").replace(",", "."),
+            );
+            if (!isNaN(quantity)) {
+              calculatedValue = parseFloat(
+                ((quantity / 60) * commissionValue).toFixed(2),
+              );
+            } else {
+              return;
+            }
+          }
+        } else if (formData.type_commission_seller_currency === "Dólar") {
+          // Em Dólar: precisa da taxa de câmbio
+          if (!formData.commission_seller_exchange_rate) {
+            return;
+          }
+
+          const exchangeRate = parseFloat(
+            formData.commission_seller_exchange_rate.replace(",", "."),
+          );
+
+          if (!isNaN(exchangeRate)) {
+            if (formData.type_commission_seller === "Fixo") {
+              // Em Dólar fixo: valor_fixo * taxa_cambio
+              calculatedValue = parseFloat(
+                (exchangeRate * commissionValue).toFixed(2),
+              );
+            } else {
+              // Em Dólar por saca: (quantidade / 60) * valor_comissao * taxa_cambio
+              const quantity = parseFloat(
+                formData.quantity.replace(/\./g, "").replace(",", "."),
+              );
+              if (!isNaN(quantity)) {
+                calculatedValue = parseFloat(
+                  ((quantity / 60) * commissionValue * exchangeRate).toFixed(2),
+                );
+              } else {
+                return;
+              }
+            }
+          } else {
+            return;
+          }
+        } else {
+          return;
+        }
+
+        if (formData.commission_seller_contract_value !== calculatedValue) {
+          updateFormData?.({
+            ...formData,
+            commission_seller_contract_value: calculatedValue,
+          });
+        }
+      }
+    }
+  }, [
+    formData.type_commission_seller,
+    formData.type_commission_seller_currency,
+    formData.commission_seller,
+    formData.commission_seller_exchange_rate,
+    formData.quantity,
+  ]);
+
+  // Cálculo automático da comissão do comprador em Reais
+  useEffect(() => {
+    if (
+      (formData.type_commission_buyer === "Fixo" ||
+        formData.type_commission_buyer === "Por Saca") &&
+      formData.type_commission_buyer_currency &&
+      formData.commission_buyer
+    ) {
+      const commissionValue = parseFloat(
+        formData.commission_buyer.replace(",", "."),
+      );
+
+      if (!isNaN(commissionValue)) {
+        let calculatedValue: number;
+
+        if (formData.type_commission_buyer_currency === "Real") {
+          // Em Real
+          if (formData.type_commission_buyer === "Fixo") {
+            // Fixo em Real: o valor é o próprio commission_buyer
+            calculatedValue = commissionValue;
+          } else {
+            // Por Saca em Real: (quantidade / 60) * valor_comissao
+            const quantity = parseFloat(
+              formData.quantity.replace(/\./g, "").replace(",", "."),
+            );
+            if (!isNaN(quantity)) {
+              calculatedValue = parseFloat(
+                ((quantity / 60) * commissionValue).toFixed(2),
+              );
+            } else {
+              return;
+            }
+          }
+        } else if (formData.type_commission_buyer_currency === "Dólar") {
+          // Em Dólar: precisa da taxa de câmbio
+          if (!formData.commission_buyer_exchange_rate) {
+            return;
+          }
+
+          const exchangeRate = parseFloat(
+            formData.commission_buyer_exchange_rate.replace(",", "."),
+          );
+
+          if (!isNaN(exchangeRate)) {
+            if (formData.type_commission_buyer === "Fixo") {
+              // Em Dólar fixo: valor_fixo * taxa_cambio
+              calculatedValue = parseFloat(
+                (exchangeRate * commissionValue).toFixed(2),
+              );
+            } else {
+              // Em Dólar por saca: (quantidade / 60) * valor_comissao * taxa_cambio
+              const quantity = parseFloat(
+                formData.quantity.replace(/\./g, "").replace(",", "."),
+              );
+              if (!isNaN(quantity)) {
+                calculatedValue = parseFloat(
+                  ((quantity / 60) * commissionValue * exchangeRate).toFixed(2),
+                );
+              } else {
+                return;
+              }
+            }
+          } else {
+            return;
+          }
+        } else {
+          return;
+        }
+
+        if (formData.commission_buyer_contract_value !== calculatedValue) {
+          updateFormData?.({
+            ...formData,
+            commission_buyer_contract_value: calculatedValue,
+          });
+        }
+      }
+    }
+  }, [
+    formData.type_commission_buyer,
+    formData.type_commission_buyer_currency,
+    formData.commission_buyer,
+    formData.commission_buyer_exchange_rate,
+    formData.quantity,
+  ]);
 
   const handleDateChange = useCallback(
     (newDate: string, name: string) => {
@@ -263,7 +461,7 @@ export const Step3: React.FC<StepProps> = ({
         SetFinalPickupDate(newDate);
       }
     },
-    [updateFormData, formData]
+    [updateFormData, formData],
   );
 
   return (
@@ -363,58 +561,181 @@ export const Step3: React.FC<StepProps> = ({
         onChange={handleChange}
         value={formData.payment}
       />
-      <CustomInput
-        name="commission_seller"
-        label="Comissão Vendedor:"
-        $labelPosition="top"
-        onChange={handleNumericInputChange}
-        value={
-          isEditingCommission.seller
-            ? formData.commission_seller
-            : formData.type_commission_seller === "Valor"
-            ? `${getCommissionFormat(formData.type_commission_seller || "")}${
-                formData.commission_seller
-              }`
-            : `${formData.commission_seller}${getCommissionFormat(
-                formData.type_commission_seller || ""
-              )}`
-        }
-        radioOptions={[
-          { label: "Percentual", value: "Percentual" },
-          { label: "Valor", value: "Valor" },
-        ]}
-        onFocus={() => handleCommissionFocus("seller")}
-        onBlur={() => handleCommissionBlur("seller")}
-        radioPosition="inline"
-        onRadioChange={(e) => handleRadioChange(e, "type_commission_seller")}
-        selectedRadio={formData.type_commission_seller}
-      />
-      <CustomInput
-        name="commission_buyer"
-        label="Comissão Comprador:"
-        $labelPosition="top"
-        onChange={handleNumericInputChange}
-        value={
-          isEditingCommission.buyer
-            ? formData.commission_buyer
-            : formData.type_commission_buyer === "Valor"
-            ? `${getCommissionFormat(formData.type_commission_buyer || "")}${
-                formData.commission_buyer
-              }`
-            : `${formData.commission_buyer}${getCommissionFormat(
-                formData.type_commission_buyer || ""
-              )}`
-        }
-        onFocus={() => handleCommissionFocus("buyer")}
-        onBlur={() => handleCommissionBlur("buyer")}
-        radioOptions={[
-          { label: "Percentual", value: "Percentual" },
-          { label: "Valor", value: "Valor" },
-        ]}
-        radioPosition="inline"
-        onRadioChange={(e) => handleRadioChange(e, "type_commission_buyer")}
-        selectedRadio={formData.type_commission_buyer}
-      />
+      <SCommissionWrapper>
+        <SLabel>Comissão Vendedor:</SLabel>
+        <SRadioGroup>
+          <SRadioOption>
+            <input
+              type="radio"
+              name="type_commission_seller"
+              value="Percentual"
+              checked={formData.type_commission_seller === "Percentual"}
+              onChange={(e) => handleRadioChange(e, "type_commission_seller")}
+            />
+            <span>Percentual</span>
+          </SRadioOption>
+          <SRadioOption>
+            <input
+              type="radio"
+              name="type_commission_seller"
+              value="Por Saca"
+              checked={formData.type_commission_seller === "Por Saca"}
+              onChange={(e) => handleRadioChange(e, "type_commission_seller")}
+            />
+            <span>Por Saca</span>
+          </SRadioOption>
+          <SRadioOption>
+            <input
+              type="radio"
+              name="type_commission_seller"
+              value="Fixo"
+              checked={formData.type_commission_seller === "Fixo"}
+              onChange={(e) => handleRadioChange(e, "type_commission_seller")}
+            />
+            <span>Fixo</span>
+          </SRadioOption>
+        </SRadioGroup>
+        {(formData.type_commission_seller === "Por Saca" ||
+          formData.type_commission_seller === "Fixo") && (
+          <SRadioGroup>
+            <SRadioOption>
+              <input
+                type="radio"
+                name="type_commission_seller_currency"
+                value="Real"
+                checked={
+                  (formData.type_commission_seller_currency || "Real") ===
+                  "Real"
+                }
+                onChange={(e) =>
+                  handleRadioChange(e, "type_commission_seller_currency")
+                }
+              />
+              <span>BRL</span>
+            </SRadioOption>
+            <SRadioOption>
+              <input
+                type="radio"
+                name="type_commission_seller_currency"
+                value="Dólar"
+                checked={formData.type_commission_seller_currency === "Dólar"}
+                onChange={(e) =>
+                  handleRadioChange(e, "type_commission_seller_currency")
+                }
+              />
+              <span>USD</span>
+            </SRadioOption>
+          </SRadioGroup>
+        )}
+        <SCustomInput
+          type="text"
+          name="commission_seller"
+          onChange={handleNumericInputChange}
+          onFocus={() => handleCommissionFocus("seller")}
+          onBlur={() => handleCommissionBlur("seller")}
+          value={formData.commission_seller || ""}
+        />
+      </SCommissionWrapper>
+
+      {(formData.type_commission_seller === "Por Saca" ||
+        formData.type_commission_seller === "Fixo") &&
+        formData.type_commission_seller_currency === "Dólar" && (
+          <CustomInput
+            type="text"
+            name="commission_seller_exchange_rate"
+            label="Câmbio de Comissão:"
+            $labelPosition="top"
+            onChange={handleNumericInputChange}
+            value={formData.commission_seller_exchange_rate || ""}
+          />
+        )}
+      <SCommissionWrapper>
+        <SLabel>Comissão Comprador:</SLabel>
+        <SRadioGroup>
+          <SRadioOption>
+            <input
+              type="radio"
+              name="type_commission_buyer"
+              value="Percentual"
+              checked={formData.type_commission_buyer === "Percentual"}
+              onChange={(e) => handleRadioChange(e, "type_commission_buyer")}
+            />
+            <span>Percentual</span>
+          </SRadioOption>
+          <SRadioOption>
+            <input
+              type="radio"
+              name="type_commission_buyer"
+              value="Por Saca"
+              checked={formData.type_commission_buyer === "Por Saca"}
+              onChange={(e) => handleRadioChange(e, "type_commission_buyer")}
+            />
+            <span>Por Saca</span>
+          </SRadioOption>
+          <SRadioOption>
+            <input
+              type="radio"
+              name="type_commission_buyer"
+              value="Fixo"
+              checked={formData.type_commission_buyer === "Fixo"}
+              onChange={(e) => handleRadioChange(e, "type_commission_buyer")}
+            />
+            <span>Fixo</span>
+          </SRadioOption>
+        </SRadioGroup>
+        {(formData.type_commission_buyer === "Por Saca" ||
+          formData.type_commission_buyer === "Fixo") && (
+          <SRadioGroup>
+            <SRadioOption>
+              <input
+                type="radio"
+                name="type_commission_buyer_currency"
+                value="Real"
+                checked={
+                  (formData.type_commission_buyer_currency || "Real") === "Real"
+                }
+                onChange={(e) =>
+                  handleRadioChange(e, "type_commission_buyer_currency")
+                }
+              />
+              <span>BRL</span>
+            </SRadioOption>
+            <SRadioOption>
+              <input
+                type="radio"
+                name="type_commission_buyer_currency"
+                value="Dólar"
+                checked={formData.type_commission_buyer_currency === "Dólar"}
+                onChange={(e) =>
+                  handleRadioChange(e, "type_commission_buyer_currency")
+                }
+              />
+              <span>USD</span>
+            </SRadioOption>
+          </SRadioGroup>
+        )}
+        <SCustomInput
+          type="text"
+          name="commission_buyer"
+          onChange={handleNumericInputChange}
+          onFocus={() => handleCommissionFocus("buyer")}
+          onBlur={() => handleCommissionBlur("buyer")}
+          value={formData.commission_buyer || ""}
+        />
+      </SCommissionWrapper>
+
+      {(formData.type_commission_buyer === "Por Saca" ||
+        formData.type_commission_buyer === "Fixo") &&
+        formData.type_commission_buyer_currency === "Dólar" && (
+          <CustomInput
+            type="text"
+            name="commission_buyer_exchange_rate"
+            label="Câmbio de Comissão:"
+            $labelPosition="top"
+            onChange={handleNumericInputChange}
+            value={formData.commission_buyer_exchange_rate || ""}
+          />
+        )}
 
       <CustomInput
         name="type_pickup"
