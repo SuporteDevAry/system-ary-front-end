@@ -26,12 +26,16 @@ export const FormDataToIContractDataDTO = (
     type_commission_seller: data?.type_commission_seller,
     commission_seller: data?.commission_seller,
     type_commission_seller_currency: data?.type_commission_seller_currency,
-    commission_seller_exchange_rate: data?.commission_seller_exchange_rate,
+    commission_seller_exchange_rate: data?.commission_seller_exchange_rate
+      ? parseFloat(data.commission_seller_exchange_rate.replace(",", "."))
+      : undefined,
     commission_seller_contract_value: data?.commission_seller_contract_value,
     type_commission_buyer: data?.type_commission_buyer,
     commission_buyer: data?.commission_buyer,
     type_commission_buyer_currency: data?.type_commission_buyer_currency,
-    commission_buyer_exchange_rate: data?.commission_buyer_exchange_rate,
+    commission_buyer_exchange_rate: data?.commission_buyer_exchange_rate
+      ? parseFloat(data.commission_buyer_exchange_rate.replace(",", "."))
+      : undefined,
     commission_buyer_contract_value: data?.commission_buyer_contract_value,
     type_pickup: data.type_pickup,
     pickup: data.pickup,
