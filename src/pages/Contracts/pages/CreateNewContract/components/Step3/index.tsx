@@ -152,9 +152,32 @@ export const Step3: React.FC<StepProps> = ({
       }
 
       if (name === "type_quantity") {
+        // Converte o valor da quantidade quando troca entre quilos e toneladas
+        let convertedQuantity = formData.quantity;
+        const currentType = formData.type_quantity;
+
+        // Remove formatação para fazer a conversão
+        const numericValue = parseFloat(
+          formData.quantity.replace(/\./g, "").replace(",", "."),
+        );
+
+        if (!isNaN(numericValue)) {
+          // De quilos para toneladas métricas
+          if (currentType === "quilos" && value === "toneladas métricas") {
+            const inTonnes = numericValue / 1000;
+            convertedQuantity = inTonnes.toFixed(3).replace(".", ",");
+          }
+          // De toneladas métricas para quilos
+          else if (currentType === "toneladas métricas" && value === "quilos") {
+            const inKg = numericValue * 1000;
+            convertedQuantity = inKg.toFixed(3).replace(".", ",");
+          }
+        }
+
         updateFormData?.({
           ...formData,
           type_quantity: value,
+          quantity: convertedQuantity,
         });
         return;
       }
