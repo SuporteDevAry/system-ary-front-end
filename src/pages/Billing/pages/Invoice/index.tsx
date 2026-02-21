@@ -162,9 +162,7 @@ export function Invoice() {
             xml += `<StatusRPS>N</StatusRPS>`;
             xml += `<TributacaoRPS>T</TributacaoRPS>`;
             xml += `<Servico>`;
-            xml += `<ISSRetido>${
-                rps.iss_retido === true ? "true" : "false"
-            }</ISSRetido>`;
+            xml += `<ISSRetido>${0}</ISSRetido>`;
             xml += `<ValorServicos>${valorServico}</ValorServicos>`;
             // xml += `<ValorDeducoes>${Number(rps.deduction_value || 0).toFixed(
             //     2,
