@@ -352,15 +352,52 @@ export function ViewContract(): JSX.Element {
     { label: "Comprador", value: dataClient?.buyer.name },
   ];
 
-  const commission =
-    (
-      dataClient?.type_commission_seller || dataClient?.type_commission_buyer
-    )?.toLocaleLowerCase() === "percentual"
-      ? `${dataClient?.commission_seller}%`
-      : `R$ ${dataClient?.commission_seller}`;
+  const commissionType =
+    dataClient?.type_commission_seller ||
+    dataClient?.type_commission_buyer ||
+    "";
+  const commissionValue =
+    dataClient?.commission_seller ?? dataClient?.commission_buyer ?? "";
+  const commissionCurrency = dataClient?.type_commission_seller
+    ? dataClient?.type_commission_seller_currency
+    : dataClient?.type_commission_buyer_currency;
+
+  const commission = (() => {
+    const normalizedType = commissionType.toLocaleLowerCase();
+
+    if (
+      commissionValue === "" ||
+      commissionValue === null ||
+      commissionValue === undefined
+    )
+      return "";
+
+    if (normalizedType === "percentual") {
+      return `${commissionValue}%`;
+    }
+
+    const currencyType = commissionCurrency === "Dólar" ? "Dólar" : "Real";
+    let formattedCommission = formatCurrency(
+      String(commissionValue),
+      currencyType,
+      true,
+    );
+
+    if (currencyType === "Dólar") {
+      formattedCommission = formattedCommission.replace("$", "US$ ");
+    }
+
+    if (normalizedType === "por saca") {
+      return `${formattedCommission} por saca`;
+    }
+
+    return formattedCommission;
+  })();
+
+  const commissionTypeLabel = commissionType || "-";
 
   // TODO: [] Trabalhando pra chegar nesse cenário...
-      
+
   // const mapCurrencyLabel = (currency?: string) =>
   //   currency?.toUpperCase() === "USD" ? "Dólar" : "Real";
 
@@ -405,6 +442,10 @@ export function ViewContract(): JSX.Element {
       value: `${numberToQuantityString(finalQuantityValue)} ${unityMeasure}`,
     },
 
+    {
+      label: "Tipo Comissão:",
+      value: commissionTypeLabel,
+    },
     {
       label: "Comissão:",
       value: commission,

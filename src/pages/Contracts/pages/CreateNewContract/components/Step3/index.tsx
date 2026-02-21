@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import dayjs from "dayjs";
 import { CustomInput } from "../../../../../../components/CustomInput";
 import { formatCurrency } from "../../../../../../helpers/currencyFormat";
 import { StepProps } from "../../types";
@@ -40,7 +41,7 @@ export const Step3: React.FC<StepProps> = ({
     handleExchangeRateBlur,
   } = useExchangeRateHandlers();
 
-  const { handleCommissionFocus, handleCommissionBlur } =
+  const { isEditingCommission, handleCommissionFocus, handleCommissionBlur } =
     useCommissionHandlers();
 
   const {
@@ -62,6 +63,7 @@ export const Step3: React.FC<StepProps> = ({
     initialPickupDate === finalPickupDate
       ? `Até o dia ${initialPickupDate}`
       : `De ${initialPickupDate} até ${finalPickupDate}`;
+  const isMetricTon = formData.type_quantity === "toneladas métricas";
 
   const handleFieldPickupChange = (
     value: string,
@@ -100,6 +102,10 @@ export const Step3: React.FC<StepProps> = ({
       }
 
       if (name === "type_commission_seller") {
+        if (isMetricTon && value === "Por Saca") {
+          return;
+        }
+
         updateFormData?.({
           ...formData,
           type_commission_seller: value,
@@ -107,15 +113,23 @@ export const Step3: React.FC<StepProps> = ({
           type_commission_seller_currency:
             value === "Fixo" || value === "Por Saca"
               ? formData.type_commission_seller_currency || "Real"
-              : formData.type_commission_seller_currency,
+              : "",
         });
         return;
       }
 
       if (name === "type_commission_buyer") {
+        if (isMetricTon && value === "Por Saca") {
+          return;
+        }
+
         updateFormData?.({
           ...formData,
           type_commission_buyer: value,
+          type_commission_buyer_currency:
+            value === "Fixo" || value === "Por Saca"
+              ? formData.type_commission_buyer_currency || "Real"
+              : "",
         });
         return;
       }
@@ -174,10 +188,32 @@ export const Step3: React.FC<StepProps> = ({
           }
         }
 
+        const isSwitchingToMetricTon = value === "toneladas métricas";
+
         updateFormData?.({
           ...formData,
           type_quantity: value,
           quantity: convertedQuantity,
+          ...(isSwitchingToMetricTon &&
+          formData.type_commission_seller === "Por Saca"
+            ? {
+                type_commission_seller: "",
+                type_commission_seller_currency: "",
+                commission_seller: "",
+                commission_seller_exchange_rate: "",
+                commission_seller_contract_value: undefined,
+              }
+            : {}),
+          ...(isSwitchingToMetricTon &&
+          formData.type_commission_buyer === "Por Saca"
+            ? {
+                type_commission_buyer: "",
+                type_commission_buyer_currency: "",
+                commission_buyer: "",
+                commission_buyer_exchange_rate: "",
+                commission_buyer_contract_value: undefined,
+              }
+            : {}),
         });
         return;
       }
@@ -191,7 +227,13 @@ export const Step3: React.FC<StepProps> = ({
         },
       });
     },
-    [formData, updateFormData, handleChange, handleFieldPickupChange],
+    [
+      formData,
+      updateFormData,
+      handleChange,
+      handleFieldPickupChange,
+      isMetricTon,
+    ],
   );
 
   const handleNumericInputChange = (
@@ -213,6 +255,38 @@ export const Step3: React.FC<StepProps> = ({
       });
     }
   };
+
+  const handleCommissionTypeToggle = useCallback(
+    (type: "seller" | "buyer", value: string) => {
+      if (!updateFormData) return;
+
+      if (type === "seller") {
+        if (formData.type_commission_seller === value) {
+          updateFormData({
+            ...formData,
+            type_commission_seller: "",
+            type_commission_seller_currency: "",
+            commission_seller: "",
+            commission_seller_exchange_rate: "",
+            commission_seller_contract_value: undefined,
+          });
+        }
+        return;
+      }
+
+      if (formData.type_commission_buyer === value) {
+        updateFormData({
+          ...formData,
+          type_commission_buyer: "",
+          type_commission_buyer_currency: "",
+          commission_buyer: "",
+          commission_buyer_exchange_rate: "",
+          commission_buyer_contract_value: undefined,
+        });
+      }
+    },
+    [formData, updateFormData],
+  );
 
   const formatPaymentText = (
     date: string,
@@ -297,6 +371,41 @@ export const Step3: React.FC<StepProps> = ({
       handleFieldPickupChange(formData.type_pickup, concatenatedPickupText);
     }
   }, [initialPickupDate, finalPickupDate, formData.type_pickup]);
+
+  useEffect(() => {
+    if (!updateFormData || formData.type_quantity !== "toneladas métricas") {
+      return;
+    }
+
+    const shouldClearSeller = formData.type_commission_seller === "Por Saca";
+    const shouldClearBuyer = formData.type_commission_buyer === "Por Saca";
+
+    if (!shouldClearSeller && !shouldClearBuyer) {
+      return;
+    }
+
+    updateFormData({
+      ...formData,
+      ...(shouldClearSeller
+        ? {
+            type_commission_seller: "",
+            type_commission_seller_currency: "",
+            commission_seller: "",
+            commission_seller_exchange_rate: "",
+            commission_seller_contract_value: undefined,
+          }
+        : {}),
+      ...(shouldClearBuyer
+        ? {
+            type_commission_buyer: "",
+            type_commission_buyer_currency: "",
+            commission_buyer: "",
+            commission_buyer_exchange_rate: "",
+            commission_buyer_contract_value: undefined,
+          }
+        : {}),
+    });
+  }, [formData, updateFormData]);
 
   // Cálculo automático da comissão do vendedor em Reais
   useEffect(() => {
@@ -470,13 +579,34 @@ export const Step3: React.FC<StepProps> = ({
 
   const handleDateChange = useCallback(
     (newDate: string, name: string) => {
+      const parseDate = (date: string) => dayjs(date, "DD/MM/YYYY", true);
+
       if (name === "initial_pickup_date") {
+        const newInitialDate = parseDate(newDate);
+        const currentFinalDate = parseDate(formData.final_pickup_date || "");
+        const shouldAdjustFinalDate =
+          newInitialDate.isValid() &&
+          currentFinalDate.isValid() &&
+          currentFinalDate.isBefore(newInitialDate);
+
         updateFormData?.({
           ...formData,
           initial_pickup_date: newDate,
+          ...(shouldAdjustFinalDate ? { final_pickup_date: newDate } : {}),
         });
         SetInitialPickupDate(newDate);
       } else if (name === "final_pickup_date") {
+        const initialDate = parseDate(formData.initial_pickup_date || "");
+        const newFinalDate = parseDate(newDate);
+
+        if (
+          initialDate.isValid() &&
+          newFinalDate.isValid() &&
+          newFinalDate.isBefore(initialDate)
+        ) {
+          return;
+        }
+
         updateFormData?.({
           ...formData,
           final_pickup_date: newDate,
@@ -593,6 +723,7 @@ export const Step3: React.FC<StepProps> = ({
               name="type_commission_seller"
               value="Percentual"
               checked={formData.type_commission_seller === "Percentual"}
+              onClick={() => handleCommissionTypeToggle("seller", "Percentual")}
               onChange={(e) => handleRadioChange(e, "type_commission_seller")}
             />
             <span>Percentual</span>
@@ -603,7 +734,9 @@ export const Step3: React.FC<StepProps> = ({
               name="type_commission_seller"
               value="Por Saca"
               checked={formData.type_commission_seller === "Por Saca"}
+              onClick={() => handleCommissionTypeToggle("seller", "Por Saca")}
               onChange={(e) => handleRadioChange(e, "type_commission_seller")}
+              disabled={isMetricTon}
             />
             <span>Por Saca</span>
           </SRadioOption>
@@ -613,6 +746,7 @@ export const Step3: React.FC<StepProps> = ({
               name="type_commission_seller"
               value="Fixo"
               checked={formData.type_commission_seller === "Fixo"}
+              onClick={() => handleCommissionTypeToggle("seller", "Fixo")}
               onChange={(e) => handleRadioChange(e, "type_commission_seller")}
             />
             <span>Fixo</span>
@@ -656,7 +790,24 @@ export const Step3: React.FC<StepProps> = ({
           onChange={handleNumericInputChange}
           onFocus={() => handleCommissionFocus("seller")}
           onBlur={() => handleCommissionBlur("seller")}
-          value={formData.commission_seller || ""}
+          value={
+            isEditingCommission.seller
+              ? formData.commission_seller || ""
+              : formData.commission_seller &&
+                  (formData.type_commission_seller === "Fixo" ||
+                    formData.type_commission_seller === "Por Saca")
+                ? formatCurrency(
+                    formData.commission_seller,
+                    formData.type_commission_seller_currency || "Real",
+                    modeSave,
+                  )
+                : formData.commission_seller &&
+                    formData.type_commission_seller === "Percentual"
+                  ? `${parseFloat(
+                      String(formData.commission_seller).replace(",", "."),
+                    ).toFixed(2)} %`
+                  : formData.commission_seller || ""
+          }
         />
       </SCommissionWrapper>
 
@@ -681,6 +832,7 @@ export const Step3: React.FC<StepProps> = ({
               name="type_commission_buyer"
               value="Percentual"
               checked={formData.type_commission_buyer === "Percentual"}
+              onClick={() => handleCommissionTypeToggle("buyer", "Percentual")}
               onChange={(e) => handleRadioChange(e, "type_commission_buyer")}
             />
             <span>Percentual</span>
@@ -691,7 +843,9 @@ export const Step3: React.FC<StepProps> = ({
               name="type_commission_buyer"
               value="Por Saca"
               checked={formData.type_commission_buyer === "Por Saca"}
+              onClick={() => handleCommissionTypeToggle("buyer", "Por Saca")}
               onChange={(e) => handleRadioChange(e, "type_commission_buyer")}
+              disabled={isMetricTon}
             />
             <span>Por Saca</span>
           </SRadioOption>
@@ -701,6 +855,7 @@ export const Step3: React.FC<StepProps> = ({
               name="type_commission_buyer"
               value="Fixo"
               checked={formData.type_commission_buyer === "Fixo"}
+              onClick={() => handleCommissionTypeToggle("buyer", "Fixo")}
               onChange={(e) => handleRadioChange(e, "type_commission_buyer")}
             />
             <span>Fixo</span>
@@ -743,7 +898,24 @@ export const Step3: React.FC<StepProps> = ({
           onChange={handleNumericInputChange}
           onFocus={() => handleCommissionFocus("buyer")}
           onBlur={() => handleCommissionBlur("buyer")}
-          value={formData.commission_buyer || ""}
+          value={
+            isEditingCommission.buyer
+              ? formData.commission_buyer || ""
+              : formData.commission_buyer &&
+                  (formData.type_commission_buyer === "Fixo" ||
+                    formData.type_commission_buyer === "Por Saca")
+                ? formatCurrency(
+                    formData.commission_buyer,
+                    formData.type_commission_buyer_currency || "Real",
+                    modeSave,
+                  )
+                : formData.commission_buyer &&
+                    formData.type_commission_buyer === "Percentual"
+                  ? `${parseFloat(
+                      String(formData.commission_buyer).replace(",", "."),
+                    ).toFixed(2)} %`
+                  : formData.commission_buyer || ""
+          }
         />
       </SCommissionWrapper>
 
@@ -793,6 +965,7 @@ export const Step3: React.FC<StepProps> = ({
           $labelPosition="top"
           onChange={(date) => handleDateChange(date, "initial_pickup_date")}
           value={formData.initial_pickup_date}
+          maxDate={formData.final_pickup_date}
         />
         <CustomDatePicker
           width="150px"
@@ -802,6 +975,7 @@ export const Step3: React.FC<StepProps> = ({
           $labelPosition="top"
           onChange={(date) => handleDateChange(date, "final_pickup_date")}
           value={formData.final_pickup_date}
+          minDate={formData.initial_pickup_date}
         />
       </SContentBox>
 
