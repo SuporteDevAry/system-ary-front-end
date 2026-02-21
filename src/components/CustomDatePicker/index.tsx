@@ -19,13 +19,21 @@ export const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
   value,
   onChange,
   disableWeekends = false,
+  suggestCurrentDateWhenEmpty = true,
+  minDate,
+  maxDate,
 }) => {
   const currentDate = dayjs();
+
+  const parsedMinDate = minDate ? dayjs(minDate, "DD/MM/YYYY") : undefined;
+  const parsedMaxDate = maxDate ? dayjs(maxDate, "DD/MM/YYYY") : undefined;
 
   const handleDateChange = (newValue: dayjs.Dayjs | null) => {
     const formattedDate = newValue
       ? newValue.format("DD/MM/YYYY")
-      : currentDate.format("DD/MM/YYYY");
+      : suggestCurrentDateWhenEmpty
+        ? currentDate.format("DD/MM/YYYY")
+        : "";
 
     onChange(formattedDate);
   };
@@ -44,8 +52,16 @@ export const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
       <SLabel>{label}</SLabel>
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <DatePicker
-          value={value ? dayjs(value, "DD/MM/YYYY") : currentDate}
+          value={
+            value
+              ? dayjs(value, "DD/MM/YYYY")
+              : suggestCurrentDateWhenEmpty
+                ? currentDate
+                : null
+          }
           onChange={(newValue) => handleDateChange(newValue)}
+          minDate={parsedMinDate}
+          maxDate={parsedMaxDate}
           shouldDisableDate={shouldDisableDate}
           dayOfWeekFormatter={(day) => dayOfWeekLetters[day.day()]}
           slotProps={{
