@@ -8,6 +8,13 @@ import {
 } from "./types";
 import { AxiosError } from "axios";
 
+const sanitizePatchPayload = <T extends Record<string, unknown>>(
+  payload: T,
+): Partial<T> =>
+  Object.fromEntries(
+    Object.entries(payload).filter(([, value]) => value !== undefined),
+  ) as Partial<T>;
+
 const newContext = createContext<IContractContext>({
   getGrainContractById: () => Promise.resolve({ data: {} as IContractData }),
   reportContracts: () => Promise.resolve({ data: [] as IContractData[] }),
@@ -21,7 +28,7 @@ const newContext = createContext<IContractContext>({
 
 export const ContractProvider = ({ children }: IContractsProvider) => {
   async function getGrainContractById(
-    contractId: string
+    contractId: string,
   ): Promise<ApiResponse<IContractData>> {
     try {
       const response = await Api.get(`/grain-contracts/${contractId}`);
@@ -54,7 +61,7 @@ export const ContractProvider = ({ children }: IContractsProvider) => {
   }
 
   async function createContract(
-    contractData: IContractData
+    contractData: IContractData,
   ): Promise<ApiResponse<IContractData>> {
     try {
       const response = await Api.post("/grain-contracts", contractData);
@@ -73,12 +80,12 @@ export const ContractProvider = ({ children }: IContractsProvider) => {
 
   async function updateContract(
     contractId: string,
-    contractData: IContractData
+    contractData: IContractData,
   ): Promise<ApiResponse<IContractData>> {
     try {
       const response = await Api.patch(
         `/grain-contracts/${contractId}`,
-        contractData
+        contractData,
       );
 
       return response;
@@ -95,12 +102,12 @@ export const ContractProvider = ({ children }: IContractsProvider) => {
 
   async function deleteContract(
     contractId: string,
-    contractData: IContractData
+    contractData: IContractData,
   ): Promise<ApiResponse<IContractData>> {
     try {
       const response = await Api.patch(
         `/grain-contracts/${contractId}`,
-        contractData
+        contractData,
       );
 
       return response;
@@ -118,12 +125,14 @@ export const ContractProvider = ({ children }: IContractsProvider) => {
 
   async function updateContractAdjustments(
     contractId: string,
-    contractData: Partial<IContractData>
+    contractData: Partial<IContractData>,
   ): Promise<ApiResponse<Partial<IContractData>>> {
     try {
+      const sanitizedContractData = sanitizePatchPayload(contractData);
+
       const response = await Api.patch(
         `/grain-contracts/update-contract-adjustments/${contractId}`,
-        contractData
+        sanitizedContractData,
       );
 
       return response;
@@ -139,7 +148,7 @@ export const ContractProvider = ({ children }: IContractsProvider) => {
   }
 
   async function reportContracts(
-    filters: IContractReportFilters
+    filters: IContractReportFilters,
   ): Promise<ApiResponse<IContractData[]>> {
     try {
       const params: any = { ...filters };
