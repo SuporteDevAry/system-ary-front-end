@@ -28,9 +28,12 @@ import { useNavigate } from "react-router-dom";
 import { ModalBilling } from "../ModalBilling";
 import { formatCurrency } from "../../../../../../helpers/currencyFormat";
 import { ModalDelete } from "../../../../../../components/ModalDelete";
+import { Modal } from "../../../../../../components/Modal";
+import { CustomSelect } from "../../../../../../components/CustomSelect";
 import { BillingContext } from "../../../../../../contexts/BillingContext";
 import { ContractContext } from "../../../../../../contexts/ContractContext";
 import useInfo from "../../../../../../hooks/userInfo";
+import { useUserPermissions } from "../../../../../../hooks";
 import {
   formattedDate,
   formattedTime,
@@ -61,12 +64,15 @@ export function ViewBilling(): JSX.Element {
   const [modalContent, setModalContent] = useState<string>("");
   const navigate = useNavigate();
   const { dataUserInfo } = useInfo();
+  const { canChangeStatus } = useUserPermissions();
   const [billingIdForDelete, setBillingIdForDelete] = useState<
     string | undefined
   >();
   const [contractId, setContractId] = useState<any>();
   const [isModelDeleteOpen, setIsModalDelete] = useState<boolean>(false);
   const [isEditQuantityModal, setEditQuantityModal] = useState<boolean>(false);
+  const [isChangeStatusModal, setChangeStatusModal] = useState<boolean>(false);
+  const [selectedStatus, setSelectedStatus] = useState<string>("COBRANÇA");
   const [contractForModal, setContractForModal] =
     useState<IContractData | null>(null);
   const billingContext = BillingContext();
@@ -374,6 +380,68 @@ export function ViewBilling(): JSX.Element {
 
   const handleCloseDeleteModal = () => {
     setIsModalDelete(false);
+  };
+
+  const handleOpenChangeStatusModal = () => {
+    setSelectedStatus(dataClient?.status?.status_current || "COBRANÇA");
+    setChangeStatusModal(true);
+  };
+
+  const handleCloseChangeStatusModal = () => {
+    setChangeStatusModal(false);
+  };
+
+  const handleChangeStatus = async () => {
+    if (!dataClient || !dataClient.id) {
+      toast.error("Id do Contrato não encontrado.");
+      return;
+    }
+
+    if (!selectedStatus) {
+      toast.error("Por favor, selecione um status.");
+      return;
+    }
+
+    const newDate = formattedDate();
+    const newTime = formattedTime();
+
+    const newStatusEntry = {
+      date: newDate,
+      time: newTime,
+      status: selectedStatus,
+      owner_change: {
+        name: dataUserInfo?.name || "",
+        email: dataUserInfo?.email || "",
+      },
+    };
+
+    const updatedStatus = {
+      status_current: selectedStatus,
+      history: [...(dataClient.status?.history || []), newStatusEntry],
+    };
+
+    const shouldResetStatusReceived =
+      dataClient?.status?.status_current === "LIQUIDADO" &&
+      selectedStatus === "COBRANÇA";
+
+    const contractToUpdate = {
+      ...dataClient,
+      status: updatedStatus,
+      ...(shouldResetStatusReceived ? { status_received: "Não" } : {}),
+    };
+
+    try {
+      const response = await updateContract(dataClient.id, contractToUpdate);
+      toast.success(`Status do contrato atualizado para ${selectedStatus}`);
+      setChangeStatusModal(false);
+      navigate("/cobranca/visualizar-recebimento", {
+        state: {
+          contractForView: response.data || contractToUpdate,
+        },
+      });
+    } catch (error) {
+      toast.error(`Erro ao atualizar status: ${error}`);
+    }
   };
 
   const handleDeleteBilling = async () => {
@@ -738,6 +806,16 @@ export function ViewBilling(): JSX.Element {
               </SkeyName>
             </SKeyContainer>
             <BoxContainer>
+              {canChangeStatus && (
+                <CustomButton
+                  $variant="success"
+                  width="160px"
+                  onClick={handleOpenChangeStatusModal}
+                  disabled={!canChangeStatus}
+                >
+                  Mudar Status
+                </CustomButton>
+              )}
               <CustomButton
                 $variant="secondary"
                 width="120px"
@@ -838,6 +916,28 @@ export function ViewBilling(): JSX.Element {
           onHandleChange={handleChange}
         />
       )}
+      <Modal
+        titleText={`Selecione um novo status para o contrato ${dataClient?.number_contract}`}
+        open={isChangeStatusModal}
+        confirmButton="Alterar"
+        cancelButton="Fechar"
+        onClose={handleCloseChangeStatusModal}
+        onHandleConfirm={handleChangeStatus}
+        variantCancel={"primary"}
+        variantConfirm={"success"}
+      >
+        <CustomSelect
+          name="changeStatus"
+          label="Novo Status: "
+          $labelPosition="top"
+          selectOptions={[
+            { label: "Cobrança", value: "COBRANÇA" },
+            { label: "Liquidado", value: "LIQUIDADO" },
+          ]}
+          onSelectChange={(value) => setSelectedStatus(value)}
+          value={selectedStatus}
+        />
+      </Modal>
     </>
   );
 }
