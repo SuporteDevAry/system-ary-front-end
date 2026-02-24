@@ -20,7 +20,7 @@ export function PaymentContract() {
     const [searchTerm, setSearchTerm] = useState("");
     const [page, setPage] = useState(0);
     const [order, setOrder] = useState<"asc" | "desc">("desc");
-    const [orderBy, setOrderBy] = useState("charge_date");
+    const [orderBy, setOrderBy] = useState("payment_date");
     const [isSelectionModal, setSelectionModal] = useState<boolean>(false);
 
     type SelectState = {
@@ -36,7 +36,7 @@ export function PaymentContract() {
         const fmt = (d: Date) =>
             `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(
                 2,
-                "0"
+                "0",
             )}-${String(d.getDate()).padStart(2, "0")}`;
 
         return {
@@ -52,14 +52,14 @@ export function PaymentContract() {
     };
 
     const [selectData, setSelectData] = useState<SelectState>(
-        getInitialSelectData()
+        getInitialSelectData(),
     );
 
     const handleSelectionModal = () => setSelectionModal((prev) => !prev);
     const handleCloseModal = () => setSelectionModal(false);
 
     const handleChangeSelect = (
-        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
     ) => {
         const { name, value } = e.target;
         setSelectData((prev) => ({ ...prev, [name]: value }));
@@ -68,14 +68,18 @@ export function PaymentContract() {
     const fetchData = useCallback(async () => {
         try {
             setIsLoading(true);
+
             const response = await contractContext.listContracts();
-            setListContracts(response.data);
+
+            const filtered = applyBusinessFilter(response.data, selectData);
+
+            setListContracts(filtered);
         } catch (error) {
             toast.error(`Erro ao tentar ler contratos: ${error}`);
         } finally {
             setIsLoading(false);
         }
-    }, [contractContext]);
+    }, [contractContext, selectData]);
 
     useEffect(() => {
         fetchData();
@@ -96,7 +100,7 @@ export function PaymentContract() {
                     contract.buyer?.name
                         ?.toLowerCase()
                         .includes(lowerSearchTerm) ||
-                    contract.charge_date?.includes(lowerSearchTerm)
+                    contract.payment_date?.includes(lowerSearchTerm)
                 );
             });
         }
@@ -107,12 +111,12 @@ export function PaymentContract() {
                 const [day, month, year] = dateString.split("/");
                 return `${year}-${month.padStart(2, "0")}-${day.padStart(
                     2,
-                    "0"
+                    "0",
                 )}`;
             };
 
-            const aDate = new Date(convertToISO(a.charge_date)).getTime();
-            const bDate = new Date(convertToISO(b.charge_date)).getTime();
+            const aDate = new Date(convertToISO(a.payment_date)).getTime();
+            const bDate = new Date(convertToISO(b.payment_date)).getTime();
 
             return order === "asc" ? aDate - bDate : bDate - aDate;
         });
@@ -126,56 +130,16 @@ export function PaymentContract() {
 
             const response = await contractContext.listContracts();
 
-            const searchSeller =
-                selectData.SelectSeller?.trim().toLowerCase() || "";
-            const startDate = selectData.SelectDateStart
-                ? new Date(selectData.SelectDateStart)
-                : null;
-            const endDate = selectData.SelectDateEnd
-                ? new Date(selectData.SelectDateEnd)
-                : null;
+            const filtered = applyBusinessFilter(response.data, selectData);
 
-            const filteredContracts = response.data.filter(
-                (contract: { seller: any; charge_date: string }) => {
-                    if (
-                        typeof contract.seller.name !== "string" ||
-                        !contract.seller.name.trim()
-                    )
-                        return false;
-
-                    const sellerMatch = contract.seller.name
-                        .toLowerCase()
-                        .includes(searchSeller);
-
-                    if (!contract.charge_date) return false;
-
-                    const [day, month, year] = contract.charge_date
-                        .split("/")
-                        .map(Number);
-                    const emissionDate = new Date(year, month - 1, day);
-
-                    const startMatch = startDate
-                        ? emissionDate >= startDate
-                        : true;
-                    const endMatch = endDate ? emissionDate <= endDate : true;
-
-                    return sellerMatch && startMatch && endMatch;
-                }
-            );
-
-            setListContracts(filteredContracts);
+            setListContracts(filtered);
             setSelectionModal(false);
         } catch (error) {
             toast.error(`Erro ao tentar ler contratos: ${error}`);
         } finally {
             setIsLoading(false);
         }
-    }, [
-        selectData.SelectSeller,
-        selectData.SelectDateStart,
-        selectData.SelectDateEnd,
-        contractContext,
-    ]);
+    }, [selectData, contractContext]);
 
     const nameColumns: IColumn[] = useMemo(
         () => [
@@ -215,13 +179,26 @@ export function PaymentContract() {
                 width: "130px",
             },
         ],
-        []
+        [],
     );
 
-    const handleClearFilterModal = () => {
-        setSelectData(getInitialSelectData());
-        fetchData();
-        setSelectionModal(false);
+    const handleClearFilterModal = async () => {
+        const initial = getInitialSelectData();
+        setSelectData(initial);
+
+        try {
+            setIsLoading(true);
+            const response = await contractContext.listContracts();
+
+            const filtered = applyBusinessFilter(response.data, initial);
+
+            setListContracts(filtered);
+        } catch (error) {
+            toast.error(`Erro ao tentar ler contratos: ${error}`);
+        } finally {
+            setIsLoading(false);
+            setSelectionModal(false);
+        }
     };
 
     const isInitialFilter = useMemo(() => {
@@ -232,6 +209,54 @@ export function PaymentContract() {
             (selectData.SelectSeller?.trim() ?? "") === ""
         );
     }, [selectData]);
+
+    const applyBusinessFilter = (
+        data: IContractData[],
+        selectData: SelectState,
+    ) => {
+        const searchSeller =
+            selectData.SelectSeller?.trim().toLowerCase() || "";
+
+        const startDate = selectData.SelectDateStart
+            ? new Date(selectData.SelectDateStart)
+            : null;
+
+        const endDate = selectData.SelectDateEnd
+            ? new Date(selectData.SelectDateEnd)
+            : null;
+
+        return data.filter((contract) => {
+            if (
+                typeof contract.seller?.name !== "string" ||
+                !contract.seller.name.trim()
+            )
+                return false;
+
+            const sellerMatch = contract.seller.name
+                .toLowerCase()
+                .includes(searchSeller);
+
+            // 🔹 SEM filtro de data → somente sem charge_date
+            if (!startDate && !endDate) {
+                return sellerMatch && !contract.payment_date;
+            }
+
+            // 🔹 COM filtro de data → payment_date obrigatório
+            if (!contract.payment_date) return false;
+
+            const [day, month, year] = contract.payment_date
+                .split("/")
+                .map(Number);
+
+            const emissionDate = new Date(year, month - 1, day);
+
+            const startMatch = startDate ? emissionDate >= startDate : true;
+
+            const endMatch = endDate ? emissionDate <= endDate : true;
+
+            return sellerMatch && startMatch && endMatch;
+        });
+    };
 
     const handlePrint = (): void => {
         const printWindow = window.open("", "_blank");
@@ -258,7 +283,7 @@ export function PaymentContract() {
         ${nameColumns
             .map(
                 (col) =>
-                    `<th style="border:1px solid black;padding:4px;font-size:9px;">${col.header}</th>`
+                    `<th style="border:1px solid black;padding:4px;font-size:9px;">${col.header}</th>`,
             )
             .join("")}
     </tr>`;
@@ -367,7 +392,7 @@ export function PaymentContract() {
             <SContainerSearchAndButton>
                 <CustomSearch
                     width="450px"
-                    placeholder="Filtre por qualquer coluna..."
+                    placeholder="Pesquise Contrato,Vendedor,Comprador ou Dt.Vencto."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -407,7 +432,7 @@ export function PaymentContract() {
                 >
                     <SFormContainer>
                         <TextField
-                            label="Data Cobrança Inicial"
+                            label="Data Vencto. Inicial"
                             type="date"
                             InputLabelProps={{ shrink: true }}
                             variant="outlined"
@@ -417,7 +442,7 @@ export function PaymentContract() {
                             onChange={handleChangeSelect}
                         />
                         <TextField
-                            label="Data Cobrança Final"
+                            label="Data Vencto. Final"
                             type="date"
                             InputLabelProps={{ shrink: true }}
                             variant="outlined"
