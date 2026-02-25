@@ -12,7 +12,7 @@ export const SContainer = styled.div`
 
 export const SCardInfo = styled.div`
   padding: 16px;
-  width: 740px;
+  width: 960px;
   border-radius: 16px;
   background-color: ${(props) => props.theme["white"]};
   box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.16);
@@ -32,7 +32,7 @@ export const SCardInfoNumber = styled(SCardBase)`
 `;
 
 export const SCardInfoActions = styled(SCardBase)`
-  width: 462px;
+  width: 688px;
 `;
 
 export const SBox = styled.div`
