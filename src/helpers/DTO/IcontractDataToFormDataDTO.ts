@@ -3,7 +3,7 @@ import { FormDataContract } from "../../pages/Contracts/pages/CreateNewContract/
 import { numberToQuantityString } from "../quantityFormat";
 
 export const IContractDataToFormDataDTO = (
-  data: IContractData
+  data: IContractData,
 ): FormDataContract => {
   return {
     id: data.id,
@@ -25,8 +25,16 @@ export const IContractDataToFormDataDTO = (
     payment: data.payment,
     type_commission_seller: data?.type_commission_seller,
     commission_seller: data?.commission_seller?.toString(),
+    type_commission_seller_currency: data?.type_commission_seller_currency,
+    commission_seller_exchange_rate:
+      data?.commission_seller_exchange_rate?.toString(),
+    commission_seller_contract_value: data?.commission_seller_contract_value,
     type_commission_buyer: data?.type_commission_buyer,
     commission_buyer: data?.commission_buyer?.toString(),
+    type_commission_buyer_currency: data?.type_commission_buyer_currency,
+    commission_buyer_exchange_rate:
+      data?.commission_buyer_exchange_rate?.toString(),
+    commission_buyer_contract_value: data?.commission_buyer_contract_value,
     type_pickup: data.type_pickup,
     pickup: data.pickup,
     pickup_location: data.pickup_location,
