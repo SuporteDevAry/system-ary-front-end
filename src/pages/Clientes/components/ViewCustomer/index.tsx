@@ -35,7 +35,6 @@ import { useUserPermissions } from "../../../../hooks";
 import { ModalCreateNewAccount } from "./components/ModalCreateNewAccount";
 import { ModalUpdateAccount } from "./components/ModalUpdateAccount";
 import { ClienteContext } from "../../../../contexts/ClienteContext";
-import { useDebouncedValue } from "../../../../hooks/useDebouncedValue";
 
 export function ViewCustomer(): JSX.Element {
   const location = useLocation();
@@ -53,11 +52,11 @@ export function ViewCustomer(): JSX.Element {
   const [isUpdateContactModal, setUpdateContactModal] =
     useState<boolean>(false);
   const [contactForUpdate, setContactForUpdate] = useState<IListContatos>(
-    {} as IListContatos
+    {} as IListContatos,
   );
   const [isDeleteModal, setDeleteModal] = useState<boolean>(false);
   const [selectedContact, setSelectedContact] = useState<IListContatos | null>(
-    null
+    null,
   );
   const [modalContent, setModalContent] = useState<string>("");
   const [page, setPage] = useState(0);
@@ -71,13 +70,13 @@ export function ViewCustomer(): JSX.Element {
   const [isDeleteModalAccount, setDeleteModalAccount] =
     useState<boolean>(false);
   const [selectedAccount, setSelectedAccount] = useState<IListAccounts>(
-    {} as IListAccounts
+    {} as IListAccounts,
   );
   const [customerAccountList, setCustomerAccountList] = useState<
     IListAccounts[]
   >([]);
   const [accountForUpdate, setAccountForUpdate] = useState<IListAccounts>(
-    {} as IListAccounts
+    {} as IListAccounts,
   );
   const [clientSelected, setClienteSelected] = useState<string>("");
   const [pageAccount, setPageAccount] = useState(0);
@@ -96,18 +95,18 @@ export function ViewCustomer(): JSX.Element {
     try {
       setIsLoading(true);
       const response = await contactContext.getContactsByClient(
-        dataClient.code_client
+        dataClient.code_client,
       );
       setCustomerContactsList(response.data);
 
       const responseClient = await clienteContext.getClientById(
-        dataClient.code_client
+        dataClient.code_client,
       );
 
       setCustomerAccountList(responseClient.data.account);
     } catch (error) {
       toast.error(
-        `Erro ao tentar ler clientes, contacte o administrador do sistema ${error}`
+        `Erro ao tentar ler clientes, contacte o administrador do sistema ${error}`,
       );
     } finally {
       setIsLoading(false);
@@ -120,15 +119,10 @@ export function ViewCustomer(): JSX.Element {
     }
   }, [dataClient]);
 
-  const { filteredData, handleSearch } = useTableSearch({
+  const { filteredData } = useTableSearch({
     data: customerContactsList,
     searchTerm,
   });
-
-  const debouncedSearchTerm = useDebouncedValue(searchTerm, 300);
-  useEffect(() => {
-    handleSearch();
-  }, [debouncedSearchTerm, handleSearch]);
 
   const handleCreateNewContact = () => {
     setNewContactModal(true);
@@ -154,12 +148,12 @@ export function ViewCustomer(): JSX.Element {
       await contactContext.deleteContato(selectedContact.id);
 
       toast.success(
-        `Contato ${selectedContact.name} do cliente ${selectedContact.code_client}, foi deletado com sucesso!`
+        `Contato ${selectedContact.name} do cliente ${selectedContact.code_client}, foi deletado com sucesso!`,
       );
       fetchData();
     } catch (error) {
       toast.error(
-        `Erro ao tentar excluir cliente, contacte o administrador do sistema ${error}`
+        `Erro ao tentar excluir cliente, contacte o administrador do sistema ${error}`,
       );
     } finally {
       setDeleteModal(false);
@@ -169,7 +163,7 @@ export function ViewCustomer(): JSX.Element {
 
   const handleOpenDeleteModal = (contact: IListContatos) => {
     setModalContent(
-      `Tem certeza que deseja deletar o contato: ${contact.name}?`
+      `Tem certeza que deseja deletar o contato: ${contact.name}?`,
     );
     setSelectedContact(contact);
     setDeleteModal(true);
@@ -207,7 +201,7 @@ export function ViewCustomer(): JSX.Element {
 
   const handleOpenDeleteAccount = (account: IListAccounts) => {
     setModalAccount(
-      `Tem certeza que deseja deletar a c/c: ${account.account_number}?`
+      `Tem certeza que deseja deletar a c/c: ${account.account_number}?`,
     );
     setSelectedAccount(account);
     setDeleteModalAccount(true);
@@ -217,7 +211,7 @@ export function ViewCustomer(): JSX.Element {
     if (!selectedAccount) return;
     try {
       const newAccount = customerAccountList.filter(
-        (accounts) => accounts.id !== selectedAccount.id
+        (accounts) => accounts.id !== selectedAccount.id,
       );
 
       const dataToSave = {
@@ -227,12 +221,12 @@ export function ViewCustomer(): JSX.Element {
       clienteContext.updateCliente(clientSelected, dataToSave);
 
       toast.success(
-        `Conta Corrente ${selectedAccount.account_number} foi deletada com sucesso!`
+        `Conta Corrente ${selectedAccount.account_number} foi deletada com sucesso!`,
       );
       fetchData();
     } catch (error) {
       toast.error(
-        `Erro ao tentar excluir conta corrente, contacte o administrador do sistema ${error}`
+        `Erro ao tentar excluir conta corrente, contacte o administrador do sistema ${error}`,
       );
     } finally {
       setDeleteModalAccount(false);
@@ -258,7 +252,7 @@ export function ViewCustomer(): JSX.Element {
       { field: "agency", header: "Agência:" },
       { field: "account_number", header: "C/C:" },
     ],
-    []
+    [],
   );
 
   const formatCellValue = (row: any, column: { field: string }): string => {
@@ -274,7 +268,7 @@ export function ViewCustomer(): JSX.Element {
 
     if (column.field === "bank_number") {
       const mainAccountBank = row.account.find(
-        (account: any) => account.main === "S"
+        (account: any) => account.main === "S",
       );
 
       return mainAccountBank ? mainAccountBank.bank_name : "";
@@ -282,14 +276,14 @@ export function ViewCustomer(): JSX.Element {
 
     if (column.field === "agency") {
       const mainAccountAgency = row.account.find(
-        (account: any) => account.main === "S"
+        (account: any) => account.main === "S",
       );
       return mainAccountAgency ? mainAccountAgency.agency : "";
     }
 
     if (column.field === "account_number") {
       const mainAccountCurrent = row.account.find(
-        (account: any) => account.main === "S"
+        (account: any) => account.main === "S",
       );
       return mainAccountCurrent ? mainAccountCurrent.account_number : "";
     }
@@ -305,7 +299,7 @@ export function ViewCustomer(): JSX.Element {
       { field: "telephone", header: "Telefone" },
       { field: "cellphone", header: "Celular" },
     ],
-    []
+    [],
   );
 
   const nameColumnsFromAccount = useMemo(
@@ -316,7 +310,7 @@ export function ViewCustomer(): JSX.Element {
       { field: "account_number", header: "C/C", sortable: true },
       { field: "main", header: "Conta Principal", sortable: true },
     ],
-    []
+    [],
   );
 
   const renderActionButtons = useCallback(
@@ -340,7 +334,7 @@ export function ViewCustomer(): JSX.Element {
         </CustomButton>
       </SButtonContainer>
     ),
-    [handleUpdateCustomerContact, handleCloseDeleteModal]
+    [handleUpdateCustomerContact, handleCloseDeleteModal],
   );
 
   const renderActionButtonsAccount = useCallback(
@@ -364,7 +358,7 @@ export function ViewCustomer(): JSX.Element {
         </CustomButton>
       </SButtonContainer>
     ),
-    [handleUpdateAccount, handleCloseDeleteModalAccount]
+    [handleUpdateAccount, handleCloseDeleteModalAccount],
   );
 
   return (

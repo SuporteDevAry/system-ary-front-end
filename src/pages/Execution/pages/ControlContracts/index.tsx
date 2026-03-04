@@ -28,7 +28,7 @@ export function ControlContracts() {
   });
 
   const [selectData, setSelectData] = useState<SelectState>(
-    getInitialSelectData()
+    getInitialSelectData(),
   );
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [listcontracts, setListContracts] = useState<IContractData[]>([]);
@@ -83,18 +83,14 @@ export function ControlContracts() {
         setIsLoading(false);
       }
     },
-    [contractContext]
+    [contractContext],
   );
 
-  const { filteredData, handleSearch } = useTableSearch({
+  const { filteredData } = useTableSearch({
     data: listcontracts,
     searchTerm,
     searchableFields: ["contract_emission_date", "product", "number_contract"],
   });
-
-  useEffect(() => {
-    handleSearch();
-  }, [searchTerm, handleSearch]);
 
   const nameColumns: IColumn[] = useMemo(
     () => [
@@ -220,7 +216,7 @@ export function ControlContracts() {
         width: "200px",
       },
     ],
-    []
+    [],
   );
 
   const formatContracts = (contracts: any[]): IContractData[] => {
@@ -233,7 +229,7 @@ export function ControlContracts() {
       let total = 0;
       try {
         total = Number(
-          String(contract.total_contract_value).replace(/[,]/g, ".")
+          String(contract.total_contract_value).replace(/[,]/g, "."),
         );
       } catch (e) {
         total = 0;
@@ -243,8 +239,8 @@ export function ControlContracts() {
         String(
           contract.commission_seller == 0
             ? contract.commission_buyer
-            : contract.commission_seller
-        ).replace(",", ".")
+            : contract.commission_seller,
+        ).replace(",", "."),
       );
 
       const type_commission =
@@ -253,10 +249,10 @@ export function ControlContracts() {
             ? "P"
             : "V"
           : contract.type_commission_buyer != 0
-          ? contract.type_commission_buyer == "Percentual"
-            ? "P"
-            : "V"
-          : "?";
+            ? contract.type_commission_buyer == "Percentual"
+              ? "P"
+              : "V"
+            : "?";
 
       const commissionValue =
         type_commission == "P" ? (total * commission) / 100 : commission;

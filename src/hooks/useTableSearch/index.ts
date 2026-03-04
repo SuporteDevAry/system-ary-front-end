@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { useDebouncedValue } from "../useDebouncedValue";
 
 interface UseTableSearchProps<T extends Record<string, any>> {
@@ -15,11 +15,17 @@ function getNestedValue(obj: Record<string, any>, path: string): any {
 function useTableSearch<T extends Record<string, any>>({
   data,
   searchTerm,
-  searchableFields = Object.keys(data[0] || {}) as string[],
+  searchableFields,
   debounceDelay = 300,
 }: UseTableSearchProps<T>) {
   const debouncedSearchTerm = useDebouncedValue(searchTerm, debounceDelay);
   const [filteredData, setFilteredData] = useState<T[]>(data);
+  const searchableFieldsKey = searchableFields?.join("|") || "__AUTO__";
+
+  const resolvedSearchableFields = useMemo(
+    () => searchableFields ?? (Object.keys(data[0] || {}) as string[]),
+    [searchableFieldsKey, data],
+  );
 
   const handleSearch = useCallback(() => {
     if (debouncedSearchTerm.trim() === "") {
@@ -28,7 +34,7 @@ function useTableSearch<T extends Record<string, any>>({
       const lowercasedSearchTerm = debouncedSearchTerm.trim().toLowerCase();
 
       const result = data.filter((item) =>
-        searchableFields.some((field) => {
+        resolvedSearchableFields.some((field) => {
           const value = getNestedValue(item, field as string);
 
           if (value === null || value === undefined) {
@@ -42,12 +48,12 @@ function useTableSearch<T extends Record<string, any>>({
 
           const stringValue = value.toString().toLowerCase();
           return stringValue.includes(lowercasedSearchTerm);
-        })
+        }),
       );
 
       setFilteredData(result);
     }
-  }, [debouncedSearchTerm, data, searchableFields]);
+  }, [debouncedSearchTerm, data, resolvedSearchableFields]);
 
   useEffect(() => {
     handleSearch();

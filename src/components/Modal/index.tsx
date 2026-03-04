@@ -1,6 +1,5 @@
 import DialogTitle from "@mui/material/DialogTitle";
 import Dialog from "@mui/material/Dialog";
-import DialogContentText from "@mui/material/DialogContentText";
 import CustomButton from "../CustomButton";
 import { IModalProps } from "./types";
 import { SDialogActions, SDialogContent } from "./styles";
@@ -31,9 +30,7 @@ export function Modal({
       fullWidth={fullWidth}
     >
       <DialogTitle>{titleText}</DialogTitle>
-      <SDialogContent>
-        <DialogContentText>{children}</DialogContentText>
-      </SDialogContent>
+      <SDialogContent>{children}</SDialogContent>
       <SDialogActions>
         {cancelButton && (
           <CustomButton

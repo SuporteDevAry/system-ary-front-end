@@ -29,12 +29,12 @@ export const StepInformContract: React.FC<StepProps> = ({
       setListContracts(
         response.data.filter(
           (contract: IContractData) =>
-            contract.status.status_current === "VALIDADO"
-        )
+            contract.status.status_current === "VALIDADO",
+        ),
       );
     } catch (error) {
       toast.error(
-        `Erro ao tentar ler contratos, contacte o administrador do sistema: ${error}`
+        `Erro ao tentar ler contratos, contacte o administrador do sistema: ${error}`,
       );
     } finally {
       setIsLoading(false);
@@ -45,15 +45,11 @@ export const StepInformContract: React.FC<StepProps> = ({
     fetchData();
   }, [fetchData]);
 
-  const { filteredData, handleSearch } = useTableSearch({
+  const { filteredData } = useTableSearch({
     data: listcontracts,
     searchTerm,
     searchableFields: ["number_contract"],
   });
-
-  useEffect(() => {
-    handleSearch();
-  }, [searchTerm, handleSearch]);
 
   const handleViewContract = (contract: IContractData) => {
     updateFormData?.({
@@ -136,7 +132,7 @@ export const StepInformContract: React.FC<StepProps> = ({
           <strong>{contract.number_contract}</strong>
         </pre>
         foi selecionado, agora avance para a próxima etapa!
-      </div>
+      </div>,
     );
   };
 
@@ -173,7 +169,7 @@ export const StepInformContract: React.FC<StepProps> = ({
         sortable: true,
       },
     ],
-    []
+    [],
   );
 
   return (
