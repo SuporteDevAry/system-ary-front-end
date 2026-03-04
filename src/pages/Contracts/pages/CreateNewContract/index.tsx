@@ -8,7 +8,6 @@ import { Step3 } from "./components/Step3";
 import { Step4 } from "./components/Step4";
 import { Review } from "./components/Review";
 
-import dayjs from "dayjs";
 import Step from "@mui/material/Step";
 import StepLabel from "@mui/material/StepLabel";
 import CircularProgress from "@mui/material/CircularProgress";
@@ -26,14 +25,13 @@ export const CreateNewContract: React.FC = () => {
   const { createContract, updateContract } = ContractContext();
   const navigate = useNavigate();
   const location = useLocation();
-  const currentDate = dayjs().format("DD/MM/YYYY");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [activeStep, setActiveStep] = useState<number>(0);
   const { dataUserInfo } = useInfo();
   const [isEditMode, setIsEditMode] = useState<boolean>(false);
   const [formData, setFormData] = React.useState<FormDataContract>({
     id: "",
-    contract_emission_date: currentDate,
+    contract_emission_date: "",
     number_contract: "",
     number_broker: "",
     seller: {
@@ -73,7 +71,7 @@ export const CreateNewContract: React.FC = () => {
     price: "",
     type_icms: "",
     icms: "",
-    payment_date: currentDate,
+    payment_date: "",
     payment: "",
     type_commission_seller: "",
     commission_seller: "",
@@ -98,8 +96,8 @@ export const CreateNewContract: React.FC = () => {
     number_external_contract_buyer: "",
     day_exchange_rate: "",
     farm_direct: "",
-    initial_pickup_date: currentDate,
-    final_pickup_date: currentDate,
+    initial_pickup_date: "",
+    final_pickup_date: "",
     internal_communication: "",
     type_quantity: "",
     table_id: "",
@@ -206,7 +204,40 @@ export const CreateNewContract: React.FC = () => {
     return true;
   };
 
+  const validateRequiredDates = () => {
+    if (activeStep === 0 && !formData.contract_emission_date?.trim()) {
+      toast.info("Por favor, preencha a data de emissão do contrato.");
+      return false;
+    }
+
+    if (activeStep === 2) {
+      if (!formData.quantity?.trim() || !formData.price?.trim()) {
+        toast.info("Por favor, preencha quantidade e preço.");
+        return false;
+      }
+
+      if (!formData.payment_date?.trim()) {
+        toast.info("Por favor, preencha a data do pagamento.");
+        return false;
+      }
+
+      if (
+        !formData.initial_pickup_date?.trim() ||
+        !formData.final_pickup_date?.trim()
+      ) {
+        toast.info("Por favor, preencha as datas de retirada (De e Até).");
+        return false;
+      }
+    }
+
+    return true;
+  };
+
   const handleNext = async () => {
+    if (!validateRequiredDates()) {
+      return;
+    }
+
     if (activeStep === 2 && !validateStep3ExchangeRate()) {
       return;
     }

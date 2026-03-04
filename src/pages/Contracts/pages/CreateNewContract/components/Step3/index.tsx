@@ -702,6 +702,7 @@ export const Step3: React.FC<StepProps> = ({
         $labelPosition="top"
         onChange={handleDateForPaymentChange}
         value={formData.payment_date}
+        suggestCurrentDateWhenEmpty={false}
         disableWeekends
       />
 
@@ -963,6 +964,7 @@ export const Step3: React.FC<StepProps> = ({
           $labelPosition="top"
           onChange={(date) => handleDateChange(date, "initial_pickup_date")}
           value={formData.initial_pickup_date}
+          suggestCurrentDateWhenEmpty={false}
         />
         <CustomDatePicker
           width="150px"
@@ -972,6 +974,7 @@ export const Step3: React.FC<StepProps> = ({
           $labelPosition="top"
           onChange={(date) => handleDateChange(date, "final_pickup_date")}
           value={formData.final_pickup_date}
+          suggestCurrentDateWhenEmpty={false}
           minDate={formData.initial_pickup_date}
         />
       </SContentBox>
