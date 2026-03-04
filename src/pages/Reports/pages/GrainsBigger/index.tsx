@@ -10,136 +10,128 @@ import { SContainerSearchAndButton, STitle } from "./styles";
 import CustomButton from "../../../../components/CustomButton";
 
 export function GrainsBigger() {
-    const contractContext = ContractContext();
-    const [isLoading, setIsLoading] = useState<boolean>(true);
-    const [listcontracts, setListContracts] = useState<IContractData[]>([]);
-    const [searchTerm, setSearchTerm] = useState("");
-    const [page, setPage] = useState(0);
+  const contractContext = ContractContext();
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [listcontracts, setListContracts] = useState<IContractData[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [page, setPage] = useState(0);
 
-    const fetchData = useCallback(async () => {
-        try {
-            setIsLoading(true);
-            const response = await contractContext.listContracts();
+  const fetchData = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const response = await contractContext.listContracts();
 
-            const filteredContracts = response.data.filter(
-                (contract: IContractData) =>
-                    (contract.name_product &&
-                        contract.name_product.toUpperCase() ===
-                            "SOJA EM GRÃOS") ||
-                    contract.name_product.toUpperCase() === "MILHO EM GRÃOS" ||
-                    contract.name_product.toUpperCase() === "TRIGO" ||
-                    contract.name_product.toUpperCase() === "SORGO"
-            );
+      const filteredContracts = response.data.filter(
+        (contract: IContractData) =>
+          (contract.name_product &&
+            contract.name_product.toUpperCase() === "SOJA EM GRÃOS") ||
+          contract.name_product.toUpperCase() === "MILHO EM GRÃOS" ||
+          contract.name_product.toUpperCase() === "TRIGO" ||
+          contract.name_product.toUpperCase() === "SORGO",
+      );
 
-            const formatted = filteredContracts.map(
-                (contract: IContractData) => ({
-                    ...contract,
-                    quantity: Number(contract.quantity),
-                })
-            );
+      const formatted = filteredContracts.map((contract: IContractData) => ({
+        ...contract,
+        quantity: Number(contract.quantity),
+      }));
 
-            setListContracts(formatted);
-        } catch (error) {
-            toast.error(`Erro ao tentar ler contratos: ${error}`);
-        } finally {
-            setIsLoading(false);
-        }
-    }, [contractContext]);
+      setListContracts(formatted);
+    } catch (error) {
+      toast.error(`Erro ao tentar ler contratos: ${error}`);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [contractContext]);
 
-    useEffect(() => {
-        fetchData();
-    }, [fetchData]);
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
-    const { filteredData, handleSearch } = useTableSearch({
-        data: listcontracts,
-        searchTerm,
-        searchableFields: ["name_product", "seller.name"],
+  const { filteredData } = useTableSearch({
+    data: listcontracts,
+    searchTerm,
+    searchableFields: ["name_product", "seller.name"],
+  });
+
+  const pivotData = useMemo(() => {
+    const productSet = new Set<string>();
+    type PivotRow = {
+      seller: string;
+      TOTAL: number;
+      [product: string]: string | number;
+    };
+
+    const sellerMap = new Map<string, PivotRow>();
+
+    filteredData.forEach((item) => {
+      const sellerName = item.seller?.name.toUpperCase() ?? "DESCONHECIDO";
+      const product = item.product ?? "N/A";
+      const quantity = Number(item.quantity / 1000) || 0;
+
+      productSet.add(product);
+
+      if (!sellerMap.has(sellerName)) {
+        sellerMap.set(sellerName, { seller: sellerName, TOTAL: 0 });
+      }
+
+      const sellerEntry = sellerMap.get(sellerName)!;
+      sellerEntry[product] = Number(sellerEntry[product] || 0) + quantity;
+      sellerEntry.TOTAL += quantity;
     });
 
-    useEffect(() => {
-        handleSearch();
-    }, [searchTerm, handleSearch]);
+    const products = Array.from(productSet).sort();
 
-    const pivotData = useMemo(() => {
-        const productSet = new Set<string>();
-        type PivotRow = {
-            seller: string;
-            TOTAL: number;
-            [product: string]: string | number;
-        };
+    // Ordena compradores pelo maior total
+    const rows = Array.from(sellerMap.values()).sort(
+      (a, b) => b.TOTAL - a.TOTAL,
+    );
 
-        const sellerMap = new Map<string, PivotRow>();
+    return { rows, products };
+  }, [filteredData]);
 
-        filteredData.forEach((item) => {
-            const sellerName =
-                item.seller?.name.toUpperCase() ?? "DESCONHECIDO";
-            const product = item.product ?? "N/A";
-            const quantity = Number(item.quantity / 1000) || 0;
+  const nameColumns: IColumn[] = useMemo(() => {
+    const base = [
+      {
+        field: "seller",
+        header: "VENDEDOR",
+        width: "350px",
+      },
+    ];
 
-            productSet.add(product);
+    const productCols = pivotData.products.map((product) => ({
+      field: product,
+      header: product,
+      width: "120px",
+      render: (value: number) =>
+        typeof value === "number"
+          ? value.toLocaleString("pt-BR", {
+              maximumFractionDigits: 0,
+            })
+          : "",
+    }));
 
-            if (!sellerMap.has(sellerName)) {
-                sellerMap.set(sellerName, { seller: sellerName, TOTAL: 0 });
-            }
+    const totalCol = {
+      field: "TOTAL",
+      header: "TOTAL",
+      width: "150px",
+      render: (value: number) =>
+        typeof value === "number"
+          ? value.toLocaleString("pt-BR", {
+              maximumFractionDigits: 0,
+            })
+          : "",
+    };
 
-            const sellerEntry = sellerMap.get(sellerName)!;
-            sellerEntry[product] = Number(sellerEntry[product] || 0) + quantity;
-            sellerEntry.TOTAL += quantity;
-        });
+    return [...base, ...productCols, totalCol];
+  }, [pivotData.products]);
 
-        const products = Array.from(productSet).sort();
+  const handlePrint = (): void => {
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) return;
 
-        // Ordena compradores pelo maior total
-        const rows = Array.from(sellerMap.values()).sort(
-            (a, b) => b.TOTAL - a.TOTAL
-        );
+    const pageSize = 20;
 
-        return { rows, products };
-    }, [filteredData]);
-
-    const nameColumns: IColumn[] = useMemo(() => {
-        const base = [
-            {
-                field: "seller",
-                header: "VENDEDOR",
-                width: "350px",
-            },
-        ];
-
-        const productCols = pivotData.products.map((product) => ({
-            field: product,
-            header: product,
-            width: "120px",
-            render: (value: number) =>
-                typeof value === "number"
-                    ? value.toLocaleString("pt-BR", {
-                          maximumFractionDigits: 0,
-                      })
-                    : "",
-        }));
-
-        const totalCol = {
-            field: "TOTAL",
-            header: "TOTAL",
-            width: "150px",
-            render: (value: number) =>
-                typeof value === "number"
-                    ? value.toLocaleString("pt-BR", {
-                          maximumFractionDigits: 0,
-                      })
-                    : "",
-        };
-
-        return [...base, ...productCols, totalCol];
-    }, [pivotData.products]);
-
-    const handlePrint = (): void => {
-        const printWindow = window.open("", "_blank");
-        if (!printWindow) return;
-
-        const pageSize = 20;
-
-        printWindow.document.write(`
+    printWindow.document.write(`
         <html>
             <head>
                 <title>Grãos Maiores</title>
@@ -158,123 +150,119 @@ export function GrainsBigger() {
                 <h4>Grãos Maiores</h4>
     `);
 
-        const rows = pivotData.rows;
-        const columns = nameColumns;
+    const rows = pivotData.rows;
+    const columns = nameColumns;
 
-        for (let i = 0; i < rows.length; i += pageSize) {
-            const pageRows = rows.slice(i, i + pageSize);
+    for (let i = 0; i < rows.length; i += pageSize) {
+      const pageRows = rows.slice(i, i + pageSize);
 
-            printWindow.document.write(`<table><thead><tr>`);
-            columns.forEach((col) => {
-                printWindow.document.write(
-                    `<th style="width: ${col.width};">${col.header}</th>`
-                );
-            });
-            printWindow.document.write(`</tr></thead><tbody>`);
+      printWindow.document.write(`<table><thead><tr>`);
+      columns.forEach((col) => {
+        printWindow.document.write(
+          `<th style="width: ${col.width};">${col.header}</th>`,
+        );
+      });
+      printWindow.document.write(`</tr></thead><tbody>`);
 
-            pageRows.forEach((row) => {
-                printWindow.document.write(`<tr>`);
-                columns.forEach((col) => {
-                    const value = row[col.field];
-                    const formatted =
-                        typeof value === "number"
-                            ? value.toLocaleString("pt-BR", {
-                                  minimumFractionDigits: 0,
-                              })
-                            : value ?? "";
-                    printWindow.document.write(`<td>${formatted}</td>`);
-                });
-                printWindow.document.write(`</tr>`);
-            });
+      pageRows.forEach((row) => {
+        printWindow.document.write(`<tr>`);
+        columns.forEach((col) => {
+          const value = row[col.field];
+          const formatted =
+            typeof value === "number"
+              ? value.toLocaleString("pt-BR", {
+                  minimumFractionDigits: 0,
+                })
+              : (value ?? "");
+          printWindow.document.write(`<td>${formatted}</td>`);
+        });
+        printWindow.document.write(`</tr>`);
+      });
 
-            printWindow.document.write(`</tbody></table>`);
+      printWindow.document.write(`</tbody></table>`);
 
-            if (i + pageSize < rows.length) {
-                printWindow.document.write(`<div class="page-break"></div>`);
-            }
-        }
+      if (i + pageSize < rows.length) {
+        printWindow.document.write(`<div class="page-break"></div>`);
+      }
+    }
 
-        printWindow.document.write(`
+    printWindow.document.write(`
             </body>
         </html>
     `);
 
-        printWindow.document.close();
-        printWindow.print();
-        printWindow.close();
-    };
+    printWindow.document.close();
+    printWindow.print();
+    printWindow.close();
+  };
 
-    const handleExportCSV = () => {
-        const headers = nameColumns.map((col) => `"${col.header}"`).join(";");
+  const handleExportCSV = () => {
+    const headers = nameColumns.map((col) => `"${col.header}"`).join(";");
 
-        const rows = pivotData.rows.map((row) => {
-            return nameColumns
-                .map((col) => {
-                    const value = row[col.field];
+    const rows = pivotData.rows.map((row) => {
+      return nameColumns
+        .map((col) => {
+          const value = row[col.field];
 
-                    if (typeof value === "number") {
-                        return `"${value.toLocaleString("pt-BR", {
-                            minimumFractionDigits: 0,
-                        })}"`;
-                    }
+          if (typeof value === "number") {
+            return `"${value.toLocaleString("pt-BR", {
+              minimumFractionDigits: 0,
+            })}"`;
+          }
 
-                    return `"${value ?? ""}"`;
-                })
-                .join(";");
-        });
+          return `"${value ?? ""}"`;
+        })
+        .join(";");
+    });
 
-        const BOM = "\uFEFF";
-        const csvContent = [headers, ...rows].join("\n");
-        const blob = new Blob([BOM + csvContent], {
-            type: "text/csv;charset=utf-8;",
-        });
-        const url = URL.createObjectURL(blob);
+    const BOM = "\uFEFF";
+    const csvContent = [headers, ...rows].join("\n");
+    const blob = new Blob([BOM + csvContent], {
+      type: "text/csv;charset=utf-8;",
+    });
+    const url = URL.createObjectURL(blob);
 
-        const link = document.createElement("a");
-        link.href = url;
-        link.setAttribute("download", "graos-maiores.csv");
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    };
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "graos-maiores.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
-    return (
-        <>
-            <STitle>Grãos Maiores</STitle>
-            <SContainerSearchAndButton>
-                <CustomSearch
-                    width="450px"
-                    placeholder="Filtre por Sigla ou Vendedor"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                />
-                <CustomButton
-                    $variant="success"
-                    width="150px"
-                    onClick={handlePrint}
-                >
-                    Imprimir
-                </CustomButton>
-                <CustomButton
-                    $variant="success"
-                    width="150px"
-                    onClick={handleExportCSV}
-                >
-                    Exportar CSV
-                </CustomButton>
-            </SContainerSearchAndButton>
-            <CustomTable
-                isLoading={isLoading}
-                data={pivotData.rows}
-                columns={nameColumns}
-                hasPagination={true}
-                page={page}
-                setPage={setPage}
-                order="desc"
-                orderBy="TOTAL"
-                setOrder={() => {}}
-                setOrderBy={() => {}}
-            />
-        </>
-    );
+  return (
+    <>
+      <STitle>Grãos Maiores</STitle>
+      <SContainerSearchAndButton>
+        <CustomSearch
+          width="450px"
+          placeholder="Filtre por Sigla ou Vendedor"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+        <CustomButton $variant="success" width="150px" onClick={handlePrint}>
+          Imprimir
+        </CustomButton>
+        <CustomButton
+          $variant="success"
+          width="150px"
+          onClick={handleExportCSV}
+        >
+          Exportar CSV
+        </CustomButton>
+      </SContainerSearchAndButton>
+      <CustomTable
+        isLoading={isLoading}
+        data={pivotData.rows}
+        columns={nameColumns}
+        hasPagination={true}
+        page={page}
+        setPage={setPage}
+        order="desc"
+        orderBy="TOTAL"
+        setOrder={() => {}}
+        setOrderBy={() => {}}
+      />
+    </>
+  );
 }

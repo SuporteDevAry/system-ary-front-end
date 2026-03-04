@@ -60,10 +60,6 @@ export function ModalClientes({
     searchTerm,
   });
 
-  useEffect(() => {
-    handleSearch();
-  }, [searchTerm]);
-
   const nameColumns: IColumn[] = useMemo(
     () => [
       { field: "name", header: "Nome", sortable: true },
@@ -72,7 +68,7 @@ export function ModalClientes({
       { field: "city", header: "Cidade" },
       { field: "state", header: "UF" },
     ],
-    []
+    [],
   );
 
   return (

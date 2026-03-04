@@ -40,7 +40,7 @@ export function HistoryContracts() {
   };
 
   const [selectData, setSelectData] = useState<SelectState>(
-    getInitialSelectData()
+    getInitialSelectData(),
   );
 
   const handleSelectionModal = () => setSelectionModal((prev) => !prev);
@@ -55,7 +55,7 @@ export function HistoryContracts() {
       setListContracts(response.data);
     } catch (error) {
       toast.error(
-        `Erro ao tentar ler contratos, contacte o administrador do sistema: ${error}`
+        `Erro ao tentar ler contratos, contacte o administrador do sistema: ${error}`,
       );
     } finally {
       setIsLoading(false);
@@ -75,7 +75,7 @@ export function HistoryContracts() {
       let total = 0;
       try {
         total = Number(
-          String(contract.total_contract_value).replace(/[,]/g, ".")
+          String(contract.total_contract_value).replace(/[,]/g, "."),
         );
       } catch (e) {
         total = 0;
@@ -85,8 +85,8 @@ export function HistoryContracts() {
         String(
           contract.commission_seller == 0
             ? contract.commission_buyer
-            : contract.commission_seller
-        ).replace(",", ".")
+            : contract.commission_seller,
+        ).replace(",", "."),
       );
 
       const type_commission =
@@ -95,10 +95,10 @@ export function HistoryContracts() {
             ? "P"
             : "V"
           : contract.type_commission_buyer != 0
-          ? contract.type_commission_buyer == "Percentual"
-            ? "P"
-            : "V"
-          : "?";
+            ? contract.type_commission_buyer == "Percentual"
+              ? "P"
+              : "V"
+            : "?";
 
       const commissionValue =
         type_commission == "P" ? (total * commission) / 100 : commission;
@@ -148,7 +148,7 @@ export function HistoryContracts() {
         setIsLoading(false);
       }
     },
-    [contractContext, allContracts]
+    [contractContext, allContracts],
   );
 
   const handleClearFilter = () => {
@@ -166,7 +166,7 @@ export function HistoryContracts() {
     return !selectIsInitial || listDiffers;
   }, [selectData, listcontracts, allContracts]);
 
-  const { filteredData, handleSearch } = useTableSearch({
+  const { filteredData } = useTableSearch({
     data: listcontracts,
     searchTerm,
     searchableFields: [
@@ -176,10 +176,6 @@ export function HistoryContracts() {
       "seller.name",
     ],
   });
-
-  useEffect(() => {
-    handleSearch();
-  }, [searchTerm, listcontracts, handleSearch]);
 
   const handleViewContract = (contract: IContractData) => {
     navigate("/contratos/historico/visualizar-contrato", {
@@ -261,7 +257,7 @@ export function HistoryContracts() {
         sortable: true,
       },
     ],
-    []
+    [],
   );
 
   const renderActionButtons = (row: any) => (

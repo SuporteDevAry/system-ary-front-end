@@ -48,7 +48,7 @@ export function Receipt() {
     fetchData();
   }, [fetchData]);
 
-  const { filteredData, handleSearch } = useTableSearch({
+  const { filteredData } = useTableSearch({
     data: listcontracts,
     searchTerm,
     searchableFields: [
@@ -58,10 +58,6 @@ export function Receipt() {
       "payment_date",
     ],
   });
-
-  useEffect(() => {
-    handleSearch();
-  }, [searchTerm, handleSearch]);
 
   const handleViewContract = (contract: IContractData) => {
     navigate("/cobranca/visualizar-recebimento", {

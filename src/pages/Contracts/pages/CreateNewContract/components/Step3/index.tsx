@@ -308,23 +308,21 @@ export const Step3: React.FC<StepProps> = ({
       if (updateFormData) {
         const dataBank =
           formData.seller?.account?.filter((i) => i.main === "S") || [];
+        const mainAccount = dataBank[0];
 
-        const sellerName = dataBank[0]
-          ? dataBank[0].name_pagto
-          : formData.seller?.name || "vendedor";
+        const sellerName =
+          mainAccount?.name_pagto || formData.seller?.name || "vendedor";
 
         //Alterar aqui embaixo, quando o cnpj_pagto estiver vindo do accounts
-        const cpfCnpj = dataBank[0].cnpj_pagto
-          ? insertMaskInCnpj(dataBank[0].cnpj_pagto)
+        const cpfCnpj = mainAccount?.cnpj_pagto
+          ? insertMaskInCnpj(mainAccount.cnpj_pagto)
           : formData.seller?.cnpj_cpf
             ? insertMaskInCnpj(formData.seller.cnpj_cpf)
             : "00.000.000/0000-00";
 
-        const {
-          bank_name: bankName,
-          account_number: accountNumber,
-          agency,
-        } = dataBank[0];
+        const bankName = mainAccount?.bank_name || "";
+        const accountNumber = mainAccount?.account_number || "";
+        const agency = mainAccount?.agency || "";
 
         if (dataBank.length === 0) {
           const paymentText = formatPaymentText(
@@ -363,7 +361,7 @@ export const Step3: React.FC<StepProps> = ({
         });
       }
     },
-    [updateFormData, formData.seller],
+    [updateFormData, formData.seller, formData.type_currency],
   );
 
   useEffect(() => {

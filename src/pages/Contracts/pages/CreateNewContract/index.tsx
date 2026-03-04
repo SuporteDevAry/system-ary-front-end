@@ -137,7 +137,7 @@ export const CreateNewContract: React.FC = () => {
   }, [dataUserInfo]);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
     setFormData((prevFormData) => ({
@@ -178,7 +178,39 @@ export const CreateNewContract: React.FC = () => {
     }));
   };
 
+  const validateStep3ExchangeRate = () => {
+    const hasDollarPriceWithoutExchangeRate =
+      formData.type_currency === "Dólar" && !formData.day_exchange_rate?.trim();
+
+    const hasSellerCommissionInDollarWithoutExchangeRate =
+      (formData.type_commission_seller === "Fixo" ||
+        formData.type_commission_seller === "Por Saca") &&
+      formData.type_commission_seller_currency === "Dólar" &&
+      !formData.commission_seller_exchange_rate?.trim();
+
+    const hasBuyerCommissionInDollarWithoutExchangeRate =
+      (formData.type_commission_buyer === "Fixo" ||
+        formData.type_commission_buyer === "Por Saca") &&
+      formData.type_commission_buyer_currency === "Dólar" &&
+      !formData.commission_buyer_exchange_rate?.trim();
+
+    if (
+      hasDollarPriceWithoutExchangeRate ||
+      hasSellerCommissionInDollarWithoutExchangeRate ||
+      hasBuyerCommissionInDollarWithoutExchangeRate
+    ) {
+      toast.info("Por favor, insira a taxa de câmbio.");
+      return false;
+    }
+
+    return true;
+  };
+
   const handleNext = async () => {
+    if (activeStep === 2 && !validateStep3ExchangeRate()) {
+      return;
+    }
+
     if (activeStep === steps.length - 1) {
       // Se for o último step, cria o contrato
 
@@ -194,7 +226,7 @@ export const CreateNewContract: React.FC = () => {
               Contrato de Número:
               <strong>{response?.data?.number_contract}</strong>
               atualizado com sucesso!
-            </div>
+            </div>,
           );
         }
         if (!isEditMode) {
@@ -212,7 +244,7 @@ export const CreateNewContract: React.FC = () => {
               Contrato de Número:
               <strong>{response?.data?.number_contract}</strong>
               criado com sucesso!
-            </div>
+            </div>,
           );
         }
 
@@ -221,7 +253,7 @@ export const CreateNewContract: React.FC = () => {
         toast.error(
           `Erro ao tentar ${
             isEditMode ? "atualizar" : "criar"
-          } contrato, contacte o administrador do sistema ${error}`
+          } contrato, contacte o administrador do sistema ${error}`,
         );
       } finally {
         setIsLoading(false);
@@ -241,6 +273,7 @@ export const CreateNewContract: React.FC = () => {
       label: "Identificação",
       elements: [
         <Step1
+          key="step1"
           id="step1"
           formData={formData}
           handleChange={handleChange}
@@ -253,6 +286,7 @@ export const CreateNewContract: React.FC = () => {
       label: "Produto",
       elements: [
         <Step2
+          key="step2"
           id="step2"
           formData={formData}
           handleChange={handleChange}
@@ -265,6 +299,7 @@ export const CreateNewContract: React.FC = () => {
       label: "Info. de Venda",
       elements: [
         <Step3
+          key="step3"
           id="step3"
           formData={formData}
           handleChange={handleChange}
@@ -276,13 +311,23 @@ export const CreateNewContract: React.FC = () => {
     {
       label: "Observação",
       elements: [
-        <Step4 id="step4" formData={formData} handleChange={handleChange} />,
+        <Step4
+          key="step4"
+          id="step4"
+          formData={formData}
+          handleChange={handleChange}
+        />,
       ],
     },
     {
       label: "Review",
       elements: [
-        <Review id="review" formData={formData} isEditMode={isEditMode} />,
+        <Review
+          key="review"
+          id="review"
+          formData={formData}
+          isEditMode={isEditMode}
+        />,
       ],
     },
   ];
