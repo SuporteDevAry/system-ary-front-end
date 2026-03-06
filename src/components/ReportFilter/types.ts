@@ -3,11 +3,23 @@ export type SelectState = {
   buyer?: string;
   /** Full date filter in ISO format (YYYY-MM-DD) or display string */
   date?: string;
+  date_start?: string;
+  date_end?: string;
   year?: string | number;
   month?: string | number;
   product?: string;
   name_product?: string;
 };
+
+export type ReportFilterField =
+  | "seller"
+  | "buyer"
+  | "date_start"
+  | "date_end"
+  | "month"
+  | "year"
+  | "product"
+  | "name_product";
 
 export interface IReportFilterProps {
   open: boolean;
@@ -18,4 +30,5 @@ export interface IReportFilterProps {
   titleText?: string;
   confirmText?: string;
   cancelText?: string;
+  visibleFields?: ReportFilterField[];
 }
