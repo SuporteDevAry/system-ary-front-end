@@ -9,6 +9,7 @@ import {
   Collapse,
   Box,
   TablePagination,
+  Tooltip,
 } from "@mui/material";
 import { ICustomTableProps } from "./types";
 import {
@@ -356,8 +357,18 @@ const CustomTable: React.FC<ICustomTableProps> = ({
                     direction={orderBy === column.field ? order : "asc"}
                     onClick={() => handleRequestSort(column.field)}
                   >
-                    <SColumnHeader>{column.header}</SColumnHeader>
+                    {column.headerTooltip ? (
+                      <Tooltip title={column.headerTooltip} arrow>
+                        <SColumnHeader>{column.header}</SColumnHeader>
+                      </Tooltip>
+                    ) : (
+                      <SColumnHeader>{column.header}</SColumnHeader>
+                    )}
                   </CustomTableSortLabel>
+                ) : column.headerTooltip ? (
+                  <Tooltip title={column.headerTooltip} arrow>
+                    <SColumnHeader>{column.header}</SColumnHeader>
+                  </Tooltip>
                 ) : (
                   <SColumnHeader>{column.header}</SColumnHeader>
                 )}

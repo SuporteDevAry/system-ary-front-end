@@ -31,11 +31,15 @@ export function HistoryContracts() {
 
   type SelectState = {
     date?: string;
+    date_start?: string;
+    date_end?: string;
   };
 
   const getInitialSelectData = (): SelectState => {
     return {
       date: "",
+      date_start: "",
+      date_end: "",
     };
   };
 
@@ -127,11 +131,74 @@ export function HistoryContracts() {
     async (filters: SelectState) => {
       try {
         setIsLoading(true);
-        const response = await contractContext.reportContracts(filters as any);
+        const { date_start, date_end, ...rawApiFilters } = filters as any;
+
+        const apiFilters = Object.entries(rawApiFilters).reduce(
+          (acc, [key, value]) => {
+            if (value === "" || value === null || value === undefined) {
+              return acc;
+            }
+
+            acc[key] = value;
+            return acc;
+          },
+          {} as Record<string, any>,
+        );
+
+        const hasDateRange =
+          (typeof date_start === "string" && date_start !== "") ||
+          (typeof date_end === "string" && date_end !== "");
+
+        if (hasDateRange) {
+          if (date_start) {
+            apiFilters.date_start = date_start;
+          }
+          if (date_end) {
+            apiFilters.date_end = date_end;
+          }
+
+          delete apiFilters.date;
+          delete apiFilters.month;
+          delete apiFilters.year;
+        }
+
+        const response = await contractContext.reportContracts(apiFilters);
         const contractsArray = Array.isArray(response.data)
           ? response.data
           : (response.data as any)?.data || [];
-        const formatted = formatContracts(contractsArray);
+
+        const parseIsoDate = (date?: string) => {
+          if (!date || typeof date !== "string") return null;
+          const [year, month, day] = date.split("-").map(Number);
+          if (!year || !month || !day) return null;
+          return new Date(year, month - 1, day);
+        };
+
+        const parseContractDate = (date?: string) => {
+          if (!date || typeof date !== "string") return null;
+          const [day, month, year] = date.split("/").map(Number);
+          if (!year || !month || !day) return null;
+          return new Date(year, month - 1, day);
+        };
+
+        const startDate = parseIsoDate(date_start);
+        const endDate = parseIsoDate(date_end);
+
+        const contractsInRange = contractsArray.filter((contract: any) => {
+          if (!startDate && !endDate) return true;
+
+          const emissionDate = parseContractDate(
+            contract.contract_emission_date,
+          );
+          if (!emissionDate) return false;
+
+          const matchStart = startDate ? emissionDate >= startDate : true;
+          const matchEnd = endDate ? emissionDate <= endDate : true;
+
+          return matchStart && matchEnd;
+        });
+
+        const formatted = formatContracts(contractsInRange);
         setListContracts(formatted);
         setSelectData(filters);
         if (formatted && formatted.length > 0) {
@@ -148,7 +215,7 @@ export function HistoryContracts() {
         setIsLoading(false);
       }
     },
-    [contractContext, allContracts],
+    [contractContext],
   );
 
   const handleClearFilter = () => {
@@ -161,7 +228,10 @@ export function HistoryContracts() {
   // ou quando a lista atual foi reduzida (filtro aplicado no servidor/local)
   const hasActiveFilter = useMemo(() => {
     const initial = getInitialSelectData();
-    const selectIsInitial = selectData.date === initial.date;
+    const selectIsInitial =
+      (selectData.date ?? "") === (initial.date ?? "") &&
+      (selectData.date_start ?? "") === (initial.date_start ?? "") &&
+      (selectData.date_end ?? "") === (initial.date_end ?? "");
     const listDiffers = listcontracts.length !== allContracts.length;
     return !selectIsInitial || listDiffers;
   }, [selectData, listcontracts, allContracts]);

@@ -8,15 +8,36 @@ import { toast } from "react-toastify";
 import { IContractData } from "../../../../contexts/ContractContext/types";
 import { SContainer, SContainerSearchAndButton, STitle } from "./styles";
 import CustomButton from "../../../../components/CustomButton";
+import Tooltip from "@mui/material/Tooltip";
+import IconButton from "@mui/material/IconButton";
+import { TbFilter, TbFilterOff, TbInfinity } from "react-icons/tb";
+import { PiScroll } from "react-icons/pi";
+import ReportFilter from "../../../../components/ReportFilter";
+import { SelectState } from "../../../../components/ReportFilter/types";
 
 export function GrainsVol() {
   const contractContext = ContractContext();
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [allContracts, setAllContracts] = useState<IContractData[]>([]);
   const [listcontracts, setListContracts] = useState<IContractData[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(0);
   const [order, setOrder] = useState<"asc" | "desc">("desc");
   const [orderBy, setOrderBy] = useState("quantity");
+  const [isSelectionModal, setSelectionModal] = useState<boolean>(false);
+  const [useInfiniteScroll, setUseInfiniteScroll] = useState<boolean>(false);
+
+  const getInitialSelectData = (): SelectState => ({
+    seller: "",
+    buyer: "",
+    date_start: "",
+    date_end: "",
+    product: "",
+  });
+
+  const [selectData, setSelectData] = useState<SelectState>(
+    getInitialSelectData(),
+  );
 
   const fetchData = useCallback(async () => {
     try {
@@ -143,6 +164,7 @@ export function GrainsVol() {
         },
       );
 
+      setAllContracts(updatedContracts);
       setListContracts(updatedContracts);
     } catch (error) {
       toast.error(`Erro ao tentar ler contratos: ${error}`);
@@ -154,6 +176,119 @@ export function GrainsVol() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  const handleSelectionModal = () => setSelectionModal((prev) => !prev);
+  const handleCloseModal = () => setSelectionModal(false);
+
+  const isInitialFilter = useMemo(() => {
+    const initial = getInitialSelectData();
+    return (
+      (selectData.seller ?? "") === (initial.seller ?? "") &&
+      (selectData.buyer ?? "") === (initial.buyer ?? "") &&
+      (selectData.date_start ?? "") === (initial.date_start ?? "") &&
+      (selectData.date_end ?? "") === (initial.date_end ?? "") &&
+      (selectData.product ?? "") === (initial.product ?? "")
+    );
+  }, [selectData]);
+
+  const handleClearFilterModal = () => {
+    setSelectData(getInitialSelectData());
+    setListContracts(allContracts);
+    setSelectionModal(false);
+  };
+
+  const fetchSelectData = useCallback(
+    (filters: SelectState) => {
+      try {
+        setIsLoading(true);
+
+        const normalize = (value?: string) =>
+          (value || "")
+            .toUpperCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .trim();
+
+        const parseIsoDate = (date?: string) => {
+          if (!date) return null;
+          const [year, month, day] = date.split("-").map(Number);
+          if (!year || !month || !day) return null;
+          return new Date(year, month - 1, day);
+        };
+
+        const parseBrDate = (date?: string) => {
+          if (!date) return null;
+          const [day, month, year] = date.split("/").map(Number);
+          if (!year || !month || !day) return null;
+          return new Date(year, month - 1, day);
+        };
+
+        const sellerTerms = (filters.seller || "")
+          .split(",")
+          .map((item) => normalize(item))
+          .filter(Boolean);
+
+        const buyerTerms = (filters.buyer || "")
+          .split(",")
+          .map((item) => normalize(item))
+          .filter(Boolean);
+
+        const productTerm = normalize(filters.product as string);
+
+        const startDate = parseIsoDate(filters.date_start as string);
+        const endDate = parseIsoDate(filters.date_end as string);
+
+        const filtered = allContracts.filter((contract: any) => {
+          const sellerName = normalize(contract?.seller?.name);
+          const buyerName = normalize(contract?.buyer?.name);
+          const product = normalize(contract?.product);
+          const emissionDate = parseBrDate(contract?.contract_emission_date);
+
+          const matchSeller =
+            sellerTerms.length === 0 ||
+            sellerTerms.some((term) => sellerName.includes(term));
+
+          const matchBuyer =
+            buyerTerms.length === 0 ||
+            buyerTerms.some((term) => buyerName.includes(term));
+
+          const matchProduct = !productTerm || product.includes(productTerm);
+
+          const matchStart = startDate
+            ? emissionDate
+              ? emissionDate >= startDate
+              : false
+            : true;
+
+          const matchEnd = endDate
+            ? emissionDate
+              ? emissionDate <= endDate
+              : false
+            : true;
+
+          return (
+            matchSeller && matchBuyer && matchProduct && matchStart && matchEnd
+          );
+        });
+
+        setSelectData(filters);
+        setListContracts(filtered);
+
+        if (filtered.length > 0) {
+          toast.success(`${filtered.length} contrato(s) encontrado(s)`);
+        } else {
+          toast.info("Nenhum contrato encontrado");
+        }
+
+        setSelectionModal(false);
+      } catch (error) {
+        toast.error(`Erro ao aplicar filtros: ${error}`);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [allContracts],
+  );
 
   const { filteredData } = useTableSearch({
     data: listcontracts,
@@ -401,6 +536,39 @@ export function GrainsVol() {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
+
+        <Tooltip title="Filtrar contratos">
+          <IconButton
+            aria-label="filter"
+            onClick={handleSelectionModal}
+            sx={{ color: "#E7B10A" }}
+          >
+            <TbFilter />
+          </IconButton>
+        </Tooltip>
+
+        <Tooltip title="Limpar filtros">
+          <span>
+            <IconButton
+              aria-label="clearfilter"
+              onClick={handleClearFilterModal}
+              sx={{ color: "#E7B10A" }}
+              disabled={isInitialFilter}
+            >
+              <TbFilterOff />
+            </IconButton>
+          </span>
+        </Tooltip>
+
+        <ReportFilter
+          titleText="Grãos Volume"
+          open={isSelectionModal}
+          initialFilters={selectData}
+          onClose={handleCloseModal}
+          onChange={(filters) => setSelectData(filters)}
+          onConfirm={fetchSelectData}
+        />
+
         <CustomButton $variant="success" width="150px" onClick={handlePrint}>
           Imprimir
         </CustomButton>
@@ -412,13 +580,29 @@ export function GrainsVol() {
         >
           Exportar CSV
         </CustomButton>
+
+        <Tooltip
+          title={
+            useInfiniteScroll
+              ? "Voltar para paginação"
+              : "Ativar scroll infinito"
+          }
+        >
+          <IconButton
+            onClick={() => setUseInfiniteScroll((prev) => !prev)}
+            sx={{ color: "#E7B10A" }}
+          >
+            {!useInfiniteScroll ? <PiScroll /> : <TbInfinity />}
+          </IconButton>
+        </Tooltip>
       </SContainerSearchAndButton>
       <SContainer>
         <CustomTable
           isLoading={isLoading}
           data={sortedData}
           columns={nameColumns}
-          hasPagination={true}
+          hasInfiniteScroll={!useInfiniteScroll}
+          hasPagination={useInfiniteScroll}
           //maxChars={15}
           page={page}
           setPage={setPage}
