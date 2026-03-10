@@ -90,6 +90,14 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
         sellerCurrency,
         true,
       )} por saca`;
+    } else if (formData.type_commission_seller === "Por TM") {
+      const sellerCurrency =
+        formData.type_commission_seller_currency === "Dólar" ? "Dólar" : "Real";
+      formattedCSeller = `${formatCurrency(
+        String(formData.commission_seller),
+        sellerCurrency,
+        true,
+      )} por tonelada métrica`;
     }
   }
 
@@ -114,6 +122,14 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
         buyerCurrency,
         true,
       )} por saca`;
+    } else if (formData.type_commission_buyer === "Por TM") {
+      const buyerCurrency =
+        formData.type_commission_buyer_currency === "Dólar" ? "Dólar" : "Real";
+      formattedCBuyer = `${formatCurrency(
+        String(formData.commission_buyer),
+        buyerCurrency,
+        true,
+      )} por tonelada métrica`;
     }
   }
   // Só iremos remover essa regra das siglas, caso o cliente aceite a sugestão da reunião do dia 09/04/2025

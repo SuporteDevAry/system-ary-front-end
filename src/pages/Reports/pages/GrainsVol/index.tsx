@@ -8,12 +8,12 @@ import { toast } from "react-toastify";
 import { IContractData } from "../../../../contexts/ContractContext/types";
 import { SContainer, SContainerSearchAndButton, STitle } from "./styles";
 import CustomButton from "../../../../components/CustomButton";
-import Tooltip from "@mui/material/Tooltip";
 import IconButton from "@mui/material/IconButton";
 import { TbFilter, TbFilterOff, TbInfinity } from "react-icons/tb";
 import { PiScroll } from "react-icons/pi";
 import ReportFilter from "../../../../components/ReportFilter";
 import { SelectState } from "../../../../components/ReportFilter/types";
+import CustomTooltipLabel from "../../../../components/CustomTooltipLabel";
 
 export function GrainsVol() {
   const contractContext = ContractContext();
@@ -537,7 +537,7 @@ export function GrainsVol() {
           onChange={(e) => setSearchTerm(e.target.value)}
         />
 
-        <Tooltip title="Filtrar contratos">
+        <CustomTooltipLabel title="Filtrar contratos">
           <IconButton
             aria-label="filter"
             onClick={handleSelectionModal}
@@ -545,9 +545,9 @@ export function GrainsVol() {
           >
             <TbFilter />
           </IconButton>
-        </Tooltip>
+        </CustomTooltipLabel>
 
-        <Tooltip title="Limpar filtros">
+        <CustomTooltipLabel title="Limpar filtros">
           <span>
             <IconButton
               aria-label="clearfilter"
@@ -558,7 +558,7 @@ export function GrainsVol() {
               <TbFilterOff />
             </IconButton>
           </span>
-        </Tooltip>
+        </CustomTooltipLabel>
 
         <ReportFilter
           titleText="Grãos Volume"
@@ -581,7 +581,7 @@ export function GrainsVol() {
           Exportar CSV
         </CustomButton>
 
-        <Tooltip
+        <CustomTooltipLabel
           title={
             useInfiniteScroll
               ? "Voltar para paginação"
@@ -594,7 +594,7 @@ export function GrainsVol() {
           >
             {!useInfiniteScroll ? <PiScroll /> : <TbInfinity />}
           </IconButton>
-        </Tooltip>
+        </CustomTooltipLabel>
       </SContainerSearchAndButton>
       <SContainer>
         <CustomTable

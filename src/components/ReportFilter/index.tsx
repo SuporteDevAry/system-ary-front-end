@@ -117,19 +117,6 @@ export const ReportFilter: React.FC<IReportFilterProps> = ({
       return;
     }
 
-    if (name === "date_end") {
-      const initialDate = filters.date_start;
-      if (
-        typeof initialDate === "string" &&
-        initialDate &&
-        typeof val === "string" &&
-        val &&
-        val < initialDate
-      ) {
-        return;
-      }
-    }
-
     if (
       ["seller", "buyer", "product", "name_product"].includes(name) &&
       typeof val === "string" &&

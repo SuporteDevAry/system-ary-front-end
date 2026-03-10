@@ -361,6 +361,9 @@ export function ViewContract(): JSX.Element {
   const commissionCurrency = dataClient?.type_commission_seller
     ? dataClient?.type_commission_seller_currency
     : dataClient?.type_commission_buyer_currency;
+  const commissionExchangeRate = dataClient?.type_commission_seller
+    ? dataClient?.commission_seller_exchange_rate
+    : dataClient?.commission_buyer_exchange_rate;
 
   const commission = (() => {
     const normalizedType = commissionType.toLocaleLowerCase();
@@ -450,6 +453,14 @@ export function ViewContract(): JSX.Element {
       label: "Comissão:",
       value: commission,
     },
+    ...(dataClient?.type_currency === "Real" && commissionCurrency === "Dólar"
+      ? [
+          {
+            label: "Câmbio Comissão:",
+            value: commissionExchangeRate || "-",
+          },
+        ]
+      : []),
     {
       label: "Valor Comissão:",
       value: formatCurrency(
