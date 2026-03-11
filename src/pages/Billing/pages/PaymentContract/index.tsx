@@ -1,310 +1,321 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import CustomTable from "../../../../components/CustomTable";
 import { CustomSearch } from "../../../../components/CustomSearch";
-//import useTableSearch from "../../../../hooks/useTableSearch";
 import { IColumn } from "../../../../components/CustomTable/types";
 import { ContractContext } from "../../../../contexts/ContractContext";
 import { toast } from "react-toastify";
 import { IContractData } from "../../../../contexts/ContractContext/types";
-import { SContainerSearchAndButton, SFormContainer, STitle } from "./styles";
+import { SContainerSearchAndButton, STitle } from "./styles";
 import CustomButton from "../../../../components/CustomButton";
-import { TbFilter, TbFilterOff } from "react-icons/tb";
+import { TbFilter, TbFilterOff, TbInfinity } from "react-icons/tb";
+import { PiScroll } from "react-icons/pi";
 import IconButton from "@mui/material/IconButton";
-import { TextField, Tooltip } from "@mui/material";
-import { Modal } from "../../../../components/Modal";
+import { Tooltip } from "@mui/material";
+import ReportFilter from "../../../../components/ReportFilter";
+import { SelectState } from "../../../../components/ReportFilter/types";
 
 export function PaymentContract() {
-    const contractContext = ContractContext();
-    const [isLoading, setIsLoading] = useState<boolean>(true);
-    const [listcontracts, setListContracts] = useState<IContractData[]>([]);
-    const [searchTerm, setSearchTerm] = useState("");
-    const [page, setPage] = useState(0);
-    const [order, setOrder] = useState<"asc" | "desc">("desc");
-    const [orderBy, setOrderBy] = useState("payment_date");
-    const [isSelectionModal, setSelectionModal] = useState<boolean>(false);
+  const contractContext = ContractContext();
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [listcontracts, setListContracts] = useState<IContractData[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [page, setPage] = useState(0);
+  const [order, setOrder] = useState<"asc" | "desc">("desc");
+  const [orderBy, setOrderBy] = useState("payment_date");
+  const [isSelectionModal, setSelectionModal] = useState<boolean>(false);
+  const [useInfiniteScroll, setUseInfiniteScroll] = useState<boolean>(false);
 
-    type SelectState = {
-        selectedFields: string[];
-        SelectDateStart: string;
-        SelectDateEnd: string;
-        SelectSeller?: string;
+  const getInitialSelectData = (): SelectState => {
+    return {
+      date_start: "",
+      date_end: "",
+      seller: "",
+      buyer: "",
     };
+  };
 
-    const getInitialSelectData = (): SelectState => {
-        const today = new Date();
-        const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-        const fmt = (d: Date) =>
-            `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(
-                2,
-                "0",
-            )}-${String(d.getDate()).padStart(2, "0")}`;
+  const [selectData, setSelectData] = useState<SelectState>(
+    getInitialSelectData(),
+  );
 
-        return {
-            selectedFields: [
-                "SelectDateStart",
-                "SelectDateEnd",
-                "SelectSeller",
-            ],
-            SelectDateStart: fmt(firstDay),
-            SelectDateEnd: fmt(today),
-            SelectSeller: "",
-        };
-    };
+  const handleSelectionModal = () => setSelectionModal((prev) => !prev);
+  const handleCloseModal = () => setSelectionModal(false);
 
-    const [selectData, setSelectData] = useState<SelectState>(
+  const fetchData = useCallback(async () => {
+    try {
+      setIsLoading(true);
+
+      const response = await contractContext.listContracts();
+
+      const filtered = applyBusinessFilter(
+        response.data,
         getInitialSelectData(),
-    );
+      );
 
-    const handleSelectionModal = () => setSelectionModal((prev) => !prev);
-    const handleCloseModal = () => setSelectionModal(false);
+      setListContracts(filtered);
+    } catch (error) {
+      toast.error(`Erro ao tentar ler contratos: ${error}`);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [contractContext]);
 
-    const handleChangeSelect = (
-        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-    ) => {
-        const { name, value } = e.target;
-        setSelectData((prev) => ({ ...prev, [name]: value }));
-    };
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
-    const fetchData = useCallback(async () => {
-        try {
-            setIsLoading(true);
+  const normalizeStr = (value?: string) =>
+    (value || "")
+      .toString()
+      .toUpperCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .trim();
 
-            const response = await contractContext.listContracts();
+  const matchByTokens = (source: string, term: string) => {
+    const tokens = normalizeStr(term).split(/\s+/).filter(Boolean);
+    if (tokens.length === 0) return true;
+    return tokens.every((token) => source.includes(token));
+  };
 
-            const filtered = applyBusinessFilter(response.data, selectData);
+  const processedContracts = useMemo(() => {
+    let processedData = [...listcontracts];
 
-            setListContracts(filtered);
-        } catch (error) {
-            toast.error(`Erro ao tentar ler contratos: ${error}`);
-        } finally {
-            setIsLoading(false);
-        }
-    }, [contractContext, selectData]);
+    if (searchTerm) {
+      const normalizedSearchTerm = normalizeStr(searchTerm);
+      processedData = processedData.filter((contract) => {
+        const emissionDate = normalizeStr(contract.contract_emission_date);
+        const contractNumber = normalizeStr(contract.number_contract);
+        const sellerName = normalizeStr(contract.seller?.name);
+        const buyerName = normalizeStr(contract.buyer?.name);
+        const paymentDate = normalizeStr(contract.payment_date);
 
-    useEffect(() => {
-        fetchData();
-    }, [fetchData]);
-
-    const processedContracts = useMemo(() => {
-        let processedData = [...listcontracts];
-
-        if (searchTerm) {
-            const lowerSearchTerm = searchTerm.toLowerCase();
-            processedData = processedData.filter((contract) => {
-                return (
-                    contract.contract_emission_date.includes(lowerSearchTerm) ||
-                    contract.number_contract?.includes(lowerSearchTerm) ||
-                    contract.seller?.name
-                        ?.toLowerCase()
-                        .includes(lowerSearchTerm) ||
-                    contract.buyer?.name
-                        ?.toLowerCase()
-                        .includes(lowerSearchTerm) ||
-                    contract.payment_date?.includes(lowerSearchTerm)
-                );
-            });
-        }
-
-        processedData.sort((a, b) => {
-            const convertToISO = (dateString: string | undefined) => {
-                if (!dateString) return ""; // evita erro se estiver undefined
-                const [day, month, year] = dateString.split("/");
-                return `${year}-${month.padStart(2, "0")}-${day.padStart(
-                    2,
-                    "0",
-                )}`;
-            };
-
-            const aDate = new Date(convertToISO(a.payment_date)).getTime();
-            const bDate = new Date(convertToISO(b.payment_date)).getTime();
-
-            return order === "asc" ? aDate - bDate : bDate - aDate;
-        });
-
-        return processedData;
-    }, [listcontracts, searchTerm, order]);
-
-    const fetchSelectData = useCallback(async () => {
-        try {
-            setIsLoading(true);
-
-            const response = await contractContext.listContracts();
-
-            const filtered = applyBusinessFilter(response.data, selectData);
-
-            setListContracts(filtered);
-            setSelectionModal(false);
-        } catch (error) {
-            toast.error(`Erro ao tentar ler contratos: ${error}`);
-        } finally {
-            setIsLoading(false);
-        }
-    }, [selectData, contractContext]);
-
-    const nameColumns: IColumn[] = useMemo(
-        () => [
-            {
-                field: "contract_emission_date",
-                header: "Data",
-                width: "100px",
-            },
-            {
-                field: "number_contract",
-                header: "Contrato",
-                width: "180px",
-            },
-            {
-                field: "seller.name",
-                header: "Vendedor",
-                width: "200px",
-            },
-            {
-                field: "buyer.name",
-                header: "Comprador",
-                width: "200px",
-            },
-            {
-                field: "payment_date",
-                header: "Dt.Vencto.",
-                width: "130px",
-            },
-            {
-                field: "charge_date",
-                header: "Dt.Cobrança",
-                width: "130px",
-            },
-            {
-                field: "expected_receipt_date",
-                header: "Dt.Prev.Recbto.",
-                width: "130px",
-            },
-        ],
-        [],
-    );
-
-    const handleClearFilterModal = async () => {
-        const initial = getInitialSelectData();
-        setSelectData(initial);
-
-        try {
-            setIsLoading(true);
-            const response = await contractContext.listContracts();
-
-            const filtered = applyBusinessFilter(response.data, initial);
-
-            setListContracts(filtered);
-        } catch (error) {
-            toast.error(`Erro ao tentar ler contratos: ${error}`);
-        } finally {
-            setIsLoading(false);
-            setSelectionModal(false);
-        }
-    };
-
-    const isInitialFilter = useMemo(() => {
-        const initial = getInitialSelectData();
         return (
-            selectData.SelectDateStart === initial.SelectDateStart &&
-            selectData.SelectDateEnd === initial.SelectDateEnd &&
-            (selectData.SelectSeller?.trim() ?? "") === ""
+          emissionDate.includes(normalizedSearchTerm) ||
+          contractNumber.includes(normalizedSearchTerm) ||
+          sellerName.includes(normalizedSearchTerm) ||
+          buyerName.includes(normalizedSearchTerm) ||
+          paymentDate.includes(normalizedSearchTerm)
         );
-    }, [selectData]);
+      });
+    }
 
-    const applyBusinessFilter = (
-        data: IContractData[],
-        selectData: SelectState,
-    ) => {
-        const searchSeller =
-            selectData.SelectSeller?.trim().toLowerCase() || "";
+    processedData.sort((a, b) => {
+      const convertToISO = (dateString: string | undefined) => {
+        if (!dateString) return ""; // evita erro se estiver undefined
+        const [day, month, year] = dateString.split("/");
+        return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+      };
 
-        const startDate = selectData.SelectDateStart
-            ? new Date(selectData.SelectDateStart)
-            : null;
+      const aDate = new Date(convertToISO(a.payment_date)).getTime();
+      const bDate = new Date(convertToISO(b.payment_date)).getTime();
 
-        const endDate = selectData.SelectDateEnd
-            ? new Date(selectData.SelectDateEnd)
-            : null;
+      return order === "asc" ? aDate - bDate : bDate - aDate;
+    });
 
-        return data.filter((contract) => {
-            if (
-                typeof contract.seller?.name !== "string" ||
-                !contract.seller.name.trim()
-            )
-                return false;
+    return processedData;
+  }, [listcontracts, searchTerm, order]);
 
-            const sellerMatch = contract.seller.name
-                .toLowerCase()
-                .includes(searchSeller);
+  const fetchSelectData = useCallback(
+    async (filters: SelectState) => {
+      try {
+        setIsLoading(true);
 
-            // 🔹 SEM filtro de data → somente sem charge_date
-            if (!startDate && !endDate) {
-                return sellerMatch && !contract.payment_date;
-            }
+        const response = await contractContext.listContracts();
 
-            // 🔹 COM filtro de data → payment_date obrigatório
-            if (!contract.payment_date) return false;
+        const filtered = applyBusinessFilter(response.data, filters);
 
-            const [day, month, year] = contract.payment_date
-                .split("/")
-                .map(Number);
+        setSelectData(filters);
+        setListContracts(filtered);
 
-            const emissionDate = new Date(year, month - 1, day);
+        if (filtered.length > 0) {
+          toast.success(`${filtered.length} contrato(s) encontrado(s)`);
+        } else {
+          toast.info("Nenhum contrato encontrado");
+        }
 
-            const startMatch = startDate ? emissionDate >= startDate : true;
+        setSelectionModal(false);
+      } catch (error) {
+        toast.error(`Erro ao tentar ler contratos: ${error}`);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [contractContext],
+  );
 
-            const endMatch = endDate ? emissionDate <= endDate : true;
+  const nameColumns: IColumn[] = useMemo(
+    () => [
+      {
+        field: "contract_emission_date",
+        header: "Data Emissão",
+        width: "100px",
+      },
+      {
+        field: "number_contract",
+        header: "Contrato",
+        width: "180px",
+      },
+      {
+        field: "seller.name",
+        header: "Vendedor",
+        width: "200px",
+      },
+      {
+        field: "buyer.name",
+        header: "Comprador",
+        width: "200px",
+      },
+      {
+        field: "payment_date",
+        header: "Dt.Vencto.",
+        headerTooltip: "Data de Vencimento",
+        width: "130px",
+      },
+      {
+        field: "charge_date",
+        header: "Dt.Cobrança",
+        headerTooltip: "Data de Cobrança",
+        width: "130px",
+      },
+      {
+        field: "expected_receipt_date",
+        header: "Dt.Prev.Recbto.",
+        headerTooltip: "Data Prevista de Recebimento",
+        width: "130px",
+      },
+    ],
+    [],
+  );
 
-            return sellerMatch && startMatch && endMatch;
-        });
+  const handleClearFilterModal = async () => {
+    const initial = getInitialSelectData();
+    setSelectData(initial);
+
+    try {
+      setIsLoading(true);
+      const response = await contractContext.listContracts();
+
+      const filtered = applyBusinessFilter(response.data, initial);
+
+      setListContracts(filtered);
+    } catch (error) {
+      toast.error(`Erro ao tentar ler contratos: ${error}`);
+    } finally {
+      setIsLoading(false);
+      setSelectionModal(false);
+    }
+  };
+
+  const isInitialFilter = useMemo(() => {
+    const initial = getInitialSelectData();
+    return (
+      (selectData.date_start ?? "") === (initial.date_start ?? "") &&
+      (selectData.date_end ?? "") === (initial.date_end ?? "") &&
+      (selectData.seller?.trim() ?? "") === "" &&
+      (selectData.buyer?.trim() ?? "") === ""
+    );
+  }, [selectData]);
+
+  const applyBusinessFilter = (
+    data: IContractData[],
+    selectData: SelectState,
+  ) => {
+    const sellerTerms = (selectData.seller || "")
+      .split(",")
+      .map((item) => normalizeStr(item))
+      .filter(Boolean);
+
+    const buyerTerms = (selectData.buyer || "")
+      .split(",")
+      .map((item) => normalizeStr(item))
+      .filter(Boolean);
+
+    const startDate = selectData.date_start
+      ? new Date(selectData.date_start)
+      : null;
+
+    const endDate = selectData.date_end ? new Date(selectData.date_end) : null;
+
+    return data.filter((contract) => {
+      const sellerName = normalizeStr(contract.seller?.name);
+      const buyerName = normalizeStr(contract.buyer?.name);
+
+      const sellerMatch =
+        sellerTerms.length === 0 ||
+        sellerTerms.some((term) => matchByTokens(sellerName, term));
+
+      const buyerMatch =
+        buyerTerms.length === 0 ||
+        buyerTerms.some((term) => matchByTokens(buyerName, term));
+
+      // Sem filtro de data: filtra apenas por vendedor/comprador.
+      if (!startDate && !endDate) {
+        return sellerMatch && buyerMatch;
+      }
+
+      // 🔹 COM filtro de data → payment_date obrigatório
+      if (!contract.payment_date) return false;
+
+      const [day, month, year] = contract.payment_date.split("/").map(Number);
+
+      const emissionDate = new Date(year, month - 1, day);
+
+      const startMatch = startDate ? emissionDate >= startDate : true;
+
+      const endMatch = endDate ? emissionDate <= endDate : true;
+
+      return sellerMatch && buyerMatch && startMatch && endMatch;
+    });
+  };
+
+  const handlePrint = (): void => {
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) return;
+
+    // Quantidade de registros por página
+    const pageSize = 30;
+
+    // Função utilitária para extrair campo (suporta "a.b.c")
+    const getValue = (row: any, field?: string) => {
+      if (!field) return "";
+      const parts = field.split(".");
+      let value: any = row;
+      for (const p of parts) {
+        value = value?.[p];
+        if (value === undefined || value === null) break;
+      }
+      // Formate datas se necessário (exemplo simples)
+      return value ?? "";
     };
 
-    const handlePrint = (): void => {
-        const printWindow = window.open("", "_blank");
-        if (!printWindow) return;
-
-        // Quantidade de registros por página
-        const pageSize = 30;
-
-        // Função utilitária para extrair campo (suporta "a.b.c")
-        const getValue = (row: any, field?: string) => {
-            if (!field) return "";
-            const parts = field.split(".");
-            let value: any = row;
-            for (const p of parts) {
-                value = value?.[p];
-                if (value === undefined || value === null) break;
-            }
-            // Formate datas se necessário (exemplo simples)
-            return value ?? "";
-        };
-
-        // Gera o HTML do cabeçalho usando nameColumns
-        const headerHtml = `<tr>
+    // Gera o HTML do cabeçalho usando nameColumns
+    const headerHtml = `<tr>
         ${nameColumns
-            .map(
-                (col) =>
-                    `<th style="border:1px solid black;padding:4px;font-size:9px;">${col.header}</th>`,
-            )
-            .join("")}
+          .map(
+            (col) =>
+              `<th style="border:1px solid black;padding:4px;font-size:9px;">${col.header}</th>`,
+          )
+          .join("")}
     </tr>`;
 
-        // Gera linhas a partir de processedContracts
-        const allRowsHtml = processedContracts.map((row) => {
-            const cols = nameColumns
-                .map((col) => {
-                    const raw = getValue(row, col.field);
-                    // escape simples
-                    const cell = String(raw ?? "")
-                        .replace(/</g, "&lt;")
-                        .replace(/>/g, "&gt;");
-                    return `<td style="border:1px solid black;padding:4px;font-size:9px;">${cell}</td>`;
-                })
-                .join("");
-            return `<tr>${cols}</tr>`;
-        });
+    // Gera linhas a partir de processedContracts
+    const allRowsHtml = processedContracts.map((row) => {
+      const cols = nameColumns
+        .map((col) => {
+          const raw = getValue(row, col.field);
+          // escape simples
+          const cell = String(raw ?? "")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;");
+          return `<td style="border:1px solid black;padding:4px;font-size:9px;">${cell}</td>`;
+        })
+        .join("");
+      return `<tr>${cols}</tr>`;
+    });
 
-        // Começa a montar o documento
-        printWindow.document.write(`
+    // Começa a montar o documento
+    printWindow.document.write(`
         <html>
             <head>
                 <title>Contratos por Vencimento</title>
@@ -324,176 +335,153 @@ export function PaymentContract() {
                 <h2>Contratos por Vencimento</h2>
     `);
 
-        // Escreve as páginas
-        for (let i = 0; i < allRowsHtml.length; i += pageSize) {
-            const pageRows = allRowsHtml.slice(i, i + pageSize).join("");
-            printWindow.document.write(`<table>`);
-            printWindow.document.write(`<thead>${headerHtml}</thead>`);
-            printWindow.document.write(`<tbody>${pageRows}</tbody>`);
-            printWindow.document.write(`</table>`);
+    // Escreve as páginas
+    for (let i = 0; i < allRowsHtml.length; i += pageSize) {
+      const pageRows = allRowsHtml.slice(i, i + pageSize).join("");
+      printWindow.document.write(`<table>`);
+      printWindow.document.write(`<thead>${headerHtml}</thead>`);
+      printWindow.document.write(`<tbody>${pageRows}</tbody>`);
+      printWindow.document.write(`</table>`);
 
-            if (i + pageSize < allRowsHtml.length) {
-                printWindow.document.write(`<div class="page-break"></div>`);
-            }
-        }
+      if (i + pageSize < allRowsHtml.length) {
+        printWindow.document.write(`<div class="page-break"></div>`);
+      }
+    }
 
-        printWindow.document.write(`
+    printWindow.document.write(`
             </body>
         </html>
     `);
 
-        printWindow.document.close();
-        // Pequena proteção para garantir que o conteúdo seja carregado antes de mandar imprimir
-        printWindow.onload = () => {
-            printWindow.focus();
-            printWindow.print();
-            printWindow.close();
-        };
+    printWindow.document.close();
+    // Pequena proteção para garantir que o conteúdo seja carregado antes de mandar imprimir
+    printWindow.onload = () => {
+      printWindow.focus();
+      printWindow.print();
+      printWindow.close();
     };
+  };
 
-    const handleExportCSV = () => {
-        const headers = nameColumns
-            .filter((col) => col.field)
-            .map((col) => `"${col.header}"`)
-            .join(";");
+  const handleExportCSV = () => {
+    const headers = nameColumns
+      .filter((col) => col.field)
+      .map((col) => `"${col.header}"`)
+      .join(";");
 
-        const rows = processedContracts.map((row) => {
-            return nameColumns
-                .filter((col) => col.field)
-                .map((col) => {
-                    const fields = col.field!.split(".");
-                    let value: any = row;
-                    for (const f of fields) {
-                        value = value?.[f];
-                    }
-                    return `"${value ?? ""}"`;
-                })
-                .join(";");
-        });
+    const rows = processedContracts.map((row) => {
+      return nameColumns
+        .filter((col) => col.field)
+        .map((col) => {
+          const fields = col.field!.split(".");
+          let value: any = row;
+          for (const f of fields) {
+            value = value?.[f];
+          }
+          return `"${value ?? ""}"`;
+        })
+        .join(";");
+    });
 
-        const BOM = "\uFEFF"; // UTF-8 BOM
-        const csvContent = [headers, ...rows].join("\n");
-        const blob = new Blob([BOM + csvContent], {
-            type: "text/csv;charset=utf-8;",
-        });
-        const url = URL.createObjectURL(blob);
+    const BOM = "\uFEFF"; // UTF-8 BOM
+    const csvContent = [headers, ...rows].join("\n");
+    const blob = new Blob([BOM + csvContent], {
+      type: "text/csv;charset=utf-8;",
+    });
+    const url = URL.createObjectURL(blob);
 
-        const link = document.createElement("a");
-        link.href = url;
-        link.setAttribute("download", "contratos-vencimento.csv");
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    };
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "contratos-vencimento.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
-    return (
-        <>
-            <STitle>Contratos por Vencimento</STitle>
-            <SContainerSearchAndButton>
-                <CustomSearch
-                    width="450px"
-                    placeholder="Pesquise Contrato,Vendedor,Comprador ou Dt.Vencto."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                />
+  return (
+    <>
+      <STitle>Contratos por Vencimento</STitle>
+      <SContainerSearchAndButton>
+        <CustomSearch
+          width="450px"
+          placeholder="Pesquise Contrato,Vendedor,Comprador ou Dt.Vencto."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
 
-                <Tooltip title="Filtrar contratos">
-                    <IconButton
-                        aria-label="filter"
-                        onClick={handleSelectionModal}
-                        sx={{ color: "#E7B10A" }}
-                    >
-                        <TbFilter />
-                    </IconButton>
-                </Tooltip>
+        <Tooltip title="Filtrar contratos">
+          <IconButton
+            aria-label="filter"
+            onClick={handleSelectionModal}
+            sx={{ color: "#E7B10A" }}
+          >
+            <TbFilter />
+          </IconButton>
+        </Tooltip>
 
-                <Tooltip title="Limpar filtros">
-                    <span>
-                        <IconButton
-                            aria-label="clearfilter"
-                            onClick={handleClearFilterModal}
-                            sx={{ color: "#E7B10A" }}
-                            disabled={isInitialFilter}
-                        >
-                            <TbFilterOff />
-                        </IconButton>
-                    </span>
-                </Tooltip>
+        <Tooltip title="Limpar filtros">
+          <span>
+            <IconButton
+              aria-label="clearfilter"
+              onClick={handleClearFilterModal}
+              sx={{ color: "#E7B10A" }}
+              disabled={isInitialFilter}
+            >
+              <TbFilterOff />
+            </IconButton>
+          </span>
+        </Tooltip>
 
-                <Modal
-                    titleText={`Seleção`}
-                    open={isSelectionModal}
-                    confirmButton="OK"
-                    cancelButton="Fechar"
-                    onClose={handleCloseModal}
-                    onHandleConfirm={fetchSelectData}
-                    variantCancel={"primary"}
-                    variantConfirm={"success"}
-                >
-                    <SFormContainer>
-                        <TextField
-                            label="Data Vencto. Inicial"
-                            type="date"
-                            InputLabelProps={{ shrink: true }}
-                            variant="outlined"
-                            size="small"
-                            name="SelectDateStart"
-                            value={selectData.SelectDateStart}
-                            onChange={handleChangeSelect}
-                        />
-                        <TextField
-                            label="Data Vencto. Final"
-                            type="date"
-                            InputLabelProps={{ shrink: true }}
-                            variant="outlined"
-                            size="small"
-                            name="SelectDateEnd"
-                            value={selectData.SelectDateEnd}
-                            onChange={handleChangeSelect}
-                        />
-                        <TextField
-                            label="Vendedor"
-                            type="text"
-                            InputLabelProps={{ shrink: true }}
-                            variant="outlined"
-                            size="small"
-                            name="SelectSeller"
-                            value={selectData.SelectSeller ?? ""}
-                            onChange={handleChangeSelect}
-                            sx={{ width: "100%" }}
-                        />
-                    </SFormContainer>
-                </Modal>
+        <ReportFilter
+          titleText="Filtrar contratos por vencimento"
+          open={isSelectionModal}
+          initialFilters={selectData}
+          onClose={handleCloseModal}
+          onChange={(filters) => setSelectData(filters)}
+          onConfirm={fetchSelectData}
+          visibleFields={["seller", "buyer", "date_start", "date_end"]}
+        />
 
-                <CustomButton
-                    $variant="success"
-                    width="150px"
-                    onClick={handlePrint}
-                >
-                    Imprimir
-                </CustomButton>
+        <CustomButton $variant="success" width="150px" onClick={handlePrint}>
+          Imprimir
+        </CustomButton>
 
-                <CustomButton
-                    $variant="success"
-                    width="150px"
-                    onClick={handleExportCSV}
-                >
-                    Exportar CSV
-                </CustomButton>
-            </SContainerSearchAndButton>
+        <CustomButton
+          $variant="success"
+          width="150px"
+          onClick={handleExportCSV}
+        >
+          Exportar CSV
+        </CustomButton>
 
-            <CustomTable
-                isLoading={isLoading}
-                data={processedContracts}
-                columns={nameColumns}
-                hasPagination={true}
-                page={page}
-                setPage={setPage}
-                order={order}
-                orderBy={orderBy}
-                setOrder={setOrder}
-                setOrderBy={setOrderBy}
-            />
-        </>
-    );
+        <Tooltip
+          title={
+            useInfiniteScroll
+              ? "Voltar para paginação"
+              : "Ativar scroll infinito"
+          }
+        >
+          <IconButton
+            onClick={() => setUseInfiniteScroll((prev) => !prev)}
+            sx={{ color: "#E7B10A" }}
+          >
+            {!useInfiniteScroll ? <PiScroll /> : <TbInfinity />}
+          </IconButton>
+        </Tooltip>
+      </SContainerSearchAndButton>
+
+      <CustomTable
+        isLoading={isLoading}
+        data={processedContracts}
+        columns={nameColumns}
+        hasInfiniteScroll={!useInfiniteScroll}
+        hasPagination={useInfiniteScroll}
+        page={page}
+        setPage={setPage}
+        order={order}
+        orderBy={orderBy}
+        setOrder={setOrder}
+        setOrderBy={setOrderBy}
+      />
+    </>
+  );
 }

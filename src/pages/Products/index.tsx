@@ -23,7 +23,7 @@ export function Products() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isProductModalOpen, setProductModalOpen] = useState<boolean>(false);
   const [productToEdit, setProductToEdit] = useState<IProductsData | null>(
-    null
+    null,
   );
   const [isDeleteProductModal, setDeleteProductModal] =
     useState<boolean>(false);
@@ -43,7 +43,7 @@ export function Products() {
       setListProducts(response.data);
     } catch (error) {
       toast.error(
-        `Erro ao tentar ler produtos, contacte o administrador do sistema: ${error}`
+        `Erro ao tentar ler produtos, contacte o administrador do sistema: ${error}`,
       );
     } finally {
       setIsLoading(false);
@@ -54,15 +54,11 @@ export function Products() {
     fetchData();
   }, [fetchData]);
 
-  const { filteredData, handleSearch } = useTableSearch({
+  const { filteredData } = useTableSearch({
     data: listproducts,
     searchTerm,
     searchableFields: ["product_type", "name"],
   });
-
-  useEffect(() => {
-    handleSearch();
-  }, [searchTerm, handleSearch]);
 
   const nameColumns: IColumn[] = useMemo(
     () => [
@@ -90,7 +86,7 @@ export function Products() {
       },
       // { field: "created_at", header: "Data", width: "90px", sortable: true },
     ],
-    []
+    [],
   );
 
   const handleViewProduct = (product: IProductsData) => {
@@ -117,7 +113,7 @@ export function Products() {
 
   const handleOpenDeleteProductModal = (product: IProductsData) => {
     setModalContent(
-      `Tem certeza que deseja deletar o produto: ${product?.name} ?`
+      `Tem certeza que deseja deletar o produto: ${product?.name} ?`,
     );
 
     setProductForDelete(product);
@@ -141,12 +137,12 @@ export function Products() {
         <div>
           Produto: <strong>{productForDelete.name}</strong> deletado com
           sucesso!
-        </div>
+        </div>,
       );
       fetchData();
     } catch (error) {
       toast.error(
-        `Erro ao tentar deletar produto: ${productForDelete.name}, contacte o administrador do sistema ${error}`
+        `Erro ao tentar deletar produto: ${productForDelete.name}, contacte o administrador do sistema ${error}`,
       );
     } finally {
       setDeleteProductModal(false);
@@ -179,7 +175,7 @@ export function Products() {
         </CustomButton>
       </SButtonContainer>
     ),
-    [handleViewProduct, handleUpdateProduct, handleOpenDeleteProductModal]
+    [handleViewProduct, handleUpdateProduct, handleOpenDeleteProductModal],
   );
 
   return (

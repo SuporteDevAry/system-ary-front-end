@@ -2,12 +2,9 @@ import { Link } from "react-router-dom";
 import { SContainer, SCard, SCardIcon, SContent, STitle } from "./styles";
 
 import { RiPrinterLine } from "react-icons/ri";
-import { TbReportSearch } from "react-icons/tb";
-import useUserPermissions from "../../hooks/useUserPermissions";
 
 export function Reports() {
-  const { canDevelop } = useUserPermissions();
-
+  
   const cardLinks = [
     {
       label: "Grãos Volume",
@@ -24,15 +21,7 @@ export function Reports() {
       icon: <RiPrinterLine size={64} />,
       to: "/relatorios/faturamento",
     },
-    ...(canDevelop
-      ? [
-          {
-            label: "Relatório de Contratos",
-            icon: <TbReportSearch size={64} />,
-            to: "/relatorios/contratos",
-          },
-        ]
-      : []),
+    
   ];
   return (
     <>

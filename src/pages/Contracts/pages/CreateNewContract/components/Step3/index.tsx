@@ -64,6 +64,7 @@ export const Step3: React.FC<StepProps> = ({
       ? `Até o dia ${initialPickupDate}`
       : `De ${initialPickupDate} até ${finalPickupDate}`;
   const isMetricTon = formData.type_quantity === "toneladas métricas";
+  const isKg = formData.type_quantity === "quilos";
 
   const handleFieldPickupChange = (
     value: string,
@@ -106,12 +107,16 @@ export const Step3: React.FC<StepProps> = ({
           return;
         }
 
+        if (isKg && value === "Por TM") {
+          return;
+        }
+
         updateFormData?.({
           ...formData,
           type_commission_seller: value,
           // Define moeda padrão ao mudar tipo de comissão
           type_commission_seller_currency:
-            value === "Fixo" || value === "Por Saca"
+            value === "Fixo" || value === "Por Saca" || value === "Por TM"
               ? formData.type_commission_seller_currency || "Real"
               : "",
         });
@@ -123,11 +128,15 @@ export const Step3: React.FC<StepProps> = ({
           return;
         }
 
+        if (isKg && value === "Por TM") {
+          return;
+        }
+
         updateFormData?.({
           ...formData,
           type_commission_buyer: value,
           type_commission_buyer_currency:
-            value === "Fixo" || value === "Por Saca"
+            value === "Fixo" || value === "Por Saca" || value === "Por TM"
               ? formData.type_commission_buyer_currency || "Real"
               : "",
         });
@@ -189,6 +198,7 @@ export const Step3: React.FC<StepProps> = ({
         }
 
         const isSwitchingToMetricTon = value === "toneladas métricas";
+        const isSwitchingToKg = value === "quilos";
 
         updateFormData?.({
           ...formData,
@@ -204,8 +214,26 @@ export const Step3: React.FC<StepProps> = ({
                 commission_seller_contract_value: undefined,
               }
             : {}),
+          ...(isSwitchingToKg && formData.type_commission_seller === "Por TM"
+            ? {
+                type_commission_seller: "",
+                type_commission_seller_currency: "",
+                commission_seller: "",
+                commission_seller_exchange_rate: "",
+                commission_seller_contract_value: undefined,
+              }
+            : {}),
           ...(isSwitchingToMetricTon &&
           formData.type_commission_buyer === "Por Saca"
+            ? {
+                type_commission_buyer: "",
+                type_commission_buyer_currency: "",
+                commission_buyer: "",
+                commission_buyer_exchange_rate: "",
+                commission_buyer_contract_value: undefined,
+              }
+            : {}),
+          ...(isSwitchingToKg && formData.type_commission_buyer === "Por TM"
             ? {
                 type_commission_buyer: "",
                 type_commission_buyer_currency: "",
@@ -233,6 +261,7 @@ export const Step3: React.FC<StepProps> = ({
       handleChange,
       handleFieldPickupChange,
       isMetricTon,
+      isKg,
     ],
   );
 
@@ -308,23 +337,21 @@ export const Step3: React.FC<StepProps> = ({
       if (updateFormData) {
         const dataBank =
           formData.seller?.account?.filter((i) => i.main === "S") || [];
+        const mainAccount = dataBank[0];
 
-        const sellerName = dataBank[0]
-          ? dataBank[0].name_pagto
-          : formData.seller?.name || "vendedor";
+        const sellerName =
+          mainAccount?.name_pagto || formData.seller?.name || "vendedor";
 
         //Alterar aqui embaixo, quando o cnpj_pagto estiver vindo do accounts
-        const cpfCnpj = dataBank[0].cnpj_pagto
-          ? insertMaskInCnpj(dataBank[0].cnpj_pagto)
+        const cpfCnpj = mainAccount?.cnpj_pagto
+          ? insertMaskInCnpj(mainAccount.cnpj_pagto)
           : formData.seller?.cnpj_cpf
             ? insertMaskInCnpj(formData.seller.cnpj_cpf)
             : "00.000.000/0000-00";
 
-        const {
-          bank_name: bankName,
-          account_number: accountNumber,
-          agency,
-        } = dataBank[0];
+        const bankName = mainAccount?.bank_name || "";
+        const accountNumber = mainAccount?.account_number || "";
+        const agency = mainAccount?.agency || "";
 
         if (dataBank.length === 0) {
           const paymentText = formatPaymentText(
@@ -363,7 +390,7 @@ export const Step3: React.FC<StepProps> = ({
         });
       }
     },
-    [updateFormData, formData.seller],
+    [updateFormData, formData.seller, formData.type_currency],
   );
 
   useEffect(() => {
@@ -373,12 +400,18 @@ export const Step3: React.FC<StepProps> = ({
   }, [initialPickupDate, finalPickupDate, formData.type_pickup]);
 
   useEffect(() => {
-    if (!updateFormData || formData.type_quantity !== "toneladas métricas") {
+    if (!updateFormData) {
       return;
     }
 
-    const shouldClearSeller = formData.type_commission_seller === "Por Saca";
-    const shouldClearBuyer = formData.type_commission_buyer === "Por Saca";
+    const isMetricQuantity = formData.type_quantity === "toneladas métricas";
+
+    const shouldClearSeller =
+      (isMetricQuantity && formData.type_commission_seller === "Por Saca") ||
+      (!isMetricQuantity && formData.type_commission_seller === "Por TM");
+    const shouldClearBuyer =
+      (isMetricQuantity && formData.type_commission_buyer === "Por Saca") ||
+      (!isMetricQuantity && formData.type_commission_buyer === "Por TM");
 
     if (!shouldClearSeller && !shouldClearBuyer) {
       return;
@@ -411,7 +444,8 @@ export const Step3: React.FC<StepProps> = ({
   useEffect(() => {
     if (
       (formData.type_commission_seller === "Fixo" ||
-        formData.type_commission_seller === "Por Saca") &&
+        formData.type_commission_seller === "Por Saca" ||
+        formData.type_commission_seller === "Por TM") &&
       formData.type_commission_seller_currency &&
       formData.commission_seller
     ) {
@@ -427,6 +461,18 @@ export const Step3: React.FC<StepProps> = ({
           if (formData.type_commission_seller === "Fixo") {
             // Fixo em Real: o valor é o próprio commission_seller
             calculatedValue = commissionValue;
+          } else if (formData.type_commission_seller === "Por TM") {
+            // Por TM em Real: quantidade em toneladas * valor_comissao
+            const quantity = parseFloat(
+              formData.quantity.replace(/\./g, "").replace(",", "."),
+            );
+            if (!isNaN(quantity)) {
+              calculatedValue = parseFloat(
+                (quantity * commissionValue).toFixed(2),
+              );
+            } else {
+              return;
+            }
           } else {
             // Por Saca em Real: (quantidade / 60) * valor_comissao
             const quantity = parseFloat(
@@ -456,6 +502,18 @@ export const Step3: React.FC<StepProps> = ({
               calculatedValue = parseFloat(
                 (exchangeRate * commissionValue).toFixed(2),
               );
+            } else if (formData.type_commission_seller === "Por TM") {
+              // Em Dólar por TM: quantidade em toneladas * valor_comissao * taxa_cambio
+              const quantity = parseFloat(
+                formData.quantity.replace(/\./g, "").replace(",", "."),
+              );
+              if (!isNaN(quantity)) {
+                calculatedValue = parseFloat(
+                  (quantity * commissionValue * exchangeRate).toFixed(2),
+                );
+              } else {
+                return;
+              }
             } else {
               // Em Dólar por saca: (quantidade / 60) * valor_comissao * taxa_cambio
               const quantity = parseFloat(
@@ -496,7 +554,8 @@ export const Step3: React.FC<StepProps> = ({
   useEffect(() => {
     if (
       (formData.type_commission_buyer === "Fixo" ||
-        formData.type_commission_buyer === "Por Saca") &&
+        formData.type_commission_buyer === "Por Saca" ||
+        formData.type_commission_buyer === "Por TM") &&
       formData.type_commission_buyer_currency &&
       formData.commission_buyer
     ) {
@@ -512,6 +571,18 @@ export const Step3: React.FC<StepProps> = ({
           if (formData.type_commission_buyer === "Fixo") {
             // Fixo em Real: o valor é o próprio commission_buyer
             calculatedValue = commissionValue;
+          } else if (formData.type_commission_buyer === "Por TM") {
+            // Por TM em Real: quantidade em toneladas * valor_comissao
+            const quantity = parseFloat(
+              formData.quantity.replace(/\./g, "").replace(",", "."),
+            );
+            if (!isNaN(quantity)) {
+              calculatedValue = parseFloat(
+                (quantity * commissionValue).toFixed(2),
+              );
+            } else {
+              return;
+            }
           } else {
             // Por Saca em Real: (quantidade / 60) * valor_comissao
             const quantity = parseFloat(
@@ -541,6 +612,18 @@ export const Step3: React.FC<StepProps> = ({
               calculatedValue = parseFloat(
                 (exchangeRate * commissionValue).toFixed(2),
               );
+            } else if (formData.type_commission_buyer === "Por TM") {
+              // Em Dólar por TM: quantidade em toneladas * valor_comissao * taxa_cambio
+              const quantity = parseFloat(
+                formData.quantity.replace(/\./g, "").replace(",", "."),
+              );
+              if (!isNaN(quantity)) {
+                calculatedValue = parseFloat(
+                  (quantity * commissionValue * exchangeRate).toFixed(2),
+                );
+              } else {
+                return;
+              }
             } else {
               // Em Dólar por saca: (quantidade / 60) * valor_comissao * taxa_cambio
               const quantity = parseFloat(
@@ -704,6 +787,7 @@ export const Step3: React.FC<StepProps> = ({
         $labelPosition="top"
         onChange={handleDateForPaymentChange}
         value={formData.payment_date}
+        suggestCurrentDateWhenEmpty={false}
         disableWeekends
       />
 
@@ -744,6 +828,18 @@ export const Step3: React.FC<StepProps> = ({
             <input
               type="radio"
               name="type_commission_seller"
+              value="Por TM"
+              checked={formData.type_commission_seller === "Por TM"}
+              onClick={() => handleCommissionTypeToggle("seller", "Por TM")}
+              onChange={(e) => handleRadioChange(e, "type_commission_seller")}
+              disabled={isKg}
+            />
+            <span>Por TM</span>
+          </SRadioOption>
+          <SRadioOption>
+            <input
+              type="radio"
+              name="type_commission_seller"
               value="Fixo"
               checked={formData.type_commission_seller === "Fixo"}
               onClick={() => handleCommissionTypeToggle("seller", "Fixo")}
@@ -753,7 +849,8 @@ export const Step3: React.FC<StepProps> = ({
           </SRadioOption>
         </SRadioGroup>
         {(formData.type_commission_seller === "Por Saca" ||
-          formData.type_commission_seller === "Fixo") && (
+          formData.type_commission_seller === "Fixo" ||
+          formData.type_commission_seller === "Por TM") && (
           <SRadioGroup>
             <SRadioOption>
               <input
@@ -795,7 +892,8 @@ export const Step3: React.FC<StepProps> = ({
               ? formData.commission_seller || ""
               : formData.commission_seller &&
                   (formData.type_commission_seller === "Fixo" ||
-                    formData.type_commission_seller === "Por Saca")
+                    formData.type_commission_seller === "Por Saca" ||
+                    formData.type_commission_seller === "Por TM")
                 ? formatCurrency(
                     formData.commission_seller,
                     formData.type_commission_seller_currency || "Real",
@@ -812,7 +910,8 @@ export const Step3: React.FC<StepProps> = ({
       </SCommissionWrapper>
 
       {(formData.type_commission_seller === "Por Saca" ||
-        formData.type_commission_seller === "Fixo") &&
+        formData.type_commission_seller === "Fixo" ||
+        formData.type_commission_seller === "Por TM") &&
         formData.type_commission_seller_currency === "Dólar" && (
           <CustomInput
             type="text"
@@ -853,6 +952,18 @@ export const Step3: React.FC<StepProps> = ({
             <input
               type="radio"
               name="type_commission_buyer"
+              value="Por TM"
+              checked={formData.type_commission_buyer === "Por TM"}
+              onClick={() => handleCommissionTypeToggle("buyer", "Por TM")}
+              onChange={(e) => handleRadioChange(e, "type_commission_buyer")}
+              disabled={isKg}
+            />
+            <span>Por TM</span>
+          </SRadioOption>
+          <SRadioOption>
+            <input
+              type="radio"
+              name="type_commission_buyer"
               value="Fixo"
               checked={formData.type_commission_buyer === "Fixo"}
               onClick={() => handleCommissionTypeToggle("buyer", "Fixo")}
@@ -862,7 +973,8 @@ export const Step3: React.FC<StepProps> = ({
           </SRadioOption>
         </SRadioGroup>
         {(formData.type_commission_buyer === "Por Saca" ||
-          formData.type_commission_buyer === "Fixo") && (
+          formData.type_commission_buyer === "Fixo" ||
+          formData.type_commission_buyer === "Por TM") && (
           <SRadioGroup>
             <SRadioOption>
               <input
@@ -903,7 +1015,8 @@ export const Step3: React.FC<StepProps> = ({
               ? formData.commission_buyer || ""
               : formData.commission_buyer &&
                   (formData.type_commission_buyer === "Fixo" ||
-                    formData.type_commission_buyer === "Por Saca")
+                    formData.type_commission_buyer === "Por Saca" ||
+                    formData.type_commission_buyer === "Por TM")
                 ? formatCurrency(
                     formData.commission_buyer,
                     formData.type_commission_buyer_currency || "Real",
@@ -920,7 +1033,8 @@ export const Step3: React.FC<StepProps> = ({
       </SCommissionWrapper>
 
       {(formData.type_commission_buyer === "Por Saca" ||
-        formData.type_commission_buyer === "Fixo") &&
+        formData.type_commission_buyer === "Fixo" ||
+        formData.type_commission_buyer === "Por TM") &&
         formData.type_commission_buyer_currency === "Dólar" && (
           <CustomInput
             type="text"
@@ -965,6 +1079,7 @@ export const Step3: React.FC<StepProps> = ({
           $labelPosition="top"
           onChange={(date) => handleDateChange(date, "initial_pickup_date")}
           value={formData.initial_pickup_date}
+          suggestCurrentDateWhenEmpty={false}
         />
         <CustomDatePicker
           width="150px"
@@ -974,6 +1089,7 @@ export const Step3: React.FC<StepProps> = ({
           $labelPosition="top"
           onChange={(date) => handleDateChange(date, "final_pickup_date")}
           value={formData.final_pickup_date}
+          suggestCurrentDateWhenEmpty={false}
           minDate={formData.initial_pickup_date}
         />
       </SContentBox>

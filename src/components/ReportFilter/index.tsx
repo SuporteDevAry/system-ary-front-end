@@ -1,7 +1,18 @@
 import React, { useEffect, useState } from "react";
 import { Modal } from "../Modal";
 import { SFormContainer, STextField } from "./styles";
-import { IReportFilterProps, SelectState } from "./types";
+import { IReportFilterProps, ReportFilterField, SelectState } from "./types";
+
+const DEFAULT_VISIBLE_FIELDS: ReportFilterField[] = [
+  "seller",
+  "buyer",
+  "date_start",
+  "date_end",
+  "month",
+  "year",
+  "product",
+  "name_product",
+];
 
 export const ReportFilter: React.FC<IReportFilterProps> = ({
   open,
@@ -12,8 +23,31 @@ export const ReportFilter: React.FC<IReportFilterProps> = ({
   titleText = "Filtrar Contratos",
   confirmText = "OK",
   cancelText = "Fechar",
+  visibleFields,
 }) => {
   const [filters, setFilters] = useState<SelectState>(initialFilters || {});
+  const [dateStartFocused, setDateStartFocused] = useState(false);
+  const [dateEndFocused, setDateEndFocused] = useState(false);
+  const enabledFields = new Set(visibleFields ?? DEFAULT_VISIBLE_FIELDS);
+
+  const normalizeDateToIso = (dateValue?: string) => {
+    if (!dateValue || typeof dateValue !== "string") {
+      return "";
+    }
+
+    if (dateValue.includes("/")) {
+      const parts = dateValue.split("/");
+      if (parts.length === 3) {
+        const [dd, mm, yyyy] = parts;
+        return `${yyyy.padStart(4, "0")}-${mm.padStart(2, "0")}-${dd.padStart(
+          2,
+          "0",
+        )}`;
+      }
+    }
+
+    return dateValue;
+  };
 
   useEffect(() => {
     if (initialFilters) {
@@ -24,20 +58,14 @@ export const ReportFilter: React.FC<IReportFilterProps> = ({
           (norm as any)[k] = v.toUpperCase();
         }
       });
-      // normalize date: accept dd/mm/yyyy and convert to ISO yyyy-mm-dd for the date input
-      if (norm.date && typeof norm.date === "string") {
-        const d = norm.date as string;
-        if (d.includes("/")) {
-          const parts = d.split("/");
-          if (parts.length === 3) {
-            const [dd, mm, yyyy] = parts;
-            norm.date = `${yyyy.padStart(4, "0")}-${mm.padStart(
-              2,
-              "0"
-            )}-${dd.padStart(2, "0")}`;
-          }
-        }
+      norm.date = normalizeDateToIso(norm.date);
+      norm.date_start = normalizeDateToIso(norm.date_start || norm.date);
+      norm.date_end = normalizeDateToIso(norm.date_end);
+
+      if (norm.date_start && norm.date_end && norm.date_end < norm.date_start) {
+        norm.date_end = norm.date_start;
       }
+
       setFilters(norm);
     } else {
       setFilters({});
@@ -45,7 +73,7 @@ export const ReportFilter: React.FC<IReportFilterProps> = ({
   }, [initialFilters]);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
     let val: any = value;
@@ -62,6 +90,31 @@ export const ReportFilter: React.FC<IReportFilterProps> = ({
           val = value;
         }
       }
+    }
+
+    if (name === "date_start") {
+      const next = {
+        ...filters,
+        date_start: val,
+        date:
+          typeof val === "string" && val !== ""
+            ? val
+            : (filters.date as string) || "",
+      };
+
+      if (
+        next.date_start &&
+        typeof next.date_start === "string" &&
+        next.date_end &&
+        typeof next.date_end === "string" &&
+        next.date_end < next.date_start
+      ) {
+        next.date_end = next.date_start;
+      }
+
+      setFilters(next);
+      onChange && onChange(next);
+      return;
     }
 
     if (
@@ -97,8 +150,18 @@ export const ReportFilter: React.FC<IReportFilterProps> = ({
       out.month = Number.isNaN(n) ? out.month : n;
     }
 
-    if (out.date && typeof out.date === "string") {
-      const dstr = out.date as string;
+    const hasDateRange =
+      (typeof out.date_start === "string" && out.date_start !== "") ||
+      (typeof out.date_end === "string" && out.date_end !== "");
+
+    const referenceDate =
+      (typeof out.date_start === "string" && out.date_start) ||
+      (typeof out.date_end === "string" && out.date_end) ||
+      (typeof out.date === "string" && out.date) ||
+      "";
+
+    if (referenceDate && !hasDateRange) {
+      const dstr = referenceDate;
       let yyyy: string | undefined;
       let mm: string | undefined;
       if (dstr.includes("/")) {
@@ -129,14 +192,46 @@ export const ReportFilter: React.FC<IReportFilterProps> = ({
           out.month = mn;
         }
       }
-      // normalize date to ISO (yyyy-mm-dd)
+
       if (yyyy && mm) {
         const dd = dstr.includes("/")
           ? dstr.split("/")[0].padStart(2, "0")
           : dstr.split("-")[2].padStart(2, "0");
-        (out as any).date = `${String(yyyy).padStart(4, "0")}-${String(
-          mm
-        ).padStart(2, "0")}-${String(dd).padStart(2, "0")}`;
+        out.date = `${String(yyyy).padStart(4, "0")}-${String(mm).padStart(
+          2,
+          "0",
+        )}-${String(dd).padStart(2, "0")}`;
+      }
+    }
+
+    if (typeof out.date_start === "string") {
+      out.date_start = normalizeDateToIso(out.date_start);
+    }
+
+    if (typeof out.date_end === "string") {
+      out.date_end = normalizeDateToIso(out.date_end);
+    }
+
+    if (
+      out.date_start &&
+      out.date_end &&
+      typeof out.date_start === "string" &&
+      typeof out.date_end === "string" &&
+      out.date_end < out.date_start
+    ) {
+      out.date_end = out.date_start;
+    }
+
+    if (out.date_start) {
+      out.date = out.date_start;
+    }
+
+    if (hasDateRange) {
+      if (!filters.month) {
+        out.month = "";
+      }
+      if (!filters.year) {
+        out.year = "";
       }
     }
 
@@ -162,82 +257,121 @@ export const ReportFilter: React.FC<IReportFilterProps> = ({
       variantConfirm="success"
     >
       <SFormContainer>
-        <STextField
-          label="Vendedor (separe por ,)"
-          type="text"
-          variant="outlined"
-          size="small"
-          name="seller"
-          value={filters.seller ?? ""}
-          onChange={handleChange}
-          sx={{ width: "100%" }}
-        />
+        {enabledFields.has("seller") && (
+          <STextField
+            label="Vendedor (separe por ,)"
+            type="text"
+            variant="outlined"
+            size="small"
+            name="seller"
+            value={filters.seller ?? ""}
+            onChange={handleChange}
+            sx={{ width: "100%" }}
+          />
+        )}
 
-        <STextField
-          label="Comprador (separe por ,)"
-          type="text"
-          variant="outlined"
-          size="small"
-          name="buyer"
-          value={filters.buyer ?? ""}
-          onChange={handleChange}
-          sx={{ width: "100%" }}
-        />
+        {enabledFields.has("buyer") && (
+          <STextField
+            label="Comprador (separe por ,)"
+            type="text"
+            variant="outlined"
+            size="small"
+            name="buyer"
+            value={filters.buyer ?? ""}
+            onChange={handleChange}
+            sx={{ width: "100%" }}
+          />
+        )}
 
-        <STextField
-          type="date"
-          variant="outlined"
-          size="small"
-          name="date"
-          value={filters.date ?? ""}
-          onChange={handleChange}
-          sx={{ width: "100%" }}
-        />
+        {enabledFields.has("date_start") && (
+          <STextField
+            label="Data início"
+            type={dateStartFocused || !!filters.date_start ? "date" : "text"}
+            variant="outlined"
+            size="small"
+            name="date_start"
+            value={filters.date_start ?? ""}
+            onChange={handleChange}
+            onFocus={() => setDateStartFocused(true)}
+            onBlur={() => setDateStartFocused(false)}
+            placeholder="Data Início"
+            sx={{ width: "100%" }}
+            InputLabelProps={{
+              shrink: dateStartFocused || !!filters.date_start,
+            }}
+          />
+        )}
 
-        <STextField
-          label="Mês (1-12)"
-          type="number"
-          variant="outlined"
-          size="small"
-          name="month"
-          value={filters.month ?? ""}
-          onChange={handleChange}
-          sx={{ width: "100%" }}
-          inputProps={{ min: 1, max: 12, step: 1 }}
-        />
+        {enabledFields.has("date_end") && (
+          <STextField
+            label="Data fim"
+            type={dateEndFocused || !!filters.date_end ? "date" : "text"}
+            variant="outlined"
+            size="small"
+            name="date_end"
+            value={filters.date_end ?? ""}
+            onChange={handleChange}
+            onFocus={() => setDateEndFocused(true)}
+            onBlur={() => setDateEndFocused(false)}
+            placeholder="Data Fim"
+            sx={{ width: "100%" }}
+            InputLabelProps={{ shrink: dateEndFocused || !!filters.date_end }}
+            inputProps={{ min: filters.date_start || undefined }}
+          />
+        )}
 
-        <STextField
-          label="Ano (YYYY)"
-          type="number"
-          variant="outlined"
-          size="small"
-          name="year"
-          value={filters.year ?? ""}
-          onChange={handleChange}
-          sx={{ width: "100%" }}
-        />
+        {enabledFields.has("month") && (
+          <STextField
+            label="Mês (1-12)"
+            type="number"
+            variant="outlined"
+            size="small"
+            name="month"
+            value={filters.month ?? ""}
+            onChange={handleChange}
+            sx={{ width: "100%" }}
+            inputProps={{ min: 1, max: 12, step: 1 }}
+          />
+        )}
 
-        <STextField
-          label="Sigla"
-          type="text"
-          variant="outlined"
-          size="small"
-          name="product"
-          value={filters.product ?? ""}
-          onChange={handleChange}
-          sx={{ width: "100%" }}
-        />
+        {enabledFields.has("year") && (
+          <STextField
+            label="Ano (YYYY)"
+            type="number"
+            variant="outlined"
+            size="small"
+            name="year"
+            value={filters.year ?? ""}
+            onChange={handleChange}
+            sx={{ width: "100%" }}
+          />
+        )}
 
-        <STextField
-          label="Produto"
-          type="text"
-          variant="outlined"
-          size="small"
-          name="name_product"
-          value={filters.name_product ?? ""}
-          onChange={handleChange}
-          sx={{ width: "100%" }}
-        />
+        {enabledFields.has("product") && (
+          <STextField
+            label="Sigla"
+            type="text"
+            variant="outlined"
+            size="small"
+            name="product"
+            value={filters.product ?? ""}
+            onChange={handleChange}
+            sx={{ width: "100%" }}
+          />
+        )}
+
+        {enabledFields.has("name_product") && (
+          <STextField
+            label="Produto"
+            type="text"
+            variant="outlined"
+            size="small"
+            name="name_product"
+            value={filters.name_product ?? ""}
+            onChange={handleChange}
+            sx={{ width: "100%" }}
+          />
+        )}
       </SFormContainer>
     </Modal>
   );

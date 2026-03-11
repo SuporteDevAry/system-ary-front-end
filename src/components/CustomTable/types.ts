@@ -2,6 +2,7 @@ import { Dispatch, ReactNode, SetStateAction } from "react";
 
 export interface IColumn {
   header: string;
+  headerTooltip?: string;
   field: string;
   width?: string;
   sortable?: boolean;

@@ -9,6 +9,7 @@ import {
   Collapse,
   Box,
   TablePagination,
+  Tooltip,
 } from "@mui/material";
 import { ICustomTableProps } from "./types";
 import {
@@ -57,29 +58,28 @@ const CustomTable: React.FC<ICustomTableProps> = ({
   setOrder,
   setOrderBy,
   searchTerm = "",
-  searchableFields = columns.map((col) => col.field),
+  searchableFields,
 }) => {
   const [openRows, setOpenRows] = useState<number[]>([]);
   const [selectedRowId, setSelectedRowId] = useState<number | null>(null);
   const [selectedRowIds, setSelectedRowIds] = useState<number[]>([]);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [visibleCount, setVisibleCount] = useState(30); // primeiros itens
+  const resolvedSearchableFields = useMemo(
+    () => searchableFields ?? columns.map((col) => col.field),
+    [searchableFields, columns],
+  );
 
-  const { filteredData, handleSearch } = useTableSearch({
+  const { filteredData } = useTableSearch({
     data,
     searchTerm,
-    searchableFields,
+    searchableFields: resolvedSearchableFields,
   });
 
   const totalPages = useMemo(
     () => Math.ceil(filteredData.length / rowsPerPage),
-    [filteredData.length, rowsPerPage]
+    [filteredData.length, rowsPerPage],
   );
-
-  useEffect(() => {
-    // Aciona a busca sempre que o termo mudar
-    handleSearch();
-  }, [searchTerm, handleSearch]);
 
   useEffect(() => {
     // Se a página atual for maior que o número de páginas após o filtro, ajuste para a última página disponível
@@ -114,7 +114,7 @@ const CustomTable: React.FC<ICustomTableProps> = ({
       // Notifica sobre a mudança de seleção
       if (onSelectionChange) {
         const selectedRows = data.filter((row) =>
-          newSelectedIds.includes(row.id)
+          newSelectedIds.includes(row.id),
         );
         onSelectionChange(selectedRows);
       }
@@ -141,7 +141,7 @@ const CustomTable: React.FC<ICustomTableProps> = ({
 
   const handleChangePage = (
     _event: React.MouseEvent<HTMLButtonElement> | null,
-    newPage: number
+    newPage: number,
   ) => {
     // Verifica se a nova página está dentro do limite das páginas disponíveis
     if (newPage >= 0 && newPage < totalPages) {
@@ -152,7 +152,7 @@ const CustomTable: React.FC<ICustomTableProps> = ({
   };
 
   const handleChangeRowsPerPage = (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     setRowsPerPage(parseInt(event.target.value, 10));
 
@@ -174,7 +174,7 @@ const CustomTable: React.FC<ICustomTableProps> = ({
   let typeCommission = "";
   const formatCellValue = (
     row: any,
-    column: { field: string }
+    column: { field: string },
   ): React.ReactNode => {
     const value = getNestedValue(row, column.field);
 
@@ -357,8 +357,18 @@ const CustomTable: React.FC<ICustomTableProps> = ({
                     direction={orderBy === column.field ? order : "asc"}
                     onClick={() => handleRequestSort(column.field)}
                   >
-                    <SColumnHeader>{column.header}</SColumnHeader>
+                    {column.headerTooltip ? (
+                      <Tooltip title={column.headerTooltip} arrow>
+                        <SColumnHeader>{column.header}</SColumnHeader>
+                      </Tooltip>
+                    ) : (
+                      <SColumnHeader>{column.header}</SColumnHeader>
+                    )}
                   </CustomTableSortLabel>
+                ) : column.headerTooltip ? (
+                  <Tooltip title={column.headerTooltip} arrow>
+                    <SColumnHeader>{column.header}</SColumnHeader>
+                  </Tooltip>
                 ) : (
                   <SColumnHeader>{column.header}</SColumnHeader>
                 )}

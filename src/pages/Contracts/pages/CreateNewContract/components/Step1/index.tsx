@@ -25,7 +25,7 @@ export const Step1: React.FC<StepProps> = ({
 }) => {
   const [isCustomerModalOpen, setCustomerModalOpen] = useState<boolean>(false);
   const [selectionType, setSelectionType] = useState<"buyer" | "seller">(
-    "buyer"
+    "buyer",
   );
 
   const clienteContext = ClienteContext();
@@ -41,7 +41,7 @@ export const Step1: React.FC<StepProps> = ({
       setClientes(response.data);
     } catch (error) {
       toast.error(
-        `Erro ao tentar ler clientes, contacte o administrador do sistema ${error}`
+        `Erro ao tentar ler clientes, contacte o administrador do sistema ${error}`,
       );
     } finally {
       setIsLoading(false);
@@ -60,7 +60,7 @@ export const Step1: React.FC<StepProps> = ({
           response.data
             .filter(
               (contact: IListContatos) =>
-                contact.receive_email.toLowerCase() === "true"
+                contact.receive_email.toLowerCase() === "true",
             )
             .map((contact: IListContatos) => contact.email)
             .join("; ") || "";
@@ -69,13 +69,13 @@ export const Step1: React.FC<StepProps> = ({
         updateFormData?.({ [`list_email_${type}`]: emailList });
       } catch (error) {
         toast.error(
-          `Erro ao buscar contatos do cliente, contacte o administrador do sistema ${error}`
+          `Erro ao buscar contatos do cliente, contacte o administrador do sistema ${error}`,
         );
       } finally {
         setIsLoading(false);
       }
     },
-    [contactContext, updateFormData]
+    [contactContext, updateFormData],
   );
 
   useEffect(() => {
@@ -99,7 +99,7 @@ export const Step1: React.FC<StepProps> = ({
     (
       selectCustomerData: CustomerInfo & {
         type: "seller" | "buyer";
-      }
+      },
     ) => {
       if (updateFormData) {
         updateFormData({
@@ -122,12 +122,12 @@ export const Step1: React.FC<StepProps> = ({
         if (selectCustomerData.code_client) {
           fetchContactsDataByClient(
             selectCustomerData.code_client,
-            selectCustomerData.type
+            selectCustomerData.type,
           );
         }
       }
     },
-    [formData, updateFormData, handleCloseCustomerModal]
+    [formData, updateFormData, handleCloseCustomerModal],
   );
 
   const handleInputChange = useCallback(
@@ -143,7 +143,7 @@ export const Step1: React.FC<StepProps> = ({
         });
       }
     },
-    [updateFormData, formData]
+    [updateFormData, formData],
   );
 
   const handleDateChange = useCallback(
@@ -152,7 +152,7 @@ export const Step1: React.FC<StepProps> = ({
         updateFormData({ contract_emission_date: newDate });
       }
     },
-    [updateFormData]
+    [updateFormData],
   );
 
   return (
@@ -172,6 +172,7 @@ export const Step1: React.FC<StepProps> = ({
           $labelPosition="top"
           onChange={handleDateChange}
           value={formData.contract_emission_date}
+          suggestCurrentDateWhenEmpty={false}
           disableWeekends
         />
 
