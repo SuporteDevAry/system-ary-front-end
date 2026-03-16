@@ -384,6 +384,30 @@ export function Invoice() {
         [invoiceContext, fetchData],
     );
 
+    const handleResult = async () => {
+        try {
+            const result = await nfseContext.enviarLote({ xml });
+
+            const providerMsg =
+                result.provider === "focusnfe"
+                    ? " (via Focus NFe)"
+                    : " (via Prefeitura)";
+
+            console.log("Resposta servidor:", result);
+            console.log("Provider usado:", result.provider);
+            console.log("Protocolo:", result.protocolo);
+        } catch (err) {
+            console.error(err);
+            const errorMsg =
+                err instanceof Error ? err.message : "Erro desconhecido";
+            toast.error(`Erro no envio: ${errorMsg}`);
+        } finally {
+        }
+    };
+
+    const handleXML = useCallback();
+    const handlePDF = useCallback();
+
     const nameColumnsFromRPS = useMemo(
         () => [
             { field: "rps_number", header: "RPS" },
@@ -402,6 +426,27 @@ export function Invoice() {
             const invoice = rowData as IListInvoices; // Cast interno para manter o autocomplete
             return (
                 <SButtonContainer>
+                    <CustomButton
+                        $variant={"success"}
+                        width="80px"
+                        onClick={() => handleResult(invoice)}
+                    >
+                        Atualizar
+                    </CustomButton>
+                    <CustomButton
+                        $variant={"success"}
+                        width="50px"
+                        onClick={() => handleXML(invoice)}
+                    >
+                        XML
+                    </CustomButton>
+                    <CustomButton
+                        $variant={"success"}
+                        width="50px"
+                        onClick={() => handlePDF(invoice)}
+                    >
+                        PDF
+                    </CustomButton>
                     <CustomButton
                         $variant={"primary"}
                         width="80px"
