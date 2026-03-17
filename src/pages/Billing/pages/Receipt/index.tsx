@@ -30,13 +30,14 @@ export function Receipt() {
 
       const filteredContracts = response.data.filter(
         (contract: { status: { status_current: string } }) =>
-          contract.status.status_current === "COBRANÇA"
+          contract.status.status_current === "COBRANÇA" ||
+          contract.status.status_current === "LIQUIDADO",
       );
 
       setListContracts(filteredContracts);
     } catch (error) {
       toast.error(
-        `Erro ao tentar ler contratos, contacte o administrador do sistema: ${error}`
+        `Erro ao tentar ler contratos, contacte o administrador do sistema: ${error}`,
       );
     } finally {
       setIsLoading(false);
@@ -47,7 +48,7 @@ export function Receipt() {
     fetchData();
   }, [fetchData]);
 
-  const { filteredData, handleSearch } = useTableSearch({
+  const { filteredData } = useTableSearch({
     data: listcontracts,
     searchTerm,
     searchableFields: [
@@ -58,10 +59,6 @@ export function Receipt() {
     ],
   });
 
-  useEffect(() => {
-    handleSearch();
-  }, [searchTerm, handleSearch]);
-
   const handleViewContract = (contract: IContractData) => {
     navigate("/cobranca/visualizar-recebimento", {
       state: { contractForView: contract },
@@ -70,6 +67,11 @@ export function Receipt() {
 
   const nameColumns: IColumn[] = useMemo(
     () => [
+      {
+        field: "status.status_current",
+        header: "Status",
+        width: "130px",
+      },
       {
         field: "contract_emission_datetime",
         header: "Data",
@@ -101,7 +103,7 @@ export function Receipt() {
         width: "150px",
       },
     ],
-    []
+    [],
   );
 
   const renderActionButtons = (row: any) => (

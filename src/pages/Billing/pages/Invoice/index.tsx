@@ -59,6 +59,7 @@ export function Invoice() {
     const [selectedInvoice, setSelectedInvoice] = useState<
         IListInvoices[] | null
     >([]);
+    const [protocolo, setProtocolo] = useState("");
 
     const fetchData = useCallback(async () => {
         setIsLoadingRPS(true);
@@ -323,6 +324,10 @@ export function Invoice() {
             console.log("Resposta servidor:", result);
             console.log("Provider usado:", result.provider);
             console.log("Protocolo:", result.protocolo);
+
+            setProtocolo(result.protocolo);
+
+            console.log(protocolo);
         } catch (err) {
             console.error(err);
             const errorMsg =
@@ -385,13 +390,10 @@ export function Invoice() {
     );
 
     const handleResult = async () => {
+        const xml = gerarXML();
+
         try {
             const result = await nfseContext.enviarLote({ xml });
-
-            const providerMsg =
-                result.provider === "focusnfe"
-                    ? " (via Focus NFe)"
-                    : " (via Prefeitura)";
 
             console.log("Resposta servidor:", result);
             console.log("Provider usado:", result.provider);
@@ -405,8 +407,41 @@ export function Invoice() {
         }
     };
 
-    const handleXML = useCallback();
-    const handlePDF = useCallback();
+    const handleXML = () => {
+        /*
+        try {
+            const result = ´´; //  await nfseContext.enviarLote({ protocolo });
+
+            console.log("Resposta servidor:", result);
+            console.log("Provider usado:", result.provider);
+            console.log("Protocolo:", result.protocolo);
+        } catch (err) {
+            console.error(err);
+            const errorMsg =
+                err instanceof Error ? err.message : "Erro desconhecido";
+            toast.error(`Erro no envio: ${errorMsg}`);
+        } finally {
+        }
+        */
+    };
+
+    const handlePDF = () => {
+        /*
+        try {
+            const result = nfseContext.enviarLote({ protocolo });
+
+            console.log("Resposta servidor:", result);
+            console.log("Provider usado:", result.provider);
+            console.log("Protocolo:", result.protocolo);
+        } catch (err) {
+            console.error(err);
+            const errorMsg =
+                err instanceof Error ? err.message : "Erro desconhecido";
+            toast.error(`Erro no envio: ${errorMsg}`);
+        } finally {
+        }
+        */
+    };
 
     const nameColumnsFromRPS = useMemo(
         () => [
@@ -429,21 +464,21 @@ export function Invoice() {
                     <CustomButton
                         $variant={"success"}
                         width="80px"
-                        onClick={() => handleResult(invoice)}
+                        onClick={() => handleResult()}
                     >
                         Atualizar
                     </CustomButton>
                     <CustomButton
                         $variant={"success"}
                         width="50px"
-                        onClick={() => handleXML(invoice)}
+                        onClick={() => handleXML()}
                     >
                         XML
                     </CustomButton>
                     <CustomButton
                         $variant={"success"}
                         width="50px"
-                        onClick={() => handlePDF(invoice)}
+                        onClick={() => handlePDF()}
                     >
                         PDF
                     </CustomButton>

@@ -43,7 +43,7 @@ export function TableProducts() {
       setListTable(response.data);
     } catch (error) {
       toast.error(
-        `Erro ao tentar ler mesas, contacte o administrador do sistema: ${error}`
+        `Erro ao tentar ler mesas, contacte o administrador do sistema: ${error}`,
       );
     } finally {
       setIsLoading(false);
@@ -54,15 +54,11 @@ export function TableProducts() {
     fetchData();
   }, [fetchData]);
 
-  const { filteredData, handleSearch } = useTableSearch({
+  const { filteredData } = useTableSearch({
     data: listTables,
     searchTerm,
     searchableFields: ["product_types", "name"],
   });
-
-  useEffect(() => {
-    handleSearch();
-  }, [searchTerm, handleSearch]);
 
   const nameColumns: IColumn[] = useMemo(
     () => [
@@ -79,7 +75,7 @@ export function TableProducts() {
         sortable: true,
       },
     ],
-    []
+    [],
   );
 
   const handleCreateNewTable = async () => {
@@ -94,7 +90,7 @@ export function TableProducts() {
   };
 
   const handleUpdateTablesProductsModal = (
-    tableProduct: ITableProductsData
+    tableProduct: ITableProductsData,
   ) => {
     setTableProductToEdit(tableProduct);
     setTableProductModalOpen(true);
@@ -105,10 +101,10 @@ export function TableProducts() {
   };
 
   const handleOpenDeleteTablesProductsModal = (
-    tableProduct: ITableProductsData
+    tableProduct: ITableProductsData,
   ) => {
     setModalContent(
-      `Tem certeza que deseja deletar a mesa: ${tableProduct?.name} ?`
+      `Tem certeza que deseja deletar a mesa: ${tableProduct?.name} ?`,
     );
 
     setTableProductForDelete(tableProduct);
@@ -128,12 +124,12 @@ export function TableProducts() {
         <div>
           Mesa: <strong>{tableProductForDelete.name}</strong> deletado com
           sucesso!
-        </div>
+        </div>,
       );
       fetchData();
     } catch (error) {
       toast.error(
-        `Erro ao tentar deletar mesa: ${tableProductForDelete.name}, contacte o administrador do sistema ${error}`
+        `Erro ao tentar deletar mesa: ${tableProductForDelete.name}, contacte o administrador do sistema ${error}`,
       );
     } finally {
       setDeleteTableProductModal(false);
@@ -159,7 +155,7 @@ export function TableProducts() {
         </CustomButton>
       </SButtonContainer>
     ),
-    [handleUpdateTablesProductsModal, handleOpenDeleteTablesProductsModal]
+    [handleUpdateTablesProductsModal, handleOpenDeleteTablesProductsModal],
   );
   return (
     <>

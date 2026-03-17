@@ -21,6 +21,8 @@ export function ControlContracts() {
   const getInitialSelectData = (): SelectState => ({
     seller: "",
     buyer: "",
+    date_start: "",
+    date_end: "",
     year: "",
     month: "",
     product: "",
@@ -28,7 +30,7 @@ export function ControlContracts() {
   });
 
   const [selectData, setSelectData] = useState<SelectState>(
-    getInitialSelectData()
+    getInitialSelectData(),
   );
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [listcontracts, setListContracts] = useState<IContractData[]>([]);
@@ -52,6 +54,8 @@ export function ControlContracts() {
     return (
       (selectData.seller ?? "") === (initial.seller ?? "") &&
       (selectData.buyer ?? "") === (initial.buyer ?? "") &&
+      (selectData.date_start ?? "") === (initial.date_start ?? "") &&
+      (selectData.date_end ?? "") === (initial.date_end ?? "") &&
       String(selectData.year ?? "") === String(initial.year ?? "") &&
       String(selectData.month ?? "") === String(initial.month ?? "") &&
       (selectData.product ?? "") === (initial.product ?? "") &&
@@ -63,11 +67,74 @@ export function ControlContracts() {
     async (filters: SelectState) => {
       try {
         setIsLoading(true);
-        const response = await contractContext.reportContracts(filters as any);
+        const { date_start, date_end, ...rawApiFilters } = filters as any;
+
+        const apiFilters = Object.entries(rawApiFilters).reduce(
+          (acc, [key, value]) => {
+            if (value === "" || value === null || value === undefined) {
+              return acc;
+            }
+
+            acc[key] = value;
+            return acc;
+          },
+          {} as Record<string, any>,
+        );
+
+        const hasDateRange =
+          (typeof date_start === "string" && date_start !== "") ||
+          (typeof date_end === "string" && date_end !== "");
+
+        if (hasDateRange) {
+          if (date_start) {
+            apiFilters.date_start = date_start;
+          }
+          if (date_end) {
+            apiFilters.date_end = date_end;
+          }
+
+          delete apiFilters.date;
+          delete apiFilters.month;
+          delete apiFilters.year;
+        }
+
+        const response = await contractContext.reportContracts(apiFilters);
         const contractsArray = Array.isArray(response.data)
           ? response.data
           : (response.data as any)?.data || [];
-        const formatted = formatContracts(contractsArray);
+
+        const parseIsoDate = (date?: string) => {
+          if (!date || typeof date !== "string") return null;
+          const [year, month, day] = date.split("-").map(Number);
+          if (!year || !month || !day) return null;
+          return new Date(year, month - 1, day);
+        };
+
+        const parseContractDate = (date?: string) => {
+          if (!date || typeof date !== "string") return null;
+          const [day, month, year] = date.split("/").map(Number);
+          if (!year || !month || !day) return null;
+          return new Date(year, month - 1, day);
+        };
+
+        const startDate = parseIsoDate(date_start);
+        const endDate = parseIsoDate(date_end);
+
+        const contractsInRange = contractsArray.filter((contract: any) => {
+          if (!startDate && !endDate) return true;
+
+          const emissionDate = parseContractDate(
+            contract.contract_emission_date,
+          );
+          if (!emissionDate) return false;
+
+          const matchStart = startDate ? emissionDate >= startDate : true;
+          const matchEnd = endDate ? emissionDate <= endDate : true;
+
+          return matchStart && matchEnd;
+        });
+
+        const formatted = formatContracts(contractsInRange);
         setListContracts(formatted);
         if (formatted && formatted.length > 0) {
           toast.success(`${formatted.length} contrato(s) encontrado(s)`);
@@ -83,18 +150,14 @@ export function ControlContracts() {
         setIsLoading(false);
       }
     },
-    [contractContext]
+    [contractContext],
   );
 
-  const { filteredData, handleSearch } = useTableSearch({
+  const { filteredData } = useTableSearch({
     data: listcontracts,
     searchTerm,
     searchableFields: ["contract_emission_date", "product", "number_contract"],
   });
-
-  useEffect(() => {
-    handleSearch();
-  }, [searchTerm, handleSearch]);
 
   const nameColumns: IColumn[] = useMemo(
     () => [
@@ -220,7 +283,7 @@ export function ControlContracts() {
         width: "200px",
       },
     ],
-    []
+    [],
   );
 
   const formatContracts = (contracts: any[]): IContractData[] => {
@@ -233,7 +296,7 @@ export function ControlContracts() {
       let total = 0;
       try {
         total = Number(
-          String(contract.total_contract_value).replace(/[,]/g, ".")
+          String(contract.total_contract_value).replace(/[,]/g, "."),
         );
       } catch (e) {
         total = 0;
@@ -243,8 +306,8 @@ export function ControlContracts() {
         String(
           contract.commission_seller == 0
             ? contract.commission_buyer
-            : contract.commission_seller
-        ).replace(",", ".")
+            : contract.commission_seller,
+        ).replace(",", "."),
       );
 
       const type_commission =
@@ -253,10 +316,10 @@ export function ControlContracts() {
             ? "P"
             : "V"
           : contract.type_commission_buyer != 0
-          ? contract.type_commission_buyer == "Percentual"
-            ? "P"
-            : "V"
-          : "?";
+            ? contract.type_commission_buyer == "Percentual"
+              ? "P"
+              : "V"
+            : "?";
 
       const commissionValue =
         type_commission == "P" ? (total * commission) / 100 : commission;

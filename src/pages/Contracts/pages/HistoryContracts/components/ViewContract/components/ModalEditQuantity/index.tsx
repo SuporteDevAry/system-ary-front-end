@@ -1,4 +1,3 @@
-import dayjs from "dayjs";
 import CustomDatePicker from "../../../../../../../../components/CustomDatePicker";
 import { CustomInput } from "../../../../../../../../components/CustomInput";
 import CustomTooltipLabel from "../../../../../../../../components/CustomTooltipLabel";
@@ -16,7 +15,6 @@ export function ModalEditQuantity({
   onConfirm,
   onHandleChange,
 }: IModalEditQuantityProps) {
-  const currentDate = dayjs().format("DD/MM/YYYY");
   const [isEditingQuantity, setIsEditingQuantity] = useState<boolean>(false);
 
   const handleRadioChange = useCallback(
@@ -32,7 +30,7 @@ export function ModalEditQuantity({
         },
       });
     },
-    []
+    [],
   );
 
   const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -46,7 +44,7 @@ export function ModalEditQuantity({
   const handleQuantityBlur = () => {
     setIsEditingQuantity(false);
     const formattedValue = formatQuantity(
-      numberToQuantityString(dataContract?.final_quantity ?? 0)
+      numberToQuantityString(dataContract?.final_quantity ?? 0),
     );
     onHandleChange?.({
       target: { name: "final_quantity", value: formattedValue },
@@ -87,8 +85,9 @@ export function ModalEditQuantity({
                 target: { name: "payment_date", value: newValue },
               })
             }
-            value={dataContract?.payment_date ?? currentDate}
+            value={dataContract?.payment_date || ""}
             disableWeekends
+            suggestCurrentDateWhenEmpty={false}
           />
 
           <CustomDatePicker
@@ -102,8 +101,9 @@ export function ModalEditQuantity({
                 target: { name: "charge_date", value: newValue },
               })
             }
-            value={dataContract?.charge_date ?? currentDate}
+            value={dataContract?.charge_date || ""}
             disableWeekends
+            suggestCurrentDateWhenEmpty={false}
           />
 
           <CustomDatePicker
@@ -117,8 +117,9 @@ export function ModalEditQuantity({
                 target: { name: "expected_receipt_date", value: newValue },
               })
             }
-            value={dataContract?.expected_receipt_date ?? currentDate}
+            value={dataContract?.expected_receipt_date || ""}
             disableWeekends
+            suggestCurrentDateWhenEmpty={false}
           />
         </SBoxDatePicker>
 
@@ -131,7 +132,7 @@ export function ModalEditQuantity({
             isEditingQuantity
               ? String(dataContract?.final_quantity ?? "")
               : formatQuantity(
-                  numberToQuantityString(dataContract?.final_quantity ?? 0)
+                  numberToQuantityString(dataContract?.final_quantity ?? 0),
                 )
           }
           onChange={handleQuantityChange}

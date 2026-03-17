@@ -27,13 +27,13 @@ export function NotaFiscal() {
 
       const filteredContracts = response.data.filter(
         (contract: { status: { status_current: string } }) =>
-          contract.status.status_current === "COBRANÇA"
+          contract.status.status_current === "COBRANÇA",
       );
 
       setListContracts(filteredContracts);
     } catch (error) {
       toast.error(
-        `Erro ao tentar ler contratos, contacte o administrador do sistema: ${error}`
+        `Erro ao tentar ler contratos, contacte o administrador do sistema: ${error}`,
       );
     } finally {
       setIsLoading(false);
@@ -44,15 +44,11 @@ export function NotaFiscal() {
     fetchData();
   }, [fetchData]);
 
-  const { filteredData, handleSearch } = useTableSearch({
+  const { filteredData } = useTableSearch({
     data: listcontracts,
     searchTerm,
     searchableFields: ["rpsGerada", "nf", "seller.name"],
   });
-
-  useEffect(() => {
-    handleSearch();
-  }, [searchTerm, handleSearch]);
 
   // const handleViewContract = (contract: IContractData) => {
   //     navigate("/cobranca/visualizar-contrato", {
@@ -93,7 +89,7 @@ export function NotaFiscal() {
         sortable: true,
       },
     ],
-    []
+    [],
   );
 
   // const renderActionButtons = (row: any) => (

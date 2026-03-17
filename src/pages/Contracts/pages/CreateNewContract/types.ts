@@ -26,8 +26,14 @@ export type FormDataContract = {
   payment: string;
   type_commission_seller?: string;
   commission_seller?: string;
+  type_commission_seller_currency?: "Real" | "Dólar" | string;
+  commission_seller_exchange_rate?: string;
   type_commission_buyer?: string;
   commission_buyer?: string;
+  type_commission_buyer_currency?: "Real" | "Dólar" | string;
+  commission_buyer_exchange_rate?: string;
+  commission_seller_contract_value?: number;
+  commission_buyer_contract_value?: number;
   type_pickup: string;
   pickup: string;
   pickup_location: string;
@@ -65,7 +71,7 @@ export interface StepProps {
   id: string;
   formData: FormDataContract;
   handleChange?: (
-    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => void;
   updateFormData?: (data: Partial<FormDataContract>) => void;
   isEditMode?: boolean;

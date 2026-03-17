@@ -5,7 +5,6 @@ import { CustomSearch } from "../../../../components/CustomSearch";
 import {
   SContainerSearchAndButton,
   SCustomTableWrapper,
-  SFormContainer,
   STitle,
 } from "./styles";
 import CustomTable from "../../../../components/CustomTable";
@@ -14,11 +13,12 @@ import CustomButton from "../../../../components/CustomButton";
 import { BillingContext } from "../../../../contexts/BillingContext";
 import { IBillingData } from "../../../../contexts/BillingContext/types";
 import { ContractContext } from "../../../../contexts/ContractContext";
-import { Modal } from "../../../../components/Modal";
-import TextField from "@mui/material/TextField";
+import ReportFilter from "../../../../components/ReportFilter";
+import { SelectState } from "../../../../components/ReportFilter/types";
 import Tooltip from "@mui/material/Tooltip";
 import IconButton from "@mui/material/IconButton";
-import { TbFilter, TbFilterOff } from "react-icons/tb";
+import { TbFilter, TbFilterOff, TbInfinity } from "react-icons/tb";
+import { PiScroll } from "react-icons/pi";
 
 export function ReceiptMap() {
   const contractContext = ContractContext();
@@ -31,12 +31,7 @@ export function ReceiptMap() {
   const [order, setOrder] = useState<"asc" | "desc">("desc");
   const [orderBy, setOrderBy] = useState("receipt_date");
   const [isSelectionModal, setSelectionModal] = useState<boolean>(false);
-
-  type SelectState = {
-    SelectDateStart: string;
-    SelectDateEnd: string;
-    SelectContract?: string;
-  };
+  const [useInfiniteScroll, setUseInfiniteScroll] = useState<boolean>(false);
 
   const getInitialSelectData = (): SelectState => {
     const today = new Date();
@@ -45,33 +40,33 @@ export function ReceiptMap() {
 
     const fmt = (d: Date) =>
       `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
-        d.getDate()
+        d.getDate(),
       ).padStart(2, "0")}`;
 
     return {
-      SelectDateStart: fmt(firstDay),
-      SelectDateEnd: fmt(today),
-      SelectContract: "",
+      date_start: fmt(firstDay),
+      date_end: fmt(today),
     };
   };
 
   const [selectData, setSelectData] = useState<SelectState>(
-    getInitialSelectData()
+    getInitialSelectData(),
   );
 
   const handleSelectionModal = () => setSelectionModal((prev) => !prev);
   const handleCloseModal = () => setSelectionModal(false);
 
-  const handleChangeSelect = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setSelectData((prev) => ({ ...prev, [name]: value }));
-  };
-
   const fetchSelectData = useCallback(() => {
     try {
       setIsLoading(true);
+
+      const normalizeStr = (value?: string) =>
+        (value || "")
+          .toString()
+          .toUpperCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .trim();
 
       // Parse das datas da seleção de forma segura (sem usar new Date(isoString))
       const parseYMD = (iso?: string) => {
@@ -80,8 +75,8 @@ export function ReceiptMap() {
         return new Date(y, m - 1, d); // criação local, sem timezone-shift
       };
 
-      const startDate = parseYMD(selectData.SelectDateStart);
-      const endDate = parseYMD(selectData.SelectDateEnd);
+      const startDate = parseYMD(selectData.date_start);
+      const endDate = parseYMD(selectData.date_end);
 
       // Função que normaliza a data para comparações sem horário (00:00 local)
       const onlyDate = (d: Date) =>
@@ -89,6 +84,11 @@ export function ReceiptMap() {
 
       const sDate = startDate ? onlyDate(startDate) : null;
       const eDate = endDate ? onlyDate(endDate) : null;
+
+      const sellerTerms = (selectData.seller || "")
+        .split(",")
+        .map((item) => normalizeStr(item))
+        .filter(Boolean);
 
       const filtered = allBillings.filter((billing) => {
         if (!billing.receipt_date) return false;
@@ -102,11 +102,22 @@ export function ReceiptMap() {
 
         const matchStart = sDate ? rDate >= sDate : true;
         const matchEnd = eDate ? rDate <= eDate : true;
+        const sellerName = normalizeStr((billing as any).seller_name);
+        const matchSeller =
+          sellerTerms.length === 0 ||
+          sellerTerms.some((term) => sellerName.includes(term));
 
-        return matchStart && matchEnd;
+        return matchStart && matchEnd && matchSeller;
       });
 
       setListBillings(filtered);
+
+      if (filtered.length > 0) {
+        toast.success(`${filtered.length} contrato(s) encontrado(s)`);
+      } else {
+        toast.info("Nenhum contrato encontrado");
+      }
+
       setSelectionModal(false);
     } catch (error) {
       toast.error(`Erro ao aplicar filtros: ${error}`);
@@ -116,17 +127,25 @@ export function ReceiptMap() {
   }, [allBillings, selectData]);
 
   const handleClearFilterModal = () => {
-    setSelectData(getInitialSelectData());
+    setSelectData({ seller: "", date_start: "", date_end: "" });
     setListBillings(allBillings);
     setSelectionModal(false);
   };
 
   const isInitialFilter = useMemo(() => {
     const initial = getInitialSelectData();
+    const isDefaultRange =
+      (selectData.date_start ?? "") === (initial.date_start ?? "") &&
+      (selectData.date_end ?? "") === (initial.date_end ?? "");
+
+    const isClearedRange =
+      (selectData.date_start ?? "") === "" &&
+      (selectData.date_end ?? "") === "";
+
+    const isSellerCleared = (selectData.seller ?? "").trim() === "";
+
     return (
-      selectData.SelectDateStart === initial.SelectDateStart &&
-      selectData.SelectDateEnd === initial.SelectDateEnd
-      //&& (selectData.SelectContract?.trim() ?? "") === ""
+      (isDefaultRange && isSellerCleared) || (isClearedRange && isSellerCleared)
     );
   }, [selectData]);
 
@@ -141,7 +160,7 @@ export function ReceiptMap() {
 
       const updatedBilling = response.data.map((billing: any) => {
         const contract = contractList.find(
-          (c: any) => c.number_contract === billing.number_contract
+          (c: any) => c.number_contract === billing.number_contract,
         );
 
         const total_service = Number(billing.total_service_value) || 0;
@@ -149,12 +168,26 @@ export function ReceiptMap() {
         const adjustment = Number(billing.adjustment_value) || 0;
         const irrf = Number(billing.irrf_value) || 0;
 
+        let csll_value = 0;
+        if (billing.receipt_date) {
+          const [day, month, year] = billing.receipt_date
+            .split("/")
+            .map(Number);
+          const receiptDate = new Date(year, month - 1, day);
+          const limitDate = new Date(2025, 11, 31); // 31/12/2025
+
+          if (receiptDate > limitDate) {
+            csll_value = total_service * 0.0288; // 2.88%
+          }
+        }
+
         const ISS_PERCENT = 0.05; // 5%
         const PIS_COFINS_PERCENT = 0.0465; // 4,65%
 
         const iss = total_service * ISS_PERCENT;
         const piscofins = total_service * PIS_COFINS_PERCENT;
-        const tot_base = total_service - irrf - iss - piscofins;
+        const tot_base =
+          total_service - adjustment - irrf - iss - piscofins - csll_value;
         const formatValue = (num: number) => num.toFixed(2).replace(".", ",");
 
         return {
@@ -165,6 +198,7 @@ export function ReceiptMap() {
           irrf_value: formatValue(irrf),
           iss: formatValue(iss),
           pis_cofins: formatValue(piscofins),
+          csll: formatValue(csll_value),
           value_base: formatValue(tot_base),
           contract_emission_date: contract?.contract_emission_date || "",
           seller_name: contract?.seller.name || "",
@@ -185,6 +219,7 @@ export function ReceiptMap() {
   }, [fetchData]);
 
   // Aplica o filtro inicial automaticamente ao carregar os dados
+  // TODO []: Validar com o Carlos!
   useEffect(() => {
     if (allBillings.length > 0 && isInitialFilter) {
       fetchSelectData();
@@ -193,7 +228,7 @@ export function ReceiptMap() {
 
   useEffect(() => {
     if (isSelectionModal) {
-      const input = document.querySelector('input[name="SelectDateStart"]');
+      const input = document.querySelector('input[name="date_start"]');
       (input as HTMLInputElement)?.focus();
     }
   }, [isSelectionModal]);
@@ -209,11 +244,13 @@ export function ReceiptMap() {
       {
         field: "receipt_date",
         header: "Dt.Recebto.",
+        headerTooltip: "Data de Recebimento",
         width: "100px",
       },
       {
         field: "contract_emission_date",
         header: "Dt.Contrato",
+        headerTooltip: "Data do Contrato",
         width: "100px",
       },
       {
@@ -247,29 +284,41 @@ export function ReceiptMap() {
       {
         field: "irrf_value",
         header: "IRRF",
+        headerTooltip: "Imposto de Renda Retido na Fonte",
         width: "150px",
         align: "right",
       },
       {
         field: "iss",
         header: "ISS",
+        headerTooltip: "Imposto Sobre Serviços",
         width: "150px",
         align: "right",
       },
       {
         field: "pis_cofins",
         header: "PIS+COFINS",
+        headerTooltip:
+          "Programa de Integração Social e Contribuição para o Financiamento da Seguridade Social",
+        width: "150px",
+        align: "right",
+      },
+      {
+        field: "csll",
+        header: "CSLL",
+        headerTooltip: "Contribuição Social sobre o Lucro Líquido",
         width: "150px",
         align: "right",
       },
       {
         field: "value_base",
         header: "Valor Base",
+        headerTooltip: "Valor Base de Cálculo",
         width: "150px",
         align: "right",
       },
     ],
-    []
+    [],
   );
 
   const getNestedValue = (obj: any, path: string): any => {
@@ -317,8 +366,8 @@ export function ReceiptMap() {
       return `${dd}/${mm}/${y}`;
     };
 
-    const startDateFormatted = formatIsoYMDToBR(selectData.SelectDateStart);
-    const endDateFormatted = formatIsoYMDToBR(selectData.SelectDateEnd);
+    const startDateFormatted = formatIsoYMDToBR(selectData.date_start);
+    const endDateFormatted = formatIsoYMDToBR(selectData.date_end);
 
     printWindow.document.write(`
         <html>
@@ -346,7 +395,7 @@ export function ReceiptMap() {
       printWindow.document.write(`<table><thead><tr>`);
       nameColumns.forEach((col) => {
         printWindow.document.write(
-          `<th style="width: ${col.width}px;">${col.header}</th>`
+          `<th style="width: ${col.width}px;">${col.header}</th>`,
         );
       });
       printWindow.document.write(`</tr></thead><tbody>`);
@@ -391,8 +440,8 @@ export function ReceiptMap() {
   };
 
   const handleExportCSV = () => {
-    const startDateFormatted = formatIsoYMDToBR(selectData.SelectDateStart);
-    const endDateFormatted = formatIsoYMDToBR(selectData.SelectDateEnd);
+    const startDateFormatted = formatIsoYMDToBR(selectData.date_start);
+    const endDateFormatted = formatIsoYMDToBR(selectData.date_end);
 
     // Cabeçalho do relatório
     const headerTitle = "MAPA DE RECEBIMENTOS";
@@ -425,6 +474,7 @@ export function ReceiptMap() {
               "irrf_value",
               "iss",
               "pis_cofins",
+              "csll",
             ].includes(col.field!)
           ) {
             const number = parseFloat(String(value).replace(",", "."));
@@ -467,7 +517,7 @@ export function ReceiptMap() {
       <SContainerSearchAndButton>
         <CustomSearch
           width="450px"
-          placeholder="Filtre por Data"
+          placeholder="Filtre por Data de Recebimento ou Contrato"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
@@ -494,37 +544,15 @@ export function ReceiptMap() {
           </span>
         </Tooltip>
 
-        <Modal
-          titleText="Seleção"
+        <ReportFilter
+          titleText="Filtros - Mapa de Recebimento"
           open={isSelectionModal}
-          confirmButton="OK"
-          cancelButton="Fechar"
+          initialFilters={selectData}
           onClose={handleCloseModal}
-          onHandleConfirm={fetchSelectData}
-          variantCancel="primary"
-          variantConfirm="success"
-        >
-          <SFormContainer>
-            <TextField
-              label="Data Recbto. Inicial"
-              type="date"
-              InputLabelProps={{ shrink: true }}
-              size="small"
-              name="SelectDateStart"
-              value={selectData.SelectDateStart}
-              onChange={handleChangeSelect}
-            />
-            <TextField
-              label="Data Recbto. Final"
-              type="date"
-              InputLabelProps={{ shrink: true }}
-              size="small"
-              name="SelectDateEnd"
-              value={selectData.SelectDateEnd}
-              onChange={handleChangeSelect}
-            />
-          </SFormContainer>
-        </Modal>
+          onChange={(filters) => setSelectData(filters)}
+          onConfirm={fetchSelectData}
+          visibleFields={["seller", "buyer", "date_start", "date_end"]}
+        />
 
         <CustomButton $variant="success" width="150px" onClick={handlePrint}>
           Imprimir
@@ -537,13 +565,29 @@ export function ReceiptMap() {
         >
           Exportar CSV
         </CustomButton>
+
+        <Tooltip
+          title={
+            useInfiniteScroll
+              ? "Voltar para paginação"
+              : "Ativar scroll infinito"
+          }
+        >
+          <IconButton
+            onClick={() => setUseInfiniteScroll((prev) => !prev)}
+            sx={{ color: "#E7B10A" }}
+          >
+            {!useInfiniteScroll ? <PiScroll /> : <TbInfinity />}
+          </IconButton>
+        </Tooltip>
       </SContainerSearchAndButton>
       <SCustomTableWrapper>
         <CustomTable
           isLoading={isLoading}
           data={sortedData}
           columns={nameColumns}
-          hasPagination={true}
+          hasInfiniteScroll={!useInfiniteScroll}
+          hasPagination={useInfiniteScroll}
           page={page}
           setPage={setPage}
           order={order}

@@ -54,7 +54,7 @@ export function ViewContract(): JSX.Element {
   const [isEditQuantityModal, setEditQuantityModal] = useState<boolean>(false);
   const [isChangeStatusModal, setChangeStatusModal] = useState<boolean>(false);
   const [selectedStatus, setSelectedStatus] = useState(
-    dataClient?.status.status_current || ""
+    dataClient?.status.status_current || "",
   );
 
   const forDisabled =
@@ -121,7 +121,7 @@ export function ViewContract(): JSX.Element {
     // Renderiza o ContratoTemplate dentro do container usando createRoot
     const root = createRoot(container);
     root.render(
-      <ContratoTemplate formData={dataToPdf} nomeArquivo={nomePDF} />
+      <ContratoTemplate formData={dataToPdf} nomeArquivo={nomePDF} />,
     );
 
     // Aguarda a renderização e, então, gera o PDF
@@ -137,7 +137,7 @@ export function ViewContract(): JSX.Element {
   const handleChange = (
     e:
       | React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-      | { target: { name: string; value: any } }
+      | { target: { name: string; value: any } },
   ) => {
     const { name, value } = e.target;
     setDataClient((prev) =>
@@ -146,13 +146,13 @@ export function ViewContract(): JSX.Element {
             ...prev,
             [name]: value,
           }
-        : prev
+        : prev,
     );
   };
 
   const handleOpenDeleteModal = () => {
     setModalContent(
-      `Tem certeza que deseja deletar o contrato: ${dataClient?.number_contract}?`
+      `Tem certeza que deseja deletar o contrato: ${dataClient?.number_contract}?`,
     );
 
     setDeleteModal(true);
@@ -197,12 +197,12 @@ export function ViewContract(): JSX.Element {
         <div>
           Contrato de Número:
           <strong>{dataClient.number_contract}</strong> deletado com sucesso!
-        </div>
+        </div>,
       );
       navigate("/contratos/historico");
     } catch (error) {
       toast.error(
-        `Erro ao tentar deletar contrato: ${dataClient.number_contract}, contacte o administrador do sistema ${error}`
+        `Erro ao tentar deletar contrato: ${dataClient.number_contract}, contacte o administrador do sistema ${error}`,
       );
     } finally {
       setDeleteModal(false);
@@ -352,19 +352,77 @@ export function ViewContract(): JSX.Element {
     { label: "Comprador", value: dataClient?.buyer.name },
   ];
 
-  const commission =
-    (
-      dataClient?.type_commission_seller || dataClient?.type_commission_buyer
-    )?.toLocaleLowerCase() === "percentual"
-      ? `${dataClient?.commission_seller}%`
-      : `R$ ${dataClient?.commission_seller}`;
+  const commissionType =
+    dataClient?.type_commission_seller ||
+    dataClient?.type_commission_buyer ||
+    "";
+  const commissionValue =
+    dataClient?.commission_seller ?? dataClient?.commission_buyer ?? "";
+  const commissionCurrency = dataClient?.type_commission_seller
+    ? dataClient?.type_commission_seller_currency
+    : dataClient?.type_commission_buyer_currency;
+  const commissionExchangeRate = dataClient?.type_commission_seller
+    ? dataClient?.commission_seller_exchange_rate
+    : dataClient?.commission_buyer_exchange_rate;
+
+  const commission = (() => {
+    const normalizedType = commissionType.toLocaleLowerCase();
+
+    if (
+      commissionValue === "" ||
+      commissionValue === null ||
+      commissionValue === undefined
+    )
+      return "";
+
+    if (normalizedType === "percentual") {
+      return `${commissionValue}%`;
+    }
+
+    const currencyType = commissionCurrency === "Dólar" ? "Dólar" : "Real";
+    let formattedCommission = formatCurrency(
+      String(commissionValue),
+      currencyType,
+      true,
+    );
+
+    if (currencyType === "Dólar") {
+      formattedCommission = formattedCommission.replace("$", "US$ ");
+    }
+
+    if (normalizedType === "por saca") {
+      return `${formattedCommission} por saca`;
+    }
+
+    return formattedCommission;
+  })();
+
+  const commissionTypeLabel = commissionType || "-";
+
+  // TODO: [] Trabalhando pra chegar nesse cenário...
+
+  // const mapCurrencyLabel = (currency?: string) =>
+  //   currency?.toUpperCase() === "USD" ? "Dólar" : "Real";
+
+  // const sellerCommissionCurrency = mapCurrencyLabel(
+  //   dataClient?.type_commission_seller_currency,
+  // );
+  // const buyerCommissionCurrency = mapCurrencyLabel(
+  //   dataClient?.type_commission_buyer_currency,
+  // );
+
+  // const sellerCommissionValue = dataClient?.commission_seller_contract_value;
+  // const buyerCommissionValue = dataClient?.commission_buyer_contract_value;
+
+  // const sellerExchangeRate = dataClient?.commission_seller_exchange_rate;
+  // const buyerExchangeRate = dataClient?.commission_buyer_exchange_rate;
 
   const contractFields = [
     {
       label: "Preço:",
       value: formatCurrency(
         dataClient?.price?.toString() ?? "0",
-        dataClient?.type_currency ?? "Real"
+        dataClient?.type_currency ?? "Real",
       ),
     },
     { label: "", value: "" }, //[x]: Não remover!!!
@@ -374,7 +432,7 @@ export function ViewContract(): JSX.Element {
       label: "Total do Contrato:",
       value: formatCurrency(
         dataClient?.total_contract_value?.toString() ?? "0",
-        "Real"
+        "Real",
       ),
     },
     { label: "", value: "" }, //[x]: Não remover!!!
@@ -388,14 +446,26 @@ export function ViewContract(): JSX.Element {
     },
 
     {
+      label: "Tipo Comissão:",
+      value: commissionTypeLabel,
+    },
+    {
       label: "Comissão:",
       value: commission,
     },
+    ...(dataClient?.type_currency === "Real" && commissionCurrency === "Dólar"
+      ? [
+          {
+            label: "Câmbio Comissão:",
+            value: commissionExchangeRate || "-",
+          },
+        ]
+      : []),
     {
       label: "Valor Comissão:",
       value: formatCurrency(
         dataClient?.commission_contract?.toString() ?? "0",
-        "Real"
+        "Real",
       ),
     },
 
@@ -403,7 +473,7 @@ export function ViewContract(): JSX.Element {
       label: "Total Recebido:",
       value: formatCurrency(
         dataClient?.total_received?.toString() ?? "0",
-        "Real"
+        "Real",
       ),
     },
     {
@@ -451,7 +521,7 @@ export function ViewContract(): JSX.Element {
                   {dataClient?.contract_emission_datetime
                     ? convertToCustomFormat(
                         dataClient?.contract_emission_datetime,
-                        locale
+                        locale,
                       )
                     : ""}
                 </SKeyValue>

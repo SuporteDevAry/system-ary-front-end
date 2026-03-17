@@ -88,6 +88,12 @@ export interface IContractData {
   expected_receipt_date?: string;
   total_received?: number;
   contract_emission_datetime?: string;
+  commission_seller_contract_value?: number;
+  commission_buyer_contract_value?: number;
+  commission_seller_exchange_rate?: number;
+  commission_buyer_exchange_rate?: number;
+  type_commission_seller_currency?: string;
+  type_commission_buyer_currency?: string;
 }
 
 export type IContractReportFilters = {
@@ -101,23 +107,23 @@ export type IContractReportFilters = {
 
 export interface IContractContext {
   getGrainContractById: (
-    contractId: string
+    contractId: string,
   ) => Promise<ApiResponse<IContractData>>;
   reportContracts: (
-    filters: IContractReportFilters
+    filters: IContractReportFilters,
   ) => Promise<ApiResponse<IContractData[]>>;
   listContracts: () => Promise<any>;
   createContract: (contractData: IContractData) => Promise<any>;
   updateContract: (
     contractId: string,
-    contractData: IContractData
+    contractData: IContractData,
   ) => Promise<any>;
   deleteContract: (
     contractId: string,
-    contractData: IContractData
+    contractData: IContractData,
   ) => Promise<any>;
   updateContractAdjustments: (
     contractId: string,
-    contractData: Partial<IContractData>
+    contractData: Partial<IContractData>,
   ) => Promise<any>;
 }

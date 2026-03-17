@@ -69,26 +69,69 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
     ? insertMaskInCnpj(formData.buyer.cnpj_cpf)
     : "";
 
-  let formattedCSeller = formData.commission_seller
-    ? formData.type_commission_seller === "Percentual"
-      ? `${formData.commission_seller}%`
-      : `${formatCurrency(
-          formData.commission_seller,
-          formData.type_currency,
-          true
-        )} por saca,`
-    : "";
+  // Formatação da comissão do vendedor
+  let formattedCSeller = "";
+  if (formData.commission_seller) {
+    if (formData.type_commission_seller === "Percentual") {
+      formattedCSeller = `${formData.commission_seller}%`;
+    } else if (formData.type_commission_seller === "Fixo") {
+      const sellerCurrency =
+        formData.type_commission_seller_currency === "Dólar" ? "Dólar" : "Real";
+      formattedCSeller = formatCurrency(
+        String(formData.commission_seller),
+        sellerCurrency,
+        true,
+      );
+    } else if (formData.type_commission_seller === "Por Saca") {
+      const sellerCurrency =
+        formData.type_commission_seller_currency === "Dólar" ? "Dólar" : "Real";
+      formattedCSeller = `${formatCurrency(
+        String(formData.commission_seller),
+        sellerCurrency,
+        true,
+      )} por saca`;
+    } else if (formData.type_commission_seller === "Por TM") {
+      const sellerCurrency =
+        formData.type_commission_seller_currency === "Dólar" ? "Dólar" : "Real";
+      formattedCSeller = `${formatCurrency(
+        String(formData.commission_seller),
+        sellerCurrency,
+        true,
+      )} por tonelada métrica`;
+    }
+  }
 
-  let formattedCBuyer = formData.commission_buyer
-    ? formData.type_commission_buyer === "Percentual"
-      ? `${formData.commission_buyer}%`
-      : `${formatCurrency(
-          formData.commission_buyer,
-          formData.type_currency,
-          true
-        )} por saca,`
-    : "";
-
+  // Formatação da comissão do comprador
+  let formattedCBuyer = "";
+  if (formData.commission_buyer) {
+    if (formData.type_commission_buyer === "Percentual") {
+      formattedCBuyer = `${formData.commission_buyer}%`;
+    } else if (formData.type_commission_buyer === "Fixo") {
+      const buyerCurrency =
+        formData.type_commission_buyer_currency === "Dólar" ? "Dólar" : "Real";
+      formattedCBuyer = formatCurrency(
+        String(formData.commission_buyer),
+        buyerCurrency,
+        true,
+      );
+    } else if (formData.type_commission_buyer === "Por Saca") {
+      const buyerCurrency =
+        formData.type_commission_buyer_currency === "Dólar" ? "Dólar" : "Real";
+      formattedCBuyer = `${formatCurrency(
+        String(formData.commission_buyer),
+        buyerCurrency,
+        true,
+      )} por saca`;
+    } else if (formData.type_commission_buyer === "Por TM") {
+      const buyerCurrency =
+        formData.type_commission_buyer_currency === "Dólar" ? "Dólar" : "Real";
+      formattedCBuyer = `${formatCurrency(
+        String(formData.commission_buyer),
+        buyerCurrency,
+        true,
+      )} por tonelada métrica`;
+    }
+  }
   // Só iremos remover essa regra das siglas, caso o cliente aceite a sugestão da reunião do dia 09/04/2025
   const listProducts = ["O", "OC", "OA", "SB", "EP"];
   const validProducts = listProducts.includes(formData.product);
@@ -113,13 +156,13 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
       // Se a linha começar com um número seguido de hífen...
       if (/^\d+-/.test(trimmedLine)) {
         // ... não adicione margem.
-        return `<p style="margin-left: 0;">${line}</p>`;
+        return `<div style="margin-left: 0;">${line}</div>`;
       } else if (hasMultipleLines) {
         // ... caso contrário, se houver múltiplas linhas, adicione margem para indentar.
-        return `<p style="margin-left: 20px;">${line}</p>`;
+        return `<div style="margin-left: 20px;">${line}</div>`;
       } else {
         // ... se houver apenas uma linha, não adicione margem.
-        return `<p>${line}</p>`;
+        return `<div>${line}</div>`;
       }
     });
 
@@ -127,7 +170,7 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
   }
   const listProductsForMetricTon = ["O", "F", "OC", "OA", "SB", "EP"];
   const validProductsForMetricTon = listProductsForMetricTon.includes(
-    formData.product
+    formData.product,
   );
 
   let formattedSafra = validProductsForMetricTon
@@ -164,7 +207,7 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
           <img src={logoContrato} alt="logo ary completo jpg" width={330} />
         </div>
         <br />
-        <h3>
+        <div>
           <p style={{ paddingLeft: "280px" }}>
             São Paulo,{" "}
             <span>
@@ -175,9 +218,9 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
             Confirmação de negociação
             <span> {numberContract} </span>
           </p>
-        </h3>
+        </div>
         <br />
-        <p
+        <div
           style={{
             textAlign: "left",
             margin: "0",
@@ -213,9 +256,9 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
             </span>
             <br></br>
           </div>
-        </p>
+        </div>
         <br></br>
-        <p
+        <div
           style={{
             textAlign: "left",
             margin: "0",
@@ -251,12 +294,12 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
             </span>
             <br></br>
           </div>
-        </p>
+        </div>
 
         <br />
-        <p style={{ textAlign: "left", margin: "0" }}>
+        <div style={{ textAlign: "left", margin: "0" }}>
           <strong>Mercadoria:</strong>
-          <p style={{ textAlign: "left" }}>
+          <div style={{ textAlign: "left" }}>
             <span>{formData.name_product}</span>
             <span>
               <strong>
@@ -265,8 +308,8 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
                 <span>{formattedSafra}</span>
               </strong>
             </span>
-          </p>
-        </p>
+          </div>
+        </div>
         <br />
 
         <p style={{ textAlign: "left" }}>
@@ -297,12 +340,12 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
               ? formatCurrency(
                   formData.price,
                   formData.type_currency,
-                  modeSave
+                  modeSave,
                 ).replace("$", "US$ ")
               : formatCurrency(
                   formData.price,
                   formData.type_currency,
-                  modeSave
+                  modeSave,
                 )}
           </strong>{" "}
           {/* por saca de 60(sessenta) quilos, */}
@@ -361,7 +404,7 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
             <strong>Observações:</strong>
           </p>
         )}
-        <p
+        <div
           style={{ textAlign: "justify", whiteSpace: "pre-line" }}
           dangerouslySetInnerHTML={{
             __html: formatObservationText(formData.observation),

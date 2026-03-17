@@ -24,7 +24,7 @@ export function Clientes() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isDeleteModal, setDeleteModal] = useState<boolean>(false);
   const [selectedClient, setSelectedClient] = useState<IListCliente | null>(
-    null
+    null,
   );
   const [modalContent, setModalContent] = useState<string>("");
   const [page, setPage] = useState(0);
@@ -38,7 +38,7 @@ export function Clientes() {
       setClientes(response.data);
     } catch (error) {
       toast.error(
-        `Erro ao tentar ler clientes, contacte o administrador do sistema ${error}`
+        `Erro ao tentar ler clientes, contacte o administrador do sistema ${error}`,
       );
     } finally {
       setIsLoading(false);
@@ -80,12 +80,12 @@ export function Clientes() {
       await clienteContext.deleteCliente(selectedClient.id);
 
       toast.success(
-        `Cliente ${selectedClient.nickname} com id:${selectedClient.id}, foi deletado com sucesso!`
+        `Cliente ${selectedClient.nickname} com id:${selectedClient.id}, foi deletado com sucesso!`,
       );
       fetchData();
     } catch (error) {
       toast.error(
-        `Erro ao tentar excluir cliente, contacte o administrador do sistema ${error}`
+        `Erro ao tentar excluir cliente, contacte o administrador do sistema ${error}`,
       );
     } finally {
       setDeleteModal(false);
@@ -95,7 +95,7 @@ export function Clientes() {
 
   const handleOpenDeleteModal = (client: IListCliente) => {
     setModalContent(
-      `Tem certeza que deseja deletar o cliente: ${client.nickname}?`
+      `Tem certeza que deseja deletar o cliente: ${client.nickname}?`,
     );
     setSelectedClient(client);
     setDeleteModal(true);
@@ -107,15 +107,11 @@ export function Clientes() {
     fetchData();
   };
 
-  const { filteredData, handleSearch } = useTableSearch({
+  const { filteredData } = useTableSearch({
     data: clientes,
     searchTerm,
     searchableFields: ["name", "nickname", "cnpj_cpf", "city"],
   });
-
-  useEffect(() => {
-    handleSearch();
-  }, [searchTerm, handleSearch]);
 
   const nameColumns: IColumn[] = useMemo(
     () => [
@@ -131,7 +127,7 @@ export function Clientes() {
       { field: "city", header: "Cidade", width: "150px" },
       { field: "state", header: "UF", width: "80px" },
     ],
-    []
+    [],
   );
 
   const renderActionButtons = useCallback(
@@ -162,7 +158,7 @@ export function Clientes() {
         </CustomButton>
       </SButtonContainer>
     ),
-    [handleViewCustomer, handleUpdateCliente, handleOpenDeleteModal]
+    [handleViewCustomer, handleUpdateCliente, handleOpenDeleteModal],
   );
 
   return (
