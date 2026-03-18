@@ -3,16 +3,24 @@ import {
     INfseProvider,
     IEnviarLoteRequest,
     IEnviarLoteResponse,
+    IConsultarLoteResponse,
 } from "./types";
 import { Api } from "../../services/api";
 import { AxiosError } from "axios";
 
 interface INfseContext {
     enviarLote: (data: IEnviarLoteRequest) => Promise<IEnviarLoteResponse>;
+    consultarLote: (protocolo: string) => Promise<IConsultarLoteResponse>;
 }
 
 const newContext = createContext<INfseContext>({
     enviarLote: () =>
+        Promise.resolve({
+            message: "",
+            provider: "",
+            protocolo: "",
+        }),
+    consultarLote: () =>
         Promise.resolve({
             message: "",
             provider: "",
@@ -40,10 +48,34 @@ export const NfseProvider = ({ children }: INfseProvider) => {
         }
     }
 
+    async function consultarLote(
+        protocolo: string,
+    ): Promise<IConsultarLoteResponse> {
+        try {
+            const response = await Api.get(`/nfse/${protocolo}`);
+
+            console.log("Consulta - response: ", response.data);
+
+            return response.data;
+        } catch (error) {
+            const err = error as AxiosError;
+
+            if (err.response && err.response.data) {
+                const errorMessage =
+                    (err.response.data as { message?: string }).message ||
+                    "Erro ao consultar NFSe";
+                throw new Error(errorMessage);
+            }
+
+            throw new Error("Erro ao consultar NFSe");
+        }
+    }
+
     return (
         <newContext.Provider
             value={{
                 enviarLote,
+                consultarLote,
             }}
         >
             {children}

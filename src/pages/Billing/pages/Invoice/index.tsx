@@ -390,10 +390,12 @@ export function Invoice() {
     );
 
     const handleResult = async () => {
-        const xml = gerarXML();
+        const protocolo_teste = "LOTE-1772497205633";
+
+        console.log("Atualizar ", protocolo_teste);
 
         try {
-            const result = await nfseContext.enviarLote({ xml });
+            const result = await nfseContext.consultarLote(protocolo_teste);
 
             console.log("Resposta servidor:", result);
             console.log("Provider usado:", result.provider);
@@ -407,13 +409,15 @@ export function Invoice() {
         }
     };
 
-    const handleXML = () => {
-        /*
+    const handlePDF = async () => {
+        const protocolo_teste = "LOTE-1772497205633";
+
+        console.log("protocolo:", protocolo_teste);
+
         try {
-            const result = ´´; //  await nfseContext.enviarLote({ protocolo });
+            const result = await nfseContext.consultarLote(protocolo_teste);
 
             console.log("Resposta servidor:", result);
-            console.log("Provider usado:", result.provider);
             console.log("Protocolo:", result.protocolo);
         } catch (err) {
             console.error(err);
@@ -422,25 +426,6 @@ export function Invoice() {
             toast.error(`Erro no envio: ${errorMsg}`);
         } finally {
         }
-        */
-    };
-
-    const handlePDF = () => {
-        /*
-        try {
-            const result = nfseContext.enviarLote({ protocolo });
-
-            console.log("Resposta servidor:", result);
-            console.log("Provider usado:", result.provider);
-            console.log("Protocolo:", result.protocolo);
-        } catch (err) {
-            console.error(err);
-            const errorMsg =
-                err instanceof Error ? err.message : "Erro desconhecido";
-            toast.error(`Erro no envio: ${errorMsg}`);
-        } finally {
-        }
-        */
     };
 
     const nameColumnsFromRPS = useMemo(
@@ -470,14 +455,7 @@ export function Invoice() {
                     </CustomButton>
                     <CustomButton
                         $variant={"success"}
-                        width="50px"
-                        onClick={() => handleXML()}
-                    >
-                        XML
-                    </CustomButton>
-                    <CustomButton
-                        $variant={"success"}
-                        width="50px"
+                        width="80px"
                         onClick={() => handlePDF()}
                     >
                         PDF
