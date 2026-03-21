@@ -4,6 +4,9 @@ import { useNavigate } from "react-router-dom";
 import { CustomSearch } from "../../../../components/CustomSearch";
 import CustomButton from "../../../../components/CustomButton";
 import CustomTable from "../../../../components/CustomTable";
+import { FaFilePdf } from "react-icons/fa6";
+import Tooltip from "@mui/material/Tooltip";
+import IconButton from "@mui/material/IconButton";
 import {
   SButtonContainer,
   SCardInfo,
@@ -291,37 +294,19 @@ export function Invoice() {
       return;
     }
 
-    const xml = gerarXML(); // assume que gerarXML() retorna o XML bruto não-assinado
-
-    // 🔍 DEBUG: Verifica valores antes de enviar
-    console.log("📤 XML gerado (primeiros 500 chars):", xml.substring(0, 500));
-    console.log("📊 Total RPS:", selectedInvoice.length);
-    console.log(
-      "💰 Valor total:",
-      selectedInvoice
-        .reduce((sum, rps) => sum + Number(rps?.service_value || 0), 0)
-        .toFixed(2),
-    );
+    const xml = gerarXML();
 
     try {
       setIsLoadingRPS(true);
       const result = await nfseContext.enviarLote({ xml });
 
-      // Mostra qual provider foi usado
-      const providerMsg =
-        result.provider === "focusnfe"
-          ? " (via Focus NFe)"
-          : " (via Prefeitura)";
-
-      toast.success("✅ Lote enviado com sucesso" + providerMsg);
-      console.log("Resposta servidor:", result);
-      console.log("Provider usado:", result.provider);
-      console.log("Protocolo:", result.protocolo);
+      toast.success(
+        `${result.protocolo ? `${result.protocolo}` : ""} enviado com sucesso`,
+      );
 
       // Atualiza a lista de RPS para refletir status/protocolo
       await fetchData();
     } catch (err) {
-      console.error(err);
       const errorMsg = err instanceof Error ? err.message : "Erro desconhecido";
       toast.error(`Erro no envio: ${errorMsg}`);
     } finally {
@@ -369,8 +354,9 @@ export function Invoice() {
         // Recarrega a lista
         fetchData();
       } catch (error) {
-        console.error("Erro ao deletar RPS:", error);
-        toast.error(`Erro ao deletar RPS: ${error}`);
+        const errorMsg =
+          error instanceof Error ? error.message : "Erro desconhecido";
+        toast.error(`Erro ao deletar RPS: ${errorMsg}`);
       } finally {
         setIsLoadingRPS(false);
       }
@@ -392,60 +378,76 @@ export function Invoice() {
     const tryConsultar = async (prot: string) =>
       nfseContext.consultarLote(prot);
 
-    const extractStatus = (res: any, inv: IListInvoices) => {
-      if (!res) return null;
-      // se for array (lote com múltiplos itens), encontra pelo numero_rps/numero
+    const extractInfo = (res: any, inv: IListInvoices) => {
+      if (!res)
+        return { status: null as string | null, url: null as string | null };
       if (Array.isArray(res)) {
         const found = res.find(
           (it: any) =>
             String(it.numero_rps || it.numero || "") === String(inv.rps_number),
         );
-        if (found && (found.status || found.Status))
-          return String(found.status || found.Status);
-        return null;
+        if (found) {
+          return {
+            status:
+              found.status || found.Status
+                ? String(found.status || found.Status)
+                : null,
+            url: found.url_danfse || found.url || null,
+          };
+        }
+        return { status: null, url: null };
       }
-      // se for objeto único
       if (typeof res === "object") {
-        if (res.status || res.Status) return String(res.status || res.Status);
-        // algumas respostas podem embutir resultado
+        if (res.status || res.Status)
+          return {
+            status: String(res.status || res.Status),
+            url: res.url_danfse || res.url || null,
+          };
         if (res.resultado && (res.resultado.status || res.resultado.Status))
-          return String(res.resultado.status || res.resultado.Status);
+          return {
+            status: String(res.resultado.status || res.resultado.Status),
+            url: res.resultado.url_danfse || res.resultado.url || null,
+          };
       }
-      return null;
-    };
-
-    const mapToLocal = (statusStr: string | null, fallback: string) => {
-      if (!statusStr) return fallback;
-      const s = String(statusStr).toLowerCase();
-      if (s.includes("processando") || s.includes("process"))
-        return "processando_autorizacao";
-      if (s.includes("autoriz")) return "autorizada";
-      if (s.includes("cancel")) return "cancelada";
-      if (s.includes("erro")) return "erro_autorizacao";
-      return fallback || statusStr;
+      return { status: null, url: null };
     };
 
     try {
-      // primeira tentativa com o protocolo atual
       const result: any = await tryConsultar(protocolo_lote);
-      const remoteStatus = extractStatus(result, invoice);
-      const statusLocal = mapToLocal(
-        remoteStatus,
-        invoice.status || "processando_autorizacao",
-      );
-      // somente atualiza se encontramos um status remoto ou usamos fallback para processando
+      const info = extractInfo(result, invoice);
+      const remoteStatus = info.status;
+      const remoteUrl = info.url;
+
+      let statusLocal = "";
+      const rs = String(remoteStatus || "");
+      if (/processando/i.test(rs)) statusLocal = "processando_autorizacao";
+      else if (/autoriz/i.test(rs)) statusLocal = "autorizada";
+      else if (/cancelad/i.test(rs)) statusLocal = "cancelada";
+      else if (/erro/i.test(rs)) statusLocal = "erro_autorizacao";
+      else statusLocal = remoteStatus ?? "processando_autorizacao";
+
+      if (statusLocal === "autorizada" && !remoteUrl) {
+        statusLocal = "processando_autorizacao";
+      }
+
       setListInvoices((prev) =>
         prev.map((rps) =>
-          rps.id === invoice.id ? { ...rps, status: statusLocal } : rps,
+          rps.id === invoice.id
+            ? {
+                ...rps,
+                status: statusLocal,
+                url_danfse: remoteUrl ?? rps.url_danfse,
+              }
+            : rps,
         ),
       );
+
       const toastStatus = remoteStatus ?? statusLocal;
       toast.info(`Status atualizado: ${toastStatus}`);
       if (remoteStatus && /autoriz/i.test(String(remoteStatus))) {
         toast.success(`NFSe finalizada com status: ${remoteStatus}`);
       }
     } catch (err: any) {
-      // Se 404, tenta versão alternativa (com/sem prefixo LOTE-)
       const is404 =
         err?.response?.status === 404 ||
         (err?.message && String(err.message).includes("404"));
@@ -456,28 +458,46 @@ export function Invoice() {
           : `LOTE-${protocolo_lote}`;
         try {
           const result2: any = await tryConsultar(alternative);
-          let status = "";
-          if (result2 && typeof result2 === "object" && "status" in result2) {
-            status = String(result2.status);
+          const info2 = extractInfo(result2, invoice);
+          const remoteStatus2 = info2.status;
+          const remoteUrl2 = info2.url;
+
+          let statusLocal2 = "";
+          const rs2 = String(remoteStatus2 || "");
+          if (/processando/i.test(rs2))
+            statusLocal2 = "processando_autorizacao";
+          else if (/autoriz/i.test(rs2)) statusLocal2 = "autorizada";
+          else if (/cancelad/i.test(rs2)) statusLocal2 = "cancelada";
+          else if (/erro/i.test(rs2)) statusLocal2 = "erro_autorizacao";
+          else statusLocal2 = remoteStatus2 ?? "processando_autorizacao";
+
+          if (statusLocal2 === "autorizada" && !remoteUrl2) {
+            statusLocal2 = "processando_autorizacao";
           }
-          let statusLocal = "";
-          if (status === "Processando Autorização")
-            statusLocal = "processando_autorizacao";
-          else if (status === "Autorizada") statusLocal = "autorizada";
-          else if (status === "Cancelada") statusLocal = "cancelada";
-          else if (status === "Erro Autorização")
-            statusLocal = "erro_autorizacao";
-          else statusLocal = status;
+
           setListInvoices((prev) =>
             prev.map((rps) =>
-              rps.id === invoice.id ? { ...rps, status: statusLocal } : rps,
+              rps.id === invoice.id
+                ? {
+                    ...rps,
+                    status: statusLocal2,
+                    url_danfse: remoteUrl2 ?? rps.url_danfse,
+                  }
+                : rps,
             ),
           );
-          toast.info(`Status atualizado (tentativa alternativa): ${status}`);
+
+          toast.info(
+            `Status atualizado (tentativa alternativa): ${remoteStatus2 ?? statusLocal2}`,
+          );
           if (
-            ["Autorizada", "Cancelada", "Erro Autorização"].includes(status)
+            ["autorizada", "cancelada", "erro_autorizacao"].includes(
+              statusLocal2,
+            )
           ) {
-            toast.success(`NFSe finalizada com status: ${status}`);
+            toast.success(
+              `NFSe finalizada com status: ${remoteStatus2 ?? statusLocal2}`,
+            );
           }
         } catch (err2: any) {
           const is404b =
@@ -515,6 +535,22 @@ export function Invoice() {
   const renderActionButtons = useCallback(
     (row: any) => (
       <SButtonContainer>
+        {row?.url_danfse ? (
+          <Tooltip title="Baixar NFSe">
+            <span>
+              <IconButton
+                component="a"
+                href={row.url_danfse}
+                target="_blank"
+                rel="noopener noreferrer"
+                sx={{ color: "#E7B10A", marginRight: 3 }}
+                size="medium"
+              >
+                <FaFilePdf />
+              </IconButton>
+            </span>
+          </Tooltip>
+        ) : null}
         <CustomButton
           $variant={"success"}
           width="80px"
@@ -556,10 +592,11 @@ export function Invoice() {
             $variant="success"
             width="220px"
             onClick={handleIssueFull}
-            // UX: Desabilita e muda o texto durante o carregamento/envio
-            disabled={isLoadingRPS || dataFilteredBySearch.length === 0}
+            disabled={
+              isLoadingRPS || !selectedInvoice || selectedInvoice.length === 0
+            }
           >
-            {isLoadingRPS ? "Enviando..." : "Validar • Assinar • Enviar"}
+            {isLoadingRPS ? "Enviando..." : "Emitir NFSe"}
           </CustomButton>
 
           <CustomButton
@@ -571,7 +608,6 @@ export function Invoice() {
           </CustomButton>
         </SContainerSearchAndButton>
         <SCardInfo>
-          <STitle>RPS Geradas</STitle>
           <CustomTable
             hasCheckbox
             multiSelect
