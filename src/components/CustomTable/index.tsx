@@ -270,6 +270,13 @@ const CustomTable: React.FC<ICustomTableProps> = ({
       );
     }
 
+    // Display-only: render `status` field in uppercase without mutating data
+    if (column.field === "status") {
+      const statusVal = value ?? "-";
+      const statusText = String(statusVal).toUpperCase();
+      return <CustomTruncateText text={statusText} maxChars={maxChars} />;
+    }
+
     const stringValue = value?.toString() ?? "-";
     return value ? (
       <CustomTruncateText text={stringValue} maxChars={maxChars} />
