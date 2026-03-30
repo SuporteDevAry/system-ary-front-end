@@ -182,7 +182,7 @@ export function RPS(): JSX.Element {
     // Linhas principais
     const linhaTotalServicos = formatLinha(
       "TOTAL DOS SERVIÇOS",
-      formData.service_value
+      formData.service_value,
     );
     const linhaIRRF = formatLinha("(-) I.R.R.F.", formData.irrf_value);
     const linhaAjuste1 =
@@ -191,7 +191,7 @@ export function RPS(): JSX.Element {
         : "";
     const linhaTotalPago = formatLinha(
       "VALOR A SER PAGO",
-      formData.service_liquid_value
+      formData.service_liquid_value,
     );
 
     const contract = "";
@@ -221,25 +221,20 @@ Depositar no Banco Bradesco S.A. (237)       Ag. 0108-2       C/C. 132.362-8`,
   const checkCNPJ = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (cnpjFound) return;
 
-    const cnpj = e.target.value
-      .replace(/\D/g, "")
-      .replace(".", "")
-      .replace("/", "")
-      .replace("-", "");
+    const cnpj = e.target.value.replace(/\D/g, "");
 
-    //fetch(`${process.env.REACT_APP_URL_CNPJ}/${cnpj}`)
     if (cnpj.length > 11) {
-      fetch(` /api-cnpj/cnpj/${cnpj}`)
+      fetch(`${process.env.REACT_APP_URL_CNPJ}/${cnpj}`)
         .then((res) => res.json())
         .then((data) => {
-          if (data.status == "ERROR") {
+          if (data.status === "ERROR") {
             toast.error(`${data.message}`);
             setFormData({
               ...initialformData,
               cpf_cnpj: cnpj,
             });
+            return;
           }
-
           setFormData((prev) => ({
             ...prev,
             name: data.nome || "",
@@ -274,7 +269,7 @@ Depositar no Banco Bradesco S.A. (237)       Ag. 0108-2       C/C. 132.362-8`,
       toast.error(
         `Erro ao ${isEditing ? "atualizar" : "criar"} a RPS: ${
           error.message || String(error)
-        }`
+        }`,
       );
     }
   };
