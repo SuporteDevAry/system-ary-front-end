@@ -246,10 +246,19 @@ export function Invoice() {
     }
 
     // Validações básicas antes de gerar XML
-    const invalidRPS = selectedInvoice.find(
-      (rps) =>
-        !rps.rps_number || !rps.service_value || !rps.cpf_cnpj || !rps.name,
-    );
+    const invalidRPS = selectedInvoice.find((rps) => {
+      // Permite ausência de cpf_cnpj se for estrangeiro (UF EX ou país informado)
+      const isEstrangeiro =
+        (rps.state && rps.state.toUpperCase() === "EX") ||
+        rps.country ||
+        rps.codigo_pais;
+      return (
+        !rps.rps_number ||
+        !rps.service_value ||
+        !rps.name ||
+        (!rps.cpf_cnpj && !isEstrangeiro)
+      );
+    });
 
     if (invalidRPS) {
       toast.error(
@@ -285,10 +294,19 @@ export function Invoice() {
     }
 
     // Validações básicas antes de enviar
-    const invalidRPS = selectedInvoice.find(
-      (rps) =>
-        !rps.rps_number || !rps.service_value || !rps.cpf_cnpj || !rps.name,
-    );
+    const invalidRPS = selectedInvoice.find((rps) => {
+      // Permite ausência de cpf_cnpj se for estrangeiro (UF EX ou país informado)
+      const isEstrangeiro =
+        (rps.state && rps.state.toUpperCase() === "EX") ||
+        rps.country ||
+        rps.codigo_pais;
+      return (
+        !rps.rps_number ||
+        !rps.service_value ||
+        !rps.name ||
+        (!rps.cpf_cnpj && !isEstrangeiro)
+      );
+    });
 
     if (invalidRPS) {
       toast.error(
