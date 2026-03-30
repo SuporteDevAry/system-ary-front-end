@@ -14,15 +14,6 @@ export default defineConfig(({ mode }) => {
       port: PORT,
       host: "0.0.0.0",
       strictPort: true,
-      allowedHosts: ["sistema.prod.dev.br"],
-      proxy: {
-        // Redireciona requisições para '/api-cnpj' para a ReceitaWS
-        "/api-cnpj": {
-          target: "https://receitaws.com.br/v1",
-          changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api-cnpj/, ""),
-        },
-      },
     },
     assetsInclude: ["**/*.jpg", "**/*.png"],
   };
