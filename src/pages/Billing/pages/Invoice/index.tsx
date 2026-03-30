@@ -5,6 +5,7 @@ import { CustomSearch } from "../../../../components/CustomSearch";
 import CustomButton from "../../../../components/CustomButton";
 import CustomTable from "../../../../components/CustomTable";
 import { FaFilePdf } from "react-icons/fa6";
+import { BsFiletypeXml } from "react-icons/bs";
 import Tooltip from "@mui/material/Tooltip";
 import IconButton from "@mui/material/IconButton";
 import {
@@ -166,6 +167,8 @@ export function Invoice() {
       const dataBanco = rps.rps_emission_date;
       const dataIso = dataBanco.split("/").reverse().join("-");
       const assinaturaDummy = "DUMMY";
+      const codigo_indicador_operacao = "100301";
+
       xml += `<RPS xmlns="">`;
       xml += `<Assinatura>${assinaturaDummy}</Assinatura>`;
       xml += `<ChaveRPS>`;
@@ -213,7 +216,7 @@ export function Invoice() {
       xml += `<IBSCBS>`;
       xml += `<finNFSe>0</finNFSe>`;
       xml += `<indFinal>0</indFinal>`;
-      xml += `<cIndOp>030101</cIndOp>`;
+      xml += `<cIndOp>${codigo_indicador_operacao}</cIndOp>`;
       xml += `<tpOper>1</tpOper>`;
       xml += `<indDest>0</indDest>`;
       xml += `<valores>`;
@@ -547,6 +550,46 @@ export function Invoice() {
                 size="medium"
               >
                 <FaFilePdf />
+              </IconButton>
+            </span>
+          </Tooltip>
+        ) : null}
+        {row?.url_danfse ? (
+          <Tooltip title="Baixar XML">
+            <span>
+              <IconButton
+                onClick={async () => {
+                  try {
+                    // Se o XML já vier no objeto, usa direto; senão busca por id
+                    let xmlContent = row.xml_nfse;
+                    if (!xmlContent) {
+                      const resp = await invoiceContext.getInvoiceById(row.id);
+                      xmlContent = resp?.data?.xml_nfse;
+                    }
+                    if (!xmlContent) {
+                      toast.error("XML não disponível para download.");
+                      return;
+                    }
+
+                    const blob = new Blob([xmlContent], {
+                      type: "application/xml;charset=utf-8",
+                    });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = `nfse_${row.rps_number || row.id}.xml`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  } catch (err: any) {
+                    const errorMsg =
+                      err instanceof Error ? err.message : "Erro desconhecido";
+                    toast.error(`Falha ao baixar XML: ${errorMsg}`);
+                  }
+                }}
+                sx={{ color: "#1976d2", marginRight: 3 }}
+                size="medium"
+              >
+                <BsFiletypeXml />
               </IconButton>
             </span>
           </Tooltip>
