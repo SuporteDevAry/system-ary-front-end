@@ -13,7 +13,7 @@ export const SContainerSearchAndButton = styled.div`
   flex-direction: row;
   padding-top: ${V.smSpacing};
   padding-bottom: ${V.mdSpacing};
-  //margin-left: -16px;
+  margin-left: -16px;
 `;
 
 export const SCardContrato = styled.div`

@@ -15,6 +15,28 @@ import ReportFilter from "../../../../components/ReportFilter";
 import { SelectState } from "../../../../components/ReportFilter/types";
 import CustomTooltipLabel from "../../../../components/CustomTooltipLabel";
 
+const parseLocaleNumber = (value: number | string | null | undefined) => {
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : 0;
+  }
+
+  if (typeof value !== "string") {
+    return 0;
+  }
+
+  const trimmedValue = value.trim();
+  if (!trimmedValue) {
+    return 0;
+  }
+
+  const normalizedValue = trimmedValue.includes(",")
+    ? trimmedValue.replace(/\./g, "").replace(",", ".")
+    : trimmedValue;
+
+  const parsedValue = Number(normalizedValue);
+  return Number.isFinite(parsedValue) ? parsedValue : 0;
+};
+
 export function GrainsVol() {
   const contractContext = ContractContext();
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -92,17 +114,23 @@ export function GrainsVol() {
             ? Number(contract.quantity) / 1
             : Number(contract.quantity) / 1000;
 
+          const totalContractValue = parseLocaleNumber(
+            contract.total_contract_value,
+          );
+          const exchangeRate = parseLocaleNumber(contract.day_exchange_rate);
+          const priceValue = parseLocaleNumber(contract.price);
+          const sellerCommission = parseLocaleNumber(
+            contract.commission_seller,
+          );
+          const buyerCommission = parseLocaleNumber(contract.commission_buyer);
+
           const total =
             contract.type_currency == "Dólar"
-              ? Number(contract.total_contract_value.replace(/[,]/g, ".")) *
-                Number(contract.day_exchange_rate.replace(/[,]/g, "."))
-              : Number(contract.total_contract_value.replace(/[,]/g, "."));
+              ? totalContractValue * exchangeRate
+              : totalContractValue;
 
-          const commission = Number(
-            contract.commission_seller == 0
-              ? contract.commission_buyer.replace(",", ".")
-              : contract.commission_seller.replace(",", "."),
-          );
+          const commission =
+            sellerCommission === 0 ? buyerCommission : sellerCommission;
 
           const type_commission =
             contract.commission_seller != 0
@@ -132,9 +160,8 @@ export function GrainsVol() {
 
           const formattedPrice = Number(
             contract.type_currency == "Dólar"
-              ? Number(contract.price.replace(/[,]/g, ".")) *
-                  Number(contract.day_exchange_rate.replace(/[,]/g, "."))
-              : contract.price,
+              ? priceValue * exchangeRate
+              : priceValue,
           ).toLocaleString("pt-BR", {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
@@ -142,9 +169,7 @@ export function GrainsVol() {
 
           const formattedDayExchange =
             contract.day_exchange_rate != 0 || contract.type_currency == "Dólar"
-              ? Number(
-                  contract.day_exchange_rate.replace(/[,]/g, "."),
-                ).toLocaleString("pt-BR", {
+              ? exchangeRate.toLocaleString("pt-BR", {
                   minimumFractionDigits: 4,
                   maximumFractionDigits: 4,
                 })
