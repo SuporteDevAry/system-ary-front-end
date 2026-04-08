@@ -5,6 +5,7 @@ const PORT = Number(process.env.REACT_PORT) || 3000;
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
+
   return {
     define: {
       "process.env": JSON.stringify(env),
@@ -14,6 +15,13 @@ export default defineConfig(({ mode }) => {
       port: PORT,
       host: "0.0.0.0",
       strictPort: true,
+      allowedHosts: ["sistema.prod.dev.br"],
+    },
+    preview: {
+      host: "0.0.0.0",
+      port: PORT,
+      strictPort: true,
+      allowedHosts: ["sistema.prod.dev.br"],
     },
     assetsInclude: ["**/*.jpg", "**/*.png"],
   };
