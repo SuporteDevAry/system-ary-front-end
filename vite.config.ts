@@ -17,12 +17,6 @@ export default defineConfig(({ mode }) => {
       strictPort: true,
       allowedHosts: ["sistema.prod.dev.br"],
     },
-    preview: {
-      host: "0.0.0.0",
-      port: PORT,
-      strictPort: true,
-      allowedHosts: ["sistema.prod.dev.br"],
-    },
     assetsInclude: ["**/*.jpg", "**/*.png"],
   };
 });
