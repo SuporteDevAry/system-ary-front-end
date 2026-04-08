@@ -9,6 +9,28 @@ import { IContractData } from "../../../../contexts/ContractContext/types";
 import { SContainerSearchAndButton, STitle } from "./styles";
 import CustomButton from "../../../../components/CustomButton";
 
+const parseLocaleNumber = (value: number | string | null | undefined) => {
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : 0;
+  }
+
+  if (typeof value !== "string") {
+    return 0;
+  }
+
+  const trimmedValue = value.trim();
+  if (!trimmedValue) {
+    return 0;
+  }
+
+  const normalizedValue = trimmedValue.includes(",")
+    ? trimmedValue.replace(/\./g, "").replace(",", ".")
+    : trimmedValue;
+
+  const parsedValue = Number(normalizedValue);
+  return Number.isFinite(parsedValue) ? parsedValue : 0;
+};
+
 interface IContractExtended extends IContractData {
   type_commission_seller: string;
   type_commission_buyer: string;
@@ -57,15 +79,13 @@ export function Invoicing() {
             ? Number(contract.quantity) / 1
             : Number(contract.quantity) / 1000;
 
-          const total = Number(
-            contract.total_contract_value.replace(/[,]/g, "."),
+          const total = parseLocaleNumber(contract.total_contract_value);
+          const sellerCommission = parseLocaleNumber(
+            contract.commission_seller,
           );
-
-          const commission = Number(
-            contract.commission_seller == 0
-              ? contract.commission_buyer.replace(",", ".")
-              : contract.commission_seller.replace(",", "."),
-          );
+          const buyerCommission = parseLocaleNumber(contract.commission_buyer);
+          const commission =
+            sellerCommission === 0 ? buyerCommission : sellerCommission;
 
           const type_commission =
             contract.commission_seller != 0
