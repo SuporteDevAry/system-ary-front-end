@@ -6,6 +6,7 @@ import { IReportFilterProps, ReportFilterField, SelectState } from "./types";
 const DEFAULT_VISIBLE_FIELDS: ReportFilterField[] = [
   "seller",
   "buyer",
+  "product_types", // Usar product_types como campo do filtro
   "date_start",
   "date_end",
   "month",
@@ -13,6 +14,8 @@ const DEFAULT_VISIBLE_FIELDS: ReportFilterField[] = [
   "product",
   "name_product",
 ];
+import { TableProductContext } from "../../contexts/TablesProducts";
+import { ITableProductsData } from "../../contexts/TablesProducts/types";
 
 export const ReportFilter: React.FC<IReportFilterProps> = ({
   open,
@@ -26,6 +29,23 @@ export const ReportFilter: React.FC<IReportFilterProps> = ({
   visibleFields,
 }) => {
   const [filters, setFilters] = useState<SelectState>(initialFilters || {});
+  // Estado auxiliar para mesa selecionada (table_id)
+  const [selectedMesaId, setSelectedMesaId] = useState<string>("");
+  const [mesas, setMesas] = useState<ITableProductsData[]>([]);
+  const tableProductContext = TableProductContext();
+
+  // Buscar mesas dinamicamente ao montar
+  useEffect(() => {
+    const fetchTables = async () => {
+      try {
+        const tablesResponse = await tableProductContext.listTableProducts();
+        setMesas(tablesResponse.data);
+      } catch (error) {
+        // ignore error, pode exibir toast se quiser
+      }
+    };
+    fetchTables();
+  }, []);
   const [dateStartFocused, setDateStartFocused] = useState(false);
   const [dateEndFocused, setDateEndFocused] = useState(false);
   const enabledFields = new Set(visibleFields ?? DEFAULT_VISIBLE_FIELDS);
@@ -67,8 +87,12 @@ export const ReportFilter: React.FC<IReportFilterProps> = ({
       }
 
       setFilters(norm);
+      if (!norm.product_types) {
+        setSelectedMesaId("");
+      }
     } else {
       setFilters({});
+      setSelectedMesaId("");
     }
   }, [initialFilters]);
 
@@ -112,6 +136,15 @@ export const ReportFilter: React.FC<IReportFilterProps> = ({
         next.date_end = next.date_start;
       }
 
+      setFilters(next);
+      onChange && onChange(next);
+      return;
+    }
+
+    if (name === "product_types") {
+      setSelectedMesaId(val);
+      // Não atualiza filters.product_types diretamente, só no confirm
+      const next = { ...filters, product_types: val };
       setFilters(next);
       onChange && onChange(next);
       return;
@@ -242,6 +275,14 @@ export const ReportFilter: React.FC<IReportFilterProps> = ({
       }
     });
 
+    // Se mesa selecionada, sobrescreve product_types como array de siglas da mesa
+    if (selectedMesaId) {
+      const mesa = mesas.find((m) => m.id === selectedMesaId);
+      if (mesa) {
+        out.product_types = mesa.product_types;
+      }
+    }
+
     onConfirm(out);
   };
 
@@ -345,6 +386,27 @@ export const ReportFilter: React.FC<IReportFilterProps> = ({
             onChange={handleChange}
             sx={{ width: "100%" }}
           />
+        )}
+
+        {enabledFields.has("product_types") && (
+          <STextField
+            select
+            label="Mesa"
+            variant="outlined"
+            size="small"
+            name="product_types"
+            value={selectedMesaId || filters.product_types || ""}
+            onChange={handleChange}
+            sx={{ width: "100%" }}
+            SelectProps={{ native: true }}
+          >
+            <option value=""></option>
+            {mesas.map((mesa) => (
+              <option key={mesa.id} value={mesa.id}>
+                {mesa.name}
+              </option>
+            ))}
+          </STextField>
         )}
 
         {enabledFields.has("product") && (

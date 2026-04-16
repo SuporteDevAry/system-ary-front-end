@@ -236,7 +236,7 @@ const CustomTable: React.FC<ICustomTableProps> = ({
       });
     }
     if (column.field === "price" || column.field === "total_contract_value") {
-      let auxQtd = parseFloat(value.replace(",", ".")) || 0;
+      let auxQtd = parseFloat(String(value ?? "0").replace(",", ".")) || 0;
       return auxQtd.toLocaleString("pt-BR", {
         style: "currency",
         currency: "BRL",

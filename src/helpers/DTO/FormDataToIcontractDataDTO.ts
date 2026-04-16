@@ -67,6 +67,7 @@ export const FormDataToIContractDataDTO = (
     status_received: data?.status_received,
     commission_contract: data?.commission_contract,
     charge_date: data?.charge_date,
+    commission_receipt_date: data?.commission_receipt_date,
     expected_receipt_date: data?.expected_receipt_date,
     total_received: data?.total_received,
   };

@@ -85,6 +85,7 @@ export interface IContractData {
   status_received?: string;
   commission_contract?: number;
   charge_date?: string;
+  commission_receipt_date?: string;
   expected_receipt_date?: string;
   total_received?: number;
   contract_emission_datetime?: string;
