@@ -105,6 +105,7 @@ export const CreateNewContract: React.FC = () => {
     status_received: "",
     commission_contract: 0,
     charge_date: "",
+    commission_receipt_date: "",
     expected_receipt_date: "",
     total_received: 0,
   });

@@ -610,6 +610,10 @@ export function ViewBilling(): JSX.Element {
     if (contractForModal.charge_date)
       adjustments.charge_date = contractForModal.charge_date;
 
+    if (contractForModal.commission_receipt_date)
+      adjustments.commission_receipt_date =
+        contractForModal.commission_receipt_date;
+
     if (contractForModal.expected_receipt_date)
       adjustments.expected_receipt_date =
         contractForModal.expected_receipt_date;
@@ -736,6 +740,10 @@ export function ViewBilling(): JSX.Element {
     {
       label: "Data da Cobrança:",
       value: dataClient?.charge_date || "-",
+    },
+    {
+      label: "Recebimento da Comissão:",
+      value: dataClient?.commission_receipt_date || "-",
     },
     {
       label: "Data Prevista Recebimento:",

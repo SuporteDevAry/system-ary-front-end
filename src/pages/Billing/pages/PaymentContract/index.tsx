@@ -44,15 +44,13 @@ export function PaymentContract() {
   const fetchData = useCallback(async () => {
     try {
       setIsLoading(true);
-
-      const response = await contractContext.listContracts();
-
-      const filtered = applyBusinessFilter(
-        response.data,
+      const response = await contractContext.reportContracts(
         getInitialSelectData(),
       );
-
-      setListContracts(filtered);
+      const contractsArray = Array.isArray(response.data)
+        ? response.data
+        : (response.data as any)?.data || [];
+      setListContracts(contractsArray);
     } catch (error) {
       toast.error(`Erro ao tentar ler contratos: ${error}`);
     } finally {
@@ -71,12 +69,6 @@ export function PaymentContract() {
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
       .trim();
-
-  const matchByTokens = (source: string, term: string) => {
-    const tokens = normalizeStr(term).split(/\s+/).filter(Boolean);
-    if (tokens.length === 0) return true;
-    return tokens.every((token) => source.includes(token));
-  };
 
   const processedContracts = useMemo(() => {
     let processedData = [...listcontracts];
@@ -120,20 +112,17 @@ export function PaymentContract() {
     async (filters: SelectState) => {
       try {
         setIsLoading(true);
-
-        const response = await contractContext.listContracts();
-
-        const filtered = applyBusinessFilter(response.data, filters);
-
+        const response = await contractContext.reportContracts(filters);
         setSelectData(filters);
-        setListContracts(filtered);
-
-        if (filtered.length > 0) {
-          toast.success(`${filtered.length} contrato(s) encontrado(s)`);
+        const contractsArray = Array.isArray(response.data)
+          ? response.data
+          : (response.data as any)?.data || [];
+        setListContracts(contractsArray);
+        if (contractsArray.length > 0) {
+          toast.success(`${contractsArray.length} contrato(s) encontrado(s)`);
         } else {
           toast.info("Nenhum contrato encontrado");
         }
-
         setSelectionModal(false);
       } catch (error) {
         toast.error(`Erro ao tentar ler contratos: ${error}`);
@@ -191,14 +180,13 @@ export function PaymentContract() {
   const handleClearFilterModal = async () => {
     const initial = getInitialSelectData();
     setSelectData(initial);
-
     try {
       setIsLoading(true);
-      const response = await contractContext.listContracts();
-
-      const filtered = applyBusinessFilter(response.data, initial);
-
-      setListContracts(filtered);
+      const response = await contractContext.reportContracts(initial);
+      const contractsArray = Array.isArray(response.data)
+        ? response.data
+        : (response.data as any)?.data || [];
+      setListContracts(contractsArray);
     } catch (error) {
       toast.error(`Erro ao tentar ler contratos: ${error}`);
     } finally {
@@ -217,57 +205,7 @@ export function PaymentContract() {
     );
   }, [selectData]);
 
-  const applyBusinessFilter = (
-    data: IContractData[],
-    selectData: SelectState,
-  ) => {
-    const sellerTerms = (selectData.seller || "")
-      .split(",")
-      .map((item) => normalizeStr(item))
-      .filter(Boolean);
-
-    const buyerTerms = (selectData.buyer || "")
-      .split(",")
-      .map((item) => normalizeStr(item))
-      .filter(Boolean);
-
-    const startDate = selectData.date_start
-      ? new Date(selectData.date_start)
-      : null;
-
-    const endDate = selectData.date_end ? new Date(selectData.date_end) : null;
-
-    return data.filter((contract) => {
-      const sellerName = normalizeStr(contract.seller?.name);
-      const buyerName = normalizeStr(contract.buyer?.name);
-
-      const sellerMatch =
-        sellerTerms.length === 0 ||
-        sellerTerms.some((term) => matchByTokens(sellerName, term));
-
-      const buyerMatch =
-        buyerTerms.length === 0 ||
-        buyerTerms.some((term) => matchByTokens(buyerName, term));
-
-      // Sem filtro de data: filtra apenas por vendedor/comprador.
-      if (!startDate && !endDate) {
-        return sellerMatch && buyerMatch;
-      }
-
-      // 🔹 COM filtro de data → payment_date obrigatório
-      if (!contract.payment_date) return false;
-
-      const [day, month, year] = contract.payment_date.split("/").map(Number);
-
-      const emissionDate = new Date(year, month - 1, day);
-
-      const startMatch = startDate ? emissionDate >= startDate : true;
-
-      const endMatch = endDate ? emissionDate <= endDate : true;
-
-      return sellerMatch && buyerMatch && startMatch && endMatch;
-    });
-  };
+  // Filtro de negócios agora é feito apenas no backend
 
   const handlePrint = (): void => {
     const printWindow = window.open("", "_blank");
@@ -456,8 +394,8 @@ export function PaymentContract() {
         <Tooltip
           title={
             useInfiniteScroll
-              ? "Voltar para paginação"
-              : "Ativar scroll infinito"
+              ? "Ativar scroll infinito"
+              : "Voltar para paginação"
           }
         >
           <IconButton

@@ -27,6 +27,7 @@ export function ControlContracts() {
     month: "",
     product: "",
     name_product: "",
+    product_types: "",
   });
 
   const [selectData, setSelectData] = useState<SelectState>(
@@ -51,6 +52,11 @@ export function ControlContracts() {
 
   const isInitialFilter = useMemo(() => {
     const initial = getInitialSelectData();
+    const productTypesEmpty =
+      !selectData.product_types ||
+      (Array.isArray(selectData.product_types)
+        ? selectData.product_types.length === 0
+        : selectData.product_types === "");
     return (
       (selectData.seller ?? "") === (initial.seller ?? "") &&
       (selectData.buyer ?? "") === (initial.buyer ?? "") &&
@@ -59,7 +65,8 @@ export function ControlContracts() {
       String(selectData.year ?? "") === String(initial.year ?? "") &&
       String(selectData.month ?? "") === String(initial.month ?? "") &&
       (selectData.product ?? "") === (initial.product ?? "") &&
-      (selectData.name_product ?? "") === (initial.name_product ?? "")
+      (selectData.name_product ?? "") === (initial.name_product ?? "") &&
+      productTypesEmpty
     );
   }, [selectData]);
 
@@ -365,7 +372,88 @@ export function ControlContracts() {
   }, [fetchData]);
 
   const handlePrint = (): void => {
-    window.print();
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) return;
+
+    const pageSize = 20;
+
+    const getValue = (row: any, field?: string) => {
+      if (!field) return "";
+      const parts = field.split(".");
+      let value: any = row;
+      for (const p of parts) {
+        value = value?.[p];
+        if (value === undefined || value === null) break;
+      }
+      return value ?? "";
+    };
+
+    const headerHtml = `<tr>${nameColumns
+      .map(
+        (col) =>
+          `<th style="border:1px solid #999;padding:3px;font-size:7px;background:#f0f0f0;white-space:nowrap;">${col.header}</th>`,
+      )
+      .join("")}</tr>`;
+
+    const allRowsHtml = filteredData.map((row) => {
+      const cols = nameColumns
+        .map((col) => {
+          const raw = getValue(row, col.field);
+          const cell = String(raw ?? "")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;");
+          return `<td style="border:1px solid #ccc;padding:3px;font-size:7px;">${cell}</td>`;
+        })
+        .join("");
+      return `<tr>${cols}</tr>`;
+    });
+
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Controle de Contratos</title>
+          <style>
+            @page { size: A4 landscape; margin: 8mm; }
+            body { font-family: Arial, sans-serif; margin: 0; }
+            table { width: 100%; border-collapse: collapse; margin-bottom: 8mm; }
+            th, td { border: 1px solid #ccc; padding: 3px; font-size: 7px; }
+            th { background-color: #f0f0f0; }
+            .page-break { page-break-after: always; }
+            h3 { text-align: left; margin: 0 0 4px 0; font-size: 11px; }
+            h4 { text-align: center; margin: 0 0 8px 0; font-size: 10px; }
+          </style>
+        </head>
+        <body>
+          <h3>Ary Oleofar</h3>
+          <h4>Controle de Contratos</h4>
+    `);
+
+    for (let i = 0; i < allRowsHtml.length; i += pageSize) {
+      const pageRows = allRowsHtml.slice(i, i + pageSize).join("");
+      printWindow.document.write(`
+        <table>
+          <thead>${headerHtml}</thead>
+          <tbody>${pageRows}</tbody>
+        </table>
+      `);
+      if (i + pageSize < allRowsHtml.length) {
+        printWindow.document.write(`<div class="page-break"></div>`);
+      }
+    }
+
+    printWindow.document.write(`</body></html>`);
+    printWindow.document.close();
+
+    printWindow.onload = () => {
+      printWindow.focus();
+      printWindow.print();
+      printWindow.close();
+    };
+    setTimeout(() => {
+      printWindow.focus();
+      printWindow.print();
+      printWindow.close();
+    }, 500);
   };
 
   const handleExportCSV = () => {
