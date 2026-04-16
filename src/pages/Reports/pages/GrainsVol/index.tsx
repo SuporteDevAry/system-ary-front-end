@@ -55,6 +55,8 @@ export function GrainsVol() {
     date_start: "",
     date_end: "",
     product: "",
+    product_types: "",
+    name_product: "",
   });
 
   const [selectData, setSelectData] = useState<SelectState>(
@@ -207,12 +209,19 @@ export function GrainsVol() {
 
   const isInitialFilter = useMemo(() => {
     const initial = getInitialSelectData();
+    const productTypesEmpty =
+      !selectData.product_types ||
+      (Array.isArray(selectData.product_types)
+        ? selectData.product_types.length === 0
+        : selectData.product_types === "");
     return (
       (selectData.seller ?? "") === (initial.seller ?? "") &&
       (selectData.buyer ?? "") === (initial.buyer ?? "") &&
       (selectData.date_start ?? "") === (initial.date_start ?? "") &&
       (selectData.date_end ?? "") === (initial.date_end ?? "") &&
-      (selectData.product ?? "") === (initial.product ?? "")
+      (selectData.product ?? "") === (initial.product ?? "") &&
+      (selectData.name_product ?? "") === (initial.name_product ?? "") &&
+      productTypesEmpty
     );
   }, [selectData]);
 
@@ -259,14 +268,23 @@ export function GrainsVol() {
           .filter(Boolean);
 
         const productTerm = normalize(filters.product as string);
+        const nameProductTerm = normalize(filters.name_product as string);
 
         const startDate = parseIsoDate(filters.date_start as string);
         const endDate = parseIsoDate(filters.date_end as string);
+
+        const productTypes = filters.product_types;
+        const productTypesList: string[] = Array.isArray(productTypes)
+          ? productTypes
+          : typeof productTypes === "string" && productTypes !== ""
+            ? [productTypes]
+            : [];
 
         const filtered = allContracts.filter((contract: any) => {
           const sellerName = normalize(contract?.seller?.name);
           const buyerName = normalize(contract?.buyer?.name);
           const product = normalize(contract?.product);
+          const nameProduct = normalize(contract?.name_product);
           const emissionDate = parseBrDate(contract?.contract_emission_date);
 
           const matchSeller =
@@ -278,6 +296,13 @@ export function GrainsVol() {
             buyerTerms.some((term) => buyerName.includes(term));
 
           const matchProduct = !productTerm || product.includes(productTerm);
+
+          const matchNameProduct =
+            !nameProductTerm || nameProduct.includes(nameProductTerm);
+
+          const matchProductTypes =
+            productTypesList.length === 0 ||
+            productTypesList.includes(contract?.product);
 
           const matchStart = startDate
             ? emissionDate
@@ -292,7 +317,13 @@ export function GrainsVol() {
             : true;
 
           return (
-            matchSeller && matchBuyer && matchProduct && matchStart && matchEnd
+            matchSeller &&
+            matchBuyer &&
+            matchProduct &&
+            matchNameProduct &&
+            matchProductTypes &&
+            matchStart &&
+            matchEnd
           );
         });
 
@@ -592,6 +623,7 @@ export function GrainsVol() {
           onClose={handleCloseModal}
           onChange={(filters) => setSelectData(filters)}
           onConfirm={fetchSelectData}
+          visibleFields={["seller", "buyer", "product_types", "date_start", "date_end", "product", "name_product"]}
         />
 
         <CustomButton $variant="success" width="150px" onClick={handlePrint}>

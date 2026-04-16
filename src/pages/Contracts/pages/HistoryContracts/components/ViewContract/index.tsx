@@ -85,6 +85,7 @@ export function ViewContract(): JSX.Element {
       status_received: "",
       total_received: 0,
       charge_date: "",
+      commission_receipt_date: "",
       expected_receipt_date: "",
       internal_communication: "",
       number_external_contract_buyer: "",
@@ -293,6 +294,9 @@ export function ViewContract(): JSX.Element {
     if (dataClient.charge_date)
       adjustments.charge_date = dataClient.charge_date;
 
+    if (dataClient.commission_receipt_date)
+      adjustments.commission_receipt_date = dataClient.commission_receipt_date;
+
     if (dataClient.expected_receipt_date)
       adjustments.expected_receipt_date = dataClient.expected_receipt_date;
 
@@ -483,6 +487,10 @@ export function ViewContract(): JSX.Element {
     {
       label: "Data da Cobrança:",
       value: dataClient?.charge_date || "-",
+    },
+    {
+      label: "Recebimento da Comissão:",
+      value: dataClient?.commission_receipt_date || "-",
     },
     {
       label: "Data Prevista Recebimento:",

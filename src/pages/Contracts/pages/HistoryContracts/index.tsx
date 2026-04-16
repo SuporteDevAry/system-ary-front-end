@@ -394,8 +394,8 @@ export function HistoryContracts() {
         <Tooltip
           title={
             useInfiniteScroll
-              ? "Voltar para paginação"
-              : "Ativar scroll infinito"
+              ? "Ativar scroll infinito"
+              : "Voltar para paginação"
           }
         >
           <IconButton

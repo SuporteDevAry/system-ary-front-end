@@ -391,10 +391,10 @@ export function Invoice() {
       return;
     }
     const protocolo_lote = invoice.protocolo_lote;
-    if (!protocolo_lote) {
-      toast.error("RPS selecionada não possui protocolo de lote.");
-      return;
-    }
+    // if (!protocolo_lote) {
+    //   toast.error("RPS selecionada não possui protocolo de lote.");
+    //   return;
+    // }
     setIsLoadingRPS(true);
     const tryConsultar = async (prot: string) =>
       nfseContext.consultarLote(prot);

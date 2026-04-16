@@ -9,11 +9,13 @@ export type SelectState = {
   month?: string | number;
   product?: string;
   name_product?: string;
+  product_types?: string | string[]; // Agora aceita array de siglas
 };
 
 export type ReportFilterField =
   | "seller"
   | "buyer"
+  | "product_types" // Usar product_types como campo do filtro
   | "date_start"
   | "date_end"
   | "month"

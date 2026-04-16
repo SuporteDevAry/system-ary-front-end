@@ -63,6 +63,7 @@ export type FormDataContract = {
   status_received?: string;
   commission_contract?: number;
   charge_date?: string;
+  commission_receipt_date?: string;
   expected_receipt_date?: string;
   total_received?: number;
 };

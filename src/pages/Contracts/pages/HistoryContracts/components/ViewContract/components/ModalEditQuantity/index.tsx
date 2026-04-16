@@ -2,7 +2,16 @@ import CustomDatePicker from "../../../../../../../../components/CustomDatePicke
 import { CustomInput } from "../../../../../../../../components/CustomInput";
 import CustomTooltipLabel from "../../../../../../../../components/CustomTooltipLabel";
 import { Modal } from "../../../../../../../../components/Modal";
-import { SBoxDatePicker, SContainer, SText, STextArea } from "./styles";
+import {
+  SBoxDatePicker,
+  SContainer,
+  SField,
+  SFormGrid,
+  SText,
+  STextArea,
+  STextAreaSection,
+  SWideField,
+} from "./styles";
 import { IModalEditQuantityProps } from "./types";
 import { useCallback, useState } from "react";
 import { numberToQuantityString } from "../../../../../../../../helpers/quantityFormat";
@@ -75,10 +84,10 @@ export function ModalEditQuantity({
       <SContainer>
         <SBoxDatePicker>
           <CustomDatePicker
-            width="260px"
+            width="100%"
             height="38px"
             name="payment_date"
-            label="Data do Pagamento:"
+            label="Pagamento do Contrato:"
             $labelPosition="top"
             onChange={(newValue) =>
               onHandleChange({
@@ -91,7 +100,7 @@ export function ModalEditQuantity({
           />
 
           <CustomDatePicker
-            width="260px"
+            width="100%"
             height="38px"
             name="charge_date"
             label="Data da Cobrança:"
@@ -107,7 +116,7 @@ export function ModalEditQuantity({
           />
 
           <CustomDatePicker
-            width="260px"
+            width="100%"
             height="38px"
             name="expected_receipt_date"
             label="Data Prevista do Recebimento:"
@@ -121,70 +130,102 @@ export function ModalEditQuantity({
             disableWeekends
             suggestCurrentDateWhenEmpty={false}
           />
+          <CustomDatePicker
+            width="100%"
+            height="38px"
+            name="commission_receipt_date"
+            label="Recebimento da Comissão em C/C:"
+            $labelPosition="top"
+            onChange={(newValue) =>
+              onHandleChange({
+                target: { name: "commission_receipt_date", value: newValue },
+              })
+            }
+            value={dataContract?.commission_receipt_date || ""}
+            disableWeekends
+            suggestCurrentDateWhenEmpty={false}
+          />
         </SBoxDatePicker>
 
-        <CustomInput
-          type="text"
-          name="final_quantity"
-          label="Quantidade Final:"
-          $labelPosition="top"
-          value={
-            isEditingQuantity
-              ? String(dataContract?.final_quantity ?? "")
-              : formatQuantity(
-                  numberToQuantityString(dataContract?.final_quantity ?? 0),
-                )
-          }
-          onChange={handleQuantityChange}
-          onFocus={handleQuantityFocus}
-          onBlur={handleQuantityBlur}
-          radioPosition="inline"
-        />
+        <SFormGrid>
+          <SField>
+            <CustomInput
+              type="text"
+              name="final_quantity"
+              label="Quantidade Final:"
+              $labelPosition="top"
+              width="100%"
+              value={
+                isEditingQuantity
+                  ? String(dataContract?.final_quantity ?? "")
+                  : formatQuantity(
+                      numberToQuantityString(dataContract?.final_quantity ?? 0),
+                    )
+              }
+              onChange={handleQuantityChange}
+              onFocus={handleQuantityFocus}
+              onBlur={handleQuantityBlur}
+              radioPosition="inline"
+            />
+          </SField>
 
-        <CustomInput
-          name="status_received"
-          label="Liquidado:"
-          $labelPosition="top"
-          radioPosition="only"
-          radioOptions={[
-            { label: "Sim", value: "Sim" },
-            { label: "Não", value: "Não" },
-            { label: "Parcial", value: "Parcial" },
-          ]}
-          onRadioChange={(e) => handleRadioChange(e, "status_received")}
-          selectedRadio={dataContract?.status_received || "Não"}
-        />
+          <SField>
+            <CustomInput
+              type="text"
+              name="number_external_contract_buyer"
+              label="Nº Ctr. Comprador:"
+              $labelPosition="top"
+              width="100%"
+              value={dataContract?.number_external_contract_buyer || ""}
+              onChange={onHandleChange}
+            />
+          </SField>
 
-        <CustomInput
-          type="text"
-          name="number_external_contract_buyer"
-          label="Nº Ctr. Comprador:"
-          $labelPosition="top"
-          value={dataContract?.number_external_contract_buyer || ""}
-          onChange={onHandleChange}
-        />
+          {dataContract?.type_currency === "Dólar" && (
+            <SField>
+              <CustomInput
+                type="text"
+                name="day_exchange_rate"
+                label="Cotação Negociada:"
+                $labelPosition="top"
+                width="100%"
+                value={dataContract?.day_exchange_rate || ""}
+                onChange={onHandleChange}
+              />
+            </SField>
+          )}
 
-        {dataContract?.type_currency === "Dólar" && (
-          <CustomInput
-            type="text"
-            name="day_exchange_rate"
-            label="Cotação Negociada:"
-            $labelPosition="top"
-            value={dataContract?.day_exchange_rate || ""}
-            onChange={onHandleChange}
-          />
-        )}
+          <SWideField>
+            <CustomInput
+              name="status_received"
+              label="Liquidado:"
+              $labelPosition="top"
+              radioPosition="only"
+              radioOptions={[
+                { label: "Sim", value: "Sim" },
+                { label: "Não", value: "Não" },
+                { label: "Parcial", value: "Parcial" },
+              ]}
+              onRadioChange={(e) => handleRadioChange(e, "status_received")}
+              selectedRadio={dataContract?.status_received || "Não"}
+            />
+          </SWideField>
 
-        <CustomTooltipLabel
-          title={`As informações deste campo não serão exibidas no contrato.`}
-        >
-          <SText>Comunicado interno:</SText>
-        </CustomTooltipLabel>
-        <STextArea
-          name="internal_communication"
-          onChange={onHandleChange}
-          value={dataContract?.internal_communication || ""}
-        />
+          <SWideField>
+            <STextAreaSection>
+              <CustomTooltipLabel
+                title={`As informações deste campo não serão exibidas no contrato.`}
+              >
+                <SText>Comunicado interno:</SText>
+              </CustomTooltipLabel>
+              <STextArea
+                name="internal_communication"
+                onChange={onHandleChange}
+                value={dataContract?.internal_communication || ""}
+              />
+            </STextAreaSection>
+          </SWideField>
+        </SFormGrid>
       </SContainer>
     </Modal>
   );
