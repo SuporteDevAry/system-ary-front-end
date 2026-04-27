@@ -31,3 +31,29 @@ export const parseBrazilianDate = (
 
   return date.getTime() || 0;
 };
+
+export const sortTableData = <T extends Record<string, any>>(
+  data: T[],
+  orderBy: string,
+  order: "asc" | "desc",
+) => {
+  return data.slice().sort((a, b) => {
+    const aValue = getNestedValue(a, orderBy);
+    const bValue = getNestedValue(b, orderBy);
+
+    if (orderBy === "contract_emission_date") {
+      const aDate = parseBrazilianDate(aValue);
+      const bDate = parseBrazilianDate(bValue);
+
+      return order === "asc" ? aDate - bDate : bDate - aDate;
+    }
+
+    if (orderBy === "number_contract") {
+      const aContractNumber = extractNumberFromContract(aValue);
+      const bContractNumber = extractNumberFromContract(bValue);
+      return compareValues(aContractNumber, bContractNumber, order);
+    }
+
+    return compareValues(aValue, bValue, order);
+  });
+};
