@@ -16,458 +16,514 @@ import { SelectState } from "../../../../components/ReportFilter/types";
 import CustomTooltipLabel from "../../../../components/CustomTooltipLabel";
 
 const parseLocaleNumber = (value: number | string | null | undefined) => {
-  if (typeof value === "number") {
-    return Number.isFinite(value) ? value : 0;
-  }
+    if (typeof value === "number") {
+        return Number.isFinite(value) ? value : 0;
+    }
 
-  if (typeof value !== "string") {
-    return 0;
-  }
+    if (typeof value !== "string") {
+        return 0;
+    }
 
-  const trimmedValue = value.trim();
-  if (!trimmedValue) {
-    return 0;
-  }
+    const trimmedValue = value.trim();
+    if (!trimmedValue) {
+        return 0;
+    }
 
-  const normalizedValue = trimmedValue.includes(",")
-    ? trimmedValue.replace(/\./g, "").replace(",", ".")
-    : trimmedValue;
+    const normalizedValue = trimmedValue.includes(",")
+        ? trimmedValue.replace(/\./g, "").replace(",", ".")
+        : trimmedValue;
 
-  const parsedValue = Number(normalizedValue);
-  return Number.isFinite(parsedValue) ? parsedValue : 0;
+    const parsedValue = Number(normalizedValue);
+    return Number.isFinite(parsedValue) ? parsedValue : 0;
 };
 
 export function GrainsVol() {
-  const contractContext = ContractContext();
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [allContracts, setAllContracts] = useState<IContractData[]>([]);
-  const [listcontracts, setListContracts] = useState<IContractData[]>([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [page, setPage] = useState(0);
-  const [order, setOrder] = useState<"asc" | "desc">("desc");
-  const [orderBy, setOrderBy] = useState("quantity");
-  const [isSelectionModal, setSelectionModal] = useState<boolean>(false);
-  const [useInfiniteScroll, setUseInfiniteScroll] = useState<boolean>(false);
+    const contractContext = ContractContext();
+    const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [allContracts, setAllContracts] = useState<IContractData[]>([]);
+    const [listcontracts, setListContracts] = useState<IContractData[]>([]);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [page, setPage] = useState(0);
+    const [order, setOrder] = useState<"asc" | "desc">("desc");
+    const [orderBy, setOrderBy] = useState("quantity");
+    const [isSelectionModal, setSelectionModal] = useState<boolean>(false);
+    const [useInfiniteScroll, setUseInfiniteScroll] = useState<boolean>(false);
 
-  const getInitialSelectData = (): SelectState => ({
-    seller: "",
-    buyer: "",
-    date_start: "",
-    date_end: "",
-    product: "",
-    product_types: "",
-    name_product: "",
-  });
+    const getInitialSelectData = (): SelectState => {
+        const today = new Date();
+        const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
 
-  const [selectData, setSelectData] = useState<SelectState>(
-    getInitialSelectData(),
-  );
+        const fmt = (d: Date) =>
+            `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
+                d.getDate(),
+            ).padStart(2, "0")}`;
 
-  const fetchData = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      const response = await contractContext.listContracts();
+        return {
+            seller: "",
+            buyer: "",
+            date_start: fmt(firstDay),
+            date_end: fmt(today),
+            product: "",
+            product_types: "",
+            name_product: "",
+        };
+    };
 
-      const filteredContracts = response.data.filter(
-        (contract: {
-          total_contract_value: any;
-          price: any;
-          commission_seller: any;
-          commission_buyer: any;
-          type_commission_seller: any;
-          type_commission_buyer: any;
-          type_commission: any;
-          resp_commission: any;
-          commission: any;
-          quantity: any;
-          product: any;
-          name_product: any;
-          day_exchange_rate: any;
-          type_currency: any;
-        }) =>
-          (contract.name_product &&
-            contract.name_product.toUpperCase() === "SOJA EM GRÃOS") ||
-          contract.name_product.toUpperCase() === "MILHO EM GRÃOS" ||
-          contract.name_product.toUpperCase() === "TRIGO" ||
-          contract.name_product.toUpperCase() === "SORGO",
-      );
-
-      const updatedContracts = filteredContracts.map(
-        (contract: {
-          price: any;
-          total_contract_value: any;
-          commission_seller: any;
-          commission_buyer: any;
-          type_commission_seller: any;
-          type_commission_buyer: any;
-          type_commission: any;
-          resp_commission: any;
-          commission: any;
-          quantity: any;
-          product: any;
-          name_product: any;
-          day_exchange_rate: any;
-          type_currency: any;
-        }) => {
-          // 02/01/2025 - Carlos - Farelo e Óleo não divide por 60
-          // Só iremos remover essa regra das siglas, caso o cliente aceite a sugestão da reunião do dia 09/04/2025
-          const validProducts = ["O", "F", "OC", "OA", "SB", "EP"];
-          const quantityTon = validProducts.includes(contract.product)
-            ? Number(contract.quantity) / 1
-            : Number(contract.quantity) / 1000;
-
-          const totalContractValue = parseLocaleNumber(
-            contract.total_contract_value,
-          );
-          const exchangeRate = parseLocaleNumber(contract.day_exchange_rate);
-          const priceValue = parseLocaleNumber(contract.price);
-          const sellerCommission = parseLocaleNumber(
-            contract.commission_seller,
-          );
-          const buyerCommission = parseLocaleNumber(contract.commission_buyer);
-
-          const total =
-            contract.type_currency == "Dólar"
-              ? totalContractValue * exchangeRate
-              : totalContractValue;
-
-          const commission =
-            sellerCommission === 0 ? buyerCommission : sellerCommission;
-
-          const type_commission =
-            contract.commission_seller != 0
-              ? contract.type_commission_seller == "Percentual"
-                ? "P"
-                : "V"
-              : contract.type_commission_buyer != 0
-                ? contract.type_commission_buyer == "Percentual"
-                  ? "P"
-                  : "V"
-                : "?";
-
-          const commissionValue =
-            type_commission == "P" ? (total * commission) / 100 : commission;
-
-          const resp_commission = contract.commission_seller == 0 ? "C" : "V";
-
-          const formattedCommission = commissionValue.toLocaleString("pt-BR", {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-          });
-
-          const formattedTotal = total.toLocaleString("pt-BR", {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-          });
-
-          const formattedPrice = Number(
-            contract.type_currency == "Dólar"
-              ? priceValue * exchangeRate
-              : priceValue,
-          ).toLocaleString("pt-BR", {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-          });
-
-          const formattedDayExchange =
-            contract.day_exchange_rate != 0 || contract.type_currency == "Dólar"
-              ? exchangeRate.toLocaleString("pt-BR", {
-                  minimumFractionDigits: 4,
-                  maximumFractionDigits: 4,
-                })
-              : "";
-
-          return {
-            ...contract,
-            quantity: quantityTon,
-            type_commission: type_commission,
-            resp_commission: resp_commission,
-            commission: commission,
-            commission_value: formattedCommission,
-            total_contract_real: formattedTotal,
-            price_real: formattedPrice,
-            day_exchange_formatted: formattedDayExchange,
-          };
-        },
-      );
-
-      setAllContracts(updatedContracts);
-      setListContracts(updatedContracts);
-    } catch (error) {
-      toast.error(`Erro ao tentar ler contratos: ${error}`);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [contractContext]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  const handleSelectionModal = () => setSelectionModal((prev) => !prev);
-  const handleCloseModal = () => setSelectionModal(false);
-
-  const isInitialFilter = useMemo(() => {
-    const initial = getInitialSelectData();
-    const productTypesEmpty =
-      !selectData.product_types ||
-      (Array.isArray(selectData.product_types)
-        ? selectData.product_types.length === 0
-        : selectData.product_types === "");
-    return (
-      (selectData.seller ?? "") === (initial.seller ?? "") &&
-      (selectData.buyer ?? "") === (initial.buyer ?? "") &&
-      (selectData.date_start ?? "") === (initial.date_start ?? "") &&
-      (selectData.date_end ?? "") === (initial.date_end ?? "") &&
-      (selectData.product ?? "") === (initial.product ?? "") &&
-      (selectData.name_product ?? "") === (initial.name_product ?? "") &&
-      productTypesEmpty
+    const [selectData, setSelectData] = useState<SelectState>(
+        getInitialSelectData(),
     );
-  }, [selectData]);
 
-  const handleClearFilterModal = () => {
-    setSelectData(getInitialSelectData());
-    setListContracts(allContracts);
-    setSelectionModal(false);
-  };
+    const fetchData = useCallback(async () => {
+        try {
+            setIsLoading(true);
+            const response = await contractContext.listContracts();
 
-  const fetchSelectData = useCallback(
-    (filters: SelectState) => {
-      try {
-        setIsLoading(true);
+            const filteredContracts = response.data.filter(
+                (contract: {
+                    total_contract_value: any;
+                    price: any;
+                    commission_seller: any;
+                    commission_buyer: any;
+                    type_commission_seller: any;
+                    type_commission_buyer: any;
+                    type_commission: any;
+                    resp_commission: any;
+                    commission: any;
+                    commission_contract: any;
+                    type_commission_seller_currency: any;
+                    quantity: any;
+                    product: any;
+                    name_product: any;
+                    day_exchange_rate: any;
+                    type_currency: any;
+                }) =>
+                    (contract.name_product &&
+                        contract.name_product.toUpperCase() ===
+                            "SOJA EM GRÃOS") ||
+                    contract.name_product.toUpperCase() === "MILHO EM GRÃOS" ||
+                    contract.name_product.toUpperCase() === "TRIGO" ||
+                    contract.name_product.toUpperCase() === "SORGO",
+            );
 
-        const normalize = (value?: string) =>
-          (value || "")
-            .toUpperCase()
-            .normalize("NFD")
-            .replace(/[\u0300-\u036f]/g, "")
-            .trim();
+            const updatedContracts = filteredContracts.map(
+                (contract: {
+                    price: any;
+                    total_contract_value: any;
+                    commission_seller: any;
+                    commission_buyer: any;
+                    type_commission_seller: any;
+                    type_commission_buyer: any;
+                    type_commission: any;
+                    resp_commission: any;
+                    commission_contract: any;
+                    type_commission_seller_currency: any;
+                    quantity: any;
+                    product: any;
+                    name_product: any;
+                    day_exchange_rate: any;
+                    type_currency: any;
+                }) => {
+                    // 02/01/2025 - Carlos - Farelo e Óleo não divide por 60
+                    // Só iremos remover essa regra das siglas, caso o cliente aceite a sugestão da reunião do dia 09/04/2025
+                    const validProducts = ["O", "F", "OC", "OA", "SB", "EP"];
+                    const quantityTon = validProducts.includes(contract.product)
+                        ? Number(contract.quantity) / 1
+                        : Number(contract.quantity) / 1000;
 
-        const parseIsoDate = (date?: string) => {
-          if (!date) return null;
-          const [year, month, day] = date.split("-").map(Number);
-          if (!year || !month || !day) return null;
-          return new Date(year, month - 1, day);
-        };
+                    const totalContractValue = parseLocaleNumber(
+                        contract.total_contract_value,
+                    );
+                    const exchangeRate = parseLocaleNumber(
+                        contract.day_exchange_rate,
+                    );
+                    const priceValue = parseLocaleNumber(contract.price);
 
-        const parseBrDate = (date?: string) => {
-          if (!date) return null;
-          const [day, month, year] = date.split("/").map(Number);
-          if (!year || !month || !day) return null;
-          return new Date(year, month - 1, day);
-        };
+                    const sellerCommission = contract.commission_seller;
+                    const buyerCommission = contract.commission_buyer;
 
-        const sellerTerms = (filters.seller || "")
-          .split(",")
-          .map((item) => normalize(item))
-          .filter(Boolean);
+                    const total =
+                        contract.type_currency == "Dólar"
+                            ? totalContractValue * exchangeRate
+                            : totalContractValue;
 
-        const buyerTerms = (filters.buyer || "")
-          .split(",")
-          .map((item) => normalize(item))
-          .filter(Boolean);
+                    const commission =
+                        sellerCommission === 0
+                            ? buyerCommission
+                            : sellerCommission;
 
-        const productTerm = normalize(filters.product as string);
-        const nameProductTerm = normalize(filters.name_product as string);
+                    const type_commission = contract.type_commission_seller;
 
-        const startDate = parseIsoDate(filters.date_start as string);
-        const endDate = parseIsoDate(filters.date_end as string);
+                    // const type_commission =
+                    //   contract.commission_seller != 0
+                    //     ? contract.type_commission_seller == "Percentual"
+                    //       ? "P"
+                    //       : "V"
+                    //     : contract.type_commission_buyer != 0
+                    //       ? contract.type_commission_buyer == "Percentual"
+                    //         ? "P"
+                    //         : "V"
+                    //       : "?";
 
-        const productTypes = filters.product_types;
-        const productTypesList: string[] = Array.isArray(productTypes)
-          ? productTypes
-          : typeof productTypes === "string" && productTypes !== ""
-            ? [productTypes]
-            : [];
+                    const commissionValue = parseLocaleNumber(
+                        contract.commission_contract,
+                    );
 
-        const filtered = allContracts.filter((contract: any) => {
-          const sellerName = normalize(contract?.seller?.name);
-          const buyerName = normalize(contract?.buyer?.name);
-          const product = normalize(contract?.product);
-          const nameProduct = normalize(contract?.name_product);
-          const emissionDate = parseBrDate(contract?.contract_emission_date);
+                    const resp_commission =
+                        contract.commission_seller == 0 ? "C" : "V";
 
-          const matchSeller =
-            sellerTerms.length === 0 ||
-            sellerTerms.some((term) => sellerName.includes(term));
+                    const formattedCommission = commissionValue.toLocaleString(
+                        "pt-BR",
+                        {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                        },
+                    );
 
-          const matchBuyer =
-            buyerTerms.length === 0 ||
-            buyerTerms.some((term) => buyerName.includes(term));
+                    const formattedTotal = total.toLocaleString("pt-BR", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                    });
 
-          const matchProduct = !productTerm || product.includes(productTerm);
+                    const formattedPrice = Number(
+                        contract.type_currency == "Dólar"
+                            ? priceValue * exchangeRate
+                            : priceValue,
+                    ).toLocaleString("pt-BR", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                    });
 
-          const matchNameProduct =
-            !nameProductTerm || nameProduct.includes(nameProductTerm);
+                    const formattedDayExchange =
+                        contract.day_exchange_rate != 0 ||
+                        contract.type_currency == "Dólar"
+                            ? exchangeRate.toLocaleString("pt-BR", {
+                                  minimumFractionDigits: 4,
+                                  maximumFractionDigits: 4,
+                              })
+                            : "";
 
-          const matchProductTypes =
-            productTypesList.length === 0 ||
-            productTypesList.includes(contract?.product);
+                    return {
+                        ...contract,
+                        quantity: quantityTon,
+                        type_commission: type_commission,
+                        resp_commission: resp_commission,
+                        commission: commission,
+                        commission_value: formattedCommission,
+                        total_contract_real: formattedTotal,
+                        price_real: formattedPrice,
+                        day_exchange_formatted: formattedDayExchange,
+                    };
+                },
+            );
 
-          const matchStart = startDate
-            ? emissionDate
-              ? emissionDate >= startDate
-              : false
-            : true;
-
-          const matchEnd = endDate
-            ? emissionDate
-              ? emissionDate <= endDate
-              : false
-            : true;
-
-          return (
-            matchSeller &&
-            matchBuyer &&
-            matchProduct &&
-            matchNameProduct &&
-            matchProductTypes &&
-            matchStart &&
-            matchEnd
-          );
-        });
-
-        setSelectData(filters);
-        setListContracts(filtered);
-
-        if (filtered.length > 0) {
-          toast.success(`${filtered.length} contrato(s) encontrado(s)`);
-        } else {
-          toast.info("Nenhum contrato encontrado");
+            setAllContracts(updatedContracts);
+            setListContracts(updatedContracts);
+        } catch (error) {
+            toast.error(`Erro ao tentar ler contratos: ${error}`);
+        } finally {
+            setIsLoading(false);
         }
+    }, [contractContext]);
 
+    useEffect(() => {
+        fetchData();
+    }, [fetchData]);
+
+    const handleSelectionModal = () => setSelectionModal((prev) => !prev);
+    const handleCloseModal = () => setSelectionModal(false);
+
+    const isInitialFilter = useMemo(() => {
+        const initial = getInitialSelectData();
+        const productTypesEmpty =
+            !selectData.product_types ||
+            (Array.isArray(selectData.product_types)
+                ? selectData.product_types.length === 0
+                : selectData.product_types === "");
+        return (
+            (selectData.seller ?? "") === (initial.seller ?? "") &&
+            (selectData.buyer ?? "") === (initial.buyer ?? "") &&
+            (selectData.date_start ?? "") === (initial.date_start ?? "") &&
+            (selectData.date_end ?? "") === (initial.date_end ?? "") &&
+            (selectData.product ?? "") === (initial.product ?? "") &&
+            (selectData.name_product ?? "") === (initial.name_product ?? "") &&
+            productTypesEmpty
+        );
+    }, [selectData]);
+
+    const handleClearFilterModal = () => {
+        const initialFilters = getInitialSelectData();
+        setSelectData(initialFilters);
+        fetchSelectData(initialFilters);
         setSelectionModal(false);
-      } catch (error) {
-        toast.error(`Erro ao aplicar filtros: ${error}`);
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [allContracts],
-  );
+    };
 
-  const { filteredData } = useTableSearch({
-    data: listcontracts,
-    searchTerm,
-    searchableFields: [
-      "contract_emission_date",
-      "number_contract",
-      "product",
-      "seller.name",
-      "buyer.name",
-    ],
-  });
+    const fetchSelectData = useCallback(
+        (filters: SelectState, showToast = true) => {
+            try {
+                setIsLoading(true);
 
-  const nameColumns: IColumn[] = useMemo(
-    () => [
-      {
-        field: "contract_emission_date",
-        header: "DATA",
-        width: "100px",
-        sortable: true,
-      },
-      {
-        field: "product",
-        header: "SIGLA",
-        width: "80px",
-      },
-      {
-        field: "number_contract",
-        header: "CONTRATO",
-        width: "180px",
-        sortable: true,
-      },
-      {
-        field: "seller.name",
-        header: "VENDEDOR",
-        width: "200px",
-      },
-      {
-        field: "buyer.name",
-        header: "COMPRADOR",
-        width: "200px",
-      },
-      {
-        field: "quantity",
-        header: "QUANTIDADE (TON)",
-        width: "150px",
-        sortable: true,
-      },
-      {
-        field: "price_real",
-        header: "PREÇO R$",
-        width: "150px",
-      },
-      {
-        field: "type_currency",
-        header: "MOEDA",
-        width: "20px",
-      },
-      {
-        field: "day_exchange_formatted",
-        header: "TAXA",
-        width: "20px",
-      },
-      {
-        field: "total_contract_real",
-        header: "VALOR CONTRATO R$",
-        width: "20px",
-      },
-      {
-        field: "type_commission",
-        header: "P/V",
-        width: "20px",
-      },
-      {
-        field: "resp_commission",
-        header: "C/V",
-        width: "20px",
-      },
-      {
-        field: "commission",
-        header: "COMISSÃO",
-        width: "100px",
-      },
-      {
-        field: "commission_value",
-        header: "COMISSÃO R$",
-        width: "130px",
-      },
-    ],
-    [],
-  );
+                const normalize = (value?: string) =>
+                    (value || "")
+                        .toUpperCase()
+                        .normalize("NFD")
+                        .replace(/[\u0300-\u036f]/g, "")
+                        .trim();
 
-  const getNestedValue = (obj: any, path: string): any => {
-    return path.split(".").reduce((acc, part) => acc?.[part], obj);
-  };
+                const parseIsoDate = (date?: string) => {
+                    if (!date) return null;
+                    const [year, month, day] = date.split("-").map(Number);
+                    if (!year || !month || !day) return null;
+                    return new Date(year, month - 1, day);
+                };
 
-  const sortedData = useMemo(() => {
-    const sorted = [...filteredData].sort((a, b) => {
-      const aRaw = getNestedValue(a, orderBy);
-      const bRaw = getNestedValue(b, orderBy);
+                const parseBrDate = (date?: string) => {
+                    if (!date) return null;
+                    const [day, month, year] = date.split("/").map(Number);
+                    if (!year || !month || !day) return null;
+                    return new Date(year, month - 1, day);
+                };
 
-      // Tenta converter para número decimal com . como separador
-      const aNum =
-        typeof aRaw === "string"
-          ? parseFloat(aRaw.replace(".", "").replace(",", "."))
-          : Number(aRaw);
-      const bNum =
-        typeof bRaw === "string"
-          ? parseFloat(bRaw.replace(".", "").replace(",", "."))
-          : Number(bRaw);
+                const sellerTerms = (filters.seller || "")
+                    .split(",")
+                    .map((item) => normalize(item))
+                    .filter(Boolean);
 
-      return order === "asc" ? aNum - bNum : bNum - aNum;
+                const buyerTerms = (filters.buyer || "")
+                    .split(",")
+                    .map((item) => normalize(item))
+                    .filter(Boolean);
+
+                const productTerm = normalize(filters.product as string);
+                const nameProductTerm = normalize(
+                    filters.name_product as string,
+                );
+
+                const startDate = parseIsoDate(filters.date_start as string);
+                const endDate = parseIsoDate(filters.date_end as string);
+
+                const productTypes = filters.product_types;
+                const productTypesList: string[] = Array.isArray(productTypes)
+                    ? productTypes
+                    : typeof productTypes === "string" && productTypes !== ""
+                      ? [productTypes]
+                      : [];
+
+                const filtered = allContracts.filter((contract: any) => {
+                    const sellerName = normalize(contract?.seller?.name);
+                    const buyerName = normalize(contract?.buyer?.name);
+                    const product = normalize(contract?.product);
+                    const nameProduct = normalize(contract?.name_product);
+                    const emissionDate = parseBrDate(
+                        contract?.contract_emission_date,
+                    );
+
+                    const matchSeller =
+                        sellerTerms.length === 0 ||
+                        sellerTerms.some((term) => sellerName.includes(term));
+
+                    const matchBuyer =
+                        buyerTerms.length === 0 ||
+                        buyerTerms.some((term) => buyerName.includes(term));
+
+                    const matchProduct =
+                        !productTerm || product.includes(productTerm);
+
+                    const matchNameProduct =
+                        !nameProductTerm ||
+                        nameProduct.includes(nameProductTerm);
+
+                    const matchProductTypes =
+                        productTypesList.length === 0 ||
+                        productTypesList.includes(contract?.product);
+
+                    const matchStart = startDate
+                        ? emissionDate
+                            ? emissionDate >= startDate
+                            : false
+                        : true;
+
+                    const matchEnd = endDate
+                        ? emissionDate
+                            ? emissionDate <= endDate
+                            : false
+                        : true;
+
+                    return (
+                        matchSeller &&
+                        matchBuyer &&
+                        matchProduct &&
+                        matchNameProduct &&
+                        matchProductTypes &&
+                        matchStart &&
+                        matchEnd
+                    );
+                });
+
+                setSelectData(filters);
+                setListContracts(filtered);
+
+                if (showToast) {
+                    if (filtered.length > 0) {
+                        toast.success(
+                            `${filtered.length} contrato(s) encontrado(s)`,
+                        );
+                    } else {
+                        toast.info("Nenhum contrato encontrado");
+                    }
+                }
+
+                setSelectionModal(false);
+            } catch (error) {
+                toast.error(`Erro ao aplicar filtros: ${error}`);
+            } finally {
+                setIsLoading(false);
+            }
+        },
+        [allContracts],
+    );
+
+    useEffect(() => {
+        if (allContracts.length > 0 && isInitialFilter) {
+            fetchSelectData(selectData, false);
+        }
+    }, [allContracts, isInitialFilter, fetchSelectData]);
+
+    const { filteredData } = useTableSearch({
+        data: listcontracts,
+        searchTerm,
+        searchableFields: [
+            "contract_emission_date",
+            "number_contract",
+            "quantity",
+        ],
     });
-    return sorted;
-  }, [filteredData, order, orderBy]);
 
-  const handlePrint = (): void => {
-    const printWindow = window.open("", "_blank");
-    if (!printWindow) return;
+    const nameColumns: IColumn[] = useMemo(
+        () => [
+            {
+                field: "contract_emission_date",
+                header: "DATA",
+                width: "100px",
+                sortable: true,
+            },
+            {
+                field: "product",
+                header: "SIGLA",
+                width: "80px",
+            },
+            {
+                field: "number_contract",
+                header: "CONTRATO",
+                width: "180px",
+                sortable: true,
+            },
+            {
+                field: "seller.name",
+                header: "VENDEDOR",
+                width: "200px",
+            },
+            {
+                field: "buyer.name",
+                header: "COMPRADOR",
+                width: "200px",
+            },
+            {
+                field: "quantity",
+                header: "QUANTIDADE (TON)",
+                width: "150px",
+                sortable: true,
+            },
+            {
+                field: "price_real",
+                header: "PREÇO R$",
+                width: "150px",
+            },
+            {
+                field: "type_currency",
+                header: "MOEDA",
+                width: "20px",
+            },
+            {
+                field: "day_exchange_formatted",
+                header: "TAXA",
+                width: "20px",
+            },
+            {
+                field: "total_contract_real",
+                header: "VALOR CONTRATO R$",
+                width: "20px",
+            },
+            {
+                field: "type_commission",
+                header: "Tipo Comissão",
+                width: "20px",
+            },
+            {
+                field: "resp_commission",
+                header: "C/V",
+                width: "20px",
+            },
+            {
+                field: "commission",
+                header: "COMISSÃO",
+                width: "100px",
+            },
+            {
+                field: "commission_value",
+                header: "COMISSÃO R$",
+                width: "130px",
+            },
+        ],
+        [],
+    );
 
-    const pageSize = 25;
+    const getNestedValue = (obj: any, path: string): any => {
+        return path.split(".").reduce((acc, part) => acc?.[part], obj);
+    };
 
-    printWindow.document.write(`
+    const sortedData = useMemo(() => {
+        const parseBrDateToTime = (value: unknown) => {
+            if (typeof value !== "string") return Number.NaN;
+            const [day, month, year] = value.split("/").map(Number);
+            if (!day || !month || !year) return Number.NaN;
+            return new Date(year, month - 1, day).getTime();
+        };
+
+        const sorted = [...filteredData].sort((a, b) => {
+            const aRaw = getNestedValue(a, orderBy);
+            const bRaw = getNestedValue(b, orderBy);
+
+            if (orderBy === "contract_emission_date") {
+                const aDate = parseBrDateToTime(aRaw);
+                const bDate = parseBrDateToTime(bRaw);
+
+                if (!Number.isNaN(aDate) && !Number.isNaN(bDate)) {
+                    return order === "asc" ? aDate - bDate : bDate - aDate;
+                }
+            }
+
+            // Tenta converter para número decimal com . como separador
+            const aNum =
+                typeof aRaw === "string"
+                    ? parseFloat(aRaw.replace(".", "").replace(",", "."))
+                    : Number(aRaw);
+            const bNum =
+                typeof bRaw === "string"
+                    ? parseFloat(bRaw.replace(".", "").replace(",", "."))
+                    : Number(bRaw);
+
+            return order === "asc" ? aNum - bNum : bNum - aNum;
+        });
+        return sorted;
+    }, [filteredData, order, orderBy]);
+
+    const handlePrint = (): void => {
+        const printWindow = window.open("", "_blank");
+        if (!printWindow) return;
+
+        const pageSize = 25;
+
+        printWindow.document.write(`
         <html>
             <head>
                 <title>Grãos Volume - Produto</title>
@@ -485,190 +541,206 @@ export function GrainsVol() {
                 <h4>Grãos Volume - Produto</h4>
         `);
 
-    for (let i = 0; i < sortedData.length; i += pageSize) {
-      const pageRows = sortedData.slice(i, i + pageSize);
+        for (let i = 0; i < sortedData.length; i += pageSize) {
+            const pageRows = sortedData.slice(i, i + pageSize);
 
-      printWindow.document.write(`<table><thead><tr>`);
-      nameColumns.forEach((col) => {
-        printWindow.document.write(
-          `<th style="width: ${col.width}px;">${col.header}</th>`,
-        );
-      });
-      printWindow.document.write(`</tr></thead><tbody>`);
+            printWindow.document.write(`<table><thead><tr>`);
+            nameColumns.forEach((col) => {
+                printWindow.document.write(
+                    `<th style="width: ${col.width}px;">${col.header}</th>`,
+                );
+            });
+            printWindow.document.write(`</tr></thead><tbody>`);
 
-      pageRows.forEach((row) => {
-        printWindow.document.write(`<tr>`);
-        nameColumns.forEach((col) => {
-          const fields = col.field.split(".");
-          let value: any = row;
-          for (const f of fields) {
-            value = value?.[f];
-          }
-          printWindow.document.write(`<td>${value ?? ""}</td>`);
-        });
-        printWindow.document.write(`</tr>`);
-      });
+            pageRows.forEach((row) => {
+                printWindow.document.write(`<tr>`);
+                nameColumns.forEach((col) => {
+                    const fields = col.field.split(".");
+                    let value: any = row;
+                    for (const f of fields) {
+                        value = value?.[f];
+                    }
+                    printWindow.document.write(`<td>${value ?? ""}</td>`);
+                });
+                printWindow.document.write(`</tr>`);
+            });
 
-      printWindow.document.write(`</tbody></table>`);
+            printWindow.document.write(`</tbody></table>`);
 
-      if (i + pageSize < sortedData.length) {
-        printWindow.document.write(`<div class="page-break"></div>`);
-      }
-    }
+            if (i + pageSize < sortedData.length) {
+                printWindow.document.write(`<div class="page-break"></div>`);
+            }
+        }
 
-    printWindow.document.write(`
+        printWindow.document.write(`
             </body>
         </html>
         `);
 
-    printWindow.document.close();
-    printWindow.print();
-    printWindow.close();
-  };
+        printWindow.document.close();
+        printWindow.print();
+        printWindow.close();
+    };
 
-  const handleExportCSV = () => {
-    const headers = nameColumns
-      .filter((col) => col.field)
-      .map((col) => `"${col.header}"`)
-      .join(";");
+    const handleExportCSV = () => {
+        const headers = nameColumns
+            .filter((col) => col.field)
+            .map((col) => `"${col.header}"`)
+            .join(";");
 
-    const rows = sortedData.map((row) => {
-      return nameColumns
-        .filter((col) => col.field)
-        .map((col) => {
-          const fields = col.field!.split(".");
-          let value: any = row;
+        const rows = sortedData.map((row) => {
+            return nameColumns
+                .filter((col) => col.field)
+                .map((col) => {
+                    const fields = col.field!.split(".");
+                    let value: any = row;
 
-          for (const f of fields) {
-            value = value?.[f];
-          }
+                    for (const f of fields) {
+                        value = value?.[f];
+                    }
 
-          // Corrige campos numéricos com vírgula decimal
-          if (
-            col.field === "quantity" ||
-            col.field === "price" ||
-            col.field === "total_contract_value" ||
-            col.field === "commission"
-          ) {
-            const number = parseFloat(String(value).replace(",", "."));
-            if (!isNaN(number)) {
-              value = number
-                .toFixed(2) // duas casas decimais
-                .replace(".", ","); // troca ponto por vírgula
-            }
-          }
+                    // Corrige campos numéricos com vírgula decimal
+                    if (
+                        col.field === "quantity" ||
+                        col.field === "price" ||
+                        col.field === "total_contract_value" ||
+                        col.field === "commission"
+                    ) {
+                        const number = parseFloat(
+                            String(value).replace(",", "."),
+                        );
+                        if (!isNaN(number)) {
+                            value = number
+                                .toFixed(2) // duas casas decimais
+                                .replace(".", ","); // troca ponto por vírgula
+                        }
+                    }
 
-          if (col.field === "commission_value") {
-            value = String(value).replace("R$", "").replace(".", "").trim();
-          }
+                    if (col.field === "commission_value") {
+                        value = String(value)
+                            .replace("R$", "")
+                            .replace(".", "")
+                            .trim();
+                    }
 
-          return `"${value ?? ""}"`;
-        })
-        .join(";");
-    });
+                    return `"${value ?? ""}"`;
+                })
+                .join(";");
+        });
 
-    const BOM = "\uFEFF";
-    const csvContent = [headers, ...rows].join("\n");
-    const blob = new Blob([BOM + csvContent], {
-      type: "text/csv;charset=utf-8;",
-    });
-    const url = URL.createObjectURL(blob);
+        const BOM = "\uFEFF";
+        const csvContent = [headers, ...rows].join("\n");
+        const blob = new Blob([BOM + csvContent], {
+            type: "text/csv;charset=utf-8;",
+        });
+        const url = URL.createObjectURL(blob);
 
-    const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute("download", "graos-volume-produto.csv");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", "graos-volume-produto.csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
 
-  return (
-    <>
-      <STitle>Grãos Volume - Produto</STitle>
-      <SContainerSearchAndButton>
-        <CustomSearch
-          width="450px"
-          placeholder="Filtre por Data,Sigla,Contrato,Comprador ou Vendedor"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
+    return (
+        <>
+            <STitle>Grãos Volume - Produto</STitle>
+            <SContainerSearchAndButton>
+                <CustomSearch
+                    width="450px"
+                    placeholder="Filtre por Data,Sigla,Contrato,Comprador ou Vendedor"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
 
-        <CustomTooltipLabel title="Filtrar contratos">
-          <IconButton
-            aria-label="filter"
-            onClick={handleSelectionModal}
-            sx={{ color: "#E7B10A" }}
-          >
-            <TbFilter />
-          </IconButton>
-        </CustomTooltipLabel>
+                <CustomTooltipLabel title="Filtrar contratos">
+                    <IconButton
+                        aria-label="filter"
+                        onClick={handleSelectionModal}
+                        sx={{ color: "#E7B10A" }}
+                    >
+                        <TbFilter />
+                    </IconButton>
+                </CustomTooltipLabel>
 
-        <CustomTooltipLabel title="Limpar filtros">
-          <span>
-            <IconButton
-              aria-label="clearfilter"
-              onClick={handleClearFilterModal}
-              sx={{ color: "#E7B10A" }}
-              disabled={isInitialFilter}
-            >
-              <TbFilterOff />
-            </IconButton>
-          </span>
-        </CustomTooltipLabel>
+                <CustomTooltipLabel title="Limpar filtros">
+                    <span>
+                        <IconButton
+                            aria-label="clearfilter"
+                            onClick={handleClearFilterModal}
+                            sx={{ color: "#E7B10A" }}
+                            disabled={isInitialFilter}
+                        >
+                            <TbFilterOff />
+                        </IconButton>
+                    </span>
+                </CustomTooltipLabel>
 
-        <ReportFilter
-          titleText="Grãos Volume"
-          open={isSelectionModal}
-          initialFilters={selectData}
-          onClose={handleCloseModal}
-          onChange={(filters) => setSelectData(filters)}
-          onConfirm={fetchSelectData}
-          visibleFields={["seller", "buyer", "product_types", "date_start", "date_end", "product", "name_product"]}
-        />
+                <ReportFilter
+                    titleText="Grãos Volume"
+                    open={isSelectionModal}
+                    initialFilters={selectData}
+                    onClose={handleCloseModal}
+                    onChange={(filters) => setSelectData(filters)}
+                    onConfirm={fetchSelectData}
+                    visibleFields={[
+                        "seller",
+                        "buyer",
+                        "date_start",
+                        "date_end",
+                        "product",
+                        "name_product",
+                    ]}
+                />
 
-        <CustomButton $variant="success" width="150px" onClick={handlePrint}>
-          Imprimir
-        </CustomButton>
+                <CustomButton
+                    $variant="success"
+                    width="150px"
+                    onClick={handlePrint}
+                >
+                    Imprimir
+                </CustomButton>
 
-        <CustomButton
-          $variant="success"
-          width="150px"
-          onClick={handleExportCSV}
-        >
-          Exportar CSV
-        </CustomButton>
+                <CustomButton
+                    $variant="success"
+                    width="150px"
+                    onClick={handleExportCSV}
+                >
+                    Exportar CSV
+                </CustomButton>
 
-        <CustomTooltipLabel
-          title={
-            useInfiniteScroll
-              ? "Voltar para paginação"
-              : "Ativar scroll infinito"
-          }
-        >
-          <IconButton
-            onClick={() => setUseInfiniteScroll((prev) => !prev)}
-            sx={{ color: "#E7B10A" }}
-          >
-            {!useInfiniteScroll ? <PiScroll /> : <TbInfinity />}
-          </IconButton>
-        </CustomTooltipLabel>
-      </SContainerSearchAndButton>
-      <SContainer>
-        <CustomTable
-          isLoading={isLoading}
-          data={sortedData}
-          columns={nameColumns}
-          hasInfiniteScroll={!useInfiniteScroll}
-          hasPagination={useInfiniteScroll}
-          //maxChars={15}
-          page={page}
-          setPage={setPage}
-          order={order}
-          orderBy={orderBy}
-          setOrder={setOrder}
-          setOrderBy={setOrderBy}
-        />
-      </SContainer>
-    </>
-  );
+                <CustomTooltipLabel
+                    title={
+                        useInfiniteScroll
+                            ? "Voltar para paginação"
+                            : "Ativar scroll infinito"
+                    }
+                >
+                    <IconButton
+                        onClick={() => setUseInfiniteScroll((prev) => !prev)}
+                        sx={{ color: "#E7B10A" }}
+                    >
+                        {!useInfiniteScroll ? <PiScroll /> : <TbInfinity />}
+                    </IconButton>
+                </CustomTooltipLabel>
+            </SContainerSearchAndButton>
+            <SContainer>
+                <CustomTable
+                    isLoading={isLoading}
+                    data={sortedData}
+                    columns={nameColumns}
+                    hasInfiniteScroll={!useInfiniteScroll}
+                    hasPagination={useInfiniteScroll}
+                    //maxChars={15}
+                    page={page}
+                    setPage={setPage}
+                    order={order}
+                    orderBy={orderBy}
+                    setOrder={setOrder}
+                    setOrderBy={setOrderBy}
+                />
+            </SContainer>
+        </>
+    );
 }
