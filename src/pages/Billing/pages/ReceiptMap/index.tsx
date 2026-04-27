@@ -19,6 +19,7 @@ import Tooltip from "@mui/material/Tooltip";
 import IconButton from "@mui/material/IconButton";
 import { TbFilter, TbFilterOff, TbInfinity } from "react-icons/tb";
 import { PiScroll } from "react-icons/pi";
+import { sortTableData } from "../../../../components/CustomTable/helpers";
 
 export function ReceiptMap() {
     const contractContext = ContractContext();
@@ -414,6 +415,7 @@ export function ReceiptMap() {
         return path.split(".").reduce((acc, part) => acc?.[part], obj);
     };
 
+
     const sortedData = useMemo(() => {
         const sorted = [...filteredData].sort((a, b) => {
             const aRaw = getNestedValue(a, orderBy);
@@ -433,6 +435,11 @@ export function ReceiptMap() {
         });
         return sorted;
     }, [filteredData, order, orderBy]);
+
+    const displayedData = useMemo(
+        () => sortTableData(sortedData, orderBy, order),
+        [sortedData, orderBy, order],
+    );
 
     // const sortedData = [...filteredData].sort((a, b) => {
     //     const qA = Number(a.quantity) || 0;
@@ -478,8 +485,8 @@ export function ReceiptMap() {
                 <h6>DE: ${startDateFormatted} ATÉ ${endDateFormatted}</h6>
         `);
 
-        for (let i = 0; i < sortedData.length; i += pageSize) {
-            const pageRows = sortedData.slice(i, i + pageSize);
+        for (let i = 0; i < displayedData.length; i += pageSize) {
+            const pageRows = displayedData.slice(i, i + pageSize);
 
             printWindow.document.write(`<table><thead><tr>`);
             nameColumns.forEach((col) => {
@@ -504,7 +511,7 @@ export function ReceiptMap() {
 
             printWindow.document.write(`</tbody></table>`);
 
-            if (i + pageSize < sortedData.length) {
+            if (i + pageSize < displayedData.length) {
                 printWindow.document.write(`<div class="page-break"></div>`);
             }
         }
@@ -551,7 +558,7 @@ export function ReceiptMap() {
             .join(";");
 
         // Linhas de dados
-        const rows = sortedData.map((row) => {
+        const rows = displayedData.map((row) => {
             return nameColumns
                 .filter((col) => col.field)
                 .map((col) => {
@@ -694,7 +701,7 @@ export function ReceiptMap() {
             <SCustomTableWrapper>
                 <CustomTable
                     isLoading={isLoading}
-                    data={sortedData}
+                    data={displayedData}
                     columns={nameColumns}
                     hasInfiniteScroll={!useInfiniteScroll}
                     hasPagination={useInfiniteScroll}

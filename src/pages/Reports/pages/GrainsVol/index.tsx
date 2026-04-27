@@ -14,6 +14,7 @@ import { PiScroll } from "react-icons/pi";
 import ReportFilter from "../../../../components/ReportFilter";
 import { SelectState } from "../../../../components/ReportFilter/types";
 import CustomTooltipLabel from "../../../../components/CustomTooltipLabel";
+import { sortTableData } from "../../../../components/CustomTable/helpers";
 
 const parseLocaleNumber = (value: number | string | null | undefined) => {
     if (typeof value === "number") {
@@ -169,7 +170,7 @@ export function GrainsVol() {
                     );
 
                     const resp_commission =
-                        contract.commission_seller == 0 ? "C" : "V";
+                        contract.commission_seller == undefined ? "C" : "V";
 
                     const formattedCommission = commissionValue.toLocaleString(
                         "pt-BR",
@@ -517,6 +518,11 @@ export function GrainsVol() {
         return sorted;
     }, [filteredData, order, orderBy]);
 
+    const displayedData = useMemo(
+        () => sortTableData(sortedData, orderBy, order),
+        [sortedData, orderBy, order],
+    );
+
     const handlePrint = (): void => {
         const printWindow = window.open("", "_blank");
         if (!printWindow) return;
@@ -541,8 +547,8 @@ export function GrainsVol() {
                 <h4>Grãos Volume - Produto</h4>
         `);
 
-        for (let i = 0; i < sortedData.length; i += pageSize) {
-            const pageRows = sortedData.slice(i, i + pageSize);
+        for (let i = 0; i < displayedData.length; i += pageSize) {
+            const pageRows = displayedData.slice(i, i + pageSize);
 
             printWindow.document.write(`<table><thead><tr>`);
             nameColumns.forEach((col) => {
@@ -567,7 +573,7 @@ export function GrainsVol() {
 
             printWindow.document.write(`</tbody></table>`);
 
-            if (i + pageSize < sortedData.length) {
+            if (i + pageSize < displayedData.length) {
                 printWindow.document.write(`<div class="page-break"></div>`);
             }
         }
@@ -588,7 +594,7 @@ export function GrainsVol() {
             .map((col) => `"${col.header}"`)
             .join(";");
 
-        const rows = sortedData.map((row) => {
+        const rows = displayedData.map((row) => {
             return nameColumns
                 .filter((col) => col.field)
                 .map((col) => {
@@ -728,7 +734,7 @@ export function GrainsVol() {
             <SContainer>
                 <CustomTable
                     isLoading={isLoading}
-                    data={sortedData}
+                    data={displayedData}
                     columns={nameColumns}
                     hasInfiniteScroll={!useInfiniteScroll}
                     hasPagination={useInfiniteScroll}
