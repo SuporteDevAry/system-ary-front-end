@@ -25,10 +25,8 @@ import Loading from "../Loading";
 import { insertMaskInTelefone } from "../../helpers/front-end/insertMaskInFone";
 import { insertMaskInCelular } from "../../helpers/front-end/insertMaskInCelular";
 import {
-  compareValues,
-  extractNumberFromContract,
   getNestedValue,
-  parseBrazilianDate,
+  sortTableData,
 } from "./helpers";
 import { CustomTruncateText } from "../CustomTruncateText";
 import useTableSearch from "../../hooks/useTableSearch";
@@ -287,25 +285,7 @@ const CustomTable: React.FC<ICustomTableProps> = ({
 
   // Onde fazemos o sort nos dados da tabela
   const sortedData = useMemo(() => {
-    return filteredData.slice().sort((a, b) => {
-      const aValue = getNestedValue(a, orderBy);
-      const bValue = getNestedValue(b, orderBy);
-
-      if (orderBy === "contract_emission_date") {
-        const aDate = parseBrazilianDate(aValue);
-        const bDate = parseBrazilianDate(bValue);
-
-        return order === "asc" ? aDate - bDate : bDate - aDate;
-      }
-
-      if (orderBy === "number_contract") {
-        const aContractNumber = extractNumberFromContract(aValue);
-        const bContractNumber = extractNumberFromContract(bValue);
-        return compareValues(aContractNumber, bContractNumber, order);
-      }
-
-      return compareValues(aValue, bValue, order);
-    });
+    return sortTableData(filteredData, orderBy, order);
   }, [filteredData, order, orderBy]);
 
   // TODO []: SERÁ REMOVIDO POR SUPORTE
