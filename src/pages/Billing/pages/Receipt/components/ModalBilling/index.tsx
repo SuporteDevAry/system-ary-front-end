@@ -6,6 +6,8 @@ import CustomDatePicker from "../../../../../../components/CustomDatePicker";
 import dayjs from "dayjs";
 import { IModalBillingProps } from "./types";
 import { formatCurrency } from "../../../../../../helpers/currencyFormat";
+import { InvoiceContext } from "../../../../../../contexts/InvoiceContext";
+import { toast } from "react-toastify";
 
 export function ModalBilling({
     open,
@@ -16,6 +18,7 @@ export function ModalBilling({
     formData,
     setFormData,
 }: IModalBillingProps) {
+    const invoiceContext = InvoiceContext();
     const currentDate = dayjs().format("DD/MM/YYYY");
 
     const [currencyExpectsCents, setCurrencyExpectsCents] = useState<
@@ -145,6 +148,48 @@ export function ModalBilling({
             ...prevData,
             receipt_date: newDate,
         }));
+    };
+
+    const handleRpsBlur = async (e: React.FocusEvent<HTMLInputElement>) => {
+        const rpsNumber = String(e.target.value || "").trim();
+
+        if (!rpsNumber) {
+            return;
+        }
+
+        try {
+            const response = await invoiceContext.getInvoiceByRps(rpsNumber);
+            const invoice = Array.isArray(response?.data)
+                ? response.data[0]
+                : response?.data;
+
+            if (!invoice) {
+                return;
+            }
+
+            setFormData((prevData: any) => ({
+                ...prevData,
+                rps_number: invoice.rps_number ?? prevData.rps_number,
+                nfs_number: invoice.nfs_number ?? "",
+                total_service_value: Number(invoice.service_value ?? 0),
+                irrf_value: Number(invoice.irrf_value ?? 0),
+                adjustment_value: Number(invoice.value_adjust1 ?? 0),
+                liquid_value: Number(invoice.service_liquid_value ?? 0),
+            }));
+
+            setEditingValues((prev) => {
+                const copy = { ...prev };
+                delete copy.total_service_value;
+                delete copy.irrf_value;
+                delete copy.adjustment_value;
+                delete copy.liquid_value;
+                return copy;
+            });
+        } catch (error) {
+            const errorMessage =
+                error instanceof Error ? error.message : String(error);
+            toast.error(`Erro ao buscar RPS ${rpsNumber}: ${errorMessage}`);
+        }
     };
 
     // initialFormData com números
@@ -307,6 +352,7 @@ export function ModalBilling({
                     label="RPS:"
                     $labelPosition="top"
                     onChange={handleChange}
+                    onBlur={handleRpsBlur}
                     value={formData?.rps_number}
                 />
                 <CustomInput

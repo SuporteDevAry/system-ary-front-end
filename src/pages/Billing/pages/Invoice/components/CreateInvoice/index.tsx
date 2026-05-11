@@ -6,6 +6,9 @@ import { toast } from "react-toastify";
 import { ClienteContext } from "../../../../../../contexts/ClienteContext";
 import { InvoiceContext } from "../../../../../../contexts/InvoiceContext";
 import dayjs from "dayjs";
+import {
+    parseEuropeanDecimal,
+} from "../../../../../../helpers/europeanDecimal";
 
 export function CreateInvoice(): JSX.Element {
     const navigate = useNavigate();
@@ -33,13 +36,13 @@ export function CreateInvoice(): JSX.Element {
         zip_code: "",
         email: "",
         service_discrim: "",
-        service_value: 0,
+        service_value: "0,00",
         name_adjust1: "",
-        value_adjust1: 0,
+        value_adjust1: "0,00",
         name_adjust2: "",
         value_adjust2: 0,
-        irrf_value: 0,
-        service_liquid_value: 0,
+        irrf_value: "0,00",
+        service_liquid_value: "0,00",
         deduction_value: 0,
     });
 
@@ -100,7 +103,7 @@ export function CreateInvoice(): JSX.Element {
 
         // Função para gerar a linha com pontos dinâmicos
         function formatLinha(nome: string, valor: number | string) {
-            const valorStr = Number(valor)
+            const valorStr = parseEuropeanDecimal(valor)
                 .toFixed(2)
                 .padStart(larguraValor, " ");
             const pontosQtd = colunaTotal - nome.length - valorStr.length;
@@ -185,6 +188,12 @@ Depositar no Banco Bradesco S.A. (237)       Ag. 0108-2       C/C. 132.362-8`,
             const newRPS = await invoiceContext.createInvoice({
                 ...formData,
                 service_code: location.state?.selectedContract.number_contract,
+                service_value: parseEuropeanDecimal(formData.service_value),
+                irrf_value: parseEuropeanDecimal(formData.irrf_value),
+                value_adjust1: parseEuropeanDecimal(formData.value_adjust1),
+                service_liquid_value: parseEuropeanDecimal(
+                    formData.service_liquid_value
+                ),
             });
             toast.success(
                 `RPS ${formData.rps_number} foi gravada com sucesso!`

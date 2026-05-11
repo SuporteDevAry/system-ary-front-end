@@ -9,6 +9,18 @@ import { useNavigate } from "react-router-dom";
 import CustomButton from "../CustomButton";
 import { CustomInput } from "../CustomInput";
 import CustomDatePicker from "../CustomDatePicker";
+import {
+    formatEuropeanDecimal,
+    normalizeEuropeanDecimalInput,
+    parseEuropeanDecimal,
+} from "../../helpers/europeanDecimal";
+
+const monetaryFields = new Set([
+    "service_value",
+    "irrf_value",
+    "value_adjust1",
+    "service_liquid_value",
+]);
 
 export function FormularioNF({
     titleText,
@@ -16,22 +28,21 @@ export function FormularioNF({
     onChange,
     onHandleCreate,
     onCheckCNPJ,
+    cpfCnpjAction,
 }: IFormNFProps) {
     const navigate = useNavigate();
     const formData = data;
+
     const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-        // Aqui você deve chamar a função onChange que veio das props
-        // para atualizar o estado no componente pai.
         onChange({
             target: {
-                name: e.target.name, // Garante que o nome do campo seja passado
+                name: e.target.name,
                 value: e.target.value,
             },
-        } as any); // Usando 'as any' para forçar o tipo de evento, como nos outros handlers
+        } as any);
     };
 
     const handleDateChange = (newDate: string) => {
-        // Chamamos a função onChange do pai para atualizar o campo de data.
         onChange({
             target: {
                 name: "rps_emission_date",
@@ -43,41 +54,69 @@ export function FormularioNF({
     const handleChangeValue = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
 
-        // Atualiza normalmente o campo alterado
-        //onChange(e);
+        if (monetaryFields.has(name)) {
+            const normalizedValue = normalizeEuropeanDecimalInput(value);
+
+            onChange({
+                target: {
+                    name,
+                    value: normalizedValue,
+                },
+            } as any);
+
+            if (
+                name === "service_value" ||
+                name === "irrf_value" ||
+                name === "value_adjust1"
+            ) {
+                const service = parseEuropeanDecimal(
+                    name === "service_value"
+                        ? normalizedValue
+                        : formData.service_value
+                );
+                const irrf = parseEuropeanDecimal(
+                    name === "irrf_value" ? normalizedValue : formData.irrf_value
+                );
+                const valueAdjust1 = parseEuropeanDecimal(
+                    name === "value_adjust1"
+                        ? normalizedValue
+                        : formData.value_adjust1
+                );
+
+                onChange({
+                    target: {
+                        name: "service_liquid_value",
+                        value: formatEuropeanDecimal(
+                            service - irrf - valueAdjust1
+                        ),
+                    },
+                } as any);
+            }
+
+            return;
+        }
+
         onChange({
             target: {
-                name: name,
+                name,
                 value: value.toUpperCase(),
             },
         } as any);
+    };
 
-        // Calcula o líquido automaticamente
-        if (
-            name === "service_value" ||
-            name === "irrf_value" ||
-            name === "value_adjust1"
-        ) {
-            const service = Number(
-                name === "service_value" ? value : formData.service_value || 0
-            );
-            const irrf = Number(
-                name === "irrf_value" ? value : formData.irrf_value || 0
-            );
-            const value_adjust1 = Number(
-                name === "value_adjust1" ? value : formData.value_adjust1 || 0
-            );
+    const handleBlurValue = (e: React.FocusEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
 
-            const liquid = (service - irrf - value_adjust1).toFixed(2);
-
-            // Atualiza o valor líquido chamando o mesmo onChange do pai
-            onChange({
-                target: {
-                    name: "service_liquid_value",
-                    value: liquid,
-                },
-            } as any);
+        if (!monetaryFields.has(name)) {
+            return;
         }
+
+        onChange({
+            target: {
+                name,
+                value: formatEuropeanDecimal(value),
+            },
+        } as any);
     };
 
     return (
@@ -87,8 +126,37 @@ export function FormularioNF({
             <div
                 style={{
                     display: "flex",
-                    gap: "5px",
+                    gap: "16px",
                     alignItems: "flex-start",
+                }}
+            >
+                <CustomDatePicker
+                    type="text"
+                    label="Data Emissao:"
+                    $labelPosition="top"
+                    name="rps_emission_date"
+                    width="180px"
+                    value={formData.rps_emission_date}
+                    onChange={handleDateChange}
+                />
+                <CustomInput
+                    name="export_service"
+                    label="Exportação de Serviço"
+                    $labelPosition="top"
+                    radioPosition="only"
+                    radioOptions={[
+                        { label: "Sim", value: "Sim" },
+                        { label: "Não", value: "Não" },
+                    ]}
+                    onRadioChange={onChange}
+                    selectedRadio={formData.export_service || "Não"}
+                />
+            </div>
+            <div
+                style={{
+                    display: "flex",
+                    gap: "5px",
+                    alignItems: "flex-end",
                 }}
             >
                 <CustomInput
@@ -96,20 +164,12 @@ export function FormularioNF({
                     label="CPF/CNPJ Tomador:"
                     $labelPosition="top"
                     name="cpf_cnpj"
-                    width="90%"
+                    width="100%"
                     value={formData.cpf_cnpj}
                     onBlur={onCheckCNPJ}
                     onChange={onChange}
                 />
-                <CustomDatePicker
-                    type="text"
-                    label="Data Emissão:"
-                    $labelPosition="top"
-                    name="rps_emission_date"
-                    width="70%"
-                    value={formData.rps_emission_date}
-                    onChange={handleDateChange}
-                />
+                {cpfCnpjAction}
             </div>
             <div
                 style={{
@@ -120,7 +180,7 @@ export function FormularioNF({
             >
                 <CustomInput
                     type="text"
-                    label="Razão Social:"
+                    label="Razao Social:"
                     $labelPosition="top"
                     name="name"
                     width="100%"
@@ -138,22 +198,22 @@ export function FormularioNF({
                 />
                 <CustomInput
                     type="text"
-                    label="Endereço:"
+                    label="Endereco:"
                     $labelPosition="top"
                     name="address"
                     width="80%"
                     value={formData.address}
                     onChange={handleChangeValue}
-                />{" "}
+                />
                 <CustomInput
                     type="text"
-                    label="Número:"
+                    label="Numero:"
                     $labelPosition="top"
                     name="number"
                     width="20%"
                     value={formData.number}
                     onChange={handleChangeValue}
-                />{" "}
+                />
                 <CustomInput
                     type="text"
                     label="Bairro:"
@@ -162,7 +222,7 @@ export function FormularioNF({
                     width="50%"
                     value={formData.district.toString()}
                     onChange={handleChangeValue}
-                />{" "}
+                />
                 <CustomInput
                     type="text"
                     label="Cidade:"
@@ -171,7 +231,7 @@ export function FormularioNF({
                     width="50%"
                     value={formData.city.toString()}
                     onChange={handleChangeValue}
-                />{" "}
+                />
                 <CustomInput
                     type="text"
                     label="UF:"
@@ -191,31 +251,37 @@ export function FormularioNF({
                 }}
             >
                 <CustomInput
-                    type="number"
-                    label="Valor Serviços:"
+                    type="text"
+                    inputMode="decimal"
+                    label="Valor Servicos:"
                     $labelPosition="top"
                     name="service_value"
                     width="100%"
-                    value={formData.service_value.toString()}
+                    value={String(formData.service_value ?? "")}
                     onChange={handleChangeValue}
+                    onBlur={handleBlurValue}
                 />
                 <CustomInput
-                    type="number"
+                    type="text"
+                    inputMode="decimal"
                     label="Valor I.R.R.F:"
                     $labelPosition="top"
                     name="irrf_value"
                     width="100%"
-                    value={formData.irrf_value.toString()}
+                    value={String(formData.irrf_value ?? "")}
                     onChange={handleChangeValue}
+                    onBlur={handleBlurValue}
                 />
                 <CustomInput
-                    type="number"
-                    label="Valor Líquido:"
+                    type="text"
+                    inputMode="decimal"
+                    label="Valor Liquido:"
                     $labelPosition="top"
                     name="service_liquid_value"
                     width="100%"
-                    value={formData.service_liquid_value.toString()}
+                    value={String(formData.service_liquid_value ?? "")}
                     onChange={onChange}
+                    onBlur={handleBlurValue}
                     readOnly
                 />
             </div>
@@ -228,7 +294,7 @@ export function FormularioNF({
             >
                 <CustomInput
                     type="text"
-                    label="Descrição Ajuste:"
+                    label="Descricao Ajuste:"
                     $labelPosition="top"
                     name="name_adjust1"
                     width="100%"
@@ -236,19 +302,21 @@ export function FormularioNF({
                     onChange={onChange}
                 />
                 <CustomInput
-                    type="number"
+                    type="text"
+                    inputMode="decimal"
                     label="Valor Ajuste:"
                     $labelPosition="top"
                     name="value_adjust1"
                     width="100%"
-                    value={formData.value_adjust1.toString()}
+                    value={String(formData.value_adjust1 ?? "")}
                     onChange={handleChangeValue}
+                    onBlur={handleBlurValue}
                 />
             </div>
             <SCustomTextArea
                 width="100%"
                 height="220px"
-                label="Discriminação dos serviços:"
+                label="Discriminacao dos servicos:"
                 name="service_discrim"
                 value={formData.service_discrim}
                 onChange={handleChange}

@@ -3,200 +3,229 @@ import { SBox, SContainer } from "./styles";
 import { useNavigate, useLocation } from "react-router-dom";
 import { FormularioNF } from "../../../../components/FormularioNF";
 import { toast } from "react-toastify";
-//import { ClienteContext } from "../../../../contexts/ClienteContext";
+import CustomButton from "../../../../components/CustomButton";
+import { ClienteContext } from "../../../../contexts/ClienteContext";
 import { InvoiceContext } from "../../../../contexts/InvoiceContext";
+import { IListCliente } from "../../../../contexts/ClienteContext/types";
 import dayjs from "dayjs";
+import {
+    formatEuropeanDecimal,
+    parseEuropeanDecimal,
+} from "../../../../helpers/europeanDecimal";
+import { ModalClientes } from "../../../Contracts/pages/CreateNewContract/components/Step1/components/ModalClientes";
+import { CustomerInfo } from "../../../../contexts/ContractContext/types";
 
 export function RPS(): JSX.Element {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const invoiceContext = InvoiceContext();
-  const currentDate = dayjs().format("DD/MM/YYYY");
-  const [cnpjContract, setCnpjContract] = useState("");
-  const [cnpjFound, setCnpjFound] = useState<boolean>(false);
-  const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [editingId, setEditingId] = useState<string>("");
+    const navigate = useNavigate();
+    const location = useLocation();
+    const invoiceContext = InvoiceContext();
+    const clienteContext = ClienteContext();
+    const currentDate = dayjs().format("DD/MM/YYYY");
+    const [cnpjContract, setCnpjContract] = useState("");
+    const [cnpjFound, setCnpjFound] = useState<boolean>(false);
+    const [isEditing, setIsEditing] = useState<boolean>(false);
+    const [editingId, setEditingId] = useState<string>("");
+    const [isCustomerModalOpen, setCustomerModalOpen] = useState(false);
+    const [isLoadingCustomers, setIsLoadingCustomers] = useState(false);
+    const [clientes, setClientes] = useState<IListCliente[]>([]);
 
-  const initialformData = {
-    rps_number: "",
-    rps_emission_date: currentDate,
-    nfs_number: "",
-    nfs_emission_date: "",
-    service_code: "",
-    aliquot: 0,
-    cpf_cnpj: "",
-    name: "",
-    address: "",
-    number: "",
-    complement: "",
-    district: "",
-    city: "",
-    state: "",
-    zip_code: "",
-    email: "",
-    service_discrim: "",
-    service_value: 0,
-    name_adjust1: "",
-    value_adjust1: 0,
-    name_adjust2: "",
-    value_adjust2: 0,
-    irrf_value: 0,
-    service_liquid_value: 0,
-    deduction_value: 0,
-  };
+    const initialformData = {
+        rps_number: "",
+        rps_emission_date: currentDate,
+        export_service: "Não",
+        nfs_number: "",
+        nfs_emission_date: "",
+        service_code: "",
+        aliquot: 0,
+        cpf_cnpj: "",
+        name: "",
+        address: "",
+        number: "",
+        complement: "",
+        district: "",
+        city: "",
+        state: "",
+        zip_code: "",
+        email: "",
+        service_discrim: "",
+        service_value: "0,00",
+        name_adjust1: "",
+        value_adjust1: "0,00",
+        name_adjust2: "",
+        value_adjust2: 0,
+        irrf_value: "0,00",
+        service_liquid_value: "0,00",
+        deduction_value: 0,
+    };
 
-  const [formData, setFormData] = useState({
-    rps_number: "",
-    rps_emission_date: currentDate,
-    nfs_number: "",
-    nfs_emission_date: "",
-    service_code: "",
-    aliquot: 0,
-    cpf_cnpj: "",
-    name: "",
-    address: "",
-    number: "",
-    complement: "",
-    district: "",
-    city: "",
-    state: "",
-    zip_code: "",
-    email: "",
-    service_discrim: "",
-    service_value: 0,
-    name_adjust1: "",
-    value_adjust1: 0,
-    name_adjust2: "",
-    value_adjust2: 0,
-    irrf_value: 0,
-    service_liquid_value: 0,
-    deduction_value: 0,
-  });
+    const [formData, setFormData] = useState(initialformData);
 
-  //const clienteContext = ClienteContext();
+    const populateFormData = useCallback(
+        (editingInvoice: any) => {
+            setIsEditing(true);
+            setEditingId(editingInvoice.id);
+            setCnpjFound(true);
 
-  const fetchData = useCallback(async () => {
-    // Verifica se está em modo de edição
-    const editingInvoice = location.state?.editingInvoice;
-
-    if (editingInvoice) {
-      setIsEditing(true);
-      setEditingId(editingInvoice.id);
-      setCnpjFound(true);
-
-      // Preenche o formulário com os dados da RPS
-      setFormData({
-        rps_number: editingInvoice.rps_number || "",
-        rps_emission_date: editingInvoice.rps_emission_date
-          ? dayjs(editingInvoice.rps_emission_date).format("DD/MM/YYYY")
-          : currentDate,
-        nfs_number: editingInvoice.nfs_number || "",
-        nfs_emission_date: editingInvoice.nfs_emission_date
-          ? dayjs(editingInvoice.nfs_emission_date).format("DD/MM/YYYY")
-          : "",
-        service_code: editingInvoice.service_code || "",
-        aliquot: editingInvoice.aliquot || 0,
-        cpf_cnpj: editingInvoice.cpf_cnpj || "",
-        name: editingInvoice.name || "",
-        address: editingInvoice.address || "",
-        number: editingInvoice.number || "",
-        complement: editingInvoice.complement || "",
-        district: editingInvoice.district || "",
-        city: editingInvoice.city || "",
-        state: editingInvoice.state || "",
-        zip_code: editingInvoice.zip_code || "",
-        email: editingInvoice.email || "",
-        service_discrim: editingInvoice.service_discrim || "",
-        service_value: editingInvoice.service_value || 0,
-        name_adjust1: editingInvoice.name_adjust1 || "",
-        value_adjust1: editingInvoice.value_adjust1 || 0,
-        name_adjust2: editingInvoice.name_adjust2 || "",
-        value_adjust2: editingInvoice.value_adjust2 || 0,
-        irrf_value: editingInvoice.irrf_value || 0,
-        service_liquid_value: editingInvoice.service_liquid_value || 0,
-        deduction_value: editingInvoice.deduction_value || 0,
-      });
-      return;
-    }
-
-    const cnpj = "";
-    // const cnpj =
-    //     location.state?.selectedContract.seller.account[0].cnpj_pagto.replace(
-    //         /\.|-|\//g,
-    //         ""
-    //     );
-
-    setCnpjContract(cnpj);
-
-    setFormData((prev) => ({
-      ...prev,
-      cpf_cnpj: cnpj,
-    }));
-
-    const nextNumberRps = await invoiceContext.getNextNumberRps();
-    setFormData((prev) => ({
-      ...prev,
-      rps_number: nextNumberRps.data.nextNumber,
-    }));
-
-    try {
-      //const response = await clienteContext.getClientByCnpj_cpf(cnpj);
-      // if (response.status == "200") {
-      //     setFormData((prev) => ({
-      //         ...prev,
-      //         cpf_cnpj: cnpj,
-      //         name: response.data.name || "",
-      //         address: response.data.address || "",
-      //         number: response.data.number || "",
-      //         district: response.data.district || "",
-      //         city: response.data.city || "",
-      //         state: response.data.state || "",
-      //         zip_code: response.data.zip_code || "",
-      //     }));
-      // }
-    } catch (error) {
-      setCnpjFound(false);
-      setFormData((prev) => ({
-        ...prev,
-        cpf_cnpj: cnpj,
-      }));
-    }
-  }, [cnpjContract, location.state]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  useEffect(() => {
-    const larguraValor = 15; // largura da coluna dos valores
-    const colunaTotal = 40; // posição onde o valor deve começar
-
-    // Função para gerar a linha com pontos dinâmicos
-    function formatLinha(nome: string, valor: number | string) {
-      const valorStr = Number(valor).toFixed(2).padStart(larguraValor, " ");
-      const pontosQtd = colunaTotal - nome.length - valorStr.length;
-      const pontos = ".".repeat(pontosQtd > 0 ? pontosQtd : 0);
-      return `${nome}${pontos} R$ ${valorStr}`;
-    }
-
-    // Linhas principais
-    const linhaTotalServicos = formatLinha(
-      "TOTAL DOS SERVIÇOS",
-      formData.service_value,
-    );
-    const linhaIRRF = formatLinha("(-) I.R.R.F.", formData.irrf_value);
-    const linhaAjuste1 =
-      formData.name_adjust1.length > 0
-        ? formatLinha(formData.name_adjust1, formData.value_adjust1)
-        : "";
-    const linhaTotalPago = formatLinha(
-      "VALOR A SER PAGO",
-      formData.service_liquid_value,
+            setFormData({
+                rps_number: editingInvoice.rps_number || "",
+                rps_emission_date: editingInvoice.rps_emission_date
+                    ? dayjs(editingInvoice.rps_emission_date).format(
+                          "DD/MM/YYYY",
+                      )
+                    : currentDate,
+                export_service: editingInvoice.export_service || "Não",
+                nfs_number: editingInvoice.nfs_number || "",
+                nfs_emission_date: editingInvoice.nfs_emission_date
+                    ? dayjs(editingInvoice.nfs_emission_date).format(
+                          "DD/MM/YYYY",
+                      )
+                    : "",
+                service_code: editingInvoice.service_code || "",
+                aliquot: editingInvoice.aliquot || 0,
+                cpf_cnpj: editingInvoice.cpf_cnpj || "",
+                name: editingInvoice.name || "",
+                address: editingInvoice.address || "",
+                number: editingInvoice.number || "",
+                complement: editingInvoice.complement || "",
+                district: editingInvoice.district || "",
+                city: editingInvoice.city || "",
+                state: editingInvoice.state || "",
+                zip_code: editingInvoice.zip_code || "",
+                email: editingInvoice.email || "",
+                service_discrim: editingInvoice.service_discrim || "",
+                service_value: formatEuropeanDecimal(
+                    editingInvoice.service_value || 0,
+                ),
+                name_adjust1: editingInvoice.name_adjust1 || "",
+                value_adjust1: formatEuropeanDecimal(
+                    editingInvoice.value_adjust1 || 0,
+                ),
+                name_adjust2: editingInvoice.name_adjust2 || "",
+                value_adjust2: editingInvoice.value_adjust2 || 0,
+                irrf_value: formatEuropeanDecimal(
+                    editingInvoice.irrf_value || 0,
+                ),
+                service_liquid_value: formatEuropeanDecimal(
+                    editingInvoice.service_liquid_value || 0,
+                ),
+                deduction_value: editingInvoice.deduction_value || 0,
+            });
+        },
+        [currentDate],
     );
 
-    const contract = "";
-    const dadosContrato = {
-      service_discrim: `Intermediação de Negócios:
+    const fetchCustomers = useCallback(async () => {
+        try {
+            setIsLoadingCustomers(true);
+            const response = await clienteContext.listClientes();
+            setClientes(response.data);
+        } catch (error) {
+            toast.error(
+                `Erro ao tentar ler clientes, contacte o administrador do sistema ${error}`,
+            );
+        } finally {
+            setIsLoadingCustomers(false);
+        }
+    }, [clienteContext]);
+
+    const fetchData = useCallback(async () => {
+        const editingInvoice = location.state?.editingInvoice;
+
+        if (editingInvoice) {
+            try {
+                const response = await invoiceContext.getInvoiceById(
+                    editingInvoice.id,
+                );
+                populateFormData(response.data);
+            } catch {
+                populateFormData(editingInvoice);
+            }
+            return;
+        }
+
+        const cnpj = "";
+
+        setCnpjContract(cnpj);
+        setIsEditing(false);
+        setEditingId("");
+
+        setFormData((prev) => ({
+            ...prev,
+            cpf_cnpj: cnpj,
+        }));
+
+        const nextNumberRps = await invoiceContext.getNextNumberRps();
+        setFormData((prev) => ({
+            ...prev,
+            rps_number: nextNumberRps.data.nextNumber,
+        }));
+
+        try {
+            // const response = await clienteContext.getClientByCnpj_cpf(cnpj);
+            // if (response.status == "200") {
+            //     setFormData((prev) => ({
+            //         ...prev,
+            //         cpf_cnpj: cnpj,
+            //         name: response.data.name || "",
+            //         address: response.data.address || "",
+            //         number: response.data.number || "",
+            //         district: response.data.district || "",
+            //         city: response.data.city || "",
+            //         state: response.data.state || "",
+            //         zip_code: response.data.zip_code || "",
+            //     }));
+            // }
+        } catch (error) {
+            setCnpjFound(false);
+            setFormData((prev) => ({
+                ...prev,
+                cpf_cnpj: cnpj,
+            }));
+        }
+    }, [invoiceContext, location.state, populateFormData]);
+
+    useEffect(() => {
+        fetchData();
+    }, [fetchData]);
+
+    useEffect(() => {
+        fetchCustomers();
+    }, [fetchCustomers]);
+
+    useEffect(() => {
+        if (isEditing) {
+            return;
+        }
+
+        const larguraValor = 15;
+        const colunaTotal = 40;
+
+        function formatLinha(nome: string, valor: number | string) {
+            const valorStr = parseEuropeanDecimal(valor)
+                .toFixed(2)
+                .padStart(larguraValor, " ");
+            const pontosQtd = colunaTotal - nome.length - valorStr.length;
+            const pontos = ".".repeat(pontosQtd > 0 ? pontosQtd : 0);
+            return `${nome}${pontos} R$ ${valorStr}`;
+        }
+
+        const linhaTotalServicos = formatLinha(
+            "TOTAL DOS SERVICOS",
+            formData.service_value,
+        );
+        const linhaIRRF = formatLinha("(-) I.R.R.F.", formData.irrf_value);
+        const linhaAjuste1 =
+            formData.name_adjust1.length > 0
+                ? formatLinha(formData.name_adjust1, formData.value_adjust1)
+                : "";
+        const linhaTotalPago = formatLinha(
+            "VALOR A SER PAGO",
+            formData.service_liquid_value,
+        );
+
+        const contract = "";
+        const dadosContrato = {
+            service_discrim: `Intermediacao de Negocios:
 
 CTR. ${contract}
 
@@ -207,91 +236,172 @@ ${linhaTotalPago}
 
 
 Depositar no Banco Bradesco S.A. (237)       Ag. 0108-2       C/C. 132.362-8`,
+        };
+
+        setFormData((prev) => ({ ...prev, ...dadosContrato }));
+    }, [
+        isEditing,
+        formData.service_value,
+        formData.irrf_value,
+        formData.name_adjust1,
+        formData.value_adjust1,
+        formData.service_liquid_value,
+    ]);
+
+    const checkCNPJ = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (cnpjFound) return;
+
+        const cnpj = e.target.value.replace(/\D/g, "");
+
+        if (cnpj.length > 11) {
+            fetch(`${process.env.REACT_APP_URL_CNPJ}/${cnpj}`)
+                .then((res) => res.json())
+                .then((data) => {
+                    if (data.status === "ERROR") {
+                        toast.error(`${data.message}`);
+                        setFormData({
+                            ...initialformData,
+                            cpf_cnpj: cnpj,
+                        });
+                        return;
+                    }
+                    setFormData((prev) => ({
+                        ...prev,
+                        name: data.nome || "",
+                        address: data.logradouro || "",
+                        number: data.numero || "",
+                        district: data.bairro || "",
+                        city: data.municipio || "",
+                        state: data.uf || "",
+                        zip_code: data.cep || "",
+                    }));
+                });
+        }
     };
 
-    setFormData({ ...formData, ...dadosContrato });
-  }, [
-    formData.service_value,
-    formData.irrf_value,
-    formData.name_adjust1,
-    formData.value_adjust1,
-    formData.service_liquid_value,
-  ]);
+    const handleCreate = async () => {
+        try {
+            if (isEditing) {
+                await invoiceContext.updateInvoice(editingId, {
+                    ...formData,
+                    service_value: parseEuropeanDecimal(formData.service_value),
+                    irrf_value: parseEuropeanDecimal(formData.irrf_value),
+                    value_adjust1: parseEuropeanDecimal(formData.value_adjust1),
+                    service_liquid_value: parseEuropeanDecimal(
+                        formData.service_liquid_value,
+                    ),
+                });
+                toast.success(
+                    `RPS ${formData.rps_number} atualizada com sucesso!`,
+                );
+            } else {
+                await invoiceContext.createInvoice({
+                    ...formData,
+                    service_value: parseEuropeanDecimal(formData.service_value),
+                    irrf_value: parseEuropeanDecimal(formData.irrf_value),
+                    value_adjust1: parseEuropeanDecimal(formData.value_adjust1),
+                    service_liquid_value: parseEuropeanDecimal(
+                        formData.service_liquid_value,
+                    ),
+                });
+                toast.success(
+                    `RPS ${formData.rps_number} foi gravada com sucesso!`,
+                );
+            }
+            navigate("/cobranca/notafiscal");
+        } catch (error: any) {
+            console.error(error);
+            toast.error(
+                `Erro ao ${isEditing ? "atualizar" : "criar"} a RPS: ${
+                    error.message || String(error)
+                }`,
+            );
+        }
+    };
 
-  const checkCNPJ = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (cnpjFound) return;
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        if (name === "cpf_cnpj") {
+            setCnpjFound(false);
+        }
+        setFormData((prevData) => {
+            if (name === "service_value") {
+                const serviceValue = parseEuropeanDecimal(value);
+                const irrfValue = formatEuropeanDecimal(serviceValue * 0.015);
 
-    const cnpj = e.target.value.replace(/\D/g, "");
+                return {
+                    ...prevData,
+                    [name]: value,
+                    irrf_value: irrfValue,
+                };
+            }
 
-    if (cnpj.length > 11) {
-      fetch(`${process.env.REACT_APP_URL_CNPJ}/${cnpj}`)
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.status === "ERROR") {
-            toast.error(`${data.message}`);
-            setFormData({
-              ...initialformData,
-              cpf_cnpj: cnpj,
-            });
-            return;
-          }
-          setFormData((prev) => ({
-            ...prev,
-            name: data.nome || "",
-            address: data.logradouro || "",
-            number: data.numero || "",
-            district: data.bairro || "",
-            city: data.municipio || "",
-            state: data.uf || "",
-            zip_code: data.cep || "",
-          }));
+            return { ...prevData, [name]: value };
         });
-    }
-  };
+    };
 
-  const handleCreate = async () => {
-    try {
-      if (isEditing) {
-        // Atualiza RPS existente
-        await invoiceContext.updateInvoice(editingId, formData);
-        toast.success(`RPS ${formData.rps_number} atualizada com sucesso!`);
-      } else {
-        // Cria nova RPS
-        await invoiceContext.createInvoice({
-          ...formData,
-          //service_code: location.state?.selectedContract.number_contract,
-        });
-        toast.success(`RPS ${formData.rps_number} foi gravada com sucesso!`);
-      }
-      navigate("/cobranca/notafiscal");
-    } catch (error: any) {
-      console.error(error);
-      toast.error(
-        `Erro ao ${isEditing ? "atualizar" : "criar"} a RPS: ${
-          error.message || String(error)
-        }`,
-      );
-    }
-  };
+    const handleOpenCustomerModal = useCallback(() => {
+        setCustomerModalOpen(true);
+    }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prevData) => ({ ...prevData, [name]: value }));
-  };
+    const handleCloseCustomerModal = useCallback(() => {
+        setCustomerModalOpen(false);
+    }, []);
 
-  return (
-    <>
-      <SContainer>
-        <SBox>
-          <FormularioNF
-            titleText={isEditing ? "Editar RPS" : "Cadastro RPS"}
-            data={formData}
-            onHandleCreate={handleCreate}
-            onChange={handleChange}
-            onCheckCNPJ={checkCNPJ}
-          />
-        </SBox>
-      </SContainer>
-    </>
-  );
+    const handleSelectedSeller = useCallback(
+        (
+            selectedCustomerData: CustomerInfo & {
+                type: "buyer" | "seller";
+                zip_code?: string;
+            },
+        ) => {
+            setCnpjFound(true);
+            setFormData((prevData) => ({
+                ...prevData,
+                cpf_cnpj: selectedCustomerData.cnpj_cpf || "",
+                name: selectedCustomerData.name || "",
+                address: selectedCustomerData.address || "",
+                number: selectedCustomerData.number || "",
+                complement: selectedCustomerData.complement || "",
+                district: selectedCustomerData.district || "",
+                city: selectedCustomerData.city || "",
+                state: selectedCustomerData.state || "",
+                zip_code: selectedCustomerData.zip_code || "",
+            }));
+        },
+        [],
+    );
+
+    return (
+        <>
+            <SContainer>
+                <SBox>
+                    <FormularioNF
+                        titleText={isEditing ? "Editar RPS" : "Cadastro RPS"}
+                        data={formData}
+                        onHandleCreate={handleCreate}
+                        onChange={handleChange}
+                        onCheckCNPJ={checkCNPJ}
+                        cpfCnpjAction={
+                            <CustomButton
+                                $variant="success"
+                                width="180px"
+                                onClick={handleOpenCustomerModal}
+                            >
+                                Selecione Tomador
+                            </CustomButton>
+                        }
+                    />
+                </SBox>
+            </SContainer>
+            <ModalClientes
+                open={isCustomerModalOpen}
+                onClose={handleCloseCustomerModal}
+                onConfirm={handleSelectedSeller}
+                data={clientes}
+                loading={isLoadingCustomers}
+                selectionType="seller"
+            />
+        </>
+    );
 }
