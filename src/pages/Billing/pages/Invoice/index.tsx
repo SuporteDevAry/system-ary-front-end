@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { CustomSearch } from "../../../../components/CustomSearch";
@@ -68,6 +68,47 @@ export function Invoice() {
         useState<boolean>(false);
     const [modalContent, setModalContent] = useState<string>("");
     const [invoiceForDelete, setInvoiceForDelete] = useState<IListInvoices>();
+    const ibgeByCepCache = useRef(new Map<string, string>());
+
+    const getInvoiceSelectionKey = useCallback((invoice: IListInvoices) => {
+        return String(invoice.rps_number || invoice.id);
+    }, []);
+
+    const normalizeSelectedInvoices = useCallback(
+        (invoices: IListInvoices[] | null | undefined) => {
+            if (!invoices || invoices.length === 0) return [];
+
+            const uniqueInvoices = new Map<string, IListInvoices>();
+
+            invoices.forEach((invoice) => {
+                uniqueInvoices.set(getInvoiceSelectionKey(invoice), invoice);
+            });
+
+            return Array.from(uniqueInvoices.values());
+        },
+        [getInvoiceSelectionKey],
+    );
+
+    const isAuthorizedForCancel = useCallback((status?: string | null) => {
+        return (
+            String(status || "")
+                .trim()
+                .toUpperCase() === "AUTORIZADA"
+        );
+    }, []);
+
+    const selectedInvoicesForActions = useMemo(
+        () => normalizeSelectedInvoices(selectedInvoice),
+        [normalizeSelectedInvoices, selectedInvoice],
+    );
+
+    const hasAuthorizedSelectedInvoice = useMemo(
+        () =>
+            selectedInvoicesForActions.some((invoice) =>
+                isAuthorizedForCancel(invoice?.status),
+            ),
+        [isAuthorizedForCancel, selectedInvoicesForActions],
+    );
 
     const fetchData = useCallback(async () => {
         setIsLoadingRPS(true);
@@ -96,9 +137,331 @@ export function Invoice() {
         SERIE: "A",
         CODIGO_SERVICO: "06298",
     };
+    const FOREIGN_TOMADOR_IBGE = "9999999";
 
-    const gerarXML = () => {
-        const rpsList = selectedInvoice;
+    const getPrimitiveString = (value: unknown) => {
+        if (typeof value === "string" || typeof value === "number") {
+            const normalized = String(value).trim();
+            return normalized ? normalized : "";
+        }
+
+        return "";
+    };
+
+    const isForeignTomador = (invoice: IListInvoices) => {
+        return getPrimitiveString(invoice.exportacao) === "Sim";
+    };
+
+    const normalizeExportacao = (value?: string | null) => {
+        const normalizedValue = getPrimitiveString(value)
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .toLowerCase();
+
+        if (normalizedValue === "sim") return "Sim";
+        if (normalizedValue === "nao") return "Não";
+
+        return null;
+    };
+
+    const extractIbgeCodeFromResponse = (res: any) => {
+        const rawCode = getPrimitiveString(
+            res?.codigo_ibge ||
+                res?.ibge ||
+                res?.codigo_municipio ||
+                res?.codigo_municipio_ibge ||
+                res?.municipio_ibge ||
+                res?.codigoIBGE ||
+                res?.codigoIbge ||
+                res?.resultado?.codigo_ibge ||
+                res?.resultado?.ibge ||
+                res?.resultado?.codigo_municipio ||
+                res?.resultado?.codigo_municipio_ibge ||
+                res?.resultado?.municipio_ibge ||
+                res?.resultado?.codigoIBGE ||
+                res?.resultado?.codigoIbge ||
+                res?.data?.codigo_ibge ||
+                res?.data?.ibge ||
+                res?.data?.codigo_municipio ||
+                res?.data?.codigo_municipio_ibge ||
+                res?.data?.municipio_ibge ||
+                res?.data?.codigoIBGE ||
+                res?.data?.codigoIbge ||
+                res,
+        );
+
+        const normalized = rawCode.replace(/\D/g, "");
+        return normalized.length === 7 ? normalized : "";
+    };
+
+    const resolveCityIbgeFromCep = useCallback(
+        async (invoice: IListInvoices) => {
+            if (isForeignTomador(invoice)) {
+                return FOREIGN_TOMADOR_IBGE;
+            }
+
+            const cep = getPrimitiveString(invoice.zip_code).replace(/\D/g, "");
+
+            if (!cep) {
+                throw new Error(
+                    `A RPS ${invoice.rps_number} não possui CEP do tomador para consultar o IBGE.`,
+                );
+            }
+
+            const cachedCode = ibgeByCepCache.current.get(cep);
+            if (cachedCode) {
+                return cachedCode;
+            }
+
+            const response = await nfseContext.buscarIbgePorCep(cep);
+            const code = extractIbgeCodeFromResponse(response);
+
+            if (!code) {
+                throw new Error(
+                    `RPS ${invoice.rps_number} - consulta de IBGE pelo CEP ${cep} não retornou código válido.`,
+                );
+            }
+
+            ibgeByCepCache.current.set(cep, code);
+            return code;
+        },
+        [nfseContext],
+    );
+
+    const resolveInvoicesWithIbge = useCallback(
+        async (invoices: IListInvoices[]) => {
+            const resolvedInvoices: IListInvoices[] = [];
+
+            for (const invoice of invoices) {
+                try {
+                    const cityIbge = isForeignTomador(invoice)
+                        ? FOREIGN_TOMADOR_IBGE
+                        : await resolveCityIbgeFromCep(invoice);
+
+                    resolvedInvoices.push({
+                        ...invoice,
+                        city_ibge: cityIbge,
+                    });
+                } catch (error) {
+                    const cep = getPrimitiveString(invoice.zip_code).replace(
+                        /\D/g,
+                        "",
+                    );
+                    const errorMsg =
+                        error instanceof Error
+                            ? error.message
+                            : "Erro desconhecido";
+
+                    throw new Error(
+                        `RPS ${invoice.rps_number}${
+                            cep ? ` - CEP ${cep}` : ""
+                        } - ${errorMsg}`,
+                    );
+                }
+            }
+
+            return resolvedInvoices;
+        },
+        [getPrimitiveString, resolveCityIbgeFromCep],
+    );
+
+    const extractResponseRpsNumber = (item: any) => {
+        return getPrimitiveString(
+            item?.numero_rps ||
+                item?.rps_number ||
+                item?.numeroRps ||
+                item?.rps,
+        );
+    };
+
+    const findResponseItemByRps = (res: any, inv: IListInvoices) => {
+        if (!res) return null;
+
+        const possibleCollections = [
+            res,
+            res?.resultado,
+            res?.resultado?.rps,
+            res?.resultado?.rpss,
+            res?.resultado?.notas,
+            res?.resultado?.lote,
+            res?.resultado?.lote?.rps,
+            res?.data,
+            res?.data?.rps,
+            res?.data?.rpss,
+            res?.data?.notas,
+            res?.data?.lote,
+            res?.lote,
+            res?.lote?.rps,
+        ];
+
+        for (const collection of possibleCollections) {
+            if (!Array.isArray(collection)) continue;
+
+            const found = collection.find(
+                (item: any) =>
+                    extractResponseRpsNumber(item) === String(inv.rps_number),
+            );
+
+            if (found) return found;
+        }
+
+        return null;
+    };
+
+    const findSingleResponseItem = (res: any) => {
+        if (!res) return null;
+
+        const possibleCollections = [
+            res?.resultado?.rps,
+            res?.resultado?.rpss,
+            res?.resultado?.notas,
+            res?.resultado?.lote?.rps,
+            res?.data?.rps,
+            res?.data?.rpss,
+            res?.data?.notas,
+            res?.data?.lote?.rps,
+            res?.lote?.rps,
+        ];
+
+        for (const collection of possibleCollections) {
+            if (Array.isArray(collection) && collection.length === 1) {
+                return collection[0];
+            }
+        }
+
+        return null;
+    };
+
+    const extractProtocolValue = (item: any) => {
+        return getPrimitiveString(
+            item?.protocolo_lote ||
+                item?.numero_lote ||
+                item?.protocolo ||
+                item?.numero_protocolo ||
+                item?.lote?.protocolo_lote ||
+                item?.lote?.numero_lote ||
+                item?.lote?.protocolo ||
+                item?.lote?.numero_protocolo ||
+                item?.lote?.numero ||
+                item?.lote,
+        );
+    };
+
+    const extractBatchProtocol = (res: any, inv: IListInvoices) => {
+        const matchedItem =
+            findResponseItemByRps(res, inv) || findSingleResponseItem(res);
+        const itemProtocol = extractProtocolValue(matchedItem);
+
+        if (itemProtocol) return itemProtocol;
+
+        const topLevelProtocol = extractProtocolValue(res);
+
+        if (topLevelProtocol) return topLevelProtocol;
+
+        const resultProtocol = extractProtocolValue(res?.resultado);
+
+        if (resultProtocol) return resultProtocol;
+
+        return extractProtocolValue(res?.data);
+    };
+
+    const extractInvoiceInfoFromResponse = (res: any, inv: IListInvoices) => {
+        const emptyInfo = {
+            status: null as string | null,
+            url: null as string | null,
+            numero: null as string | null,
+        };
+
+        if (!res) return emptyInfo;
+
+        const found =
+            findResponseItemByRps(res, inv) || findSingleResponseItem(res);
+
+        if (found) {
+            return {
+                status:
+                    found.status || found.Status
+                        ? String(found.status || found.Status)
+                        : null,
+                url:
+                    found.url_danfse ||
+                    found.url ||
+                    found.link ||
+                    found.pdf ||
+                    null,
+                numero:
+                    found.numero_nfse || found.numero
+                        ? String(found.numero_nfse || found.numero)
+                        : null,
+            };
+        }
+
+        if (typeof res === "object") {
+            if (res.status || res.Status) {
+                return {
+                    status: String(res.status || res.Status),
+                    url: res.url_danfse || res.url || null,
+                    numero:
+                        res.numero_nfse || res.numero
+                            ? String(res.numero_nfse || res.numero)
+                            : null,
+                };
+            }
+
+            if (
+                res.resultado &&
+                (res.resultado.status || res.resultado.Status)
+            ) {
+                return {
+                    status: String(
+                        res.resultado.status || res.resultado.Status,
+                    ),
+                    url: res.resultado.url_danfse || res.resultado.url || null,
+                    numero:
+                        res.resultado.numero_nfse || res.resultado.numero
+                            ? String(
+                                  res.resultado.numero_nfse ||
+                                      res.resultado.numero,
+                              )
+                            : null,
+                };
+            }
+        }
+
+        return emptyInfo;
+    };
+
+    const normalizeInvoiceStatus = (
+        remoteStatus: string | null,
+        remoteUrl: string | null,
+    ) => {
+        const normalizedRemoteStatus = String(remoteStatus || "").trim();
+
+        if (/erro/i.test(normalizedRemoteStatus)) {
+            return "erro_autorizacao";
+        }
+        if (/processando/i.test(normalizedRemoteStatus)) {
+            return "processando_autorizacao";
+        }
+        if (/cancelad/i.test(normalizedRemoteStatus)) {
+            return "cancelada";
+        }
+        if (/autoriz/i.test(normalizedRemoteStatus)) {
+            return remoteUrl ? "autorizada" : "processando_autorizacao";
+        }
+
+        return remoteStatus ?? "processando_autorizacao";
+    };
+
+    const isAuthorizedStatus = (status: string | null) => {
+        const normalizedStatus = String(status || "").trim();
+        return ["AUTORIZADA", "AUTORIZADO"].includes(
+            normalizedStatus.toUpperCase(),
+        );
+    };
+
+    const gerarXML = (rpsListParam?: IListInvoices[]) => {
+        const rpsList = rpsListParam ?? selectedInvoice;
 
         if (!rpsList || rpsList.length === 0) {
             throw new Error("Nenhuma RPS selecionada");
@@ -122,7 +485,7 @@ export function Invoice() {
         // ✅ IMPORTANTE: Cabecalho COM xmlns="" - Versao="2" (Reforma Tributária 2026)
         xml += `<Cabecalho Versao="2" xmlns="">`;
         xml += `<CPFCNPJRemetente><CNPJ>${PRESTADOR.CNPJ}</CNPJ></CPFCNPJRemetente>`;
-        xml += `<transacao>false</transacao>`;
+        xml += `<transacao>true</transacao>`;
         xml += `<dtInicio>${dataInicio}</dtInicio>`;
         xml += `<dtFim>${dataFim}</dtFim>`;
         xml += `<QtdRPS>${rpsList.length}</QtdRPS>`;
@@ -135,6 +498,14 @@ export function Invoice() {
         xml += `</Cabecalho>`;
 
         rpsList.forEach((rps) => {
+            const exportacao = normalizeExportacao(rps.exportacao);
+
+            if (!exportacao) {
+                throw new Error(
+                    `A RPS ${rps.rps_number} está sem o campo exportação preenchido corretamente.`,
+                );
+            }
+
             const discriminacao = escapeXml(
                 rps.service_discrim
                     .replace(/(\r\n|\n|\r)/g, "|")
@@ -157,13 +528,20 @@ export function Invoice() {
             ).toFixed(2);
             const valorIPI = Number(rps.valor_ipi || 0).toFixed(2);
             const exigibilidadeSuspensa = rps.exigibilidade_suspensa || 0;
-            const pagamentoParceladoAntecipado =
-                rps.pagamento_parcelado_antecipado || 0;
+            //const pagamentoParceladoAntecipado =
+            //     rps.pagamento_parcelado_antecipado || 0;
             const nbs = rps.nbs || "102010000";
-            const cLocPrestacao = rps.city_ibge || PRESTADOR.MUNICIPIO;
+            const codCidadeIBGE = getPrimitiveString(rps.city_ibge);
+
+            if (!codCidadeIBGE) {
+                throw new Error(
+                    `A RPS ${rps.rps_number} não possui código IBGE do tomador.`,
+                );
+            }
+
+            const cLocPrestacao = codCidadeIBGE;
             const tipoLogradouro = rps.tipo_logradouro || "ROD";
             const codServico = PRESTADOR.CODIGO_SERVICO;
-            const codCidadeIBGE = rps.city_ibge || PRESTADOR.MUNICIPIO;
             const cpfCnpjLimpo = cleanData(rps.cpf_cnpj);
             const dataBanco = rps.rps_emission_date;
             const dataIso = dataBanco.split("/").reverse().join("-");
@@ -180,7 +558,7 @@ export function Invoice() {
             xml += `<TipoRPS>RPS</TipoRPS>`;
             xml += `<DataEmissao>${dayjs(dataIso).format("YYYY-MM-DD")}</DataEmissao>`;
             xml += `<StatusRPS>N</StatusRPS>`;
-            xml += `<TributacaoRPS>T</TributacaoRPS>`;
+            xml += `<TributacaoRPS>${exportacao === "Sim" ? "P" : "T"}</TributacaoRPS>`;
             xml += `<ValorDeducoes>${valorDeducoes}</ValorDeducoes>`;
             xml += `<ValorPIS>${valorPIS}</ValorPIS>`;
             xml += `<ValorCOFINS>${valorCOFINS}</ValorCOFINS>`;
@@ -211,7 +589,7 @@ export function Invoice() {
             xml += `<ValorFinalCobrado>${valorFinalCobrado}</ValorFinalCobrado>`;
             xml += `<ValorIPI>${valorIPI}</ValorIPI>`;
             xml += `<ExigibilidadeSuspensa>${exigibilidadeSuspensa}</ExigibilidadeSuspensa>`;
-            xml += `<PagamentoParceladoAntecipado>${pagamentoParceladoAntecipado}</PagamentoParceladoAntecipado>`;
+            //xml += `<PagamentoParceladoAntecipado>${pagamentoParceladoAntecipado}</PagamentoParceladoAntecipado>`;
             xml += `<NBS>${nbs}</NBS>`;
             xml += `<cLocPrestacao>${cLocPrestacao}</cLocPrestacao>`;
             xml += `<IBSCBS>`;
@@ -237,38 +615,123 @@ export function Invoice() {
         return xml;
     };
 
+    const handleCancelNFSe = async () => {
+        const invoicesToIssue = selectedInvoicesForActions;
+        const selectedInvoiceToCancel = invoicesToIssue[0];
+
+        if (invoicesToIssue.length === 0) {
+            toast.error("Nenhuma NFSe selecionada para cancelamento.");
+            return;
+        }
+
+        if (invoicesToIssue.length > 1) {
+            toast.error("Selecione apenas uma NFSe para cancelamento.");
+            return;
+        }
+
+        if (!isAuthorizedForCancel(selectedInvoiceToCancel?.status)) {
+            toast.error(
+                "A NFSe s� pode ser cancelada quando o registro estiver com status AUTORIZADA.",
+            );
+            return;
+        }
+
+        const protocoloLote = selectedInvoiceToCancel?.protocolo_lote;
+
+        if (!protocoloLote) {
+            toast.error(
+                "A NFSe selecionada n�o possui protocolo para cancelamento.",
+            );
+            return;
+        }
+
+        try {
+            setIsLoadingRPS(true);
+            const response = await nfseContext.cancelarNFSe(protocoloLote);
+
+            setListInvoices((prev) =>
+                prev.map((invoice) =>
+                    invoice.id === selectedInvoiceToCancel.id
+                        ? {
+                              ...invoice,
+                              status: "cancelada",
+                          }
+                        : invoice,
+                ),
+            );
+
+            setSelectedInvoice(
+                (prev) =>
+                    prev?.map((invoice) =>
+                        invoice.id === selectedInvoiceToCancel.id
+                            ? {
+                                  ...invoice,
+                                  status: "cancelada",
+                              }
+                            : invoice,
+                    ) ?? null,
+            );
+
+            toast.success(
+                response?.message ||
+                    `NFSe vinculada ao protocolo ${protocoloLote} cancelada com sucesso.`,
+            );
+            await fetchData();
+        } catch (error: any) {
+            const errorMsg =
+                error?.response?.data?.message ||
+                error?.response?.data?.error ||
+                error?.message ||
+                "Não foi possível cancelar a NFSe.";
+            toast.error(`Erro ao cancelar NFSe: ${errorMsg}`);
+        } finally {
+            setIsLoadingRPS(false);
+        }
+    };
+
     // ===================================
     // SALVAR XML EM ARQUIVO PARA DOWNLOAD
     // ===================================
-    const handleGeraNF_XML = () => {
-        if (!selectedInvoice || selectedInvoice.length === 0) {
+    const handleGeraNF_XML = async () => {
+        const invoicesToIssue = normalizeSelectedInvoices(selectedInvoice);
+
+        if (invoicesToIssue.length === 0) {
             toast.error("Nenhuma RPS encontrada para gerar XML.");
             return;
         }
 
         // Validações básicas antes de gerar XML
-        const invalidRPS = selectedInvoice.find((rps) => {
-            // Permite ausência de cpf_cnpj se for estrangeiro (UF EX ou país informado)
-            const isEstrangeiro =
-                (rps.state && rps.state.toUpperCase() === "EX") ||
-                rps.country ||
-                rps.codigo_pais;
+        const invalidRPS = invoicesToIssue.find((rps) => {
+            // Permite ausência de cpf_cnpj se for estrangeiro (exportacao = Sim)
+            const isEstrangeiro = getPrimitiveString(rps.exportacao) === "Sim";
             return (
                 !rps.rps_number ||
                 !rps.service_value ||
                 !rps.name ||
+                !normalizeExportacao(rps.exportacao) ||
                 (!rps.cpf_cnpj && !isEstrangeiro)
             );
         });
 
         if (invalidRPS) {
             toast.error(
-                "Existem RPSs com dados obrigatórios faltando. Verifique os dados.",
+                "Existem RPSs com dados obrigatórios faltando ou com exportação inválida. Verifique os dados.",
             );
             return;
         }
 
-        const xml = gerarXML();
+        let invoicesWithIbge: IListInvoices[];
+
+        try {
+            invoicesWithIbge = await resolveInvoicesWithIbge(invoicesToIssue);
+        } catch (error) {
+            const errorMsg =
+                error instanceof Error ? error.message : "Erro desconhecido";
+            toast.error(`Erro ao obter IBGE pelo CEP: ${errorMsg}`);
+            return;
+        }
+
+        const xml = gerarXML(invoicesWithIbge);
 
         const blob = new Blob([xml], { type: "application/xml;charset=utf-8" });
         const url = URL.createObjectURL(blob);
@@ -286,8 +749,9 @@ export function Invoice() {
 
     // dentro do seu componente React (Invoice)
     const handleIssueFull = async () => {
+        const invoicesToIssue = normalizeSelectedInvoices(selectedInvoice);
         // Verifica se há dados para enviar
-        if (!selectedInvoice || selectedInvoice.length === 0) {
+        if (invoicesToIssue.length === 0) {
             toast.error(
                 "Por favor, selecione ao menos uma RPS na lista para enviar.",
             );
@@ -295,12 +759,9 @@ export function Invoice() {
         }
 
         // Validações básicas antes de enviar
-        const invalidRPS = selectedInvoice.find((rps) => {
-            // Permite ausência de cpf_cnpj se for estrangeiro (UF EX ou país informado)
-            const isEstrangeiro =
-                (rps.state && rps.state.toUpperCase() === "EX") ||
-                rps.country ||
-                rps.codigo_pais;
+        const invalidRPS = invoicesToIssue.find((rps) => {
+            // Permite ausência de cpf_cnpj se for estrangeiro (exportacao = Sim)
+            const isEstrangeiro = getPrimitiveString(rps.exportacao) === "Sim";
             return (
                 !rps.rps_number ||
                 !rps.service_value ||
@@ -311,22 +772,108 @@ export function Invoice() {
 
         if (invalidRPS) {
             toast.error(
-                "Existem RPSs com dados obrigatórios faltando. Verifique os dados antes de enviar.",
+                "Existem RPSs com dados obrigatórios faltando ou com exportação inválida. Verifique os dados antes de enviar.",
             );
             return;
         }
 
-        const xml = gerarXML();
-
         try {
             setIsLoadingRPS(true);
-            const result = await nfseContext.enviarLote({ xml });
+            const updatedInvoices: IListInvoices[] = [];
+            const failedInvoices: string[] = [];
+            const processedProtocols = new Set<string>();
+            const invoicesWithIbge =
+                await resolveInvoicesWithIbge(invoicesToIssue);
 
-            toast.success(
-                `${result.protocolo ? `${result.protocolo}` : ""} enviado com sucesso`,
+            for (const invoice of invoicesWithIbge) {
+                try {
+                    const xml = gerarXML([invoice]);
+                    const result = await nfseContext.enviarLote({ xml });
+                    const protocoloLote = extractBatchProtocol(result, invoice);
+
+                    if (!protocoloLote) {
+                        throw new Error(
+                            "A API não retornou um número de lote para esta RPS.",
+                        );
+                    }
+
+                    if (processedProtocols.has(protocoloLote)) {
+                        throw new Error(
+                            `O lote ${protocoloLote} já, foi usado neste envio para outra RPS.`,
+                        );
+                    }
+
+                    processedProtocols.add(protocoloLote);
+                    const info = extractInvoiceInfoFromResponse(
+                        result,
+                        invoice,
+                    );
+                    const status = normalizeInvoiceStatus(
+                        info.status,
+                        info.url,
+                    );
+
+                    const updatedInvoice = {
+                        ...invoice,
+                        protocolo_lote: protocoloLote,
+                        status,
+                        url_danfse: info.url ?? invoice.url_danfse,
+                        nfs_number:
+                            isAuthorizedStatus(info.status) && info.numero
+                                ? info.numero
+                                : invoice.nfs_number,
+                    };
+
+                    const fullInvoice = await invoiceContext.getInvoiceById(
+                        invoice.id,
+                    );
+
+                    await invoiceContext.updateInvoice(invoice.id, {
+                        ...fullInvoice.data,
+                        city_ibge: invoice.city_ibge,
+                        protocolo_lote: updatedInvoice.protocolo_lote,
+                        status: updatedInvoice.status,
+                        url_danfse: updatedInvoice.url_danfse,
+                        nfs_number: updatedInvoice.nfs_number,
+                    });
+
+                    updatedInvoices.push(updatedInvoice);
+                } catch (error) {
+                    failedInvoices.push(String(invoice.rps_number));
+                    const errorMsg =
+                        error instanceof Error
+                            ? error.message
+                            : "Erro desconhecido";
+                    toast.error(
+                        `Erro ao enviar a RPS ${invoice.rps_number}: ${errorMsg}`,
+                    );
+                }
+            }
+
+            setSelectedInvoice(updatedInvoices);
+            setListInvoices((prev) =>
+                prev.map((currentInvoice) => {
+                    const updatedInvoice = updatedInvoices.find(
+                        (invoice) => invoice.id === currentInvoice.id,
+                    );
+
+                    return updatedInvoice ?? currentInvoice;
+                }),
             );
 
-            // Atualiza a lista de RPS para refletir status/protocolo
+            if (updatedInvoices.length > 0) {
+                toast.success(
+                    `${updatedInvoices.length} de ${invoicesToIssue.length} RPS enviadas com sucesso.`,
+                );
+            }
+
+            if (failedInvoices.length > 0) {
+                toast.warning(
+                    `Falha ao gerar NFSe para as RPS: ${failedInvoices.join(", ")}`,
+                );
+            }
+
+            // Recarrega para refletir qualquer dado complementar processado no back-end.
             await fetchData();
         } catch (err) {
             const errorMsg =
@@ -434,58 +981,6 @@ export function Invoice() {
             });
         };
 
-        const extractInfo = (res: any, inv: IListInvoices) => {
-            if (!res)
-                return {
-                    status: null as string | null,
-                    url: null as string | null,
-                    numero: null as string | null,
-                };
-            if (Array.isArray(res)) {
-                const found = res.find(
-                    (it: any) =>
-                        String(it.numero_rps || it.numero || "") ===
-                        String(inv.rps_number),
-                );
-                if (found) {
-                    return {
-                        status:
-                            found.status || found.Status
-                                ? String(found.status || found.Status)
-                                : null,
-                        url: found.url_danfse || found.url || null,
-                        numero: found.numero ? String(found.numero) : null,
-                    };
-                }
-                return { status: null, url: null, numero: null };
-            }
-            if (typeof res === "object") {
-                if (res.status || res.Status)
-                    return {
-                        status: String(res.status || res.Status),
-                        url: res.url_danfse || res.url || null,
-                        numero: res.numero ? String(res.numero) : null,
-                    };
-                if (
-                    res.resultado &&
-                    (res.resultado.status || res.resultado.Status)
-                )
-                    return {
-                        status: String(
-                            res.resultado.status || res.resultado.Status,
-                        ),
-                        url:
-                            res.resultado.url_danfse ||
-                            res.resultado.url ||
-                            null,
-                        numero: res.resultado.numero
-                            ? String(res.resultado.numero)
-                            : null,
-                    };
-            }
-            return { status: null, url: null, numero: null };
-        };
-
         const extractAuthorizationErrorMessage = (res: any) => {
             const status = res?.resultado?.status || res?.resultado?.Status;
             const firstErrorMessage = res?.resultado?.erros?.[0]?.mensagem;
@@ -496,40 +991,9 @@ export function Invoice() {
 
             return null;
         };
-
-        const normalizeInvoiceStatus = (
-            remoteStatus: string | null,
-            remoteUrl: string | null,
-        ) => {
-            const normalizedRemoteStatus = String(remoteStatus || "").trim();
-
-            if (/erro/i.test(normalizedRemoteStatus)) {
-                return "erro_autorizacao";
-            }
-            if (/processando/i.test(normalizedRemoteStatus)) {
-                return "processando_autorizacao";
-            }
-            if (/cancelad/i.test(normalizedRemoteStatus)) {
-                return "cancelada";
-            }
-            if (/autoriz/i.test(normalizedRemoteStatus)) {
-                return remoteUrl ? "autorizada" : "processando_autorizacao";
-            }
-
-            return remoteStatus ?? "processando_autorizacao";
-        };
-
-        const isAuthorizedStatus = (status: string | null) => {
-            const normalizedStatus = String(status || "").trim();
-            return (
-                /autoriz/i.test(normalizedStatus) &&
-                !/erro/i.test(normalizedStatus)
-            );
-        };
-
         try {
             const result: any = await tryConsultar(protocolo_lote);
-            const info = extractInfo(result, invoice);
+            const info = extractInvoiceInfoFromResponse(result, invoice);
             const authorizationErrorMessage =
                 extractAuthorizationErrorMessage(result);
             const remoteStatus = info.status;
@@ -577,7 +1041,10 @@ export function Invoice() {
                     : `LOTE-${protocolo_lote}`;
                 try {
                     const result2: any = await tryConsultar(alternative);
-                    const info2 = extractInfo(result2, invoice);
+                    const info2 = extractInvoiceInfoFromResponse(
+                        result2,
+                        invoice,
+                    );
                     const authorizationErrorMessage2 =
                         extractAuthorizationErrorMessage(result2);
                     const remoteStatus2 = info2.status;
@@ -736,6 +1203,7 @@ export function Invoice() {
                     $variant={"success"}
                     width="80px"
                     onClick={() => handleResult(row)}
+                    disabled={isAuthorizedStatus(row?.status)}
                 >
                     Atualizar
                 </CustomButton>
@@ -778,16 +1246,26 @@ export function Invoice() {
                         disabled={
                             isLoadingRPS ||
                             !selectedInvoice ||
-                            selectedInvoice.length === 0
+                            selectedInvoice.length === 0 ||
+                            hasAuthorizedSelectedInvoice
                         }
                     >
                         {isLoadingRPS ? "Enviando..." : "Emitir NFSe"}
+                    </CustomButton>
+                    <CustomButton
+                        $variant="success"
+                        width="220px"
+                        onClick={handleCancelNFSe}
+                        disabled={true}
+                    >
+                        Cancelar NFSe
                     </CustomButton>
 
                     <CustomButton
                         $variant="success"
                         width="220px"
                         onClick={handleGeraNF_XML}
+                        disabled={selectedInvoicesForActions.length !== 1}
                     >
                         Gerar Arquivo XML
                     </CustomButton>
@@ -813,8 +1291,11 @@ export function Invoice() {
                         hasPagination={true}
                         actionButtons={renderActionButtons}
                         onSelectionChange={(selectedRows) => {
-                            if (selectedRows.length > 0) {
-                                setSelectedInvoice(selectedRows);
+                            const normalizedRows =
+                                normalizeSelectedInvoices(selectedRows);
+
+                            if (normalizedRows.length > 0) {
+                                setSelectedInvoice(normalizedRows);
                             } else {
                                 setSelectedInvoice(null);
                             }

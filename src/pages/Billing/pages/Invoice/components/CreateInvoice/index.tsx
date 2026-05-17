@@ -6,9 +6,7 @@ import { toast } from "react-toastify";
 import { ClienteContext } from "../../../../../../contexts/ClienteContext";
 import { InvoiceContext } from "../../../../../../contexts/InvoiceContext";
 import dayjs from "dayjs";
-import {
-    parseEuropeanDecimal,
-} from "../../../../../../helpers/europeanDecimal";
+import { parseEuropeanDecimal } from "../../../../../../helpers/europeanDecimal";
 
 export function CreateInvoice(): JSX.Element {
     const navigate = useNavigate();
@@ -20,6 +18,7 @@ export function CreateInvoice(): JSX.Element {
 
     const [formData, setFormData] = useState({
         rps_number: "",
+        exportacao: "Não",
         rps_emission_date: currentDate,
         nfs_number: "",
         nfs_emission_date: "",
@@ -52,7 +51,7 @@ export function CreateInvoice(): JSX.Element {
         const cnpj =
             location.state?.selectedContract.seller.account[0].cnpj_pagto.replace(
                 /\.|-|\//g,
-                ""
+                "",
             );
 
         setCnpjContract(cnpj);
@@ -114,7 +113,7 @@ export function CreateInvoice(): JSX.Element {
         // Linhas principais
         const linhaTotalServicos = formatLinha(
             "TOTAL DOS SERVIÇOS",
-            formData.service_value
+            formData.service_value,
         );
         const linhaIRRF = formatLinha("(-) I.R.R.F.", formData.irrf_value);
         const linhaAjuste1 =
@@ -123,7 +122,7 @@ export function CreateInvoice(): JSX.Element {
                 : "";
         const linhaTotalPago = formatLinha(
             "VALOR A SER PAGO",
-            formData.service_liquid_value
+            formData.service_liquid_value,
         );
 
         const nickSeller = location.state?.selectedContract.seller.nickname
@@ -146,7 +145,9 @@ ${linhaAjuste1}
 ${linhaTotalPago}
 
 
-Depositar no Banco Bradesco S.A. (237)       Ag. 0108-2       C/C. 132.362-8`,
+*** Depositar no Banco Bradesco S.A. (237)   Ag. 0108-2   C/C: 132.362-8
+
+*** Chave PIX: 43.025.030/0001-65`,
         };
 
         setFormData({ ...formData, ...dadosContrato });
@@ -192,18 +193,18 @@ Depositar no Banco Bradesco S.A. (237)       Ag. 0108-2       C/C. 132.362-8`,
                 irrf_value: parseEuropeanDecimal(formData.irrf_value),
                 value_adjust1: parseEuropeanDecimal(formData.value_adjust1),
                 service_liquid_value: parseEuropeanDecimal(
-                    formData.service_liquid_value
+                    formData.service_liquid_value,
                 ),
             });
             toast.success(
-                `RPS ${formData.rps_number} foi gravada com sucesso!`
+                `RPS ${formData.rps_number} foi gravada com sucesso!`,
             );
             navigate("/cobranca/notafiscal");
             return newRPS;
         } catch (error: any) {
             console.error(error);
             toast.error(
-                `Erro ao tentar criar a RPS: ${error.message || String(error)}`
+                `Erro ao tentar criar a RPS: ${error.message || String(error)}`,
             );
         }
     };

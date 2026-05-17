@@ -72,22 +72,24 @@ export function FormularioNF({
                 const service = parseEuropeanDecimal(
                     name === "service_value"
                         ? normalizedValue
-                        : formData.service_value
+                        : formData.service_value,
                 );
                 const irrf = parseEuropeanDecimal(
-                    name === "irrf_value" ? normalizedValue : formData.irrf_value
+                    name === "irrf_value"
+                        ? normalizedValue
+                        : formData.irrf_value,
                 );
                 const valueAdjust1 = parseEuropeanDecimal(
                     name === "value_adjust1"
                         ? normalizedValue
-                        : formData.value_adjust1
+                        : formData.value_adjust1,
                 );
 
                 onChange({
                     target: {
                         name: "service_liquid_value",
                         value: formatEuropeanDecimal(
-                            service - irrf - valueAdjust1
+                            service - irrf - valueAdjust1,
                         ),
                     },
                 } as any);
@@ -140,7 +142,7 @@ export function FormularioNF({
                     onChange={handleDateChange}
                 />
                 <CustomInput
-                    name="export_service"
+                    name="exportacao"
                     label="Exportação de Serviço"
                     $labelPosition="top"
                     radioPosition="only"
@@ -149,7 +151,7 @@ export function FormularioNF({
                         { label: "Não", value: "Não" },
                     ]}
                     onRadioChange={onChange}
-                    selectedRadio={formData.export_service || "Não"}
+                    selectedRadio={formData.exportacao || "Não"}
                 />
             </div>
             <div

@@ -29,6 +29,11 @@ export interface IInvoices {
     deduction_value: number;
     irrf_value: number;
     service_liquid_value: number;
+    pis_value?: number;
+    cofins_value?: number;
+    csll_value?: number;
+    iss_value?: number;
+    exportacao: string;
 }
 
 export interface ICreateInvoicesData

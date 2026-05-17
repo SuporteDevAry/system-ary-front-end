@@ -16,12 +16,14 @@ import { ModalClientes } from "../../../Contracts/pages/CreateNewContract/compon
 import { CustomerInfo } from "../../../../contexts/ContractContext/types";
 
 export function RPS(): JSX.Element {
+    const ISS_PERCENT = 0.05;
+    const PIS_PERCENT = 0.0065;
+    const COFINS_PERCENT = 0.04;
     const navigate = useNavigate();
     const location = useLocation();
     const invoiceContext = InvoiceContext();
     const clienteContext = ClienteContext();
     const currentDate = dayjs().format("DD/MM/YYYY");
-    const [cnpjContract, setCnpjContract] = useState("");
     const [cnpjFound, setCnpjFound] = useState<boolean>(false);
     const [isEditing, setIsEditing] = useState<boolean>(false);
     const [editingId, setEditingId] = useState<string>("");
@@ -29,10 +31,97 @@ export function RPS(): JSX.Element {
     const [isLoadingCustomers, setIsLoadingCustomers] = useState(false);
     const [clientes, setClientes] = useState<IListCliente[]>([]);
 
+    const isCpf = useCallback((document: string) => {
+        const digits = document.replace(/\D/g, "");
+        return digits.length === 11;
+    }, []);
+
+    const normalizeExportService = useCallback((value?: string | null) => {
+        return value === "Sim" ? "Sim" : "Não";
+    }, []);
+
+    const normalizeDateToBr = useCallback(
+        (value?: string | null, fallback = currentDate) => {
+            if (!value) {
+                return fallback;
+            }
+
+            const trimmedValue = String(value).trim();
+
+            if (/^\d{2}\/\d{2}\/\d{4}$/.test(trimmedValue)) {
+                return trimmedValue;
+            }
+
+            const isoMatch = trimmedValue.match(/^(\d{4})-(\d{2})-(\d{2})/);
+            if (isoMatch) {
+                const [, year, month, day] = isoMatch;
+                return `${day}/${month}/${year}`;
+            }
+
+            const parsedDate = dayjs(trimmedValue);
+            return parsedDate.isValid()
+                ? parsedDate.format("DD/MM/YYYY")
+                : fallback;
+        },
+        [currentDate],
+    );
+
+    const calculateIrrfValue = useCallback(
+        (serviceValue: number, document: string) => {
+            if (isCpf(document)) {
+                return "0,00";
+            }
+
+            return formatEuropeanDecimal(serviceValue * 0.015);
+        },
+        [isCpf],
+    );
+
+    const calculateServiceLiquidValue = useCallback(
+        (serviceValue: number, irrfValue: string, valueAdjust1: string) =>
+            formatEuropeanDecimal(
+                serviceValue -
+                    parseEuropeanDecimal(irrfValue) -
+                    parseEuropeanDecimal(valueAdjust1),
+            ),
+        [],
+    );
+
+    const calculateCsllValue = useCallback(
+        (serviceValue: number, emissionDate: string) => {
+            if (!emissionDate) {
+                return 0;
+            }
+
+            const [day, month, year] = emissionDate.split("/").map(Number);
+            if (!day || !month || !year) {
+                return 0;
+            }
+
+            const rpsEmissionDate = new Date(year, month - 1, day);
+            const limit2025 = new Date(2025, 11, 31);
+            const limitMarch2026 = new Date(2026, 2, 31);
+
+            if (
+                rpsEmissionDate > limit2025 &&
+                rpsEmissionDate <= limitMarch2026
+            ) {
+                return serviceValue * 0.0288;
+            }
+
+            if (rpsEmissionDate > limitMarch2026) {
+                return serviceValue * 0.032;
+            }
+
+            return 0;
+        },
+        [],
+    );
+
     const initialformData = {
         rps_number: "",
         rps_emission_date: currentDate,
-        export_service: "Não",
+        exportacao: "Não",
         nfs_number: "",
         nfs_emission_date: "",
         service_code: "",
@@ -56,9 +145,28 @@ export function RPS(): JSX.Element {
         irrf_value: "0,00",
         service_liquid_value: "0,00",
         deduction_value: 0,
+        pis_value: 0,
+        cofins_value: 0,
+        csll_value: 0,
+        iss_value: 0,
     };
 
     const [formData, setFormData] = useState(initialformData);
+
+    const buildInvoiceTaxValues = useCallback(
+        (data: typeof formData) => {
+            const serviceValue = parseEuropeanDecimal(data.service_value);
+            const emissionDate = normalizeDateToBr(data.rps_emission_date);
+
+            return {
+                pis_value: serviceValue * PIS_PERCENT,
+                cofins_value: serviceValue * COFINS_PERCENT,
+                csll_value: calculateCsllValue(serviceValue, emissionDate),
+                iss_value: serviceValue * ISS_PERCENT,
+            };
+        },
+        [calculateCsllValue, normalizeDateToBr],
+    );
 
     const populateFormData = useCallback(
         (editingInvoice: any) => {
@@ -68,17 +176,13 @@ export function RPS(): JSX.Element {
 
             setFormData({
                 rps_number: editingInvoice.rps_number || "",
-                rps_emission_date: editingInvoice.rps_emission_date
-                    ? dayjs(editingInvoice.rps_emission_date).format(
-                          "DD/MM/YYYY",
-                      )
-                    : currentDate,
-                export_service: editingInvoice.export_service || "Não",
+                rps_emission_date: normalizeDateToBr(
+                    editingInvoice.rps_emission_date,
+                ),
+                exportacao: normalizeExportService(editingInvoice.exportacao),
                 nfs_number: editingInvoice.nfs_number || "",
                 nfs_emission_date: editingInvoice.nfs_emission_date
-                    ? dayjs(editingInvoice.nfs_emission_date).format(
-                          "DD/MM/YYYY",
-                      )
+                    ? normalizeDateToBr(editingInvoice.nfs_emission_date, "")
                     : "",
                 service_code: editingInvoice.service_code || "",
                 aliquot: editingInvoice.aliquot || 0,
@@ -109,9 +213,13 @@ export function RPS(): JSX.Element {
                     editingInvoice.service_liquid_value || 0,
                 ),
                 deduction_value: editingInvoice.deduction_value || 0,
+                pis_value: editingInvoice.pis_value || 0,
+                cofins_value: editingInvoice.cofins_value || 0,
+                csll_value: editingInvoice.csll_value || 0,
+                iss_value: editingInvoice.iss_value || 0,
             });
         },
-        [currentDate],
+        [normalizeDateToBr, normalizeExportService],
     );
 
     const fetchCustomers = useCallback(async () => {
@@ -145,7 +253,6 @@ export function RPS(): JSX.Element {
 
         const cnpj = "";
 
-        setCnpjContract(cnpj);
         setIsEditing(false);
         setEditingId("");
 
@@ -235,7 +342,9 @@ ${linhaAjuste1}
 ${linhaTotalPago}
 
 
-Depositar no Banco Bradesco S.A. (237)       Ag. 0108-2       C/C. 132.362-8`,
+*** Depositar no Banco Bradesco S.A. (237)   Ag. 0108-2   C/C: 132.362-8
+
+*** Chave PIX: 43.025.030/0001-65`,
         };
 
         setFormData((prev) => ({ ...prev, ...dadosContrato }));
@@ -281,15 +390,26 @@ Depositar no Banco Bradesco S.A. (237)       Ag. 0108-2       C/C. 132.362-8`,
 
     const handleCreate = async () => {
         try {
+            const taxValues = buildInvoiceTaxValues(formData);
+            const exportServiceValue = normalizeExportService(
+                formData.exportacao,
+            );
+            const emissionDateValue = normalizeDateToBr(
+                formData.rps_emission_date,
+            );
+
             if (isEditing) {
                 await invoiceContext.updateInvoice(editingId, {
                     ...formData,
+                    exportacao: exportServiceValue,
+                    rps_emission_date: emissionDateValue,
                     service_value: parseEuropeanDecimal(formData.service_value),
                     irrf_value: parseEuropeanDecimal(formData.irrf_value),
                     value_adjust1: parseEuropeanDecimal(formData.value_adjust1),
                     service_liquid_value: parseEuropeanDecimal(
                         formData.service_liquid_value,
                     ),
+                    ...taxValues,
                 });
                 toast.success(
                     `RPS ${formData.rps_number} atualizada com sucesso!`,
@@ -297,12 +417,15 @@ Depositar no Banco Bradesco S.A. (237)       Ag. 0108-2       C/C. 132.362-8`,
             } else {
                 await invoiceContext.createInvoice({
                     ...formData,
+                    exportacao: exportServiceValue,
+                    rps_emission_date: emissionDateValue,
                     service_value: parseEuropeanDecimal(formData.service_value),
                     irrf_value: parseEuropeanDecimal(formData.irrf_value),
                     value_adjust1: parseEuropeanDecimal(formData.value_adjust1),
                     service_liquid_value: parseEuropeanDecimal(
                         formData.service_liquid_value,
                     ),
+                    ...taxValues,
                 });
                 toast.success(
                     `RPS ${formData.rps_number} foi gravada com sucesso!`,
@@ -321,22 +444,56 @@ Depositar no Banco Bradesco S.A. (237)       Ag. 0108-2       C/C. 132.362-8`,
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
+
         if (name === "cpf_cnpj") {
             setCnpjFound(false);
         }
+
         setFormData((prevData) => {
-            if (name === "service_value") {
-                const serviceValue = parseEuropeanDecimal(value);
-                const irrfValue = formatEuropeanDecimal(serviceValue * 0.015);
+            const normalizedValue =
+                name === "exportacao"
+                    ? normalizeExportService(value)
+                    : name === "rps_emission_date"
+                      ? normalizeDateToBr(value)
+                      : value;
+            const nextData = { ...prevData, [name]: normalizedValue };
+
+            if (name === "cpf_cnpj") {
+                const serviceValue = parseEuropeanDecimal(
+                    prevData.service_value,
+                );
+                const irrfValue = calculateIrrfValue(serviceValue, value);
 
                 return {
-                    ...prevData,
-                    [name]: value,
+                    ...nextData,
                     irrf_value: irrfValue,
+                    service_liquid_value: calculateServiceLiquidValue(
+                        serviceValue,
+                        irrfValue,
+                        String(prevData.value_adjust1),
+                    ),
                 };
             }
 
-            return { ...prevData, [name]: value };
+            if (name === "service_value") {
+                const serviceValue = parseEuropeanDecimal(value);
+                const irrfValue = calculateIrrfValue(
+                    serviceValue,
+                    prevData.cpf_cnpj,
+                );
+
+                return {
+                    ...nextData,
+                    irrf_value: irrfValue,
+                    service_liquid_value: calculateServiceLiquidValue(
+                        serviceValue,
+                        irrfValue,
+                        String(prevData.value_adjust1),
+                    ),
+                };
+            }
+
+            return nextData;
         });
     };
 
@@ -356,6 +513,12 @@ Depositar no Banco Bradesco S.A. (237)       Ag. 0108-2       C/C. 132.362-8`,
             },
         ) => {
             setCnpjFound(true);
+            const serviceValue = parseEuropeanDecimal(formData.service_value);
+            const irrfValue = calculateIrrfValue(
+                serviceValue,
+                selectedCustomerData.cnpj_cpf || "",
+            );
+
             setFormData((prevData) => ({
                 ...prevData,
                 cpf_cnpj: selectedCustomerData.cnpj_cpf || "",
@@ -367,9 +530,19 @@ Depositar no Banco Bradesco S.A. (237)       Ag. 0108-2       C/C. 132.362-8`,
                 city: selectedCustomerData.city || "",
                 state: selectedCustomerData.state || "",
                 zip_code: selectedCustomerData.zip_code || "",
+                irrf_value: irrfValue,
+                service_liquid_value: calculateServiceLiquidValue(
+                    serviceValue,
+                    irrfValue,
+                    String(prevData.value_adjust1),
+                ),
             }));
         },
-        [],
+        [
+            calculateIrrfValue,
+            calculateServiceLiquidValue,
+            formData.service_value,
+        ],
     );
 
     return (

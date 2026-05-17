@@ -4,7 +4,6 @@ import { EuropeanDecimalValue } from "../../helpers/europeanDecimal";
 export interface IFormNF {
     rps_number: string;
     rps_emission_date: string;
-    export_service: string;
     service_code: string;
     aliquot: number;
     cpf_cnpj: string;
@@ -25,6 +24,11 @@ export interface IFormNF {
     irrf_value: EuropeanDecimalValue;
     service_liquid_value: EuropeanDecimalValue;
     deduction_value: number;
+    pis_value?: number;
+    cofins_value?: number;
+    csll_value?: number;
+    iss_value?: number;
+    exportacao: string;
 }
 
 export interface IFormNFProps {

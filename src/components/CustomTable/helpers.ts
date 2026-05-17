@@ -21,6 +21,16 @@ export const compareValues = (
   return 0;
 };
 
+export const parseSortableNumber = (
+  value: string | number | null | undefined
+): number => {
+  if (typeof value === "number") return value;
+  if (value === null || value === undefined) return 0;
+
+  const normalizedValue = String(value).replace(/\D/g, "");
+  return Number(normalizedValue || 0);
+};
+
 export const parseBrazilianDate = (
   dateStr: string | null | undefined
 ): number => {
@@ -52,6 +62,15 @@ export const sortTableData = <T extends Record<string, any>>(
       const aContractNumber = extractNumberFromContract(aValue);
       const bContractNumber = extractNumberFromContract(bValue);
       return compareValues(aContractNumber, bContractNumber, order);
+    }
+
+    if (orderBy === "rps_number") {
+      const aRpsNumber = parseSortableNumber(aValue);
+      const bRpsNumber = parseSortableNumber(bValue);
+
+      return order === "asc"
+        ? aRpsNumber - bRpsNumber
+        : bRpsNumber - aRpsNumber;
     }
 
     return compareValues(aValue, bValue, order);
