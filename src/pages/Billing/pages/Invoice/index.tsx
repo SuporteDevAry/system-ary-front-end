@@ -89,6 +89,26 @@ export function Invoice() {
         [getInvoiceSelectionKey],
     );
 
+    const sortInvoicesByRpsNumber = useCallback((invoices: IListInvoices[]) => {
+        return [...invoices].sort((a, b) => {
+            const aRps = String(a.rps_number ?? "");
+            const bRps = String(b.rps_number ?? "");
+            const aNumeric = Number(aRps);
+            const bNumeric = Number(bRps);
+            const aIsNumeric = !Number.isNaN(aNumeric);
+            const bIsNumeric = !Number.isNaN(bNumeric);
+
+            if (aIsNumeric && bIsNumeric) {
+                return aNumeric - bNumeric;
+            }
+
+            return aRps.localeCompare(bRps, "pt-BR", {
+                numeric: true,
+                sensitivity: "base",
+            });
+        });
+    }, []);
+
     const isAuthorizedForCancel = useCallback((status?: string | null) => {
         return (
             String(status || "")
@@ -693,7 +713,9 @@ export function Invoice() {
     // SALVAR XML EM ARQUIVO PARA DOWNLOAD
     // ===================================
     const handleGeraNF_XML = async () => {
-        const invoicesToIssue = normalizeSelectedInvoices(selectedInvoice);
+        const invoicesToIssue = sortInvoicesByRpsNumber(
+            normalizeSelectedInvoices(selectedInvoice),
+        );
 
         if (invoicesToIssue.length === 0) {
             toast.error("Nenhuma RPS encontrada para gerar XML.");
@@ -749,7 +771,9 @@ export function Invoice() {
 
     // dentro do seu componente React (Invoice)
     const handleIssueFull = async () => {
-        const invoicesToIssue = normalizeSelectedInvoices(selectedInvoice);
+        const invoicesToIssue = sortInvoicesByRpsNumber(
+            normalizeSelectedInvoices(selectedInvoice),
+        );
         // Verifica se há dados para enviar
         if (invoicesToIssue.length === 0) {
             toast.error(
