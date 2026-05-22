@@ -1,3 +1,5 @@
+import { EuropeanDecimalValue } from "../../../../../../helpers/europeanDecimal";
+
 export type FormDataInvoice = [{
     rps_number: string;
     rps_emission_date: string;
@@ -13,13 +15,13 @@ export type FormDataInvoice = [{
     zip_code: string;
     email: string;
     service_discrim: string;
-    service_value: number;
+    service_value: EuropeanDecimalValue;
     name_adjust1: string
-    value_adjust1: number;
+    value_adjust1: EuropeanDecimalValue;
     name_adjust2: string
     value_adjust2: number;
-    irrf_value: number;
-    service_liquid_value: number;
+    irrf_value: EuropeanDecimalValue;
+    service_liquid_value: EuropeanDecimalValue;
     deduction_value: number;
 }];
 
