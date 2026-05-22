@@ -157,6 +157,10 @@ export function ViewBilling(): JSX.Element {
     //     return;
     // }
     try {
+      // Define commission_receipt_date: se liquid_contract for 'Sim', usa receipt_date, senão vazio
+      const commission_receipt_date =
+        formData.liquid_contract === "Sim" ? formData.receipt_date : "";
+
       if (billingToEdit?.id) {
         const res = await billingContext.updateBilling(billingToEdit?.id, {
           ...formData,
@@ -165,6 +169,7 @@ export function ViewBilling(): JSX.Element {
             formData?.liquid_contract == "Sim"
               ? formData?.receipt_date.toString()
               : "",
+          commission_receipt_date,
         });
 
         if (res.status === 200) {
@@ -188,6 +193,7 @@ export function ViewBilling(): JSX.Element {
             day_exchange_rate: undefined,
             total_received: totalReceived,
             status_received: formData.liquid_contract,
+            commission_receipt_date: formData.receipt_date,
           });
 
           const resContract = await updateContractAdjustments(
@@ -268,11 +274,13 @@ export function ViewBilling(): JSX.Element {
           `Recebimento ${formData.rps_number} foi atualizado com sucesso!`,
         );
       } else {
+        const commission_receipt_date = formData.receipt_date;
         const res = await billingContext.createBilling({
           ...formData,
           owner_record: dataUserInfo?.email || "",
           liquid_contract_date:
             formData.liquid_contract == "Sim" ? formData.receipt_date : "",
+          commission_receipt_date,
         });
         if (res.status === 201) {
           const totalReceived =
@@ -281,6 +289,7 @@ export function ViewBilling(): JSX.Element {
             day_exchange_rate: undefined,
             total_received: totalReceived,
             status_received: formData.liquid_contract,
+            commission_receipt_date: formData.receipt_date,
           });
           const resContract = await updateContractAdjustments(
             contractId,
