@@ -29,7 +29,15 @@ export function RPS(): JSX.Element {
     const [editingId, setEditingId] = useState<string>("");
     const [isCustomerModalOpen, setCustomerModalOpen] = useState(false);
     const [isLoadingCustomers, setIsLoadingCustomers] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [clientes, setClientes] = useState<IListCliente[]>([]);
+    const [suggestedRpsNumber, setSuggestedRpsNumber] = useState<number | null>(
+        null,
+    );
+    const [originalRpsValue, setOriginalRpsValue] = useState<string>("");
+    const [originalRpsNumber, setOriginalRpsNumber] = useState<number | null>(
+        null,
+    );
 
     const isCpf = useCallback((document: string) => {
         const digits = document.replace(/\D/g, "");
@@ -81,7 +89,7 @@ export function RPS(): JSX.Element {
         (serviceValue: number, irrfValue: string, valueAdjust1: string) =>
             formatEuropeanDecimal(
                 serviceValue -
-                    parseEuropeanDecimal(irrfValue) -
+                    parseEuropeanDecimal(irrfValue) +
                     parseEuropeanDecimal(valueAdjust1),
             ),
         [],
@@ -134,6 +142,7 @@ export function RPS(): JSX.Element {
         district: "",
         city: "",
         state: "",
+        cod_pais: "",
         zip_code: "",
         email: "",
         service_discrim: "",
@@ -152,6 +161,86 @@ export function RPS(): JSX.Element {
     };
 
     const [formData, setFormData] = useState(initialformData);
+
+    const buildServiceValuesBlock = useCallback(
+        (data: typeof formData) => {
+            const larguraValor = 15;
+            const colunaTotal = 40;
+
+            function formatLinha(nome: string, valor: number | string) {
+                const valorStr = parseEuropeanDecimal(valor)
+                    .toFixed(2)
+                    .padStart(larguraValor, " ");
+                const pontosQtd = colunaTotal - nome.length - valorStr.length;
+                const pontos = ".".repeat(pontosQtd > 0 ? pontosQtd : 0);
+                return `${nome}${pontos} R$ ${valorStr}`;
+            }
+
+            const linhaTotalServicos = formatLinha(
+                "TOTAL DOS SERVICOS",
+                data.service_value,
+            );
+            const linhaIRRF = formatLinha("(-) I.R.R.F.", data.irrf_value);
+            const linhaAjuste1 =
+                data.name_adjust1.length > 0
+                    ? formatLinha(data.name_adjust1, data.value_adjust1)
+                    : "";
+            const linhaTotalPago = formatLinha(
+                "VALOR A SER PAGO",
+                data.service_liquid_value,
+            );
+
+            return [
+                linhaTotalServicos,
+                linhaIRRF,
+                linhaAjuste1,
+                linhaTotalPago,
+            ]
+                .filter(Boolean)
+                .join("\n");
+        },
+        [],
+    );
+
+    const upsertServiceValuesBlock = useCallback(
+        (currentText: string, valuesBlock: string) => {
+            const text = String(currentText ?? "");
+            const trimmedText = text.trim();
+
+            if (!trimmedText) {
+                return `Intermediacao de Negocios:
+
+CTR. 
+
+${valuesBlock}
+
+
+*** Depositar no Banco Bradesco S.A. (237)   Ag. 0108-2   C/C: 132.362-8
+
+*** Chave PIX: 43.025.030/0001-65`;
+            }
+
+            const startToken = "TOTAL DOS SERVICOS";
+            const endToken = "VALOR A SER PAGO";
+            const startIndex = text.indexOf(startToken);
+            const endIndex = text.indexOf(endToken, startIndex >= 0 ? startIndex : 0);
+
+            if (startIndex === -1 || endIndex === -1) {
+                return text.endsWith("\n")
+                    ? `${text}\n${valuesBlock}`
+                    : `${text}\n\n${valuesBlock}`;
+            }
+
+            const lineEndIndex = text.indexOf("\n", endIndex);
+            const blockEndIndex =
+                lineEndIndex === -1 ? text.length : lineEndIndex + 1;
+
+            return `${text.slice(0, startIndex)}${valuesBlock}\n${text.slice(
+                blockEndIndex,
+            )}`;
+        },
+        [],
+    );
 
     const buildInvoiceTaxValues = useCallback(
         (data: typeof formData) => {
@@ -173,6 +262,10 @@ export function RPS(): JSX.Element {
             setIsEditing(true);
             setEditingId(editingInvoice.id);
             setCnpjFound(true);
+            setOriginalRpsValue(String(editingInvoice.rps_number ?? ""));
+            setOriginalRpsNumber(
+                Number(editingInvoice.rps_number ?? editingInvoice.rpsNumber ?? 0),
+            );
 
             setFormData({
                 rps_number: editingInvoice.rps_number || "",
@@ -194,6 +287,10 @@ export function RPS(): JSX.Element {
                 district: editingInvoice.district || "",
                 city: editingInvoice.city || "",
                 state: editingInvoice.state || "",
+                cod_pais:
+                    editingInvoice.cod_pais ||
+                    editingInvoice.country_code ||
+                    "",
                 zip_code: editingInvoice.zip_code || "",
                 email: editingInvoice.email || "",
                 service_discrim: editingInvoice.service_discrim || "",
@@ -236,8 +333,123 @@ export function RPS(): JSX.Element {
         }
     }, [clienteContext]);
 
+    const findInvoiceByRps = useCallback(
+        async (rpsNumber: string) => {
+            try {
+                const response = await invoiceContext.getInvoiceByRps(rpsNumber);
+                const invoice = Array.isArray(response?.data)
+                    ? response.data[0]
+                    : response?.data;
+
+                return invoice ?? null;
+            } catch {
+                return null;
+            }
+        },
+        [invoiceContext],
+    );
+
+    const restoreValidRpsNumber = useCallback(() => {
+        const validRpsValue = isEditing
+            ? originalRpsValue
+            : suggestedRpsNumber !== null
+              ? String(suggestedRpsNumber)
+              : "";
+
+        if (!validRpsValue) {
+            return;
+        }
+
+        setFormData((prev) => ({
+            ...prev,
+            rps_number: validRpsValue,
+        }));
+    }, [isEditing, originalRpsValue, suggestedRpsNumber]);
+
+    const validateMinimumRpsNumber = useCallback(
+        (rpsNumber: string, inputElement?: HTMLInputElement) => {
+            const minimumRpsNumber = isEditing
+                ? originalRpsNumber
+                : suggestedRpsNumber;
+
+            if (minimumRpsNumber === null) {
+                return true;
+            }
+
+            const currentRpsNumber = Number(
+                String(rpsNumber).replace(/\D/g, ""),
+            );
+
+            if (
+                Number.isFinite(currentRpsNumber) &&
+                currentRpsNumber < minimumRpsNumber
+            ) {
+                const messageNumber = isEditing
+                    ? originalRpsNumber
+                    : suggestedRpsNumber;
+                restoreValidRpsNumber();
+                toast.error(
+                    `Não é permitido informar número RPS inferior a ${messageNumber}`,
+                );
+                if (inputElement) {
+                    setTimeout(() => {
+                        inputElement.focus();
+                        inputElement.select();
+                    }, 0);
+                }
+                return false;
+            }
+
+            return true;
+        },
+        [
+            isEditing,
+            originalRpsNumber,
+            restoreValidRpsNumber,
+            suggestedRpsNumber,
+        ],
+    );
+
+    const validateRpsNumber = useCallback(
+        async (rpsNumber: string, inputElement?: HTMLInputElement) => {
+            const normalizedRpsNumber = String(rpsNumber || "").trim();
+
+            if (!normalizedRpsNumber) {
+                return true;
+            }
+
+            const existingInvoice = await findInvoiceByRps(normalizedRpsNumber);
+            if (
+                existingInvoice &&
+                String(existingInvoice.id) !== String(editingId)
+            ) {
+                toast.error(
+                    `Já existe uma RPS cadastrada com o número ${normalizedRpsNumber}`,
+                );
+                restoreValidRpsNumber();
+                setTimeout(() => {
+                    inputElement?.focus();
+                    inputElement?.select();
+                }, 0);
+                return false;
+            }
+
+            return true;
+        },
+        [editingId, findInvoiceByRps, restoreValidRpsNumber],
+    );
+
     const fetchData = useCallback(async () => {
         const editingInvoice = location.state?.editingInvoice;
+        let nextNumberValue: number | null = null;
+
+        try {
+            const nextNumberRps = await invoiceContext.getNextNumberRps();
+            nextNumberValue = Number(nextNumberRps.data.nextNumber ?? 0);
+            setSuggestedRpsNumber(nextNumberValue);
+        } catch {
+            setSuggestedRpsNumber(null);
+        }
 
         if (editingInvoice) {
             try {
@@ -255,16 +467,17 @@ export function RPS(): JSX.Element {
 
         setIsEditing(false);
         setEditingId("");
+        setOriginalRpsValue("");
+        setOriginalRpsNumber(null);
 
         setFormData((prev) => ({
             ...prev,
             cpf_cnpj: cnpj,
         }));
 
-        const nextNumberRps = await invoiceContext.getNextNumberRps();
         setFormData((prev) => ({
             ...prev,
-            rps_number: nextNumberRps.data.nextNumber,
+            rps_number: String(nextNumberValue || ""),
         }));
 
         try {
@@ -300,61 +513,23 @@ export function RPS(): JSX.Element {
     }, [fetchCustomers]);
 
     useEffect(() => {
-        if (isEditing) {
-            return;
-        }
+        const valuesBlock = buildServiceValuesBlock(formData);
 
-        const larguraValor = 15;
-        const colunaTotal = 40;
-
-        function formatLinha(nome: string, valor: number | string) {
-            const valorStr = parseEuropeanDecimal(valor)
-                .toFixed(2)
-                .padStart(larguraValor, " ");
-            const pontosQtd = colunaTotal - nome.length - valorStr.length;
-            const pontos = ".".repeat(pontosQtd > 0 ? pontosQtd : 0);
-            return `${nome}${pontos} R$ ${valorStr}`;
-        }
-
-        const linhaTotalServicos = formatLinha(
-            "TOTAL DOS SERVICOS",
-            formData.service_value,
-        );
-        const linhaIRRF = formatLinha("(-) I.R.R.F.", formData.irrf_value);
-        const linhaAjuste1 =
-            formData.name_adjust1.length > 0
-                ? formatLinha(formData.name_adjust1, formData.value_adjust1)
-                : "";
-        const linhaTotalPago = formatLinha(
-            "VALOR A SER PAGO",
-            formData.service_liquid_value,
-        );
-
-        const contract = "";
-        const dadosContrato = {
-            service_discrim: `Intermediacao de Negocios:
-
-CTR. ${contract}
-
-${linhaTotalServicos}
-${linhaIRRF}
-${linhaAjuste1}
-${linhaTotalPago}
-
-
-*** Depositar no Banco Bradesco S.A. (237)   Ag. 0108-2   C/C: 132.362-8
-
-*** Chave PIX: 43.025.030/0001-65`,
-        };
-
-        setFormData((prev) => ({ ...prev, ...dadosContrato }));
+        setFormData((prev) => ({
+            ...prev,
+            service_discrim: upsertServiceValuesBlock(
+                prev.service_discrim,
+                valuesBlock,
+            ),
+        }));
     }, [
-        isEditing,
         formData.service_value,
         formData.irrf_value,
         formData.name_adjust1,
         formData.value_adjust1,
         formData.service_liquid_value,
+        buildServiceValuesBlock,
+        upsertServiceValuesBlock,
     ]);
 
     const checkCNPJ = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -389,11 +564,37 @@ ${linhaTotalPago}
     };
 
     const handleCreate = async () => {
+        if (isSubmitting) {
+            return;
+        }
+
+        setIsSubmitting(true);
+
         try {
+            if (!validateMinimumRpsNumber(formData.rps_number)) {
+                setIsSubmitting(false);
+                return;
+            }
+
+            const isRpsNumberValid = await validateRpsNumber(
+                formData.rps_number,
+            );
+            if (!isRpsNumberValid) {
+                return;
+            }
+
             const taxValues = buildInvoiceTaxValues(formData);
             const exportServiceValue = normalizeExportService(
                 formData.exportacao,
             );
+            if (
+                exportServiceValue === "Sim" &&
+                !String(formData.cod_pais || "").trim()
+            ) {
+                toast.error("Informe o Cód.País para exportação de serviço.");
+                setIsSubmitting(false);
+                return;
+            }
             const emissionDateValue = normalizeDateToBr(
                 formData.rps_emission_date,
             );
@@ -439,8 +640,23 @@ ${linhaTotalPago}
                     error.message || String(error)
                 }`,
             );
+        } finally {
+            setIsSubmitting(false);
         }
     };
+
+    const handleRpsNumberBlur = useCallback(
+        async (e: React.FocusEvent<HTMLInputElement>) => {
+            const inputElement = e.currentTarget;
+
+            if (!validateMinimumRpsNumber(e.target.value, inputElement)) {
+                return;
+            }
+
+            await validateRpsNumber(e.target.value, inputElement);
+        },
+        [validateMinimumRpsNumber, validateRpsNumber],
+    );
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -456,7 +672,13 @@ ${linhaTotalPago}
                     : name === "rps_emission_date"
                       ? normalizeDateToBr(value)
                       : value;
-            const nextData = { ...prevData, [name]: normalizedValue };
+            const nextData = {
+                ...prevData,
+                [name]: normalizedValue,
+                ...(name === "exportacao" && normalizedValue !== "Sim"
+                    ? { cod_pais: "" }
+                    : null),
+            };
 
             if (name === "cpf_cnpj") {
                 const serviceValue = parseEuropeanDecimal(
@@ -555,6 +777,9 @@ ${linhaTotalPago}
                         onHandleCreate={handleCreate}
                         onChange={handleChange}
                         onCheckCNPJ={checkCNPJ}
+                        onRpsNumberBlur={handleRpsNumberBlur}
+                        rpsNumberReadOnly={false}
+                        isSubmitDisabled={isSubmitting}
                         cpfCnpjAction={
                             <CustomButton
                                 $variant="success"

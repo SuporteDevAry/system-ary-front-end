@@ -50,6 +50,7 @@ const CustomTable: React.FC<ICustomTableProps> = ({
   renderChildren,
   onRowClick,
   onSelectionChange,
+  selectedRowIds: controlledSelectedRowIds,
   actionButtons,
   order,
   orderBy,
@@ -59,8 +60,8 @@ const CustomTable: React.FC<ICustomTableProps> = ({
   searchableFields,
 }) => {
   const [openRows, setOpenRows] = useState<number[]>([]);
-  const [selectedRowId, setSelectedRowId] = useState<number | null>(null);
-  const [selectedRowIds, setSelectedRowIds] = useState<number[]>([]);
+  const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
+  const [selectedRowIds, setSelectedRowIds] = useState<string[]>([]);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [visibleCount, setVisibleCount] = useState(30); // primeiros itens
   const resolvedSearchableFields = useMemo(
@@ -86,6 +87,12 @@ const CustomTable: React.FC<ICustomTableProps> = ({
     }
   }, [filteredData.length, page, totalPages, setPage]);
 
+  useEffect(() => {
+    if (multiSelect && hasCheckbox) {
+      setSelectedRowIds(controlledSelectedRowIds ?? []);
+    }
+  }, [controlledSelectedRowIds, hasCheckbox, multiSelect]);
+
   const handleRequestSort = (property: string) => {
     const column = columns.find((col) => col.field === property);
     if (!column?.sortable) return;
@@ -95,16 +102,18 @@ const CustomTable: React.FC<ICustomTableProps> = ({
     setOrderBy(property);
   };
 
-  const handleRowClick = (id: number) => {
+  const handleRowClick = (id: number | string) => {
+    const rowId = String(id);
+
     if (multiSelect && hasCheckbox) {
       // Modo de seleção múltipla
-      const isSelected = selectedRowIds.includes(id);
-      let newSelectedIds: number[];
+      const isSelected = selectedRowIds.includes(rowId);
+      let newSelectedIds: string[];
 
       if (isSelected) {
-        newSelectedIds = selectedRowIds.filter((rowId) => rowId !== id);
+        newSelectedIds = selectedRowIds.filter((currentId) => currentId !== rowId);
       } else {
-        newSelectedIds = [...selectedRowIds, id];
+        newSelectedIds = [...selectedRowIds, rowId];
       }
 
       setSelectedRowIds(newSelectedIds);
@@ -112,25 +121,27 @@ const CustomTable: React.FC<ICustomTableProps> = ({
       // Notifica sobre a mudança de seleção
       if (onSelectionChange) {
         const selectedRows = data.filter((row) =>
-          newSelectedIds.includes(row.id),
+          newSelectedIds.includes(String(row.id)),
         );
         onSelectionChange(selectedRows);
       }
     } else {
       // Modo de seleção única
-      if (selectedRowId === id) {
-        setSelectedRowId(null);
-        setOpenRows(openRows.filter((rowId) => rowId !== id));
-        if (onSelectionChange) {
-          onSelectionChange([]);
-        }
-      } else {
-        setSelectedRowId(id);
+        if (selectedRowId === rowId) {
+          setSelectedRowId(null);
+          setOpenRows(
+            openRows.filter((currentRowId) => currentRowId !== Number(rowId)),
+          );
+          if (onSelectionChange) {
+            onSelectionChange([]);
+          }
+        } else {
+        setSelectedRowId(rowId);
         if (collapsible) {
-          setOpenRows((prevOpenRows) => [...prevOpenRows, id]);
+          setOpenRows((prevOpenRows) => [...prevOpenRows, Number(rowId)]);
         }
         if (onSelectionChange) {
-          const selectedRow = data.find((row) => row.id === id);
+          const selectedRow = data.find((row) => String(row.id) === rowId);
           onSelectionChange(selectedRow ? [selectedRow] : []);
         }
       }
@@ -395,10 +406,16 @@ const CustomTable: React.FC<ICustomTableProps> = ({
                       <SCheckbox
                         checked={
                           multiSelect
-                            ? selectedRowIds.includes(row.id)
-                            : selectedRowId === row.id
+                            ? selectedRowIds.includes(String(row.id))
+                            : selectedRowId === String(row.id)
                         }
-                        onChange={() => handleRowClick(row.id)}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          handleRowClick(row.id);
+                          if (!multiSelect && onRowClick) {
+                            onRowClick(row);
+                          }
+                        }}
                       />
                     </TableCell>
                   )}

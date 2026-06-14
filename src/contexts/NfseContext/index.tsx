@@ -16,6 +16,7 @@ interface INfseContext {
     cancelarNFSe: (protocolo: string) => Promise<ICancelarNFSeResponse>;
     consultarRps: (rps_number: string) => Promise<IConsultarLoteResponse>;
     buscarIbgePorCep: (cep: string) => Promise<IBuscarIbgePorCepResponse>;
+    buscarXmlPorCaminho: (caminho: string) => Promise<string>;
 }
 
 const newContext = createContext<INfseContext>({
@@ -47,6 +48,7 @@ const newContext = createContext<INfseContext>({
         Promise.resolve({
             message: "",
         }),
+    buscarXmlPorCaminho: () => Promise.resolve(""),
 });
 
 export const NfseProvider = ({ children }: INfseProvider) => {
@@ -75,8 +77,7 @@ export const NfseProvider = ({ children }: INfseProvider) => {
         try {
             const response = await Api.get(`/nfse/consultar-lote/${protocolo}`);
 
-            console.log("Consulta - response: ", response.data);
-
+            console.log("consultarLote", response.data);
             return response.data;
         } catch (error) {
             throw error;
@@ -278,6 +279,43 @@ export const NfseProvider = ({ children }: INfseProvider) => {
         }
     }
 
+    async function buscarXmlPorCaminho(caminho: string): Promise<string> {
+        const caminhoTrimmed = String(caminho || "").trim();
+
+        if (!caminhoTrimmed) {
+            throw new Error("Caminho do XML inválido");
+        }
+
+        const S3_BASE_URL = "https://focusnfe.s3.sa-east-1.amazonaws.com";
+
+        const fullUrl = /^https?:\/\//i.test(caminhoTrimmed)
+            ? caminhoTrimmed
+            : `${S3_BASE_URL}${caminhoTrimmed.startsWith("/") ? "" : "/"}${caminhoTrimmed}`;
+
+        // Tenta via backend (evita CORS com S3)
+        try {
+            const backendResponse = await Api.get(
+                `/nfse/buscar-xml-por-caminho?url=${encodeURIComponent(fullUrl)}`,
+            );
+            const data = backendResponse.data;
+            if (typeof data === "string" && data.trim()) return data;
+            const content =
+                data?.xml || data?.xml_nfse || data?.conteudo || data?.content;
+            if (typeof content === "string" && content.trim()) return content;
+        } catch {
+            // backend não tem o endpoint — tenta fetch direto
+        }
+
+        // Tenta fetch direto no S3
+        const s3Response = await fetch(fullUrl);
+        if (!s3Response.ok) {
+            throw new Error(
+                `Falha ao buscar XML no S3 (HTTP ${s3Response.status}): ${fullUrl}`,
+            );
+        }
+        return s3Response.text();
+    }
+
     return (
         <newContext.Provider
             value={{
@@ -286,6 +324,7 @@ export const NfseProvider = ({ children }: INfseProvider) => {
                 cancelarNFSe,
                 consultarRps,
                 buscarIbgePorCep,
+                buscarXmlPorCaminho,
             }}
         >
             {children}

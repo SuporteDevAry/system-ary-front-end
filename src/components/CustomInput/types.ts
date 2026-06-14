@@ -5,6 +5,11 @@ export interface RadioOption {
   value: string;
 }
 
+export interface SelectOption {
+  label: string;
+  value: string;
+}
+
 export type labelPositionVariant = "left" | "top";
 export interface CustomInputProps {
   width?: string;
@@ -12,7 +17,7 @@ export interface CustomInputProps {
   label?: string | React.ReactNode;
   $labelPosition?: labelPositionVariant;
   placeholder?: string;
-  type?: HTMLInputTypeAttribute | "number" | undefined;
+  type?: HTMLInputTypeAttribute | "number" | "select" | undefined;
   name?: string;
   value?: string;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -23,6 +28,7 @@ export interface CustomInputProps {
   radioPosition?: "inline" | "only"; // Define a posição dos radio buttons
   onRadioChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
   selectedRadio?: string;
+  selectOptions?: SelectOption[];
   [x: string]: any;
   inputRef?: React.Ref<HTMLInputElement>;
 }

@@ -26,6 +26,7 @@ export interface ICustomTableProps {
   renderChildren?: (row: TableDataProps) => ReactNode;
   onRowClick?: (row: TableDataProps) => void;
   onSelectionChange?: (selectedRows: any[]) => void;
+  selectedRowIds?: string[];
   actionButtons?: (row: TableDataProps) => ReactNode;
   maxChars?: number;
   page?: number;
