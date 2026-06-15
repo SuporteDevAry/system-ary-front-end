@@ -6,6 +6,11 @@ interface SContainerProps extends HTMLAttributes<HTMLDivElement> {
   $labelPosition?: labelPositionVariant;
 }
 
+interface SInputSizeProps {
+  width?: string;
+  height?: string;
+}
+
 export const SContainer = styled.div<SContainerProps>`
   display: flex;
   gap: 8px;
@@ -42,6 +47,21 @@ export const SCustomInput = styled.input`
 
   &::placeholder {
     color: ${(props) => props.theme["gray-500"]};
+  }
+`;
+
+export const SCustomSelect = styled.select<SInputSizeProps>`
+  width: ${(props) => props.width || "260px"};
+  height: ${(props) => props.height || "38px"};
+  padding: 0 16px;
+
+  color: ${(props) => props.theme["gray-500"]};
+  border-color: ${(props) => props.theme["gray-100"]};
+  border-radius: 8px;
+
+  &:focus {
+    box-shadow: none;
+    border-color: ${(props) => props.theme["yellow-500"]};
   }
 `;
 

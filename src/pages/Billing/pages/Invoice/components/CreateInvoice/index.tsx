@@ -32,6 +32,7 @@ export function CreateInvoice(): JSX.Element {
         district: "",
         city: "",
         state: "",
+        cod_pais: "",
         zip_code: "",
         email: "",
         service_discrim: "",
@@ -186,6 +187,11 @@ ${linhaTotalPago}
 
     const handleCreate = async () => {
         try {
+            if (formData.exportacao === "Sim" && !formData.cod_pais.trim()) {
+                toast.error("Informe o Cód.País para exportação de serviço.");
+                return;
+            }
+
             const newRPS = await invoiceContext.createInvoice({
                 ...formData,
                 service_code: location.state?.selectedContract.number_contract,
@@ -211,7 +217,13 @@ ${linhaTotalPago}
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
-        setFormData((prevData) => ({ ...prevData, [name]: value }));
+        setFormData((prevData) => ({
+            ...prevData,
+            [name]: value,
+            ...(name === "exportacao" && value !== "Sim"
+                ? { cod_pais: "" }
+                : null),
+        }));
     };
 
     return (

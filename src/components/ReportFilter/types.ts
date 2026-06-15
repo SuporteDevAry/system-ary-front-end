@@ -33,4 +33,5 @@ export interface IReportFilterProps {
   confirmText?: string;
   cancelText?: string;
   visibleFields?: ReportFilterField[];
+  fieldLabels?: Partial<Record<string, string>>;
 }

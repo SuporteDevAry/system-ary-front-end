@@ -13,6 +13,7 @@ export interface IFormNF {
     district: string;
     city: string;
     state: string;
+    cod_pais: string;
     zip_code: string;
     email: string;
     service_discrim: string;
@@ -37,5 +38,8 @@ export interface IFormNFProps {
     onHandleCreate: () => void;
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     onCheckCNPJ: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    onRpsNumberBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
     cpfCnpjAction?: ReactNode;
+    rpsNumberReadOnly?: boolean;
+    isSubmitDisabled?: boolean;
 }

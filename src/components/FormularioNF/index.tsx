@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import CustomButton from "../CustomButton";
 import { CustomInput } from "../CustomInput";
 import CustomDatePicker from "../CustomDatePicker";
+import { countrySelectOptions } from "../../helpers/countries";
 import {
     formatEuropeanDecimal,
     normalizeEuropeanDecimalInput,
@@ -22,13 +23,35 @@ const monetaryFields = new Set([
     "service_liquid_value",
 ]);
 
+const normalizeEuropeanDecimalInputAllowNegative = (value: string): string => {
+    const cleanedValue = value.replace(/[^\d,.\-]/g, "");
+
+    if (!cleanedValue) {
+        return "";
+    }
+
+    const isNegative = cleanedValue.startsWith("-");
+    const positivePart = cleanedValue.replace(/-/g, "");
+
+    const normalizedPositive = normalizeEuropeanDecimalInput(positivePart);
+
+    if (!normalizedPositive) {
+        return isNegative ? "-" : "";
+    }
+
+    return isNegative ? `-${normalizedPositive}` : normalizedPositive;
+};
+
 export function FormularioNF({
     titleText,
     data,
     onChange,
     onHandleCreate,
     onCheckCNPJ,
+    onRpsNumberBlur,
     cpfCnpjAction,
+    rpsNumberReadOnly = true,
+    isSubmitDisabled = false,
 }: IFormNFProps) {
     const navigate = useNavigate();
     const formData = data;
@@ -55,7 +78,10 @@ export function FormularioNF({
         const { name, value } = e.target;
 
         if (monetaryFields.has(name)) {
-            const normalizedValue = normalizeEuropeanDecimalInput(value);
+            const normalizedValue =
+                name === "value_adjust1"
+                    ? normalizeEuropeanDecimalInputAllowNegative(value)
+                    : normalizeEuropeanDecimalInput(value);
 
             onChange({
                 target: {
@@ -89,7 +115,7 @@ export function FormularioNF({
                     target: {
                         name: "service_liquid_value",
                         value: formatEuropeanDecimal(
-                            service - irrf - valueAdjust1,
+                            service - irrf + valueAdjust1,
                         ),
                     },
                 } as any);
@@ -132,6 +158,18 @@ export function FormularioNF({
                     alignItems: "flex-start",
                 }}
             >
+                <CustomInput
+                    type="text"
+                    inputMode="numeric"
+                    label="Numero RPS:"
+                    $labelPosition="top"
+                    name="rps_number"
+                    width="140px"
+                    value={formData.rps_number}
+                    onChange={onChange}
+                    onBlur={onRpsNumberBlur}
+                    readOnly={rpsNumberReadOnly}
+                />
                 <CustomDatePicker
                     type="text"
                     label="Data Emissao:"
@@ -234,15 +272,35 @@ export function FormularioNF({
                     value={formData.city.toString()}
                     onChange={handleChangeValue}
                 />
-                <CustomInput
-                    type="text"
-                    label="UF:"
-                    $labelPosition="top"
-                    name="state"
-                    width="20%"
-                    value={formData.state.toString()}
-                    onChange={handleChangeValue}
-                />
+                <div
+                    style={{
+                        display: "flex",
+                        gap: "5px",
+                        alignItems: "flex-start",
+                    }}
+                >
+                    <CustomInput
+                        type="text"
+                        label="UF:"
+                        $labelPosition="top"
+                        name="state"
+                        width="72px"
+                        value={formData.state.toString()}
+                        onChange={handleChangeValue}
+                    />
+                    {formData.exportacao === "Sim" ? (
+                        <CustomInput
+                            type="select"
+                            label="Cód.País:"
+                            $labelPosition="top"
+                            name="cod_pais"
+                            width="240px"
+                            value={formData.cod_pais}
+                            onChange={handleChangeValue}
+                            selectOptions={countrySelectOptions}
+                        />
+                    ) : null}
+                </div>
             </div>
 
             <div
@@ -334,6 +392,7 @@ export function FormularioNF({
                 <CustomButton
                     $variant={"success"}
                     width="80px"
+                    disabled={isSubmitDisabled}
                     onClick={onHandleCreate}
                 >
                     Gravar
