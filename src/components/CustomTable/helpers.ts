@@ -64,13 +64,11 @@ export const sortTableData = <T extends Record<string, any>>(
       return compareValues(aContractNumber, bContractNumber, order);
     }
 
-    if (orderBy === "rps_number") {
-      const aRpsNumber = parseSortableNumber(aValue);
-      const bRpsNumber = parseSortableNumber(bValue);
+    if (orderBy === "rps_number" || orderBy === "nfs_number") {
+      const aNum = parseSortableNumber(aValue);
+      const bNum = parseSortableNumber(bValue);
 
-      return order === "asc"
-        ? aRpsNumber - bRpsNumber
-        : bRpsNumber - aRpsNumber;
+      return order === "asc" ? aNum - bNum : bNum - aNum;
     }
 
     return compareValues(aValue, bValue, order);

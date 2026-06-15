@@ -23,9 +23,11 @@ export interface ICustomTableProps {
   collapsible?: boolean;
   isLoading?: boolean;
   dateFields?: string[];
+  currencyFields?: string[];
   renderChildren?: (row: TableDataProps) => ReactNode;
   onRowClick?: (row: TableDataProps) => void;
   onSelectionChange?: (selectedRows: any[]) => void;
+  selectedRowIds?: string[];
   actionButtons?: (row: TableDataProps) => ReactNode;
   maxChars?: number;
   page?: number;

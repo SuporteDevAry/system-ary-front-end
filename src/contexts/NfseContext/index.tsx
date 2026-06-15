@@ -75,8 +75,6 @@ export const NfseProvider = ({ children }: INfseProvider) => {
         try {
             const response = await Api.get(`/nfse/consultar-lote/${protocolo}`);
 
-            console.log("Consulta - response: ", response.data);
-
             return response.data;
         } catch (error) {
             throw error;
@@ -142,7 +140,6 @@ export const NfseProvider = ({ children }: INfseProvider) => {
     ): Promise<IConsultarLoteResponse> {
         try {
             const response = await Api.get(`/nfse/consultar-rps/${rps_number}`);
-            console.log("Consulta RPS - response: ", response.data);
             return response.data;
         } catch (error) {
             const err = error as AxiosError;

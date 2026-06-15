@@ -26,6 +26,12 @@ export function Billing() {
             to: "/cobranca/notafiscal",
             disabled: false,
         },
+        {
+            label: "Listagem NFSe",
+            icon: <IoReceiptOutline size={64} />,
+            to: "/cobranca/listagem-nfse",
+            disabled: false,
+        },
         // {
         //     label: "Importação de NF",
         //     icon: <IoReceiptSharp size={64} />,

@@ -18,8 +18,11 @@ export interface IInvoices {
     district: string;
     city: string;
     state: string;
+    cod_pais: string;
     zip_code: string;
     email: string;
+    url_danfse?: string;
+    xml_nfse?: string;
     service_discrim: string;
     service_value: number;
     name_adjust1: string;
@@ -40,7 +43,9 @@ export interface ICreateInvoicesData
     extends Omit<IInvoices, "id" | "created_at" | "updated_at"> { }
 
 export interface IUpdateInvoicesData
-    extends Omit<IInvoices, "id" | "created_at" | "updated_at"> { }
+    extends Omit<IInvoices, "id" | "created_at" | "updated_at"> {
+    [key: string]: any;
+}
 
 export interface IListInvoices extends IInvoices {
     [key: string]: any;
