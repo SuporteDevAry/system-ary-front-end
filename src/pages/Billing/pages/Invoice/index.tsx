@@ -1212,22 +1212,8 @@ export function Invoice() {
                     );
                     const status = normalizeInvoiceStatus(info.status);
 
-                    let xmlContent = info.xml;
-                    if (!xmlContent && info.xmlPath) {
-                        try {
-                            xmlContent = await nfseContext.buscarXmlPorCaminho(
-                                info.xmlPath,
-                            );
-                        } catch (err) {
-                            const msg =
-                                err instanceof Error
-                                    ? err.message
-                                    : "Erro desconhecido";
-                            toast.warning(
-                                `xml_nfse não atualizado (RPS ${invoice.rps_number}): ${msg}`,
-                            );
-                        }
-                    }
+                    // Usa o XML da resposta se disponível; senão usa o XML que foi enviado
+                    const xmlContent = info.xml || xml;
 
                     const updatedInvoice = {
                         ...invoice,
@@ -1252,7 +1238,10 @@ export function Invoice() {
                         url_danfse: updatedInvoice.url_danfse,
                         nfs_number: updatedInvoice.nfs_number,
                         nfs_emission_date: updatedInvoice.nfs_emission_date,
-                        xml_nfse: updatedInvoice.xml_nfse,
+                        // Usa xmlContent se disponível; caso contrário preserva o valor existente no banco
+                        xml_nfse:
+                            updatedInvoice.xml_nfse ??
+                            fullInvoice.data.xml_nfse,
                     });
 
                     updatedInvoices.push(updatedInvoice);
@@ -1458,6 +1447,14 @@ export function Invoice() {
             return;
         }
 
+        // if (
+        //     String(invoice.status || "")
+        //         .trim()
+        //         .toUpperCase() === "AUTORIZADA"
+        // ) {
+        //     return;
+        // }
+
         const protocolo_lote = invoice.protocolo_lote;
         // if (!protocolo_lote) {
         //   toast.error("RPS selecionada não possui protocolo de lote.");
@@ -1466,8 +1463,6 @@ export function Invoice() {
         setIsLoadingRPS(true);
         const tryConsultar = async (prot: string) =>
             nfseContext.consultarLote(prot);
-
-        console.log("tryConsultar", tryConsultar);
 
         const persistInvoiceResult = async (
             targetInvoice: IListInvoices,
@@ -1491,7 +1486,8 @@ export function Invoice() {
                 nfs_emission_date:
                     payload.nfsEmissionDate ??
                     fullInvoice.data.nfs_emission_date,
-                xml_nfse: payload.xml_nfse ?? fullInvoice.data.xml_nfse,
+                // Preserva xml_nfse existente; só grava se ainda não estiver definido
+                xml_nfse: fullInvoice.data.xml_nfse || payload.xml_nfse,
             });
         };
 
@@ -1507,20 +1503,26 @@ export function Invoice() {
                 extractAuthorizationErrorMessage(res);
             const remoteStatus = info.status;
             const remoteNumero = info.numero;
-            const statusLocal = normalizeInvoiceStatus(remoteStatus);
+            // Só normaliza se a API realmente retornou um status; null preserva o existente
+            const statusLocal = remoteStatus
+                ? normalizeInvoiceStatus(remoteStatus)
+                : null;
 
-            let xmlContent = info.xml;
-            if (!xmlContent && info.xmlPath) {
+            let xmlContent: string | null = null;
+            if (!fullInvoice.data.xml_nfse) {
                 try {
-                    xmlContent = await nfseContext.buscarXmlPorCaminho(
-                        info.xmlPath,
-                    );
+                    const invoiceForXml = { ...fullInvoice.data };
+                    if (!invoiceForXml.city_ibge) {
+                        invoiceForXml.city_ibge =
+                            await resolveCityIbgeFromCep(invoiceForXml);
+                    }
+                    xmlContent = gerarXML([invoiceForXml]);
                 } catch (err) {
                     const msg =
                         err instanceof Error
                             ? err.message
                             : "Erro desconhecido";
-                    toast.warning(`xml_nfse não atualizado: ${msg}`);
+                    toast.warning(`xml_nfse não gerado: ${msg}`);
                 }
             }
 
@@ -1529,12 +1531,12 @@ export function Invoice() {
                     rps.id === targetInvoice.id
                         ? {
                               ...rps,
-                              status: statusLocal,
+                              // preserva status existente se a API não retornou nenhum
+                              status: statusLocal ?? rps.status,
                               url_danfse: info.url ?? rps.url_danfse,
                               nfs_number: remoteNumero ?? rps.nfs_number,
                               nfs_emission_date:
                                   info.nfsEmissionDate ?? rps.nfs_emission_date,
-                              xml_nfse: xmlContent ?? rps.xml_nfse,
                           }
                         : rps,
                 ),
@@ -1546,7 +1548,7 @@ export function Invoice() {
                 numero: remoteNumero ?? fullInvoice.data.nfs_number ?? null,
                 nfsEmissionDate:
                     info.nfsEmissionDate ?? fullInvoice.data.nfs_emission_date,
-                xml_nfse: xmlContent ?? fullInvoice.data.xml_nfse,
+                xml_nfse: xmlContent,
             });
 
             // const toastStatus = remoteStatus ?? statusLocal;
@@ -1733,7 +1735,7 @@ export function Invoice() {
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                     <SFilterToggleContainer>
-                        <SFilterLabel>Mês corrente</SFilterLabel>
+                        <SFilterLabel>NFSe emitidas</SFilterLabel>
                         <SFilterToggle
                             checked={showCurrentMonthInvoices}
                             onChange={(e) =>
@@ -1767,7 +1769,8 @@ export function Invoice() {
                         $variant="success"
                         width="220px"
                         onClick={handleCancelNFSe}
-                        disabled={selectedInvoicesForActions.length !== 1}
+                        //disabled={selectedInvoicesForActions.length !== 1}
+                        disabled={true}
                     >
                         Cancelar NFSe
                     </CustomButton>
@@ -1789,15 +1792,15 @@ export function Invoice() {
                         columns={[
                             { header: "Status", field: "status" },
                             { header: "Nº RPS", field: "rps_number" },
-                            { header: "NFS", field: "nfs_number" },
+                            { header: "Nº NFS", field: "nfs_number" },
                             {
                                 header: "Data Emissão",
                                 field: "rps_emission_date",
                             },
-                            { header: "Contrato", field: "service_code" },
                             { header: "Tomador", field: "name" },
                             { header: "Valor", field: "service_value" },
                         ]}
+                        currencyFields={["service_value"]}
                         isLoading={isLoadingRPS}
                         hasPagination={true}
                         actionButtons={renderActionButtons}

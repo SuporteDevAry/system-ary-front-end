@@ -44,6 +44,7 @@ const CustomTable: React.FC<ICustomTableProps> = ({
   multiSelect = false,
   collapsible = false,
   dateFields,
+  currencyFields,
   maxChars = 18,
   page = 0,
   setPage,
@@ -193,13 +194,18 @@ const CustomTable: React.FC<ICustomTableProps> = ({
         : insertMaskInCnpj(value);
     }
     if (dateFields?.includes(column.field)) {
-      if (
-        column.field === "contract_emission_date" ||
-        column.field === "contract_emission_datetime"
-      ) {
-        return convertToCustomFormat(value, locale);
-      }
-      return convertToCustomFormat(value, locale);
+      if (!value) return "-";
+      const strValue = String(value).trim();
+      if (/^\d{2}\/\d{2}\/\d{4}$/.test(strValue)) return strValue;
+      return convertToCustomFormat(strValue, locale);
+    }
+
+    if (currencyFields?.includes(column.field)) {
+      const num = Number(value) || 0;
+      return num.toLocaleString("pt-BR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
     }
 
     if (column.field === "telephone") return insertMaskInTelefone(value);
