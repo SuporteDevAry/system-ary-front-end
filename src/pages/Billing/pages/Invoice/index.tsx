@@ -1316,8 +1316,8 @@ export function Invoice() {
 
         return dataFilteredByStatus.filter(
             (invoice) =>
-                // Filtra por service_code (Contrato) ou name (Nome)
-                invoice.service_code?.toLowerCase().includes(lowerCaseSearch) ||
+                invoice.rps_number?.toLowerCase().includes(lowerCaseSearch) ||
+                invoice.nfs_number?.toLowerCase().includes(lowerCaseSearch) ||
                 invoice.name?.toLowerCase().includes(lowerCaseSearch),
         );
     }, [dataFilteredByStatus, searchTerm]);
@@ -1729,8 +1729,8 @@ export function Invoice() {
                 <STitle>Emissão de NFSe</STitle>
                 <SContainerSearchAndButton>
                     <CustomSearch
-                        width="280px"
-                        placeholder="Digite Nº Contrato ou Nome do Tomador"
+                        width="260px"
+                        placeholder="Digite RPS, NFS ou Tomador"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -1745,7 +1745,7 @@ export function Invoice() {
                     </SFilterToggleContainer>
                     <CustomButton
                         $variant="success"
-                        width="220px"
+                        width="180px"
                         onClick={handleSelectAll}
                     >
                         {areAllSelectableInvoicesSelected
@@ -1754,7 +1754,7 @@ export function Invoice() {
                     </CustomButton>
                     <CustomButton
                         $variant="success"
-                        width="220px"
+                        width="180px"
                         onClick={handleIssueFull}
                         disabled={
                             isLoadingRPS ||
@@ -1767,7 +1767,7 @@ export function Invoice() {
                     </CustomButton>
                     <CustomButton
                         $variant="success"
-                        width="220px"
+                        width="180px"
                         onClick={handleCancelNFSe}
                         //disabled={selectedInvoicesForActions.length !== 1}
                         disabled={true}
@@ -1777,7 +1777,7 @@ export function Invoice() {
 
                     <CustomButton
                         $variant="success"
-                        width="220px"
+                        width="180px"
                         onClick={handleGeraNF_XML}
                         disabled={selectedInvoicesForActions.length !== 1}
                     >

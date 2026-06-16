@@ -60,7 +60,7 @@ const CustomTable: React.FC<ICustomTableProps> = ({
   searchTerm = "",
   searchableFields,
 }) => {
-  const [openRows, setOpenRows] = useState<number[]>([]);
+  const [openRows, setOpenRows] = useState<string[]>([]);
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
   const [selectedRowIds, setSelectedRowIds] = useState<string[]>([]);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -131,7 +131,7 @@ const CustomTable: React.FC<ICustomTableProps> = ({
         if (selectedRowId === rowId) {
           setSelectedRowId(null);
           setOpenRows(
-            openRows.filter((currentRowId) => currentRowId !== Number(rowId)),
+            openRows.filter((currentRowId) => currentRowId !== rowId),
           );
           if (onSelectionChange) {
             onSelectionChange([]);
@@ -139,7 +139,7 @@ const CustomTable: React.FC<ICustomTableProps> = ({
         } else {
         setSelectedRowId(rowId);
         if (collapsible) {
-          setOpenRows((prevOpenRows) => [...prevOpenRows, Number(rowId)]);
+          setOpenRows((prevOpenRows) => [...prevOpenRows, rowId]);
         }
         if (onSelectionChange) {
           const selectedRow = data.find((row) => String(row.id) === rowId);
@@ -452,7 +452,7 @@ const CustomTable: React.FC<ICustomTableProps> = ({
                       }
                     >
                       <Collapse
-                        in={openRows.includes(row.id)}
+                        in={openRows.includes(String(row.id))}
                         timeout="auto"
                         unmountOnExit
                       >

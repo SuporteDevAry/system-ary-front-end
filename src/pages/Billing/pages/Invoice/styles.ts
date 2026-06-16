@@ -5,7 +5,7 @@ import Switch from "@mui/material/Switch";
 export const STitle = styled.h2``;
 
 export const SContainer = styled.div`
-  width: 100%;
+  width: max-content;
 `;
 
 export const SContainerSearchAndButton = styled.div`
