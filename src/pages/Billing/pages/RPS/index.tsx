@@ -14,6 +14,7 @@ import {
 } from "../../../../helpers/europeanDecimal";
 import { ModalClientes } from "../../../Contracts/pages/CreateNewContract/components/Step1/components/ModalClientes";
 import { CustomerInfo } from "../../../../contexts/ContractContext/types";
+import useInfo from "../../../../hooks/userInfo";
 
 export function RPS(): JSX.Element {
     const ISS_PERCENT = 0.05;
@@ -23,6 +24,7 @@ export function RPS(): JSX.Element {
     const location = useLocation();
     const invoiceContext = InvoiceContext();
     const clienteContext = ClienteContext();
+    const { dataUserInfo } = useInfo();
     const currentDate = dayjs().format("DD/MM/YYYY");
     const [cnpjFound, setCnpjFound] = useState<boolean>(false);
     const [isEditing, setIsEditing] = useState<boolean>(false);
@@ -602,6 +604,7 @@ ${valuesBlock}
             if (isEditing) {
                 await invoiceContext.updateInvoice(editingId, {
                     ...formData,
+                    owner_record: dataUserInfo?.email || "",
                     exportacao: exportServiceValue,
                     rps_emission_date: emissionDateValue,
                     service_value: parseEuropeanDecimal(formData.service_value),
@@ -618,6 +621,7 @@ ${valuesBlock}
             } else {
                 await invoiceContext.createInvoice({
                     ...formData,
+                    owner_record: dataUserInfo?.email || "",
                     exportacao: exportServiceValue,
                     rps_emission_date: emissionDateValue,
                     service_value: parseEuropeanDecimal(formData.service_value),

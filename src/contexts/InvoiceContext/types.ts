@@ -21,6 +21,8 @@ export interface IInvoices {
     cod_pais: string;
     zip_code: string;
     email: string;
+    owner_record?: string;
+    owner_send?: string;
     url_danfse?: string;
     xml_nfse?: string;
     service_discrim: string;
