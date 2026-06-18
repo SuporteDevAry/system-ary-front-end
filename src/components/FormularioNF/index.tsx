@@ -144,7 +144,19 @@ export function FormularioNF({
                 name,
                 value: formatEuropeanDecimal(value),
             },
-        } as any);
+            } as any);
+    };
+
+    const handleSelectAllOnFocus = (
+        e: React.FocusEvent<HTMLInputElement>,
+    ) => {
+        e.target.select();
+    };
+
+    const handlePreserveSelectionOnMouseUp = (
+        e: React.MouseEvent<HTMLInputElement>,
+    ) => {
+        e.preventDefault();
     };
 
     return (
@@ -320,6 +332,8 @@ export function FormularioNF({
                     value={String(formData.service_value ?? "")}
                     onChange={handleChangeValue}
                     onBlur={handleBlurValue}
+                    onFocus={handleSelectAllOnFocus}
+                    onMouseUp={handlePreserveSelectionOnMouseUp}
                 />
                 <CustomInput
                     type="text"
@@ -331,6 +345,8 @@ export function FormularioNF({
                     value={String(formData.irrf_value ?? "")}
                     onChange={handleChangeValue}
                     onBlur={handleBlurValue}
+                    onFocus={handleSelectAllOnFocus}
+                    onMouseUp={handlePreserveSelectionOnMouseUp}
                 />
                 <CustomInput
                     type="text"
@@ -343,6 +359,8 @@ export function FormularioNF({
                     onChange={onChange}
                     onBlur={handleBlurValue}
                     readOnly
+                    onFocus={handleSelectAllOnFocus}
+                    onMouseUp={handlePreserveSelectionOnMouseUp}
                 />
             </div>
             <div
@@ -371,6 +389,8 @@ export function FormularioNF({
                     value={String(formData.value_adjust1 ?? "")}
                     onChange={handleChangeValue}
                     onBlur={handleBlurValue}
+                    onFocus={handleSelectAllOnFocus}
+                    onMouseUp={handlePreserveSelectionOnMouseUp}
                 />
             </div>
             <SCustomTextArea

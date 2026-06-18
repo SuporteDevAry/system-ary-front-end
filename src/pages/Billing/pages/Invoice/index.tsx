@@ -896,7 +896,9 @@ export function Invoice() {
             const valorPIS = (valorServicoNumber * 0.0065).toFixed(2);
             const valorCOFINS = (valorServicoNumber * 0.03).toFixed(2);
             const valorINSS = Number(rps.valor_inss || 0).toFixed(2);
-            const valorIR = Number(rps.valor_ir || 0).toFixed(2);
+            const valorIR = Number(
+                rps.valor_ir ?? rps.irrf_value ?? 0,
+            ).toFixed(2);
             const valorCSLL = (valorServicoNumber * 0.01).toFixed(2);
             const aliquotaServicos = (rps.aliquota_servicos || 0.05).toFixed(4);
             const valorFinalCobrado = valorServico;
@@ -940,7 +942,7 @@ export function Invoice() {
             xml += `<ValorPIS>${valorPIS}</ValorPIS>`;
             xml += `<ValorCOFINS>${valorCOFINS}</ValorCOFINS>`;
             xml += `<ValorINSS>${valorINSS}</ValorINSS>`;
-            xml += `<ValorIR>${valorIR}</ValorIR>`;
+            xml += `<valorIR>${valorIR}</valorIR>`;
             xml += `<ValorCSLL>${valorCSLL}</ValorCSLL>`;
             xml += `<CodigoServico>${codServico}</CodigoServico>`;
             xml += `<AliquotaServicos>${aliquotaServicos}</AliquotaServicos>`;

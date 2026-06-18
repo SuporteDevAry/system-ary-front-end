@@ -31,6 +31,7 @@ export interface IInvoices {
     value_adjust2: number;
     deduction_value: number;
     irrf_value: number;
+    valor_ir?: number;
     service_liquid_value: number;
     pis_value?: number;
     cofins_value?: number;
