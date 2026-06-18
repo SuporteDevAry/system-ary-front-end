@@ -23,6 +23,7 @@ import { InvoiceContext } from "../../../../contexts/InvoiceContext";
 import { IListInvoices } from "../../../../contexts/InvoiceContext/types";
 import { NfseContext } from "../../../../contexts/NfseContext";
 import { ModalDelete } from "../../../../components/ModalDelete";
+import useInfo from "../../../../hooks/userInfo";
 
 // Função auxiliar para escapar caracteres especiais do XML (MELHORIA: ROBUSTEZ)
 const escapeXml = (unsafe: string | number) => {
@@ -56,6 +57,7 @@ const cleanData = (text: string) => {
 export function Invoice() {
     const invoiceContext = InvoiceContext();
     const nfseContext = NfseContext();
+    const { dataUserInfo } = useInfo();
     const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState("");
 
@@ -137,6 +139,9 @@ export function Invoice() {
 
     const isAuthorizedForCancel = useCallback((status?: string | null) => {
         return (
+            String(status || "")
+                .trim()
+                .toUpperCase() === "EMITIDA" ||
             String(status || "")
                 .trim()
                 .toUpperCase() === "AUTORIZADA"
@@ -767,7 +772,7 @@ export function Invoice() {
             return "cancelada";
         }
         if (/autoriz/i.test(normalizedRemoteStatus)) {
-            return "autorizada";
+            return "Emitida";
         }
 
         return remoteStatus ?? "processando_autorizacao";
@@ -775,7 +780,7 @@ export function Invoice() {
 
     const isAuthorizedStatus = (status: string | null) => {
         const normalizedStatus = String(status || "").trim();
-        return ["AUTORIZADA", "AUTORIZADO"].includes(
+        return ["AUTORIZADA", "AUTORIZADO", "EMITIDA"].includes(
             normalizedStatus.toUpperCase(),
         );
     };
@@ -896,7 +901,9 @@ export function Invoice() {
             const valorPIS = (valorServicoNumber * 0.0065).toFixed(2);
             const valorCOFINS = (valorServicoNumber * 0.03).toFixed(2);
             const valorINSS = Number(rps.valor_inss || 0).toFixed(2);
-            const valorIR = Number(rps.valor_ir || 0).toFixed(2);
+            const valorIR = Number(rps.valor_ir ?? rps.irrf_value ?? 0).toFixed(
+                2,
+            );
             const valorCSLL = (valorServicoNumber * 0.01).toFixed(2);
             const aliquotaServicos = (rps.aliquota_servicos || 0.05).toFixed(4);
             const valorFinalCobrado = valorServico;
@@ -940,7 +947,7 @@ export function Invoice() {
             xml += `<ValorPIS>${valorPIS}</ValorPIS>`;
             xml += `<ValorCOFINS>${valorCOFINS}</ValorCOFINS>`;
             xml += `<ValorINSS>${valorINSS}</ValorINSS>`;
-            xml += `<ValorIR>${valorIR}</ValorIR>`;
+            xml += `<valorIR>${valorIR}</valorIR>`;
             xml += `<ValorCSLL>${valorCSLL}</ValorCSLL>`;
             xml += `<CodigoServico>${codServico}</CodigoServico>`;
             xml += `<AliquotaServicos>${aliquotaServicos}</AliquotaServicos>`;
@@ -978,7 +985,7 @@ export function Invoice() {
             xml += `<valores>`;
             xml += `<trib>`;
             xml += `<gIBSCBS>`;
-            xml += `<cClassTrib>000001</cClassTrib>`;
+            xml += `<cClassTrib>${exportacao === "Sim" ? "410027" : "000001"}</cClassTrib>`;
             xml += `</gIBSCBS>`;
             xml += `</trib>`;
             xml += `</valores>`;
@@ -1008,7 +1015,7 @@ export function Invoice() {
 
         if (!isAuthorizedForCancel(selectedInvoiceToCancel?.status)) {
             toast.error(
-                "A NFSe só pode ser cancelada quando o registro estiver com status AUTORIZADA.",
+                "A NFSe só pode ser cancelada quando o registro estiver com status EMITIDA.",
             );
             return;
         }
@@ -1219,6 +1226,7 @@ export function Invoice() {
                         ...invoice,
                         protocolo_lote: protocoloLote,
                         status,
+                        owner_send: dataUserInfo?.email || "",
                         url_danfse: info.url ?? invoice.url_danfse,
                         nfs_number: info.numero ?? invoice.nfs_number,
                         nfs_emission_date:
@@ -1235,6 +1243,7 @@ export function Invoice() {
                         city_ibge: invoice.city_ibge,
                         protocolo_lote: updatedInvoice.protocolo_lote,
                         status: updatedInvoice.status,
+                        owner_send: updatedInvoice.owner_send,
                         url_danfse: updatedInvoice.url_danfse,
                         nfs_number: updatedInvoice.nfs_number,
                         nfs_emission_date: updatedInvoice.nfs_emission_date,
@@ -1798,6 +1807,7 @@ export function Invoice() {
                                 field: "rps_emission_date",
                             },
                             { header: "Tomador", field: "name" },
+                            { header: "Exportação", field: "exportacao" },
                             { header: "Valor", field: "service_value" },
                         ]}
                         currencyFields={["service_value"]}

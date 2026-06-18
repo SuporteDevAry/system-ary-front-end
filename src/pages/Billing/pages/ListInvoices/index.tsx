@@ -319,6 +319,12 @@ export function ListInvoices() {
                 sortable: false,
             },
             {
+                field: "code_verif",
+                header: "Cód.Verificação",
+                width: "120px",
+                sortable: false,
+            },
+            {
                 field: "name",
                 header: "Tomador",
                 width: "220px",
@@ -460,6 +466,18 @@ export function ListInvoices() {
                 field: "cod_pais",
                 header: "País",
                 width: "130px",
+                sortable: false,
+            },
+            {
+                field: "owner_record",
+                header: "Usuário RPS",
+                width: "120px",
+                sortable: false,
+            },
+            {
+                field: "owner_send",
+                header: "Usuário Emissão",
+                width: "120px",
                 sortable: false,
             },
         ],

@@ -21,6 +21,8 @@ export interface IInvoices {
     cod_pais: string;
     zip_code: string;
     email: string;
+    owner_record?: string;
+    owner_send?: string;
     url_danfse?: string;
     xml_nfse?: string;
     service_discrim: string;
@@ -31,6 +33,7 @@ export interface IInvoices {
     value_adjust2: number;
     deduction_value: number;
     irrf_value: number;
+    valor_ir?: number;
     service_liquid_value: number;
     pis_value?: number;
     cofins_value?: number;
