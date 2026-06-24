@@ -76,25 +76,46 @@ export function RPS(): JSX.Element {
         [currentDate],
     );
 
+    const shouldApplyIrrf = useCallback(
+        (exportacao?: string | null) =>
+            normalizeExportService(exportacao) !== "Sim",
+        [normalizeExportService],
+    );
+
     const calculateIrrfValue = useCallback(
-        (serviceValue: number, document: string) => {
+        (
+            serviceValue: number,
+            document: string,
+            exportacao?: string | null,
+        ) => {
+            if (!shouldApplyIrrf(exportacao)) {
+                return "0,00";
+            }
+
             if (isCpf(document)) {
                 return "0,00";
             }
 
             return formatEuropeanDecimal(serviceValue * 0.015);
         },
-        [isCpf],
+        [isCpf, shouldApplyIrrf],
     );
 
     const calculateServiceLiquidValue = useCallback(
-        (serviceValue: number, irrfValue: string, valueAdjust1: string) =>
+        (
+            serviceValue: number,
+            irrfValue: string,
+            valueAdjust1: string,
+            exportacao?: string | null,
+        ) =>
             formatEuropeanDecimal(
                 serviceValue -
-                    parseEuropeanDecimal(irrfValue) +
+                    (shouldApplyIrrf(exportacao)
+                        ? parseEuropeanDecimal(irrfValue)
+                        : 0) +
                     parseEuropeanDecimal(valueAdjust1),
             ),
-        [],
+        [shouldApplyIrrf],
     );
 
     const calculateCsllValue = useCallback(
@@ -182,7 +203,10 @@ export function RPS(): JSX.Element {
                 "TOTAL DOS SERVICOS",
                 data.service_value,
             );
-            const linhaIRRF = formatLinha("(-) I.R.R.F.", data.irrf_value);
+            const linhaIRRF =
+                normalizeExportService(data.exportacao) === "Sim"
+                    ? ""
+                    : formatLinha("(-) I.R.R.F.", data.irrf_value);
             const linhaAjuste1 =
                 data.name_adjust1.length > 0
                     ? formatLinha(data.name_adjust1, data.value_adjust1)
@@ -268,13 +292,26 @@ ${valuesBlock}
             setOriginalRpsNumber(
                 Number(editingInvoice.rps_number ?? editingInvoice.rpsNumber ?? 0),
             );
+            const exportacaoValue = normalizeExportService(
+                editingInvoice.exportacao,
+            );
+            const serviceValue = parseEuropeanDecimal(
+                editingInvoice.service_value || 0,
+            );
+            const irrfValue =
+                exportacaoValue === "Sim"
+                    ? "0,00"
+                    : formatEuropeanDecimal(editingInvoice.irrf_value || 0);
+            const valueAdjust1 = formatEuropeanDecimal(
+                editingInvoice.value_adjust1 || 0,
+            );
 
             setFormData({
                 rps_number: editingInvoice.rps_number || "",
                 rps_emission_date: normalizeDateToBr(
                     editingInvoice.rps_emission_date,
                 ),
-                exportacao: normalizeExportService(editingInvoice.exportacao),
+                exportacao: exportacaoValue,
                 nfs_number: editingInvoice.nfs_number || "",
                 nfs_emission_date: editingInvoice.nfs_emission_date
                     ? normalizeDateToBr(editingInvoice.nfs_emission_date, "")
@@ -297,19 +334,18 @@ ${valuesBlock}
                 email: editingInvoice.email || "",
                 service_discrim: editingInvoice.service_discrim || "",
                 service_value: formatEuropeanDecimal(
-                    editingInvoice.service_value || 0,
+                    serviceValue,
                 ),
                 name_adjust1: editingInvoice.name_adjust1 || "",
-                value_adjust1: formatEuropeanDecimal(
-                    editingInvoice.value_adjust1 || 0,
-                ),
+                value_adjust1: valueAdjust1,
                 name_adjust2: editingInvoice.name_adjust2 || "",
                 value_adjust2: editingInvoice.value_adjust2 || 0,
-                irrf_value: formatEuropeanDecimal(
-                    editingInvoice.irrf_value || 0,
-                ),
-                service_liquid_value: formatEuropeanDecimal(
-                    editingInvoice.service_liquid_value || 0,
+                irrf_value: irrfValue,
+                service_liquid_value: calculateServiceLiquidValue(
+                    serviceValue,
+                    irrfValue,
+                    valueAdjust1,
+                    exportacaoValue,
                 ),
                 deduction_value: editingInvoice.deduction_value || 0,
                 pis_value: editingInvoice.pis_value || 0,
@@ -530,6 +566,7 @@ ${valuesBlock}
         formData.name_adjust1,
         formData.value_adjust1,
         formData.service_liquid_value,
+        formData.exportacao,
         buildServiceValuesBlock,
         upsertServiceValuesBlock,
     ]);
@@ -589,6 +626,17 @@ ${valuesBlock}
             const exportServiceValue = normalizeExportService(
                 formData.exportacao,
             );
+            const irrfValue = exportServiceValue === "Sim"
+                ? 0
+                : parseEuropeanDecimal(formData.irrf_value);
+            const serviceLiquidValue = parseEuropeanDecimal(
+                calculateServiceLiquidValue(
+                    parseEuropeanDecimal(formData.service_value),
+                    formData.irrf_value,
+                    String(formData.value_adjust1),
+                    exportServiceValue,
+                ),
+            );
             if (
                 exportServiceValue === "Sim" &&
                 !String(formData.cod_pais || "").trim()
@@ -608,11 +656,9 @@ ${valuesBlock}
                     exportacao: exportServiceValue,
                     rps_emission_date: emissionDateValue,
                     service_value: parseEuropeanDecimal(formData.service_value),
-                    irrf_value: parseEuropeanDecimal(formData.irrf_value),
+                    irrf_value: irrfValue,
                     value_adjust1: parseEuropeanDecimal(formData.value_adjust1),
-                    service_liquid_value: parseEuropeanDecimal(
-                        formData.service_liquid_value,
-                    ),
+                    service_liquid_value: serviceLiquidValue,
                     ...taxValues,
                 });
                 toast.success(
@@ -625,11 +671,9 @@ ${valuesBlock}
                     exportacao: exportServiceValue,
                     rps_emission_date: emissionDateValue,
                     service_value: parseEuropeanDecimal(formData.service_value),
-                    irrf_value: parseEuropeanDecimal(formData.irrf_value),
+                    irrf_value: irrfValue,
                     value_adjust1: parseEuropeanDecimal(formData.value_adjust1),
-                    service_liquid_value: parseEuropeanDecimal(
-                        formData.service_liquid_value,
-                    ),
+                    service_liquid_value: serviceLiquidValue,
                     ...taxValues,
                 });
                 toast.success(
@@ -683,39 +727,47 @@ ${valuesBlock}
                     ? { cod_pais: "" }
                     : null),
             };
+            const exportacaoAtual =
+                name === "exportacao" ? normalizedValue : prevData.exportacao;
+            const serviceValueAtual =
+                name === "service_value"
+                    ? parseEuropeanDecimal(value)
+                    : parseEuropeanDecimal(prevData.service_value);
+            const documentAtual =
+                name === "cpf_cnpj" ? value : prevData.cpf_cnpj;
+            const irrfAtual = calculateIrrfValue(
+                serviceValueAtual,
+                documentAtual,
+                exportacaoAtual,
+            );
+            const serviceLiquidAtual = calculateServiceLiquidValue(
+                serviceValueAtual,
+                irrfAtual,
+                String(prevData.value_adjust1),
+                exportacaoAtual,
+            );
 
             if (name === "cpf_cnpj") {
-                const serviceValue = parseEuropeanDecimal(
-                    prevData.service_value,
-                );
-                const irrfValue = calculateIrrfValue(serviceValue, value);
-
                 return {
                     ...nextData,
-                    irrf_value: irrfValue,
-                    service_liquid_value: calculateServiceLiquidValue(
-                        serviceValue,
-                        irrfValue,
-                        String(prevData.value_adjust1),
-                    ),
+                    irrf_value: irrfAtual,
+                    service_liquid_value: serviceLiquidAtual,
                 };
             }
 
             if (name === "service_value") {
-                const serviceValue = parseEuropeanDecimal(value);
-                const irrfValue = calculateIrrfValue(
-                    serviceValue,
-                    prevData.cpf_cnpj,
-                );
-
                 return {
                     ...nextData,
-                    irrf_value: irrfValue,
-                    service_liquid_value: calculateServiceLiquidValue(
-                        serviceValue,
-                        irrfValue,
-                        String(prevData.value_adjust1),
-                    ),
+                    irrf_value: irrfAtual,
+                    service_liquid_value: serviceLiquidAtual,
+                };
+            }
+
+            if (name === "exportacao") {
+                return {
+                    ...nextData,
+                    irrf_value: irrfAtual,
+                    service_liquid_value: serviceLiquidAtual,
                 };
             }
 
@@ -743,6 +795,7 @@ ${valuesBlock}
             const irrfValue = calculateIrrfValue(
                 serviceValue,
                 selectedCustomerData.cnpj_cpf || "",
+                formData.exportacao,
             );
 
             setFormData((prevData) => ({
@@ -761,6 +814,7 @@ ${valuesBlock}
                     serviceValue,
                     irrfValue,
                     String(prevData.value_adjust1),
+                    prevData.exportacao,
                 ),
             }));
         },
@@ -768,6 +822,7 @@ ${valuesBlock}
             calculateIrrfValue,
             calculateServiceLiquidValue,
             formData.service_value,
+            formData.exportacao,
         ],
     );
 

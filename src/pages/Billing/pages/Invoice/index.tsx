@@ -22,8 +22,10 @@ import dayjs from "dayjs";
 import { InvoiceContext } from "../../../../contexts/InvoiceContext";
 import { IListInvoices } from "../../../../contexts/InvoiceContext/types";
 import { NfseContext } from "../../../../contexts/NfseContext";
+import { Modal } from "../../../../components/Modal";
 import { ModalDelete } from "../../../../components/ModalDelete";
 import useInfo from "../../../../hooks/userInfo";
+import { STextField } from "./styles";
 
 // Função auxiliar para escapar caracteres especiais do XML (MELHORIA: ROBUSTEZ)
 const escapeXml = (unsafe: string | number) => {
@@ -73,6 +75,11 @@ export function Invoice() {
     >(null);
     const [isDeleteInvoiceModal, setDeleteInvoiceModal] =
         useState<boolean>(false);
+    const [isCancelNFSeModalOpen, setIsCancelNFSeModalOpen] =
+        useState<boolean>(false);
+    const [cancelJustificativa, setCancelJustificativa] = useState("");
+    const [invoiceToCancel, setInvoiceToCancel] =
+        useState<IListInvoices | null>(null);
     const [modalContent, setModalContent] = useState<string>("");
     const [invoiceForDelete, setInvoiceForDelete] = useState<IListInvoices>();
     const ibgeByCepCache = useRef(new Map<string, string>());
@@ -901,9 +908,10 @@ export function Invoice() {
             const valorPIS = (valorServicoNumber * 0.0065).toFixed(2);
             const valorCOFINS = (valorServicoNumber * 0.03).toFixed(2);
             const valorINSS = Number(rps.valor_inss || 0).toFixed(2);
-            const valorIR = Number(rps.valor_ir ?? rps.irrf_value ?? 0).toFixed(
-                2,
-            );
+            const valorIR =
+                exportacao === "Sim"
+                    ? null
+                    : Number(rps.valor_ir ?? rps.irrf_value ?? 0).toFixed(2);
             const valorCSLL = (valorServicoNumber * 0.01).toFixed(2);
             const aliquotaServicos = (rps.aliquota_servicos || 0.05).toFixed(4);
             const valorFinalCobrado = valorServico;
@@ -947,7 +955,9 @@ export function Invoice() {
             xml += `<ValorPIS>${valorPIS}</ValorPIS>`;
             xml += `<ValorCOFINS>${valorCOFINS}</ValorCOFINS>`;
             xml += `<ValorINSS>${valorINSS}</ValorINSS>`;
-            xml += `<valorIR>${valorIR}</valorIR>`;
+            if (valorIR !== null) {
+                xml += `<valorIR>${valorIR}</valorIR>`;
+            }
             xml += `<ValorCSLL>${valorCSLL}</ValorCSLL>`;
             xml += `<CodigoServico>${codServico}</CodigoServico>`;
             xml += `<AliquotaServicos>${aliquotaServicos}</AliquotaServicos>`;
@@ -999,7 +1009,7 @@ export function Invoice() {
         return xml;
     };
 
-    const handleCancelNFSe = async () => {
+    const handleOpenCancelNFSeModal = () => {
         const invoicesToIssue = selectedInvoicesForActions;
         const selectedInvoiceToCancel = invoicesToIssue[0];
 
@@ -1020,18 +1030,60 @@ export function Invoice() {
             return;
         }
 
-        const protocoloLote = selectedInvoiceToCancel?.protocolo_lote;
+        const lote =
+            selectedInvoiceToCancel?.lote ??
+            selectedInvoiceToCancel?.protocolo_lote;
 
-        if (!protocoloLote) {
+        if (!lote) {
             toast.error(
-                "A NFSe selecionada não possui protocolo para cancelamento.",
+                "A NFSe selecionada não possui lote para cancelamento.",
             );
+            return;
+        }
+
+        setInvoiceToCancel(selectedInvoiceToCancel);
+        setCancelJustificativa("");
+        setIsCancelNFSeModalOpen(true);
+    };
+
+    const handleCloseCancelNFSeModal = () => {
+        setIsCancelNFSeModalOpen(false);
+        setInvoiceToCancel(null);
+        setCancelJustificativa("");
+    };
+
+    const handleConfirmCancelNFSe = async () => {
+        const selectedInvoiceToCancel = invoiceToCancel;
+
+        if (!selectedInvoiceToCancel) {
+            toast.error("Nenhuma NFSe selecionada para cancelamento.");
+            return;
+        }
+
+        const lote =
+            selectedInvoiceToCancel?.lote ??
+            selectedInvoiceToCancel?.protocolo_lote;
+
+        if (!lote) {
+            toast.error(
+                "A NFSe selecionada não possui lote para cancelamento.",
+            );
+            return;
+        }
+
+        const justificativa = cancelJustificativa.trim();
+
+        if (!justificativa) {
+            toast.error("Informe a justificativa para cancelar a NFSe.");
             return;
         }
 
         try {
             setIsLoadingRPS(true);
-            const response = await nfseContext.cancelarNFSe(protocoloLote);
+            const response = await nfseContext.cancelarNFSe(
+                String(lote),
+                justificativa,
+            );
             const info = extractInvoiceInfoFromResponse(
                 response,
                 selectedInvoiceToCancel,
@@ -1046,7 +1098,7 @@ export function Invoice() {
 
             await invoiceContext.updateInvoice(selectedInvoiceToCancel.id, {
                 ...fullInvoice.data,
-                protocolo_lote: protocoloLote,
+                protocolo_lote: String(lote),
                 status: statusLocal,
                 url_danfse: info.url ?? fullInvoice.data.url_danfse,
                 nfs_number: info.numero ?? fullInvoice.data.nfs_number,
@@ -1079,7 +1131,112 @@ export function Invoice() {
 
             toast.success(
                 response?.message ||
-                    `NFSe vinculada ao protocolo ${protocoloLote} cancelada com sucesso.`,
+                    `NFSe vinculada ao lote ${lote} cancelada com sucesso.`,
+            );
+            handleCloseCancelNFSeModal();
+            await fetchData();
+        } catch (error: any) {
+            const errorMsg =
+                error?.response?.data?.message ||
+                error?.response?.data?.error ||
+                error?.message ||
+                "Não foi possível cancelar a NFSe.";
+            toast.error(`Erro ao cancelar NFSe: ${errorMsg}`);
+        } finally {
+            setIsLoadingRPS(false);
+        }
+    };
+
+    const handleCancelNFSe = async () => {
+        handleOpenCancelNFSeModal();
+        return;
+
+        const invoicesToIssue = selectedInvoicesForActions;
+        const selectedInvoiceToCancel = invoicesToIssue[0];
+
+        if (invoicesToIssue.length === 0) {
+            toast.error("Nenhuma NFSe selecionada para cancelamento.");
+            return;
+        }
+
+        if (invoicesToIssue.length > 1) {
+            toast.error("Selecione apenas uma NFSe para cancelamento.");
+            return;
+        }
+
+        if (!isAuthorizedForCancel(selectedInvoiceToCancel?.status)) {
+            toast.error(
+                "A NFSe só pode ser cancelada quando o registro estiver com status EMITIDA.",
+            );
+            return;
+        }
+
+        const lote =
+            selectedInvoiceToCancel?.lote ??
+            selectedInvoiceToCancel?.protocolo_lote;
+
+        if (!lote) {
+            toast.error(
+                "A NFSe selecionada não possui lote para cancelamento.",
+            );
+            return;
+        }
+
+        try {
+            setIsLoadingRPS(true);
+            const justificativa = "Erro na emissão da NFSe";
+            const response = await nfseContext.cancelarNFSe(
+                String(lote),
+                justificativa,
+            );
+            const info = extractInvoiceInfoFromResponse(
+                response,
+                selectedInvoiceToCancel,
+            );
+            const statusLocal = normalizeInvoiceStatus(
+                info.status ?? "cancelada",
+            );
+
+            const fullInvoice = await invoiceContext.getInvoiceById(
+                selectedInvoiceToCancel.id,
+            );
+
+            await invoiceContext.updateInvoice(selectedInvoiceToCancel.id, {
+                ...fullInvoice.data,
+                protocolo_lote: String(lote),
+                status: statusLocal,
+                url_danfse: info.url ?? fullInvoice.data.url_danfse,
+                nfs_number: info.numero ?? fullInvoice.data.nfs_number,
+            });
+
+            setListInvoices((prev) =>
+                prev.map((invoice) =>
+                    invoice.id === selectedInvoiceToCancel.id
+                        ? {
+                              ...invoice,
+                              status: statusLocal,
+                              url_danfse: info.url ?? invoice.url_danfse,
+                          }
+                        : invoice,
+                ),
+            );
+
+            setSelectedInvoice(
+                (prev) =>
+                    prev?.map((invoice) =>
+                        invoice.id === selectedInvoiceToCancel.id
+                            ? {
+                                  ...invoice,
+                                  status: statusLocal,
+                                  url_danfse: info.url ?? invoice.url_danfse,
+                              }
+                            : invoice,
+                    ) ?? null,
+            );
+
+            toast.success(
+                response?.message ||
+                    `NFSe vinculada ao lote ${lote} cancelada com sucesso.`,
             );
             await fetchData();
         } catch (error: any) {
@@ -1778,8 +1935,8 @@ export function Invoice() {
                         $variant="success"
                         width="180px"
                         onClick={handleCancelNFSe}
-                        //disabled={selectedInvoicesForActions.length !== 1}
-                        disabled={true}
+                        disabled={selectedInvoicesForActions.length !== 1}
+                        //disabled={true}
                     >
                         Cancelar NFSe
                     </CustomButton>
@@ -1840,6 +1997,38 @@ export function Invoice() {
                 onConfirm={handleDeleteInvoice}
                 content={modalContent}
             />
+            <Modal
+                open={isCancelNFSeModalOpen}
+                titleText="Cancelar NFSe"
+                cancelButton="Voltar"
+                confirmButton="Cancelar NFSe"
+                onClose={handleCloseCancelNFSeModal}
+                onHandleConfirm={handleConfirmCancelNFSe}
+                variantCancel="primary"
+                variantConfirm="success"
+                maxWidth="sm"
+                fullWidth
+                disabledConfirm={!cancelJustificativa.trim() || isLoadingRPS}
+            >
+                <div>
+                    <p>
+                        Informe a justificativa para o cancelamento da NFSe
+                        selecionada.
+                    </p>
+                    <STextField
+                        label="Justificativa"
+                        placeholder="Descreva o motivo do cancelamento"
+                        value={cancelJustificativa}
+                        onChange={(event) =>
+                            setCancelJustificativa(event.target.value)
+                        }
+                        multiline
+                        minRows={4}
+                        fullWidth
+                        autoFocus
+                    />
+                </div>
+            </Modal>
         </SContainer>
     );
 }
