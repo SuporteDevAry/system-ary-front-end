@@ -13,7 +13,10 @@ import { AxiosError } from "axios";
 interface INfseContext {
     enviarLote: (data: IEnviarLoteRequest) => Promise<IEnviarLoteResponse>;
     consultarLote: (protocolo: string) => Promise<IConsultarLoteResponse>;
-    cancelarNFSe: (protocolo: string) => Promise<ICancelarNFSeResponse>;
+    cancelarNFSe: (
+        lote: string,
+        justificativa: string,
+    ) => Promise<ICancelarNFSeResponse>;
     consultarRps: (rps_number: string) => Promise<IConsultarLoteResponse>;
     buscarIbgePorCep: (cep: string) => Promise<IBuscarIbgePorCepResponse>;
 }
@@ -31,7 +34,7 @@ const newContext = createContext<INfseContext>({
             provider: "",
             protocolo: "",
         }),
-    cancelarNFSe: () =>
+    cancelarNFSe: (_lote: string, _justificativa: string) =>
         Promise.resolve({
             message: "",
             provider: "",
@@ -82,56 +85,31 @@ export const NfseProvider = ({ children }: INfseProvider) => {
     }
 
     async function cancelarNFSe(
-        protocolo: string,
+        lote: string,
+        justificativa: string,
     ): Promise<ICancelarNFSeResponse> {
-        const protocoloBase = String(protocolo || "").trim();
+        const loteBase = String(lote || "").trim();
+        const justificativaBase = String(justificativa || "").trim();
 
-        if (!protocoloBase) {
-            throw new Error("Protocolo inválido para cancelamento de NFSe");
+        if (!loteBase) {
+            throw new Error("Lote inválido para cancelamento de NFSe");
         }
 
-        const candidateProtocoloPaths = [
-            protocoloBase,
-            /^LOTE-/i.test(protocoloBase)
-                ? protocoloBase.replace(/^LOTE-/i, "")
-                : `LOTE-${protocoloBase}`,
-        ];
-
-        const candidateEndpoints = [
-            (value: string) => `/nfse/cancelar/${value}`,
-            (value: string) => `/nfse/cancelar-lote/${value}`,
-        ];
-
-        let lastError: unknown = null;
-
-        for (const currentProtocolo of candidateProtocoloPaths) {
-            const encodedProtocolo = encodeURIComponent(currentProtocolo);
-            for (const buildEndpoint of candidateEndpoints) {
-                const endpoint = buildEndpoint(encodedProtocolo);
-
-                try {
-                    const response = await Api.post(endpoint);
-
-                    console.log("Cancelamento - response: ", response.data);
-
-                    return response.data;
-                } catch (error) {
-                    lastError = error;
-
-                    try {
-                        const response = await Api.delete(endpoint);
-
-                        console.log("Cancelamento - response: ", response.data);
-
-                        return response.data;
-                    } catch (deleteError) {
-                        lastError = deleteError;
-                    }
-                }
-            }
+        if (!justificativaBase) {
+            throw new Error("Justificativa inválida para cancelamento de NFSe");
         }
 
-        throw lastError;
+        const body = { justificativa: justificativaBase };
+        const endpoint = `/nfse/${encodeURIComponent(loteBase)}`;
+
+        try {
+            const response = await Api.delete(endpoint, {
+                data: body,
+            });
+            return response.data;
+        } catch (error) {
+            throw error;
+        }
     }
 
     // Consulta status de uma RPS individual
