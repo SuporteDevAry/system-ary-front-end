@@ -1,6 +1,7 @@
 import styled from "styled-components";
 import { V } from "../../../../styles/variables";
 import Switch from "@mui/material/Switch";
+import { TextField } from "@mui/material";
 
 export const STitle = styled.h2``;
 
@@ -86,4 +87,36 @@ export const SFilterToggleContainer = styled.label`
   gap: 6px;
   cursor: pointer;
   user-select: none;
+`;
+
+export const STextField = styled(TextField)`
+  width: 100%;
+
+  .MuiOutlinedInput-root {
+    fieldset {
+      border-color: ${(props) => props.theme["gray-300"]};
+    }
+
+    &:hover fieldset {
+      border-color: ${(props) => props.theme["gray-500"]};
+    }
+
+    &.Mui-focused fieldset {
+      border-color: ${(props) => props.theme["yellow-500"]};
+      box-shadow: 0 0 0 4px rgba(231, 177, 10, 0.08);
+    }
+  }
+
+  .MuiInputLabel-root {
+    color: ${(props) => props.theme["gray-700"]};
+  }
+
+  .MuiInputLabel-root.Mui-focused {
+    color: ${(props) => props.theme["yellow-500"]};
+  }
+
+  textarea::placeholder {
+    color: ${(props) => props.theme["gray-500"]};
+    opacity: 1;
+  }
 `;
