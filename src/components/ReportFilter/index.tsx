@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Modal } from "../Modal";
 import { SFormContainer, STextField } from "./styles";
 import { IReportFilterProps, ReportFilterField, SelectState } from "./types";
+import { TableProductContext } from "../../contexts/TablesProducts";
+import { ITableProductsData } from "../../contexts/TablesProducts/types";
 
 const DEFAULT_VISIBLE_FIELDS: ReportFilterField[] = [
   "seller",
@@ -14,9 +16,6 @@ const DEFAULT_VISIBLE_FIELDS: ReportFilterField[] = [
   "product",
   "name_product",
 ];
-import { TableProductContext } from "../../contexts/TablesProducts";
-import { ITableProductsData } from "../../contexts/TablesProducts/types";
-
 export const ReportFilter: React.FC<IReportFilterProps> = ({
   open,
   initialFilters,
@@ -27,12 +26,47 @@ export const ReportFilter: React.FC<IReportFilterProps> = ({
   confirmText = "OK",
   cancelText = "Fechar",
   visibleFields,
+  defaultMesaName,
+  allowEmptyMesa = true,
 }) => {
   const [filters, setFilters] = useState<SelectState>(initialFilters || {});
   // Estado auxiliar para mesa selecionada (table_id)
   const [selectedMesaId, setSelectedMesaId] = useState<string>("");
   const [mesas, setMesas] = useState<ITableProductsData[]>([]);
   const tableProductContext = TableProductContext();
+
+  const normalizeText = (value?: string) =>
+    (value || "")
+      .toUpperCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .trim();
+
+  const arrayToNormalizedList = (value?: string | string[]) => {
+    if (Array.isArray(value)) {
+      return value.map((item) => normalizeText(item)).filter(Boolean);
+    }
+
+    if (typeof value === "string" && value !== "") {
+      return [normalizeText(value)];
+    }
+
+    return [];
+  };
+
+  const sameProductTypes = (
+    left?: string | string[],
+    right?: string | string[],
+  ) => {
+    const leftList = arrayToNormalizedList(left);
+    const rightList = arrayToNormalizedList(right);
+
+    if (leftList.length !== rightList.length) return false;
+
+    const leftSorted = [...leftList].sort();
+    const rightSorted = [...rightList].sort();
+    return leftSorted.every((value, index) => value === rightSorted[index]);
+  };
 
   // Buscar mesas dinamicamente ao montar
   useEffect(() => {
@@ -46,6 +80,7 @@ export const ReportFilter: React.FC<IReportFilterProps> = ({
     };
     fetchTables();
   }, []);
+
   const [dateStartFocused, setDateStartFocused] = useState(false);
   const [dateEndFocused, setDateEndFocused] = useState(false);
   const enabledFields = new Set(visibleFields ?? DEFAULT_VISIBLE_FIELDS);
@@ -87,14 +122,41 @@ export const ReportFilter: React.FC<IReportFilterProps> = ({
       }
 
       setFilters(norm);
-      if (!norm.product_types) {
+
+      const mesaById =
+        typeof norm.product_types === "string" && norm.product_types !== ""
+          ? mesas.find((mesa) => mesa.id === norm.product_types)
+          : undefined;
+
+      const currentTypes = arrayToNormalizedList(norm.product_types);
+      const matchedByTypes =
+        currentTypes.length > 0
+          ? mesas.find((mesa) => sameProductTypes(mesa.product_types, currentTypes))
+          : undefined;
+
+      const matchedByName = defaultMesaName
+        ? mesas.find(
+            (mesa) =>
+              normalizeText(mesa.name) === normalizeText(defaultMesaName),
+          )
+        : undefined;
+
+      if (mesaById) {
+        setSelectedMesaId(mesaById.id ?? "");
+      } else if (matchedByTypes) {
+        setSelectedMesaId(matchedByTypes.id ?? "");
+      } else if (matchedByName) {
+        setSelectedMesaId(matchedByName.id ?? "");
+      } else if (!allowEmptyMesa && mesas[0]) {
+        setSelectedMesaId(mesas[0].id ?? "");
+      } else if (!norm.product_types) {
         setSelectedMesaId("");
       }
     } else {
       setFilters({});
       setSelectedMesaId("");
     }
-  }, [initialFilters]);
+  }, [initialFilters, mesas, defaultMesaName]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -281,6 +343,13 @@ export const ReportFilter: React.FC<IReportFilterProps> = ({
       if (mesa) {
         out.product_types = mesa.product_types;
       }
+    } else if (defaultMesaName) {
+      const mesa = mesas.find(
+        (m) => normalizeText(m.name) === normalizeText(defaultMesaName),
+      );
+      if (mesa) {
+        out.product_types = mesa.product_types;
+      }
     }
 
     onConfirm(out);
@@ -395,12 +464,17 @@ export const ReportFilter: React.FC<IReportFilterProps> = ({
             variant="outlined"
             size="small"
             name="product_types"
-            value={selectedMesaId || filters.product_types || ""}
+            value={
+              selectedMesaId ||
+              (typeof filters.product_types === "string"
+                ? filters.product_types
+                : "")
+            }
             onChange={handleChange}
             sx={{ width: "100%" }}
             SelectProps={{ native: true }}
           >
-            <option value=""></option>
+            {allowEmptyMesa && <option value=""></option>}
             {mesas.map((mesa) => (
               <option key={mesa.id} value={mesa.id}>
                 {mesa.name}

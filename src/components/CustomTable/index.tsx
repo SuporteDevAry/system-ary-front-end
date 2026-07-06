@@ -227,7 +227,11 @@ const CustomTable: React.FC<ICustomTableProps> = ({
     // }
 
     // Carlos - usado no relatorio de Faturamento Grãos (Invoicing)
-    if (column.field === "TOTALCALC" || column.field.startsWith("S_CN")) {
+    if (
+      column.field === "TOTALCALC" ||
+      column.field.startsWith("S_CN") ||
+      /^[A-Z0-9]+_\d+$/.test(column.field)
+    ) {
       let auxQtd = value || 0;
       return auxQtd.toLocaleString("pt-BR", {
         style: "currency",

@@ -1042,7 +1042,7 @@ export function Invoice() {
         }
 
         setInvoiceToCancel(selectedInvoiceToCancel);
-        setCancelJustificativa("");
+        setCancelJustificativa("Nota Fiscal cancelada.");
         setIsCancelNFSeModalOpen(true);
     };
 
@@ -1999,9 +1999,11 @@ export function Invoice() {
             />
             <Modal
                 open={isCancelNFSeModalOpen}
-                titleText="Cancelar NFSe"
-                cancelButton="Voltar"
-                confirmButton="Cancelar NFSe"
+                titleText={`Cancelar NFSe Nº ${
+                    invoiceToCancel?.nfs_number?.trim() || ""
+                }`}
+                cancelButton="Não"
+                confirmButton="Sim"
                 onClose={handleCloseCancelNFSeModal}
                 onHandleConfirm={handleConfirmCancelNFSe}
                 variantCancel="primary"
@@ -2011,10 +2013,7 @@ export function Invoice() {
                 disabledConfirm={!cancelJustificativa.trim() || isLoadingRPS}
             >
                 <div>
-                    <p>
-                        Informe a justificativa para o cancelamento da NFSe
-                        selecionada.
-                    </p>
+                    <br></br>
                     <STextField
                         label="Justificativa"
                         placeholder="Descreva o motivo do cancelamento"

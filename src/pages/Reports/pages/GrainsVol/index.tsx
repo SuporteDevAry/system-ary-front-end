@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+﻿import { useCallback, useEffect, useMemo, useState } from "react";
 import CustomTable from "../../../../components/CustomTable";
 import { CustomSearch } from "../../../../components/CustomSearch";
 import useTableSearch from "../../../../hooks/useTableSearch";
@@ -15,6 +15,7 @@ import ReportFilter from "../../../../components/ReportFilter";
 import { SelectState } from "../../../../components/ReportFilter/types";
 import CustomTooltipLabel from "../../../../components/CustomTooltipLabel";
 import { sortTableData } from "../../../../components/CustomTable/helpers";
+import * as XLSX from "xlsx-js-style";
 
 const parseLocaleNumber = (value: number | string | null | undefined) => {
     if (typeof value === "number") {
@@ -124,8 +125,8 @@ export function GrainsVol() {
                     day_exchange_rate: any;
                     type_currency: any;
                 }) => {
-                    // 02/01/2025 - Carlos - Farelo e Óleo não divide por 60
-                    // Só iremos remover essa regra das siglas, caso o cliente aceite a sugestão da reunião do dia 09/04/2025
+                    // 02/01/2025 - Carlos - Farelo e Ã“leo nÃ£o divide por 60
+                    // SÃ³ iremos remover essa regra das siglas, caso o cliente aceite a sugestÃ£o da reuniÃ£o do dia 09/04/2025
                     const validProducts = ["O", "F", "OC", "OA", "SB", "EP"];
                     const quantityTon = validProducts.includes(contract.product)
                         ? Number(contract.quantity) / 1
@@ -456,7 +457,7 @@ export function GrainsVol() {
             },
             {
                 field: "type_commission",
-                header: "Tipo Comissão",
+                header: "TIPO COMISSÃO",
                 width: "20px",
             },
             {
@@ -503,7 +504,7 @@ export function GrainsVol() {
                 }
             }
 
-            // Tenta converter para número decimal com . como separador
+            // Tenta converter para nÃºmero decimal com . como separador
             const aNum =
                 typeof aRaw === "string"
                     ? parseFloat(aRaw.replace(".", "").replace(",", "."))
@@ -523,28 +524,80 @@ export function GrainsVol() {
         [sortedData, orderBy, order],
     );
 
+    const buildReportTitle = () => "Grãos Volume - Produto";
+
+    const formatIsoDateToBR = (value?: string) => {
+        if (!value) return "";
+        const [year, month, day] = value.split("-").map(Number);
+        if (!year || !month || !day) return "";
+        return `${String(day).padStart(2, "0")}/${String(month).padStart(
+            2,
+            "0",
+        )}/${year}`;
+    };
+
     const handlePrint = (): void => {
         const printWindow = window.open("", "_blank");
         if (!printWindow) return;
 
-        const pageSize = 25;
+        const pageSize = 30;
+        const startDate = formatIsoDateToBR(selectData.date_start);
+        const endDate = formatIsoDateToBR(selectData.date_end);
+        const reportTitle = `${buildReportTitle()} - ${startDate} até ${endDate}`;
+        const reportPeriod = `Data: ${startDate} até ${endDate}`;
 
         printWindow.document.write(`
         <html>
             <head>
-                <title>Grãos Volume - Produto</title>
+                <title>${reportTitle}</title>
                 <style>
-                    body { font-family: Arial, sans-serif; }
-                    table { width: 80%; border-collapse: collapse; margin-bottom: 10px; }
-                    th, td { border: 1px solid black; padding: 5px; font-size: 8px; }
+                    @page { size: A4 portrait; margin: 10mm; }
+                    body {
+                        font-family: Arial, sans-serif;
+                        margin: 0;
+                        padding: 0;
+                        color: #1f1f1f;
+                    }
+                    h3, h4 { margin: 0; }
+                    h3 { text-align: left; font-size: 12px; }
+                    h4 { text-align: center; margin-bottom: 2px; font-size: 10px; }
+                    .report-period {
+                        text-align: center;
+                        font-size: 9px;
+                        margin: 0 0 8px 0;
+                    }
+                    table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        margin-bottom: 4px;
+                        table-layout: fixed;
+                    }
+                    th, td {
+                        border: 1px solid #c8c8c8;
+                        padding: 2px 3px;
+                        font-size: 7px;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        line-height: 1.05;
+                    }
+                    th {
+                        background: #e7b10a;
+                        color: #1f1f1f;
+                        font-weight: bold;
+                        text-align: center;
+                    }
+                    td:first-child { text-align: left; }
                     .page-break { page-break-after: always; }
-                    h3 { text-align: left; }
-                    h2 { text-align: center; }
+                    .print-header { margin-bottom: 6px; }
                 </style>
             </head>
             <body>
-                <h3>Ary Oleofar</h3>
-                <h4>Grãos Volume - Produto</h4>
+                <div class="print-header">
+                    <h3>Ary Oleofar</h3>
+                    <h4>${reportTitle}</h4>
+                    <div class="report-period">${reportPeriod}</div>
+                </div>
         `);
 
         for (let i = 0; i < displayedData.length; i += pageSize) {
@@ -553,7 +606,7 @@ export function GrainsVol() {
             printWindow.document.write(`<table><thead><tr>`);
             nameColumns.forEach((col) => {
                 printWindow.document.write(
-                    `<th style="width: ${col.width}px;">${col.header}</th>`,
+                    `<th style="width: ${col.width};">${col.header}</th>`,
                 );
             });
             printWindow.document.write(`</tr></thead><tbody>`);
@@ -588,65 +641,115 @@ export function GrainsVol() {
         printWindow.close();
     };
 
-    const handleExportCSV = () => {
-        const headers = nameColumns
-            .filter((col) => col.field)
-            .map((col) => `"${col.header}"`)
-            .join(";");
+    const handleExportExcel = () => {
+        try {
+            const startDate = formatIsoDateToBR(selectData.date_start);
+            const endDate = formatIsoDateToBR(selectData.date_end);
 
-        const rows = displayedData.map((row) => {
-            return nameColumns
-                .filter((col) => col.field)
-                .map((col) => {
-                    const fields = col.field!.split(".");
-                    let value: any = row;
+            const exportRows = [
+                [buildReportTitle()],
+                [`Data: ${startDate} até ${endDate}`],
+                [],
+                nameColumns.map((col) => col.header),
+                ...displayedData.map((row) =>
+                    nameColumns.map((col) => {
+                        const fields = col.field.split(".");
+                        let value: any = row;
 
-                    for (const f of fields) {
-                        value = value?.[f];
-                    }
-
-                    // Corrige campos numéricos com vírgula decimal
-                    if (
-                        col.field === "quantity" ||
-                        col.field === "price" ||
-                        col.field === "total_contract_value" ||
-                        col.field === "commission"
-                    ) {
-                        const number = parseFloat(
-                            String(value).replace(",", "."),
-                        );
-                        if (!isNaN(number)) {
-                            value = number
-                                .toFixed(2) // duas casas decimais
-                                .replace(".", ","); // troca ponto por vírgula
+                        for (const f of fields) {
+                            value = value?.[f];
                         }
-                    }
 
-                    if (col.field === "commission_value") {
-                        value = String(value)
-                            .replace("R$", "")
-                            .replace(".", "")
-                            .trim();
-                    }
+                        return value ?? "";
+                    }),
+                ),
+            ];
 
-                    return `"${value ?? ""}"`;
-                })
-                .join(";");
-        });
+            const worksheet = XLSX.utils.aoa_to_sheet(exportRows);
+            const columnCount = nameColumns.length;
 
-        const BOM = "\uFEFF";
-        const csvContent = [headers, ...rows].join("\n");
-        const blob = new Blob([BOM + csvContent], {
-            type: "text/csv;charset=utf-8;",
-        });
-        const url = URL.createObjectURL(blob);
+            worksheet["!merges"] = [
+                { s: { r: 0, c: 0 }, e: { r: 0, c: columnCount - 1 } },
+                { s: { r: 1, c: 0 }, e: { r: 1, c: columnCount - 1 } },
+            ];
 
-        const link = document.createElement("a");
-        link.href = url;
-        link.setAttribute("download", "graos-volume-produto.csv");
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+            worksheet["!cols"] = nameColumns.map((col) => ({
+                wch: Math.max(
+                    12,
+                    Math.round(Number.parseInt(col.width || "120", 10) / 8),
+                ),
+            }));
+
+            const titleStyle = {
+                font: { bold: true, sz: 14, color: { rgb: "1F1F1F" } },
+                fill: { patternType: "solid", fgColor: { rgb: "E7B10A" } },
+                alignment: { horizontal: "center", vertical: "center" },
+            };
+
+            const headerStyle = {
+                font: { bold: true, color: { rgb: "1F1F1F" } },
+                fill: { patternType: "solid", fgColor: { rgb: "E7B10A" } },
+                border: {
+                    top: { style: "thin", color: { rgb: "FFFFFF" } },
+                    bottom: { style: "thin", color: { rgb: "FFFFFF" } },
+                    left: { style: "thin", color: { rgb: "FFFFFF" } },
+                    right: { style: "thin", color: { rgb: "FFFFFF" } },
+                },
+                alignment: { horizontal: "center", vertical: "center" },
+            };
+
+            const textStyle = {
+                alignment: { horizontal: "left", vertical: "center" },
+            };
+
+            const numberStyle = {
+                numFmt: "#,##0.00",
+                alignment: { horizontal: "right", vertical: "center" },
+            };
+
+            const applyStyle = (cellRef: string, style: any) => {
+                if (worksheet[cellRef]) {
+                    worksheet[cellRef].s = style;
+                }
+            };
+
+            for (let col = 0; col < columnCount; col += 1) {
+                applyStyle(
+                    XLSX.utils.encode_cell({ r: 0, c: col }),
+                    titleStyle,
+                );
+                applyStyle(
+                    XLSX.utils.encode_cell({ r: 1, c: col }),
+                    titleStyle,
+                );
+                applyStyle(
+                    XLSX.utils.encode_cell({ r: 3, c: col }),
+                    headerStyle,
+                );
+            }
+
+            for (let row = 4; row < exportRows.length; row += 1) {
+                for (let col = 0; col < columnCount; col += 1) {
+                    const style =
+                        col === 0 ||
+                        nameColumns[col].field === "contract_emission_date"
+                            ? textStyle
+                            : numberStyle;
+                    applyStyle(
+                        XLSX.utils.encode_cell({ r: row, c: col }),
+                        style,
+                    );
+                }
+            }
+
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Grãos Volume");
+            XLSX.writeFile(workbook, `${buildReportTitle()}.xlsx`, {
+                bookType: "xlsx",
+            });
+        } catch (error) {
+            toast.error(`Erro ao exportar Excel: ${error}`);
+        }
     };
 
     return (
@@ -711,9 +814,9 @@ export function GrainsVol() {
                 <CustomButton
                     $variant="success"
                     width="150px"
-                    onClick={handleExportCSV}
+                    onClick={handleExportExcel}
                 >
-                    Exportar CSV
+                    Excel
                 </CustomButton>
 
                 <CustomTooltipLabel
