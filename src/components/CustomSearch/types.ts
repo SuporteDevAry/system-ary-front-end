@@ -5,4 +5,5 @@ export interface CustomSearchProps {
   value?: string;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   inputRef?: React.Ref<HTMLInputElement>;
+  disabled?: boolean;
 }
