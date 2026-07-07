@@ -19,6 +19,7 @@ import {
     sortTableData,
     getNestedValue,
 } from "../../../../components/CustomTable/helpers";
+import * as XLSX from "xlsx-js-style";
 
 const DATE_FIELDS = ["rps_emission_date", "nfs_emission_date"];
 const CURRENCY_FIELDS = [
@@ -33,6 +34,28 @@ const CURRENCY_FIELDS = [
     "ibs_value",
     "cbs_value",
 ];
+
+const parseLocaleNumber = (value: number | string | null | undefined) => {
+    if (typeof value === "number") {
+        return Number.isFinite(value) ? value : 0;
+    }
+
+    if (typeof value !== "string") {
+        return 0;
+    }
+
+    const trimmedValue = value.trim();
+    if (!trimmedValue) {
+        return 0;
+    }
+
+    const normalizedValue = trimmedValue.includes(",")
+        ? trimmedValue.replace(/\./g, "").replace(",", ".")
+        : trimmedValue;
+
+    const parsedValue = Number(normalizedValue);
+    return Number.isFinite(parsedValue) ? parsedValue : 0;
+};
 
 export function ListInvoices() {
     const invoiceContext = InvoiceContext();
@@ -489,28 +512,80 @@ export function ListInvoices() {
         [filteredData, orderBy, order],
     );
 
+    const buildReportTitle = () => "Listagem de NFSe";
+
+    const formatIsoDateToBR = (value?: string) => {
+        if (!value) return "";
+        const [year, month, day] = value.split("-").map(Number);
+        if (!year || !month || !day) return "";
+        return `${String(day).padStart(2, "0")}/${String(month).padStart(
+            2,
+            "0",
+        )}/${year}`;
+    };
+
     const handlePrint = (): void => {
         const printWindow = window.open("", "_blank");
         if (!printWindow) return;
 
         const pageSize = 25;
+        const startDate = formatIsoDateToBR(selectData.date_start);
+        const endDate = formatIsoDateToBR(selectData.date_end);
+        const reportTitle = `${buildReportTitle()} - ${startDate} até ${endDate}`;
+        const reportPeriod = `Data: ${startDate} até ${endDate}`;
 
         printWindow.document.write(`
         <html>
             <head>
-                <title>Listagem de NFSe</title>
+                <title>${reportTitle}</title>
                 <style>
-                    body { font-family: Arial, sans-serif; }
-                    table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
-                    th, td { border: 1px solid black; padding: 4px; font-size: 7px; }
+                    @page { size: A4 landscape; margin: 10mm; }
+                    body {
+                        font-family: Arial, sans-serif;
+                        margin: 0;
+                        padding: 0;
+                        color: #1f1f1f;
+                    }
+                    h3, h4 { margin: 0; }
+                    h3 { text-align: left; font-size: 12px; }
+                    h4 { text-align: center; margin-bottom: 2px; font-size: 10px; }
+                    .report-period {
+                        text-align: center;
+                        font-size: 9px;
+                        margin: 0 0 8px 0;
+                    }
+                    table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        margin-bottom: 4px;
+                        table-layout: fixed;
+                    }
+                    th, td {
+                        border: 1px solid #c8c8c8;
+                        padding: 2px 3px;
+                        font-size: 7px;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        line-height: 1.05;
+                    }
+                    th {
+                        background: #e7b10a;
+                        color: #1f1f1f;
+                        font-weight: bold;
+                        text-align: center;
+                    }
+                    td { text-align: left; }
                     .page-break { page-break-after: always; }
-                    h3 { text-align: left; }
-                    h4 { text-align: left; }
+                    .print-header { margin-bottom: 6px; }
                 </style>
             </head>
             <body>
-                <h3>Ary Oleofar</h3>
-                <h4>Listagem de NFSe</h4>
+                <div class="print-header">
+                    <h3>Ary Oleofar</h3>
+                    <h4>${reportTitle}</h4>
+                    <div class="report-period">${reportPeriod}</div>
+                </div>
         `);
 
         for (let i = 0; i < displayedData.length; i += pageSize) {
@@ -531,7 +606,7 @@ export function ListInvoices() {
                     if (DATE_FIELDS.includes(col.field)) {
                         value = formatDateBR(value) || "-";
                     } else if (CURRENCY_FIELDS.includes(col.field)) {
-                        const num = Number(value) || 0;
+                        const num = parseLocaleNumber(value);
                         value = num.toLocaleString("pt-BR", {
                             minimumFractionDigits: 2,
                             maximumFractionDigits: 2,
@@ -559,46 +634,138 @@ export function ListInvoices() {
         printWindow.close();
     };
 
-    const handleExportCSV = () => {
-        const headers = nameColumns
-            .filter((col) => col.field)
-            .map((col) => `"${col.header}"`)
-            .join(";");
+    const handleExportExcelStyled = () => {
+        try {
+            const startDate = formatIsoDateToBR(selectData.date_start);
+            const endDate = formatIsoDateToBR(selectData.date_end);
 
-        const rows = displayedData.map((row) => {
-            return nameColumns
-                .filter((col) => col.field)
-                .map((col) => {
-                    let value: any = getNestedValue(row, col.field);
+            const exportRows = [
+                [buildReportTitle()],
+                [`Data: ${startDate} até ${endDate}`],
+                [],
+                nameColumns.map((col) => col.header),
+                ...displayedData.map((row) =>
+                    nameColumns.map((col) => {
+                        let value: any = getNestedValue(row, col.field);
 
-                    if (DATE_FIELDS.includes(col.field)) {
-                        value = formatDateBR(value) || "";
-                    } else if (CURRENCY_FIELDS.includes(col.field)) {
-                        const num = Number(value) || 0;
-                        value = num.toLocaleString("pt-BR", {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                        });
-                    }
+                        if (DATE_FIELDS.includes(col.field)) {
+                            return formatDateBR(value) || "";
+                        }
 
-                    return `"${value ?? ""}"`;
-                })
-                .join(";");
-        });
+                        if (CURRENCY_FIELDS.includes(col.field)) {
+                            return parseLocaleNumber(value);
+                        }
 
-        const BOM = "﻿";
-        const csvContent = [headers, ...rows].join("\n");
-        const blob = new Blob([BOM + csvContent], {
-            type: "text/csv;charset=utf-8;",
-        });
-        const url = URL.createObjectURL(blob);
+                        return value ?? "";
+                    }),
+                ),
+            ];
 
-        const link = document.createElement("a");
-        link.href = url;
-        link.setAttribute("download", "listagem-nfse.csv");
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+            const worksheet = XLSX.utils.aoa_to_sheet(exportRows);
+            const columnCount = nameColumns.length;
+
+            worksheet["!merges"] = [
+                { s: { r: 0, c: 0 }, e: { r: 0, c: columnCount - 1 } },
+                { s: { r: 1, c: 0 }, e: { r: 1, c: columnCount - 1 } },
+            ];
+
+            worksheet["!cols"] = nameColumns.map((col) => ({
+                wch: Math.max(
+                    12,
+                    Math.round(Number.parseInt(col.width || "120", 10) / 8),
+                ),
+            }));
+
+            const titleStyle = {
+                font: { bold: true, sz: 14, color: { rgb: "1F1F1F" } },
+                fill: { patternType: "solid", fgColor: { rgb: "E7B10A" } },
+                alignment: { horizontal: "center", vertical: "center" },
+            };
+
+            const periodStyle = {
+                font: { bold: true, sz: 11, color: { rgb: "1F1F1F" } },
+                fill: { patternType: "solid", fgColor: { rgb: "E7B10A" } },
+                alignment: { horizontal: "center", vertical: "center" },
+            };
+
+            const headerStyle = {
+                font: { bold: true, color: { rgb: "1F1F1F" } },
+                fill: { patternType: "solid", fgColor: { rgb: "E7B10A" } },
+                border: {
+                    top: { style: "thin", color: { rgb: "FFFFFF" } },
+                    bottom: { style: "thin", color: { rgb: "FFFFFF" } },
+                    left: { style: "thin", color: { rgb: "FFFFFF" } },
+                    right: { style: "thin", color: { rgb: "FFFFFF" } },
+                },
+                alignment: { horizontal: "center", vertical: "center" },
+            };
+
+            const textStyle = {
+                alignment: { horizontal: "left", vertical: "center" },
+            };
+
+            const numberStyle = {
+                numFmt: "#,##0.00",
+                alignment: { horizontal: "right", vertical: "center" },
+            };
+
+            const applyStyle = (cellRef: string, style: any) => {
+                if (worksheet[cellRef]) {
+                    worksheet[cellRef].s = style;
+                }
+            };
+
+            for (let col = 0; col < columnCount; col += 1) {
+                applyStyle(
+                    XLSX.utils.encode_cell({ r: 0, c: col }),
+                    titleStyle,
+                );
+                applyStyle(
+                    XLSX.utils.encode_cell({ r: 1, c: col }),
+                    periodStyle,
+                );
+                applyStyle(
+                    XLSX.utils.encode_cell({ r: 3, c: col }),
+                    headerStyle,
+                );
+            }
+
+            for (let row = 4; row < exportRows.length; row += 1) {
+                for (let col = 0; col < columnCount; col += 1) {
+                    const field = nameColumns[col].field;
+                    const style =
+                        DATE_FIELDS.includes(field) ||
+                        col === 0 ||
+                        field === "status" ||
+                        field === "code_verif" ||
+                        field === "exportacao" ||
+                        field === "cod_pais" ||
+                        field === "owner_record" ||
+                        field === "owner_send"
+                            ? textStyle
+                            : CURRENCY_FIELDS.includes(field)
+                              ? numberStyle
+                              : textStyle;
+
+                    applyStyle(
+                        XLSX.utils.encode_cell({ r: row, c: col }),
+                        style,
+                    );
+                }
+            }
+
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Listagem NFSe");
+            XLSX.writeFile(workbook, `${buildReportTitle()}.xlsx`, {
+                bookType: "xlsx",
+            });
+        } catch (error) {
+            toast.error(`Erro ao exportar Excel: ${error}`);
+        }
+    };
+
+    const handleExportExcel = () => {
+        handleExportExcelStyled();
     };
 
     return (
@@ -661,9 +828,9 @@ export function ListInvoices() {
                 <CustomButton
                     $variant="success"
                     width="150px"
-                    onClick={handleExportCSV}
+                    onClick={handleExportExcel}
                 >
-                    Exportar CSV
+                    Excel
                 </CustomButton>
 
                 <CustomTooltipLabel
@@ -701,3 +868,4 @@ export function ListInvoices() {
         </SContainer>
     );
 }
+

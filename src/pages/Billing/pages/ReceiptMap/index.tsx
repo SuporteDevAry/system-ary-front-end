@@ -13,6 +13,8 @@ import CustomButton from "../../../../components/CustomButton";
 import { BillingContext } from "../../../../contexts/BillingContext";
 import { IBillingData } from "../../../../contexts/BillingContext/types";
 import { ContractContext } from "../../../../contexts/ContractContext";
+import { TableProductContext } from "../../../../contexts/TablesProducts";
+import { ITableProductsData } from "../../../../contexts/TablesProducts/types";
 import ReportFilter from "../../../../components/ReportFilter";
 import { SelectState } from "../../../../components/ReportFilter/types";
 import Tooltip from "@mui/material/Tooltip";
@@ -20,10 +22,12 @@ import IconButton from "@mui/material/IconButton";
 import { TbFilter, TbFilterOff, TbInfinity } from "react-icons/tb";
 import { PiScroll } from "react-icons/pi";
 import { sortTableData } from "../../../../components/CustomTable/helpers";
+import * as XLSX from "xlsx-js-style";
 
 export function ReceiptMap() {
     const contractContext = ContractContext();
     const billingContext = BillingContext();
+    const tableProductContext = TableProductContext();
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [allBillings, setAllBillings] = useState<IBillingData[]>([]);
     const [listBillings, setListBillings] = useState<IBillingData[]>([]);
@@ -415,6 +419,29 @@ export function ReceiptMap() {
         return path.split(".").reduce((acc, part) => acc?.[part], obj);
     };
 
+    const normalizeText = (value?: string) =>
+        (value || "")
+            .toString()
+            .toUpperCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .trim();
+
+    const compareContracts = (a: string, b: string) => {
+        const aNum = Number(a);
+        const bNum = Number(b);
+        const aIsNumeric = a !== "" && !Number.isNaN(aNum);
+        const bIsNumeric = b !== "" && !Number.isNaN(bNum);
+
+        if (aIsNumeric && bIsNumeric) {
+            return aNum - bNum;
+        }
+
+        return a.localeCompare(b, "pt-BR", {
+            numeric: true,
+            sensitivity: "base",
+        });
+    };
 
     const sortedData = useMemo(() => {
         const sorted = [...filteredData].sort((a, b) => {
@@ -447,11 +474,9 @@ export function ReceiptMap() {
     //     return qA - qB;
     // });
 
-    const handlePrint = (): void => {
+    const handlePrint = async (): Promise<void> => {
         const printWindow = window.open("", "_blank");
         if (!printWindow) return;
-
-        const pageSize = 25;
 
         const formatIsoYMDToBR = (iso?: string) => {
             if (!iso) return "";
@@ -462,74 +487,273 @@ export function ReceiptMap() {
             return `${dd}/${mm}/${y}`;
         };
 
+        const formatMoney = (value: unknown) => {
+            const numericValue =
+                typeof value === "number"
+                    ? value
+                    : Number(
+                          parseFloat(
+                              String(value ?? 0)
+                                  .replace(/\./g, "")
+                                  .replace(",", "."),
+                          ) || 0,
+                      );
+
+            return numericValue.toLocaleString("pt-BR", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+            });
+        };
+
+        const monetaryFields = [
+            "total_service_value",
+            "liquid_value",
+            "adjustment_value",
+            "irrf_value",
+            "iss",
+            "pis_cofins",
+            "csll",
+            "value_base",
+        ];
+
+        const parseMoney = (value: unknown) => {
+            if (typeof value === "number") return value;
+            const normalized = String(value ?? "")
+                .replace(/\./g, "")
+                .replace(",", ".")
+                .replace(/[^\d.-]/g, "");
+            const parsed = Number(normalized);
+            return Number.isNaN(parsed) ? 0 : parsed;
+        };
+
         const startDateFormatted = formatIsoYMDToBR(selectData.date_start);
         const endDateFormatted = formatIsoYMDToBR(selectData.date_end);
+
+        const tablesResponse = await tableProductContext.listTableProducts();
+        const tableProducts: ITableProductsData[] = tablesResponse?.data || [];
+        const reportFileBase = getReportFileBase(tableProducts);
+
+        const siglaToMesa = new Map<string, string>();
+        tableProducts.forEach((mesa) => {
+            (mesa.product_types || []).forEach((sigla) => {
+                siglaToMesa.set(normalizeText(sigla), mesa.name);
+            });
+        });
+
+        const dataToPrint = [...filteredData].sort((a, b) =>
+            compareContracts(
+                String(a.number_contract ?? ""),
+                String(b.number_contract ?? ""),
+            ),
+        );
+
+        const emptyTotals = {
+            total_service_value: 0,
+            liquid_value: 0,
+            adjustment_value: 0,
+            irrf_value: 0,
+            iss: 0,
+            pis_cofins: 0,
+            csll: 0,
+            value_base: 0,
+        };
+
+        const groupedByMesa = dataToPrint.reduce((acc, billing) => {
+            const sigla = normalizeText((billing as any).product);
+            const mesa = siglaToMesa.get(sigla) || "Sem mesa cadastrada";
+            const current = acc.get(mesa) || {
+                items: [] as any[],
+                totals: { ...emptyTotals },
+            };
+
+            current.items.push(billing);
+            monetaryFields.forEach((field) => {
+                current.totals[field as keyof typeof current.totals] +=
+                    parseMoney((billing as any)[field]);
+            });
+
+            acc.set(mesa, current);
+            return acc;
+        }, new Map<string, { items: any[]; totals: typeof emptyTotals }>());
+
+        const generalTotals = dataToPrint.reduce(
+            (acc, billing) => {
+                monetaryFields.forEach((field) => {
+                    acc[field as keyof typeof acc] += parseMoney(
+                        (billing as any)[field],
+                    );
+                });
+                return acc;
+            },
+            { ...emptyTotals },
+        );
+
+        const columns = [
+            "Dt.Recebto.",
+            "Dt.Contrato",
+            "Contrato",
+            "Vendedor",
+            "Valor Bruto",
+            "Valor Recebido",
+            "Valor Corretora",
+            "IRRF",
+            "ISS",
+            "PIS+COFINS",
+            "CSLL",
+            "Valor Base",
+        ];
+
+        const colWidths = [
+            "110px",
+            "110px",
+            "140px",
+            "220px",
+            ...Array(8).fill("110px"),
+        ];
+
+        const mesaOrder = Array.from(groupedByMesa.entries()).sort(([a], [b]) =>
+            a.localeCompare(b, "pt-BR"),
+        );
 
         printWindow.document.write(`
         <html>
             <head>
-                <title>Mapa de Recebimento</title>
+                <title>${reportFileBase}</title>
                 <style>
-                    body { font-family: Arial, sans-serif; }
-                    table { width: 80%; border-collapse: collapse; margin-bottom: 10px; }
-                    th, td { border: 1px solid black; padding: 5px; font-size: 8px; }
+                    body { font-family: "Courier New", monospace; margin: 24px; color: #111; }
+                    h3, h4, h6 { margin: 0; }
+                    h3 { text-align: left; }
+                    h4, h6 { text-align: center; }
+                    .report-table { width: 100%; border-collapse: collapse; table-layout: fixed; margin-top: 12px; }
+                    .report-table th, .report-table td {
+                        border-bottom: 1px solid #777;
+                        padding: 4px 6px;
+                        font-size: 10px;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: clip;
+                    }
+                    .report-table th { border-top: 2px solid #222; border-bottom: 2px solid #222; text-align: left; }
+                    .report-table td.num, .report-table th.num { text-align: right; }
+                    .mesa-total td {
+                        font-weight: bold;
+                        border-top: 1px solid #222;
+                        border-bottom: 1px solid #222;
+                    }
+                    .total-geral td {
+                        font-weight: bold;
+                        border-top: 2px solid #222;
+                        border-bottom: 2px solid #222;
+                    }
                     .page-break { page-break-after: always; }
-                    h3 { text-align: left; margin: 0; }
-                    h4, h5, h6 { text-align: center; margin: 4px 0; }
-                    h2 { text-align: center; }
                 </style>
             </head>
             <body>
                 <h3>Ary Oleofar</h3>
                 <h4>Mapa de Recebimento</h4>
                 <h6>DE: ${startDateFormatted} ATÉ ${endDateFormatted}</h6>
+                <table class="report-table">
+                    <colgroup>
+                        ${colWidths.map((width) => `<col style="width:${width}" />`).join("")}
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            ${columns
+                                .map(
+                                    (header, index) =>
+                                        `<th class="${index >= 4 ? "num" : ""}">${header}</th>`,
+                                )
+                                .join("")}
+                        </tr>
+                    </thead>
+                    <tbody>
         `);
 
-        for (let i = 0; i < displayedData.length; i += pageSize) {
-            const pageRows = displayedData.slice(i, i + pageSize);
+        mesaOrder.forEach(([mesa, data]) => {
+            data.items.forEach((row) => {
+                const values = [
+                    row.receipt_date ?? "",
+                    row.contract_emission_date ?? "",
+                    String(row.number_contract ?? ""),
+                    row.seller_name ?? "",
+                    formatMoney(row.total_service_value),
+                    formatMoney(row.liquid_value),
+                    formatMoney(row.adjustment_value),
+                    formatMoney(row.irrf_value),
+                    formatMoney(row.iss),
+                    formatMoney(row.pis_cofins),
+                    formatMoney(row.csll),
+                    formatMoney(row.value_base),
+                ];
 
-            printWindow.document.write(`<table><thead><tr>`);
-            nameColumns.forEach((col) => {
-                printWindow.document.write(
-                    `<th style="width: ${col.width}px;">${col.header}</th>`,
-                );
+                printWindow.document.write(`
+                    <tr>
+                        ${values
+                            .map(
+                                (value, index) =>
+                                    `<td class="${index >= 4 ? "num" : ""}">${value}</td>`,
+                            )
+                            .join("")}
+                    </tr>
+                `);
             });
-            printWindow.document.write(`</tr></thead><tbody>`);
 
-            pageRows.forEach((row) => {
-                printWindow.document.write(`<tr>`);
-                nameColumns.forEach((col) => {
-                    const fields = col.field.split(".");
-                    let value: any = row;
-                    for (const f of fields) {
-                        value = value?.[f];
-                    }
-                    printWindow.document.write(`<td>${value ?? ""}</td>`);
-                });
-                printWindow.document.write(`</tr>`);
-            });
-
-            printWindow.document.write(`</tbody></table>`);
-
-            if (i + pageSize < displayedData.length) {
-                printWindow.document.write(`<div class="page-break"></div>`);
-            }
-        }
+            printWindow.document.write(`
+                <tr class="mesa-total">
+                    <td>Mesa ${mesa}</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="num">${formatMoney(data.totals.total_service_value)}</td>
+                    <td class="num">${formatMoney(data.totals.liquid_value)}</td>
+                    <td class="num">${formatMoney(data.totals.adjustment_value)}</td>
+                    <td class="num">${formatMoney(data.totals.irrf_value)}</td>
+                    <td class="num">${formatMoney(data.totals.iss)}</td>
+                    <td class="num">${formatMoney(data.totals.pis_cofins)}</td>
+                    <td class="num">${formatMoney(data.totals.csll)}</td>
+                    <td class="num">${formatMoney(data.totals.value_base)}</td>
+                </tr>
+            `);
+        });
 
         printWindow.document.write(`
+            <tr class="total-geral">
+                <td>Total Geral</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td class="num">${formatMoney(generalTotals.total_service_value)}</td>
+                <td class="num">${formatMoney(generalTotals.liquid_value)}</td>
+                <td class="num">${formatMoney(generalTotals.adjustment_value)}</td>
+                <td class="num">${formatMoney(generalTotals.irrf_value)}</td>
+                <td class="num">${formatMoney(generalTotals.iss)}</td>
+                <td class="num">${formatMoney(generalTotals.pis_cofins)}</td>
+                <td class="num">${formatMoney(generalTotals.csll)}</td>
+                <td class="num">${formatMoney(generalTotals.value_base)}</td>
+            </tr>
+            <tr>
+                <td colspan="${columns.length}">&nbsp;</td>
+            </tr>
+            <tr>
+                <td colspan="${columns.length}" style="text-align: center; font-weight: bold;">
+                    ${reportFileBase}
+                </td>
+            </tr>
+                    </tbody>
+                </table>
             </body>
         </html>
         `);
 
         printWindow.document.close();
+        printWindow.document.title = reportFileBase;
 
-        // Chrome: aguardar carregamento antes de imprimir
         const printAndClose = () => {
             printWindow.focus();
             printWindow.print();
             printWindow.close();
         };
-        // onload pode não disparar sempre, então usar fallback com setTimeout
+
         printWindow.onload = () => setTimeout(printAndClose, 100);
         setTimeout(printAndClose, 500);
     };
@@ -543,78 +767,329 @@ export function ReceiptMap() {
         return `${dd}/${mm}/${y}`;
     };
 
-    const handleExportCSV = () => {
-        const startDateFormatted = formatIsoYMDToBR(selectData.date_start);
-        const endDateFormatted = formatIsoYMDToBR(selectData.date_end);
+    const getReportFileBase = (tableProducts: ITableProductsData[]) => {
+        const dateEnd = selectData.date_end || selectData.date_start || "";
+        const [year, month] = dateEnd.split("-").map((part) => part.trim());
+        const mm = String(Number(month || 0)).padStart(2, "0");
+        const yy = String(year || "").slice(-2).padStart(2, "0");
 
-        // Cabeçalho do relatório
-        const headerTitle = "MAPA DE RECEBIMENTOS";
-        const headerDate = `DE: ${startDateFormatted} ATÉ ${endDateFormatted}`;
+        const selectedProductTypes = Array.isArray(selectData.product_types)
+            ? selectData.product_types
+            : typeof selectData.product_types === "string" &&
+                selectData.product_types
+              ? [selectData.product_types]
+              : [];
 
-        // Cabeçalho das colunas
-        const headers = nameColumns
-            .filter((col) => col.field)
-            .map((col) => `"${col.header}"`)
-            .join(";");
+        const normalizeList = (values: string[]) =>
+            values
+                .map((value) => normalizeText(value))
+                .filter(Boolean)
+                .sort()
+                .join("|");
 
-        // Linhas de dados
-        const rows = displayedData.map((row) => {
-            return nameColumns
-                .filter((col) => col.field)
-                .map((col) => {
-                    const fields = col.field!.split(".");
-                    let value: any = row;
+        const selectedTypesKey = normalizeList(selectedProductTypes);
+        const mesa =
+            tableProducts.find(
+                (item) =>
+                    normalizeList(item.product_types || []) === selectedTypesKey,
+            ) || tableProducts.find((item) => {
+                const itemTypes = normalizeList(item.product_types || []);
+                return (
+                    selectedProductTypes.length > 0 &&
+                    selectedProductTypes.some((selected) =>
+                        itemTypes.includes(normalizeText(selected)),
+                    )
+                );
+            });
 
-                    for (const f of fields) {
-                        value = value?.[f];
-                    }
+        const normalizedMesaName = normalizeText(mesa?.name || "");
+        let sigla = "";
 
-                    // Corrige campos numéricos com vírgula decimal
-                    if (
-                        [
-                            "total_service_value",
-                            "liquid_value",
-                            "adjustment_value",
-                            "irrf_value",
-                            "iss",
-                            "pis_cofins",
-                            "csll",
-                        ].includes(col.field!)
-                    ) {
-                        const number = parseFloat(
-                            String(value).replace(",", "."),
+        if (normalizedMesaName.includes("OLEO")) {
+            sigla = "O";
+        } else if (normalizedMesaName.includes("FARELO")) {
+            sigla = "F";
+        } else if (normalizedMesaName.includes("GRAOS")) {
+            sigla = "S";
+        }
+
+        return `MR${sigla}${mm}${yy}`;
+    };
+
+    const handleExportExcel = async () => {
+        try {
+            const startDateFormatted = formatIsoYMDToBR(selectData.date_start);
+            const endDateFormatted = formatIsoYMDToBR(selectData.date_end);
+            const monetaryFields = [
+                "total_service_value",
+                "liquid_value",
+                "adjustment_value",
+                "irrf_value",
+                "iss",
+                "pis_cofins",
+                "csll",
+                "value_base",
+            ];
+
+            const parseMoney = (value: unknown) => {
+                if (typeof value === "number") {
+                    return value;
+                }
+
+                const normalized = String(value ?? "")
+                    .replace(/\./g, "")
+                    .replace(",", ".")
+                    .replace(/[^\d.-]/g, "");
+
+                const parsed = Number(normalized);
+                return Number.isNaN(parsed) ? 0 : parsed;
+            };
+
+            const tablesResponse =
+                await tableProductContext.listTableProducts();
+            const tableProducts: ITableProductsData[] =
+                tablesResponse?.data || [];
+            const reportFileBase = getReportFileBase(tableProducts);
+
+            const siglaToMesa = new Map<string, string>();
+            tableProducts.forEach((mesa) => {
+                (mesa.product_types || []).forEach((sigla) => {
+                    siglaToMesa.set(normalizeText(sigla), mesa.name);
+                });
+            });
+
+            const dataToExport = [...filteredData].sort((a, b) =>
+                compareContracts(
+                    String(a.number_contract ?? ""),
+                    String(b.number_contract ?? ""),
+                ),
+            );
+
+            const emptyTotals = {
+                total_service_value: 0,
+                liquid_value: 0,
+                adjustment_value: 0,
+                irrf_value: 0,
+                iss: 0,
+                pis_cofins: 0,
+                csll: 0,
+                value_base: 0,
+            };
+
+            const groupedByMesa = dataToExport.reduce((acc, billing) => {
+                const sigla = normalizeText((billing as any).product);
+                const mesa = siglaToMesa.get(sigla) || "Sem mesa cadastrada";
+                const current = acc.get(mesa) || {
+                    items: [] as any[],
+                    totals: { ...emptyTotals },
+                };
+
+                current.items.push(billing);
+                monetaryFields.forEach((field) => {
+                    current.totals[field as keyof typeof current.totals] +=
+                        parseMoney((billing as any)[field]);
+                });
+
+                acc.set(mesa, current);
+                return acc;
+            }, new Map<string, { items: any[]; totals: typeof emptyTotals }>());
+
+            const generalTotals = dataToExport.reduce(
+                (acc, billing) => {
+                    monetaryFields.forEach((field) => {
+                        acc[field as keyof typeof acc] += parseMoney(
+                            (billing as any)[field],
                         );
-                        if (!isNaN(number)) {
-                            value = number.toFixed(2).replace(".", ",");
-                        }
-                    }
+                    });
+                    return acc;
+                },
+                { ...emptyTotals },
+            );
 
-                    return `"${value ?? ""}"`;
-                })
-                .join(";");
-        });
+            const exportRows: any[][] = [
+                ["MAPA DE RECEBIMENTOS"],
+                [`PERÍODO: DE ${startDateFormatted} ATÉ ${endDateFormatted}`],
+                [],
+                nameColumns.map((col) => col.header),
+            ];
 
-        // Gera conteúdo CSV com cabeçalho adicional
-        const BOM = "\uFEFF"; // evita erro de acentuação
-        const csvContent = [
-            headerTitle,
-            headerDate,
-            "", // linha em branco entre cabeçalho e colunas
-            headers,
-            ...rows,
-        ].join("\n");
+            const mesaOrder = Array.from(groupedByMesa.entries()).sort(
+                ([a], [b]) => a.localeCompare(b, "pt-BR"),
+            );
 
-        // Cria e baixa o arquivo
-        const blob = new Blob([BOM + csvContent], {
-            type: "text/csv;charset=utf-8;",
-        });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.setAttribute("download", "mapa-de-recebimento.csv");
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+            mesaOrder.forEach(([mesa, data]) => {
+                data.items.forEach((row) => {
+                    exportRows.push(
+                        nameColumns.map((col) => {
+                            const fields = col.field.split(".");
+                            let value: any = row;
+
+                            for (const field of fields) {
+                                value = value?.[field];
+                            }
+
+                            if (monetaryFields.includes(col.field)) {
+                                return parseMoney(value);
+                            }
+
+                            return value ?? "";
+                        }),
+                    );
+                });
+
+                exportRows.push([
+                    `Mesa ${mesa}`,
+                    "",
+                    "",
+                    "",
+                    data.totals.total_service_value,
+                    data.totals.liquid_value,
+                    data.totals.adjustment_value,
+                    data.totals.irrf_value,
+                    data.totals.iss,
+                    data.totals.pis_cofins,
+                    data.totals.csll,
+                    data.totals.value_base,
+                ]);
+            });
+
+            exportRows.push([
+                "Total Geral",
+                "",
+                "",
+                "",
+                generalTotals.total_service_value,
+                generalTotals.liquid_value,
+                generalTotals.adjustment_value,
+                generalTotals.irrf_value,
+                generalTotals.iss,
+                generalTotals.pis_cofins,
+                generalTotals.csll,
+                generalTotals.value_base,
+            ]);
+
+            const worksheet = XLSX.utils.aoa_to_sheet(exportRows);
+            const columnCount = nameColumns.length;
+            const totalColumns = Math.max(columnCount, 10);
+            const totalGeneralRow = exportRows.length - 1;
+
+            worksheet["!merges"] = [
+                { s: { r: 0, c: 0 }, e: { r: 0, c: columnCount - 1 } },
+                { s: { r: 1, c: 0 }, e: { r: 1, c: columnCount - 1 } },
+            ];
+
+            worksheet["!cols"] = [
+                ...nameColumns.map((col) => ({
+                    wch: Math.max(
+                        12,
+                        Math.round(Number.parseInt(col.width || "120", 10) / 8),
+                    ),
+                })),
+                ...Array.from({ length: totalColumns - columnCount }, () => ({
+                    wch: 15,
+                })),
+            ];
+
+            const titleStyle = {
+                font: { bold: true, sz: 14, color: { rgb: "1F1F1F" } },
+                fill: { patternType: "solid", fgColor: { rgb: "E7B10A" } },
+                alignment: { horizontal: "center", vertical: "center" },
+            };
+
+            const periodStyle = {
+                font: { bold: true, sz: 11, color: { rgb: "1F1F1F" } },
+                fill: { patternType: "solid", fgColor: { rgb: "E7B10A" } },
+                alignment: { horizontal: "center", vertical: "center" },
+            };
+
+            const headerStyle = {
+                font: { bold: true, color: { rgb: "1F1F1F" } },
+                fill: { patternType: "solid", fgColor: { rgb: "E7B10A" } },
+                border: {
+                    top: { style: "thin", color: { rgb: "FFFFFF" } },
+                    bottom: { style: "thin", color: { rgb: "FFFFFF" } },
+                    left: { style: "thin", color: { rgb: "FFFFFF" } },
+                    right: { style: "thin", color: { rgb: "FFFFFF" } },
+                },
+                alignment: { horizontal: "center", vertical: "center" },
+            };
+
+            const totalLabelStyle = {
+                font: { bold: true },
+                fill: { patternType: "solid", fgColor: { rgb: "E2F0D9" } },
+            };
+
+            const moneyTotalStyle = {
+                font: { bold: true },
+                fill: { patternType: "solid", fgColor: { rgb: "E2F0D9" } },
+                numFmt: "#,##0.00",
+            };
+
+            const moneyDetailStyle = {
+                numFmt: "#,##0.00",
+            };
+
+            const applyStyle = (cellRef: string, style: any) => {
+                if (worksheet[cellRef]) {
+                    worksheet[cellRef].s = style;
+                }
+            };
+
+            for (let col = 0; col < columnCount; col += 1) {
+                applyStyle(
+                    XLSX.utils.encode_cell({ r: 0, c: col }),
+                    titleStyle,
+                );
+                applyStyle(
+                    XLSX.utils.encode_cell({ r: 1, c: col }),
+                    periodStyle,
+                );
+                applyStyle(
+                    XLSX.utils.encode_cell({ r: 3, c: col }),
+                    headerStyle,
+                );
+            }
+
+            for (let row = 4; row < totalGeneralRow; row += 1) {
+                for (let col = 4; col < columnCount; col += 1) {
+                    applyStyle(
+                        XLSX.utils.encode_cell({ r: row, c: col }),
+                        moneyDetailStyle,
+                    );
+                }
+            }
+
+            let currentRow = 4;
+            mesaOrder.forEach(([, data]) => {
+                currentRow += data.items.length;
+                for (let col = 0; col < totalColumns; col += 1) {
+                    applyStyle(
+                        XLSX.utils.encode_cell({ r: currentRow, c: col }),
+                        col === 0 ? totalLabelStyle : moneyTotalStyle,
+                    );
+                }
+                currentRow += 1;
+            });
+
+            for (let col = 0; col < totalColumns; col += 1) {
+                applyStyle(
+                    XLSX.utils.encode_cell({ r: totalGeneralRow, c: col }),
+                    col === 0 ? totalLabelStyle : moneyTotalStyle,
+                );
+            }
+
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(
+                workbook,
+                worksheet,
+                "Mapa de Recebimentos",
+            );
+            XLSX.writeFile(workbook, `${reportFileBase}.xlsx`, {
+                bookType: "xlsx",
+            });
+        } catch (error) {
+            toast.error(`Erro ao exportar Excel: ${error}`);
+        }
     };
 
     return (
@@ -678,9 +1153,9 @@ export function ReceiptMap() {
                 <CustomButton
                     $variant="success"
                     width="150px"
-                    onClick={handleExportCSV}
+                    onClick={handleExportExcel}
                 >
-                    Exportar CSV
+                    Excel
                 </CustomButton>
 
                 <Tooltip

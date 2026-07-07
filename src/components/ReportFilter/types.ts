@@ -34,4 +34,6 @@ export interface IReportFilterProps {
   cancelText?: string;
   visibleFields?: ReportFilterField[];
   fieldLabels?: Partial<Record<string, string>>;
+  defaultMesaName?: string;
+  allowEmptyMesa?: boolean;
 }
