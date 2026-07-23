@@ -1,5 +1,12 @@
 import useInfo from "../userInfo";
 
+const CONTRACT_CONTROL_ALLOWED_EMAILS = (
+  process.env.CONTRACT_CONTROL_ALLOWED_EMAILS ?? ""
+)
+  .split(",")
+  .map((email) => email.trim().toLowerCase())
+  .filter(Boolean);
+
 const useUserPermissions = () => {
   const { dataUserInfo } = useInfo();
 
@@ -13,6 +20,11 @@ const useUserPermissions = () => {
   const canDashFinance = hasPermission("DASHFINANCE");
   const canDevelop = hasPermission("DEV");
 
+  // Restringe o módulo de Controle de Contratos aos e-mails definidos em .env
+  const canViewContractControl = CONTRACT_CONTROL_ALLOWED_EMAILS.includes(
+    (dataUserInfo?.email ?? "").toLowerCase(),
+  );
+
   // Pode ser implementado no futuro!
   //   const canWrite = hasPermission("ESCREVER");
   //   const canDelete = hasPermission("DELETAR");
@@ -22,6 +34,7 @@ const useUserPermissions = () => {
     canChangeStatus,
     canDashFinance,
     canDevelop,
+    canViewContractControl,
     hasPermission, // Também pode retornar a função geral para verificar outras permissões caso necessário
   };
 };
