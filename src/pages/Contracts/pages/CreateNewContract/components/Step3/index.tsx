@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect } from "react";
 import dayjs from "dayjs";
 import { CustomInput } from "../../../../../../components/CustomInput";
 import { formatCurrency } from "../../../../../../helpers/currencyFormat";
@@ -52,17 +52,13 @@ export const Step3: React.FC<StepProps> = ({
     formatQuantity,
   } = useQuantityHandlers(formData, updateFormData);
 
-  const [initialPickupDate, SetInitialPickupDate] = useState<string>(
+  const buildConcatenatedPickupText = (initial: string, final: string) =>
+    initial === final ? `Até o dia ${initial}` : `De ${initial} até ${final}`;
+
+  const concatenatedPickupText = buildConcatenatedPickupText(
     formData.initial_pickup_date,
-  );
-  const [finalPickupDate, SetFinalPickupDate] = useState<string>(
     formData.final_pickup_date,
   );
-
-  const concatenatedPickupText =
-    initialPickupDate === finalPickupDate
-      ? `Até o dia ${initialPickupDate}`
-      : `De ${initialPickupDate} até ${finalPickupDate}`;
   const isMetricTon = formData.type_quantity === "toneladas métricas";
   const isKg = formData.type_quantity === "quilos";
 
@@ -394,12 +390,6 @@ export const Step3: React.FC<StepProps> = ({
   );
 
   useEffect(() => {
-    if (formData.type_pickup) {
-      handleFieldPickupChange(formData.type_pickup, concatenatedPickupText);
-    }
-  }, [initialPickupDate, finalPickupDate, formData.type_pickup]);
-
-  useEffect(() => {
     if (!updateFormData) {
       return;
     }
@@ -672,12 +662,22 @@ export const Step3: React.FC<StepProps> = ({
           currentFinalDate.isValid() &&
           currentFinalDate.isBefore(newInitialDate);
 
+        const newFinalPickupDate = shouldAdjustFinalDate
+          ? newDate
+          : formData.final_pickup_date;
+
         updateFormData?.({
           ...formData,
           initial_pickup_date: newDate,
           ...(shouldAdjustFinalDate ? { final_pickup_date: newDate } : {}),
+          ...(formData.type_pickup
+            ? {
+                pickup: fieldInfo[formData.type_pickup as FieldType].pickup(
+                  buildConcatenatedPickupText(newDate, newFinalPickupDate),
+                ),
+              }
+            : {}),
         });
-        SetInitialPickupDate(newDate);
       } else if (name === "final_pickup_date") {
         const initialDate = parseDate(formData.initial_pickup_date || "");
         const newFinalDate = parseDate(newDate);
@@ -693,8 +693,17 @@ export const Step3: React.FC<StepProps> = ({
         updateFormData?.({
           ...formData,
           final_pickup_date: newDate,
+          ...(formData.type_pickup
+            ? {
+                pickup: fieldInfo[formData.type_pickup as FieldType].pickup(
+                  buildConcatenatedPickupText(
+                    formData.initial_pickup_date,
+                    newDate,
+                  ),
+                ),
+              }
+            : {}),
         });
-        SetFinalPickupDate(newDate);
       }
     },
     [updateFormData, formData],
