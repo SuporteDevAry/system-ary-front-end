@@ -22,19 +22,20 @@ export const breadcrumbMap: Record<string, string> = {
 
   // Cobrança
   cobranca: "Cobrança",
-  notafiscal: "Nota Fiscal",
+  notafiscal: "Emissão NFSe",
   "dados-nf": "Dados NF",
   atualizaNF: "Atualizar NF",
   recebimento: "Recebimento",
   "visualizar-recebimento": "Visualizar Recebimento",
   "mapa-recebimento": "Mapa de Recebimento",
-  "contrato-vencto": "Contratos com Vencimento",
-  "contratos-receb": "Contratos a Receber",
+  "contrato-vencto": "Contratos por Vencimento",
+  "contratos-receb": "Contratos Recebidos",
+  "listagem-nfse": "Listagem de NFSe",
 
   // Relatórios
   relatorios: "Relatórios",
   "graos-volume": "Grãos por Volume",
-  "graos-maiores": "Maiores Grãos",
+  "graos-maiores": "Ranking",
   faturamento: "Faturamento",
 
   // Admin

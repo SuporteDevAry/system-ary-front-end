@@ -1929,7 +1929,7 @@ export function Invoice() {
                             hasAuthorizedSelectedInvoice
                         }
                     >
-                        {isLoadingRPS ? "Enviando..." : "Emitir NFSe"}
+                        {isLoadingRPS ? "Enviando..." : "Enviar RPS"}
                     </CustomButton>
                     <CustomButton
                         $variant="success"
