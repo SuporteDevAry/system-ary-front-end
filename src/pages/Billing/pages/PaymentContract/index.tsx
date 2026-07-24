@@ -1,38 +1,104 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import CustomTable from "../../../../components/CustomTable";
-import { CustomSearch } from "../../../../components/CustomSearch";
-import { IColumn } from "../../../../components/CustomTable/types";
-import { ContractContext } from "../../../../contexts/ContractContext";
 import { toast } from "react-toastify";
-import { IContractData } from "../../../../contexts/ContractContext/types";
-import { SContainerSearchAndButton, STitle } from "./styles";
-import CustomButton from "../../../../components/CustomButton";
+import Tooltip from "@mui/material/Tooltip";
+import IconButton from "@mui/material/IconButton";
 import { TbFilter, TbFilterOff, TbInfinity } from "react-icons/tb";
 import { PiScroll } from "react-icons/pi";
-import IconButton from "@mui/material/IconButton";
-import { Tooltip } from "@mui/material";
+import CustomTooltipLabel from "../../../../components/CustomTooltipLabel";
+import { CustomSearch } from "../../../../components/CustomSearch";
+import CustomTable from "../../../../components/CustomTable";
+import { IColumn } from "../../../../components/CustomTable/types";
+import { sortTableData } from "../../../../components/CustomTable/helpers";
+import CustomButton from "../../../../components/CustomButton";
 import ReportFilter from "../../../../components/ReportFilter";
 import { SelectState } from "../../../../components/ReportFilter/types";
+import { ContractContext } from "../../../../contexts/ContractContext";
+import { IContractData } from "../../../../contexts/ContractContext/types";
+import { SContainerSearchAndButton, STitle } from "./styles";
+import * as XLSX from "xlsx-js-style";
+
+const INITIAL_ORDER_BY = "payment_date";
+const INITIAL_ORDER: "asc" | "desc" = "desc";
+
+const normalizeStr = (value?: string) =>
+  (value ?? "")
+    .toString()
+    .toUpperCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim();
+
+const parseBrazilianDate = (dateString?: string) => {
+  if (!dateString) return 0;
+
+  const [day, month, year] = dateString.split("/").map(Number);
+  if (!day || !month || !year) return 0;
+
+  return new Date(year, month - 1, day).getTime();
+};
+
+const getNestedValue = (obj: any, path: string) =>
+  path.split(".").reduce((value, key) => value?.[key], obj);
+
+const formatIsoDateToBR = (value?: string) => {
+  if (!value) return "";
+  const [year, month, day] = value.split("-").map(Number);
+  if (!year || !month || !day) return "";
+  return `${String(day).padStart(2, "0")}/${String(month).padStart(
+    2,
+    "0",
+  )}/${year}`;
+};
+
+const buildExportCell = (row: IContractData, field: string) => {
+  const value = getNestedValue(row, field);
+  return value ?? "";
+};
+
+const buildFilterSummaryLines = (filters: SelectState) => {
+  const emissionStart = formatIsoDateToBR(filters.date_start) || "99/99/9999";
+  const emissionEnd = formatIsoDateToBR(filters.date_end) || "99/99/9999";
+  const chargeStart = formatIsoDateToBR(filters.charge_date_start) || "99/99/9999";
+  const chargeEnd = formatIsoDateToBR(filters.charge_date_end) || "99/99/9999";
+
+  return {
+    emission: `Data Emissão: ${emissionStart} até ${emissionEnd}`,
+    charge: `Data Cobrança: ${chargeStart} até ${chargeEnd}`,
+  };
+};
 
 export function PaymentContract() {
   const contractContext = ContractContext();
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [listcontracts, setListContracts] = useState<IContractData[]>([]);
+  const [listContracts, setListContracts] = useState<IContractData[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(0);
-  const [order, setOrder] = useState<"asc" | "desc">("desc");
-  const [orderBy, setOrderBy] = useState("payment_date");
+  const [order, setOrder] = useState<"asc" | "desc">(INITIAL_ORDER);
+  const [orderBy, setOrderBy] = useState(INITIAL_ORDER_BY);
   const [isSelectionModal, setSelectionModal] = useState<boolean>(false);
   const [useInfiniteScroll, setUseInfiniteScroll] = useState<boolean>(false);
 
-  const getInitialSelectData = (): SelectState => {
-    return {
-      date_start: "",
-      date_end: "",
-      seller: "",
-      buyer: "",
-    };
-  };
+  const getInitialSelectData = (): SelectState => ({
+    date_start: "",
+    date_end: "",
+    charge_date_start: (() => {
+      const today = new Date();
+      const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+      return `${firstDay.getFullYear()}-${String(firstDay.getMonth() + 1).padStart(
+        2,
+        "0",
+      )}-${String(firstDay.getDate()).padStart(2, "0")}`;
+    })(),
+    charge_date_end: (() => {
+      const today = new Date();
+      return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(
+        2,
+        "0",
+      )}-${String(today.getDate()).padStart(2, "0")}`;
+    })(),
+    seller: "",
+    buyer: "",
+  });
 
   const [selectData, setSelectData] = useState<SelectState>(
     getInitialSelectData(),
@@ -44,9 +110,7 @@ export function PaymentContract() {
   const fetchData = useCallback(async () => {
     try {
       setIsLoading(true);
-      const response = await contractContext.reportContracts(
-        getInitialSelectData(),
-      );
+      const response = await contractContext.listContracts();
       const contractsArray = Array.isArray(response.data)
         ? response.data
         : (response.data as any)?.data || [];
@@ -62,16 +126,40 @@ export function PaymentContract() {
     fetchData();
   }, [fetchData]);
 
-  const normalizeStr = (value?: string) =>
-    (value || "")
-      .toString()
-      .toUpperCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .trim();
-
   const processedContracts = useMemo(() => {
-    let processedData = [...listcontracts];
+    let processedData = [...listContracts];
+
+    const emissionStart = selectData.date_start
+      ? parseBrazilianDate(
+          formatIsoDateToBR(selectData.date_start) || selectData.date_start,
+        )
+      : 0;
+    const emissionEnd = selectData.date_end
+      ? parseBrazilianDate(
+          formatIsoDateToBR(selectData.date_end) || selectData.date_end,
+        )
+      : 0;
+    const chargeStart = selectData.charge_date_start
+      ? parseBrazilianDate(
+          formatIsoDateToBR(selectData.charge_date_start) ||
+            selectData.charge_date_start,
+        )
+      : 0;
+    const chargeEnd = selectData.charge_date_end
+      ? parseBrazilianDate(
+          formatIsoDateToBR(selectData.charge_date_end) ||
+            selectData.charge_date_end,
+        )
+      : 0;
+
+    const sellerTerms = (selectData.seller || "")
+      .split(",")
+      .map((item) => normalizeStr(item))
+      .filter(Boolean);
+    const buyerTerms = (selectData.buyer || "")
+      .split(",")
+      .map((item) => normalizeStr(item))
+      .filter(Boolean);
 
     if (searchTerm) {
       const normalizedSearchTerm = normalizeStr(searchTerm);
@@ -81,57 +169,82 @@ export function PaymentContract() {
         const sellerName = normalizeStr(contract.seller?.name);
         const buyerName = normalizeStr(contract.buyer?.name);
         const paymentDate = normalizeStr(contract.payment_date);
+        const chargeDate = normalizeStr(contract.charge_date);
 
         return (
           emissionDate.includes(normalizedSearchTerm) ||
           contractNumber.includes(normalizedSearchTerm) ||
           sellerName.includes(normalizedSearchTerm) ||
           buyerName.includes(normalizedSearchTerm) ||
-          paymentDate.includes(normalizedSearchTerm)
+          paymentDate.includes(normalizedSearchTerm) ||
+          chargeDate.includes(normalizedSearchTerm)
         );
       });
     }
 
-    processedData.sort((a, b) => {
-      const convertToISO = (dateString: string | undefined) => {
-        if (!dateString) return ""; // evita erro se estiver undefined
-        const [day, month, year] = dateString.split("/");
-        return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
-      };
+    processedData = processedData.filter((contract) => {
+      const emissionDate = parseBrazilianDate(contract.contract_emission_date);
+      const paymentDate = parseBrazilianDate(contract.payment_date);
+      const chargeDate = parseBrazilianDate(contract.charge_date);
 
-      const aDate = new Date(convertToISO(a.payment_date)).getTime();
-      const bDate = new Date(convertToISO(b.payment_date)).getTime();
+      const matchEmissionStart = emissionStart ? emissionDate >= emissionStart : true;
+      const matchEmissionEnd = emissionEnd ? emissionDate <= emissionEnd : true;
+      const matchChargeStart = chargeStart ? chargeDate >= chargeStart : true;
+      const matchChargeEnd = chargeEnd ? chargeDate <= chargeEnd : true;
 
-      return order === "asc" ? aDate - bDate : bDate - aDate;
+      const sellerName = normalizeStr(contract.seller?.name);
+      const buyerName = normalizeStr(contract.buyer?.name);
+      const matchSeller =
+        sellerTerms.length === 0 ||
+        sellerTerms.some((term) => sellerName.includes(term));
+      const matchBuyer =
+        buyerTerms.length === 0 ||
+        buyerTerms.some((term) => buyerName.includes(term));
+
+      return (
+        matchEmissionStart &&
+        matchEmissionEnd &&
+        matchChargeStart &&
+        matchChargeEnd &&
+        Boolean(paymentDate) &&
+        matchSeller &&
+        matchBuyer
+      );
     });
 
     return processedData;
-  }, [listcontracts, searchTerm, order]);
+  }, [listContracts, searchTerm, selectData]);
 
-  const fetchSelectData = useCallback(
-    async (filters: SelectState) => {
-      try {
-        setIsLoading(true);
-        const response = await contractContext.reportContracts(filters);
-        setSelectData(filters);
-        const contractsArray = Array.isArray(response.data)
-          ? response.data
-          : (response.data as any)?.data || [];
-        setListContracts(contractsArray);
-        if (contractsArray.length > 0) {
-          toast.success(`${contractsArray.length} contrato(s) encontrado(s)`);
-        } else {
-          toast.info("Nenhum contrato encontrado");
-        }
-        setSelectionModal(false);
-      } catch (error) {
-        toast.error(`Erro ao tentar ler contratos: ${error}`);
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [contractContext],
+  const displayedData = useMemo(
+    () => sortTableData(processedContracts, orderBy, order),
+    [processedContracts, orderBy, order],
   );
+
+  const fetchSelectData = useCallback(async (filters: SelectState) => {
+    setSelectData(filters);
+    setSelectionModal(false);
+    setPage(0);
+  }, []);
+
+  const handleClearFilterModal = async () => {
+    const initial = getInitialSelectData();
+    setSelectData(initial);
+    setSelectionModal(false);
+    setPage(0);
+  };
+
+  const isInitialFilter = useMemo(() => {
+    const initial = getInitialSelectData();
+    return (
+      (selectData.date_start ?? "") === (initial.date_start ?? "") &&
+      (selectData.date_end ?? "") === (initial.date_end ?? "") &&
+      (selectData.charge_date_start ?? "") ===
+        (initial.charge_date_start ?? "") &&
+      (selectData.charge_date_end ?? "") === (initial.charge_date_end ?? "") &&
+      (selectData.seller?.trim() ?? "") === "" &&
+      (selectData.buyer?.trim() ?? "") === ""
+    );
+  }, [selectData]);
 
   const nameColumns: IColumn[] = useMemo(
     () => [
@@ -139,11 +252,13 @@ export function PaymentContract() {
         field: "contract_emission_date",
         header: "Data Emissão",
         width: "100px",
+        sortable: true,
       },
       {
         field: "number_contract",
         header: "Contrato",
         width: "180px",
+        sortable: true,
       },
       {
         field: "seller.name",
@@ -160,12 +275,14 @@ export function PaymentContract() {
         header: "Dt.Vencto.",
         headerTooltip: "Data de Vencimento",
         width: "130px",
+        sortable: true,
       },
       {
         field: "charge_date",
         header: "Dt.Cobrança",
         headerTooltip: "Data de Cobrança",
         width: "130px",
+        sortable: true,
       },
       {
         field: "expected_receipt_date",
@@ -177,57 +294,12 @@ export function PaymentContract() {
     [],
   );
 
-  const handleClearFilterModal = async () => {
-    const initial = getInitialSelectData();
-    setSelectData(initial);
-    try {
-      setIsLoading(true);
-      const response = await contractContext.reportContracts(initial);
-      const contractsArray = Array.isArray(response.data)
-        ? response.data
-        : (response.data as any)?.data || [];
-      setListContracts(contractsArray);
-    } catch (error) {
-      toast.error(`Erro ao tentar ler contratos: ${error}`);
-    } finally {
-      setIsLoading(false);
-      setSelectionModal(false);
-    }
-  };
-
-  const isInitialFilter = useMemo(() => {
-    const initial = getInitialSelectData();
-    return (
-      (selectData.date_start ?? "") === (initial.date_start ?? "") &&
-      (selectData.date_end ?? "") === (initial.date_end ?? "") &&
-      (selectData.seller?.trim() ?? "") === "" &&
-      (selectData.buyer?.trim() ?? "") === ""
-    );
-  }, [selectData]);
-
-  // Filtro de negócios agora é feito apenas no backend
-
   const handlePrint = (): void => {
     const printWindow = window.open("", "_blank");
     if (!printWindow) return;
 
-    // Quantidade de registros por página
     const pageSize = 30;
 
-    // Função utilitária para extrair campo (suporta "a.b.c")
-    const getValue = (row: any, field?: string) => {
-      if (!field) return "";
-      const parts = field.split(".");
-      let value: any = row;
-      for (const p of parts) {
-        value = value?.[p];
-        if (value === undefined || value === null) break;
-      }
-      // Formate datas se necessário (exemplo simples)
-      return value ?? "";
-    };
-
-    // Gera o HTML do cabeçalho usando nameColumns
     const headerHtml = `<tr>
         ${nameColumns
           .map(
@@ -237,12 +309,10 @@ export function PaymentContract() {
           .join("")}
     </tr>`;
 
-    // Gera linhas a partir de processedContracts
-    const allRowsHtml = processedContracts.map((row) => {
+    const allRowsHtml = displayedData.map((row) => {
       const cols = nameColumns
         .map((col) => {
-          const raw = getValue(row, col.field);
-          // escape simples
+          const raw = getNestedValue(row, col.field);
           const cell = String(raw ?? "")
             .replace(/</g, "&lt;")
             .replace(/>/g, "&gt;");
@@ -252,28 +322,32 @@ export function PaymentContract() {
       return `<tr>${cols}</tr>`;
     });
 
-    // Começa a montar o documento
     printWindow.document.write(`
-        <html>
-            <head>
-                <title>Contratos por Vencimento</title>
-                <style>
-                    @page { size: A4 portrait; margin: 10mm; }
-                    body { font-family: Arial, sans-serif; margin: 0; padding: 10mm; }
-                    table { width: 100%; border-collapse: collapse; margin-bottom: 10mm; }
-                    th, td { border: 1px solid black; padding: 4px; font-size: 9px; }
-                    th { background-color: #f0f0f0; }
-                    .page-break { page-break-after: always; }
-                    h3 { text-align: left; margin: 0 0 8px 0; }
-                    h2 { text-align: center; margin: 0 0 12px 0; }
-                </style>
-            </head>
-            <body>
-                <h3>Ary Oleofar</h3>
-                <h2>Contratos por Vencimento</h2>
+      <html>
+        <head>
+          <title>Contratos por Vencimento</title>
+          <style>
+            @page { size: A4 portrait; margin: 10mm; }
+            body { font-family: Arial, sans-serif; margin: 0; padding: 10mm; }
+            table { width: 100%; border-collapse: collapse; margin-bottom: 10mm; }
+            th, td { border: 1px solid black; padding: 4px; font-size: 9px; }
+            th { background-color: #f0f0f0; }
+            .page-break { page-break-after: always; }
+            h3 { text-align: left; margin: 0 0 8px 0; }
+            h2 { text-align: center; margin: 0 0 12px 0; }
+            .filter-summary { text-align: center; margin: 0 0 14px 0; font-size: 12px; font-weight: bold; }
+            .filter-summary div { margin: 0; line-height: 1.4; }
+          </style>
+        </head>
+        <body>
+          <h3>Ary Oleofar</h3>
+          <h2>Contratos por Vencimento</h2>
+          <div class="filter-summary">
+            <div>${buildFilterSummaryLines(selectData).emission}</div>
+            <div>${buildFilterSummaryLines(selectData).charge}</div>
+          </div>
     `);
 
-    // Escreve as páginas
     for (let i = 0; i < allRowsHtml.length; i += pageSize) {
       const pageRows = allRowsHtml.slice(i, i + pageSize).join("");
       printWindow.document.write(`<table>`);
@@ -286,13 +360,8 @@ export function PaymentContract() {
       }
     }
 
-    printWindow.document.write(`
-            </body>
-        </html>
-    `);
-
+    printWindow.document.write(`</body></html>`);
     printWindow.document.close();
-    // Pequena proteção para garantir que o conteúdo seja carregado antes de mandar imprimir
     printWindow.onload = () => {
       printWindow.focus();
       printWindow.print();
@@ -300,39 +369,112 @@ export function PaymentContract() {
     };
   };
 
-  const handleExportCSV = () => {
-    const headers = nameColumns
-      .filter((col) => col.field)
-      .map((col) => `"${col.header}"`)
-      .join(";");
+  const handleExportExcelStyled = () => {
+    try {
+      const emissionLine =
+        selectData.date_start || selectData.date_end
+          ? buildFilterSummaryLines(selectData).emission
+          : "";
+      const chargeLine = buildFilterSummaryLines(selectData).charge;
+      const hasEmissionLine = emissionLine !== "";
+      const headerRowIndex = hasEmissionLine ? 4 : 3;
+      const dataStartRowIndex = headerRowIndex + 1;
 
-    const rows = processedContracts.map((row) => {
-      return nameColumns
-        .filter((col) => col.field)
-        .map((col) => {
-          const fields = col.field!.split(".");
-          let value: any = row;
-          for (const f of fields) {
-            value = value?.[f];
-          }
-          return `"${value ?? ""}"`;
-        })
-        .join(";");
-    });
+      const exportRows = [
+        ["Contratos por Vencimento"],
+        ...(hasEmissionLine ? [[emissionLine]] : []),
+        [chargeLine],
+        [],
+        nameColumns.map((col) => col.header),
+        ...displayedData.map((row) =>
+          nameColumns.map((col) => buildExportCell(row, col.field)),
+        ),
+      ];
 
-    const BOM = "\uFEFF"; // UTF-8 BOM
-    const csvContent = [headers, ...rows].join("\n");
-    const blob = new Blob([BOM + csvContent], {
-      type: "text/csv;charset=utf-8;",
-    });
-    const url = URL.createObjectURL(blob);
+      const worksheet = XLSX.utils.aoa_to_sheet(exportRows);
+      const columnCount = nameColumns.length;
 
-    const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute("download", "contratos-vencimento.csv");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+      worksheet["!merges"] = [
+        { s: { r: 0, c: 0 }, e: { r: 0, c: columnCount - 1 } },
+        ...(hasEmissionLine
+          ? [{ s: { r: 1, c: 0 }, e: { r: 1, c: columnCount - 1 } }]
+          : []),
+        {
+          s: { r: hasEmissionLine ? 2 : 1, c: 0 },
+          e: { r: hasEmissionLine ? 2 : 1, c: columnCount - 1 },
+        },
+      ];
+
+      worksheet["!cols"] = nameColumns.map((col) => ({
+        wch: Math.max(
+          12,
+          Math.round(Number.parseInt(col.width || "120", 10) / 8),
+        ),
+      }));
+
+      const titleStyle = {
+        font: { bold: true, sz: 14, color: { rgb: "1F1F1F" } },
+        fill: { patternType: "solid", fgColor: { rgb: "E7B10A" } },
+        alignment: { horizontal: "center", vertical: "center" },
+      };
+
+      const filterStyle = {
+        font: { bold: true, sz: 11, color: { rgb: "1F1F1F" } },
+        fill: { patternType: "solid", fgColor: { rgb: "E7B10A" } },
+        alignment: { horizontal: "center", vertical: "center" },
+      };
+
+      const headerStyle = {
+        font: { bold: true, color: { rgb: "1F1F1F" } },
+        fill: { patternType: "solid", fgColor: { rgb: "E7B10A" } },
+        border: {
+          top: { style: "thin", color: { rgb: "FFFFFF" } },
+          bottom: { style: "thin", color: { rgb: "FFFFFF" } },
+          left: { style: "thin", color: { rgb: "FFFFFF" } },
+          right: { style: "thin", color: { rgb: "FFFFFF" } },
+        },
+        alignment: { horizontal: "center", vertical: "center" },
+      };
+
+      const textStyle = {
+        alignment: { horizontal: "left", vertical: "center" },
+      };
+
+      const applyStyle = (cellRef: string, style: any) => {
+        if (worksheet[cellRef]) {
+          worksheet[cellRef].s = style;
+        }
+      };
+
+      for (let col = 0; col < columnCount; col += 1) {
+        applyStyle(XLSX.utils.encode_cell({ r: 0, c: col }), titleStyle);
+        if (hasEmissionLine) {
+          applyStyle(XLSX.utils.encode_cell({ r: 1, c: col }), filterStyle);
+          applyStyle(XLSX.utils.encode_cell({ r: 2, c: col }), filterStyle);
+        } else {
+          applyStyle(XLSX.utils.encode_cell({ r: 1, c: col }), filterStyle);
+        }
+        applyStyle(XLSX.utils.encode_cell({ r: headerRowIndex, c: col }), headerStyle);
+      }
+
+      for (let row = dataStartRowIndex; row < exportRows.length; row += 1) {
+        for (let col = 0; col < columnCount; col += 1) {
+          applyStyle(XLSX.utils.encode_cell({ r: row, c: col }), textStyle);
+        }
+      }
+
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Contratos Vencimento");
+      XLSX.writeFile(workbook, "contratos-vencimento.xlsx", {
+        bookType: "xlsx",
+      });
+    } catch (error) {
+      toast.error(`Erro ao exportar Excel: ${error}`);
+    }
+  };
+
+  const handleExportExcel = () => {
+    handleExportExcelStyled();
   };
 
   return (
@@ -376,7 +518,20 @@ export function PaymentContract() {
           onClose={handleCloseModal}
           onChange={(filters) => setSelectData(filters)}
           onConfirm={fetchSelectData}
-          visibleFields={["seller", "buyer", "date_start", "date_end"]}
+          visibleFields={[
+            "seller",
+            "buyer",
+            "date_start",
+            "date_end",
+            "charge_date_start",
+            "charge_date_end",
+          ]}
+          fieldLabels={{
+            date_start: "Data Emissão Inicial",
+            date_end: "Data Emissão Final",
+            charge_date_start: "Data Cobrança Inicial",
+            charge_date_end: "Data Cobrança Final",
+          }}
         />
 
         <CustomButton $variant="success" width="150px" onClick={handlePrint}>
@@ -386,30 +541,30 @@ export function PaymentContract() {
         <CustomButton
           $variant="success"
           width="150px"
-          onClick={handleExportCSV}
+          onClick={handleExportExcel}
         >
-          Exportar CSV
+          Excel
         </CustomButton>
 
-        <Tooltip
+        <CustomTooltipLabel
           title={
             useInfiniteScroll
-              ? "Ativar scroll infinito"
-              : "Voltar para paginação"
+              ? "Voltar para paginação"
+              : "Ativar scroll infinito"
           }
         >
           <IconButton
             onClick={() => setUseInfiniteScroll((prev) => !prev)}
             sx={{ color: "#E7B10A" }}
           >
-            {!useInfiniteScroll ? <PiScroll /> : <TbInfinity />}
+            {!useInfiniteScroll ? <TbInfinity /> : <PiScroll />}
           </IconButton>
-        </Tooltip>
+        </CustomTooltipLabel>
       </SContainerSearchAndButton>
 
       <CustomTable
         isLoading={isLoading}
-        data={processedContracts}
+        data={displayedData}
         columns={nameColumns}
         hasInfiniteScroll={!useInfiniteScroll}
         hasPagination={useInfiniteScroll}

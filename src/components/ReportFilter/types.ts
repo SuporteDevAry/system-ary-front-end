@@ -5,10 +5,14 @@ export type SelectState = {
   date?: string;
   date_start?: string;
   date_end?: string;
+  charge_date_start?: string;
+  charge_date_end?: string;
   year?: string | number;
   month?: string | number;
   product?: string;
   name_product?: string;
+  number_contract?: string;
+  mesa?: string;
   product_types?: string | string[]; // Agora aceita array de siglas
 };
 
@@ -18,10 +22,14 @@ export type ReportFilterField =
   | "product_types" // Usar product_types como campo do filtro
   | "date_start"
   | "date_end"
+  | "charge_date_start"
+  | "charge_date_end"
   | "month"
   | "year"
   | "product"
-  | "name_product";
+  | "name_product"
+  | "number_contract"
+  | "mesa";
 
 export interface IReportFilterProps {
   open: boolean;

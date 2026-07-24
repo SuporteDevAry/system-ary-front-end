@@ -39,6 +39,33 @@ const parseLocaleNumber = (value: number | string | null | undefined) => {
     return Number.isFinite(parsedValue) ? parsedValue : 0;
 };
 
+const normalizeText = (value?: string) =>
+    (value || "")
+        .toUpperCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .trim();
+
+const formatMoneyBR = (value: number) =>
+    value.toLocaleString("pt-BR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    });
+
+type GrainsVolRow = Partial<IContractData> & {
+    id: string;
+    quantity?: number | string;
+    price_real?: string;
+    day_exchange_formatted?: string;
+    type_commission?: string;
+    resp_commission?: string;
+    commission?: string | number;
+    total_contract_real?: string;
+    commission_value?: string;
+    is_sigla_total?: boolean;
+    is_grand_total?: boolean;
+};
+
 export function GrainsVol() {
     const contractContext = ContractContext();
     const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -47,7 +74,7 @@ export function GrainsVol() {
     const [searchTerm, setSearchTerm] = useState("");
     const [page, setPage] = useState(0);
     const [order, setOrder] = useState<"asc" | "desc">("desc");
-    const [orderBy, setOrderBy] = useState("quantity");
+    const [orderBy, setOrderBy] = useState("contract_emission_date");
     const [isSelectionModal, setSelectionModal] = useState<boolean>(false);
     const [useInfiniteScroll, setUseInfiniteScroll] = useState<boolean>(false);
 
@@ -264,13 +291,6 @@ export function GrainsVol() {
             try {
                 setIsLoading(true);
 
-                const normalize = (value?: string) =>
-                    (value || "")
-                        .toUpperCase()
-                        .normalize("NFD")
-                        .replace(/[\u0300-\u036f]/g, "")
-                        .trim();
-
                 const parseIsoDate = (date?: string) => {
                     if (!date) return null;
                     const [year, month, day] = date.split("-").map(Number);
@@ -287,16 +307,16 @@ export function GrainsVol() {
 
                 const sellerTerms = (filters.seller || "")
                     .split(",")
-                    .map((item) => normalize(item))
+                    .map((item) => normalizeText(item))
                     .filter(Boolean);
 
                 const buyerTerms = (filters.buyer || "")
                     .split(",")
-                    .map((item) => normalize(item))
+                    .map((item) => normalizeText(item))
                     .filter(Boolean);
 
-                const productTerm = normalize(filters.product as string);
-                const nameProductTerm = normalize(
+                const productTerm = normalizeText(filters.product as string);
+                const nameProductTerm = normalizeText(
                     filters.name_product as string,
                 );
 
@@ -311,10 +331,10 @@ export function GrainsVol() {
                       : [];
 
                 const filtered = allContracts.filter((contract: any) => {
-                    const sellerName = normalize(contract?.seller?.name);
-                    const buyerName = normalize(contract?.buyer?.name);
-                    const product = normalize(contract?.product);
-                    const nameProduct = normalize(contract?.name_product);
+                    const sellerName = normalizeText(contract?.seller?.name);
+                    const buyerName = normalizeText(contract?.buyer?.name);
+                    const product = normalizeText(contract?.product);
+                    const nameProduct = normalizeText(contract?.name_product);
                     const emissionDate = parseBrDate(
                         contract?.contract_emission_date,
                     );
@@ -396,6 +416,7 @@ export function GrainsVol() {
         searchableFields: [
             "contract_emission_date",
             "number_contract",
+            "product",
             "quantity",
         ],
     });
@@ -479,50 +500,101 @@ export function GrainsVol() {
         [],
     );
 
-    const getNestedValue = (obj: any, path: string): any => {
-        return path.split(".").reduce((acc, part) => acc?.[part], obj);
-    };
+    const displayedData = useMemo(
+        () => sortTableData(filteredData, orderBy, order) as GrainsVolRow[],
+        [filteredData, orderBy, order],
+    );
 
-    const sortedData = useMemo(() => {
-        const parseBrDateToTime = (value: unknown) => {
-            if (typeof value !== "string") return Number.NaN;
-            const [day, month, year] = value.split("/").map(Number);
-            if (!day || !month || !year) return Number.NaN;
-            return new Date(year, month - 1, day).getTime();
+    const reportRows = useMemo(() => {
+        const totalsBySigla = new Map<
+            string,
+            {
+                quantity: number;
+                total_contract_real: number;
+                commission_value: number;
+            }
+        >();
+        const grandTotals = {
+            quantity: 0,
+            total_contract_real: 0,
+            commission_value: 0,
         };
 
-        const sorted = [...filteredData].sort((a, b) => {
-            const aRaw = getNestedValue(a, orderBy);
-            const bRaw = getNestedValue(b, orderBy);
+        displayedData.forEach((row) => {
+            const sigla = String(row.product ?? "").trim();
+            if (!sigla || row.is_sigla_total) return;
 
-            if (orderBy === "contract_emission_date") {
-                const aDate = parseBrDateToTime(aRaw);
-                const bDate = parseBrDateToTime(bRaw);
+            const current = totalsBySigla.get(sigla) ?? {
+                quantity: 0,
+                total_contract_real: 0,
+                commission_value: 0,
+            };
 
-                if (!Number.isNaN(aDate) && !Number.isNaN(bDate)) {
-                    return order === "asc" ? aDate - bDate : bDate - aDate;
-                }
-            }
-
-            // Tenta converter para nÃºmero decimal com . como separador
-            const aNum =
-                typeof aRaw === "string"
-                    ? parseFloat(aRaw.replace(".", "").replace(",", "."))
-                    : Number(aRaw);
-            const bNum =
-                typeof bRaw === "string"
-                    ? parseFloat(bRaw.replace(".", "").replace(",", "."))
-                    : Number(bRaw);
-
-            return order === "asc" ? aNum - bNum : bNum - aNum;
+            const quantityValue = Number(row.quantity ?? 0) || 0;
+            current.total_contract_real += parseLocaleNumber(
+                row.total_contract_real,
+            );
+            current.commission_value += parseLocaleNumber(row.commission_value);
+            current.quantity += quantityValue;
+            grandTotals.quantity += quantityValue;
+            grandTotals.total_contract_real += parseLocaleNumber(
+                row.total_contract_real,
+            );
+            grandTotals.commission_value += parseLocaleNumber(
+                row.commission_value,
+            );
+            totalsBySigla.set(sigla, current);
         });
-        return sorted;
-    }, [filteredData, order, orderBy]);
 
-    const displayedData = useMemo(
-        () => sortTableData(sortedData, orderBy, order),
-        [sortedData, orderBy, order],
-    );
+        const totalRows = Array.from(totalsBySigla.entries())
+            .sort(([a], [b]) => a.localeCompare(b))
+            .map(
+                ([sigla, totals]) =>
+                    ({
+                        id: `sigla-total-${sigla}`,
+                        product: `TOTAL ${sigla}`,
+                        contract_emission_date: "",
+                        number_contract: "",
+                        seller: { name: "" },
+                        buyer: { name: "" },
+                        quantity: totals.quantity,
+                        price_real: "",
+                        type_currency: "",
+                        day_exchange_formatted: "",
+                        total_contract_real: formatMoneyBR(
+                            totals.total_contract_real,
+                        ),
+                        type_commission: "",
+                        resp_commission: "",
+                        commission: "",
+                        commission_value: formatMoneyBR(
+                            totals.commission_value,
+                        ),
+                        is_sigla_total: true,
+                    }) as unknown as GrainsVolRow,
+            );
+
+        const grandTotalRow: GrainsVolRow = {
+            id: "grand-total",
+            product: "TOTAL GERAL",
+            contract_emission_date: "",
+            number_contract: "",
+            seller: { name: "" },
+            buyer: { name: "" },
+            quantity: grandTotals.quantity,
+            price_real: "",
+            type_currency: "",
+            day_exchange_formatted: "",
+            total_contract_real: formatMoneyBR(grandTotals.total_contract_real),
+            type_commission: "",
+            resp_commission: "",
+            commission: "",
+            commission_value: formatMoneyBR(grandTotals.commission_value),
+            is_grand_total: true,
+        };
+
+        return [...displayedData, ...totalRows, grandTotalRow];
+    }, [displayedData]);
 
     const buildReportTitle = () => "Grãos Volume - Produto";
 
@@ -587,6 +659,14 @@ export function GrainsVol() {
                         font-weight: bold;
                         text-align: center;
                     }
+                    tr.total-row td {
+                        background: #e2f0d9;
+                        font-weight: bold;
+                    }
+                    tr.grand-total-row td {
+                        background: #c6e0b4;
+                        font-weight: bold;
+                    }
                     td:first-child { text-align: left; }
                     .page-break { page-break-after: always; }
                     .print-header { margin-bottom: 6px; }
@@ -600,8 +680,8 @@ export function GrainsVol() {
                 </div>
         `);
 
-        for (let i = 0; i < displayedData.length; i += pageSize) {
-            const pageRows = displayedData.slice(i, i + pageSize);
+        for (let i = 0; i < reportRows.length; i += pageSize) {
+            const pageRows = reportRows.slice(i, i + pageSize);
 
             printWindow.document.write(`<table><thead><tr>`);
             nameColumns.forEach((col) => {
@@ -612,7 +692,9 @@ export function GrainsVol() {
             printWindow.document.write(`</tr></thead><tbody>`);
 
             pageRows.forEach((row) => {
-                printWindow.document.write(`<tr>`);
+                printWindow.document.write(
+                    `<tr class="${row.is_grand_total ? "grand-total-row" : row.is_sigla_total ? "total-row" : ""}">`,
+                );
                 nameColumns.forEach((col) => {
                     const fields = col.field.split(".");
                     let value: any = row;
@@ -626,7 +708,7 @@ export function GrainsVol() {
 
             printWindow.document.write(`</tbody></table>`);
 
-            if (i + pageSize < displayedData.length) {
+            if (i + pageSize < reportRows.length) {
                 printWindow.document.write(`<div class="page-break"></div>`);
             }
         }
@@ -651,7 +733,7 @@ export function GrainsVol() {
                 [`Data: ${startDate} até ${endDate}`],
                 [],
                 nameColumns.map((col) => col.header),
-                ...displayedData.map((row) =>
+                ...reportRows.map((row) =>
                     nameColumns.map((col) => {
                         const fields = col.field.split(".");
                         let value: any = row;
@@ -729,12 +811,33 @@ export function GrainsVol() {
             }
 
             for (let row = 4; row < exportRows.length; row += 1) {
+                const currentRow = reportRows[row - 4];
+                const isTotalRow = Boolean(
+                    currentRow?.is_sigla_total || currentRow?.is_grand_total,
+                );
                 for (let col = 0; col < columnCount; col += 1) {
-                    const style =
+                    const baseStyle =
                         col === 0 ||
                         nameColumns[col].field === "contract_emission_date"
                             ? textStyle
                             : numberStyle;
+                    const style = isTotalRow
+                        ? {
+                              ...baseStyle,
+                              font: {
+                                  ...(baseStyle as any).font,
+                                  bold: true,
+                              },
+                              fill: {
+                                  patternType: "solid",
+                                  fgColor: {
+                                      rgb: currentRow?.is_grand_total
+                                          ? "C6E0B4"
+                                          : "E2F0D9",
+                                  },
+                              },
+                          }
+                        : baseStyle;
                     applyStyle(
                         XLSX.utils.encode_cell({ r: row, c: col }),
                         style,
@@ -758,7 +861,7 @@ export function GrainsVol() {
             <SContainerSearchAndButton>
                 <CustomSearch
                     width="450px"
-                    placeholder="Filtre por Data,Sigla,Contrato,Comprador ou Vendedor"
+                    placeholder="Filtre por Data, Sigla ou Contrato"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -837,7 +940,7 @@ export function GrainsVol() {
             <SContainer>
                 <CustomTable
                     isLoading={isLoading}
-                    data={displayedData}
+                    data={reportRows}
                     columns={nameColumns}
                     hasInfiniteScroll={!useInfiniteScroll}
                     hasPagination={useInfiniteScroll}

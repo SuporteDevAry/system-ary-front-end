@@ -48,20 +48,67 @@ export const sortTableData = <T extends Record<string, any>>(
   order: "asc" | "desc",
 ) => {
   return data.slice().sort((a, b) => {
+    const getRowPriority = (row: T) => {
+      if ((row as any)?.is_grand_total) return 2;
+      if ((row as any)?.is_sigla_total) return 1;
+      return 0;
+    };
+
+    const aPriority = getRowPriority(a);
+    const bPriority = getRowPriority(b);
+
+    if (aPriority !== bPriority) {
+      return aPriority - bPriority;
+    }
+
+    if (aPriority > 0 && bPriority > 0) {
+      const aLabel = String((a as any)?.product ?? "");
+      const bLabel = String((b as any)?.product ?? "");
+      return compareValues(aLabel, bLabel, "asc");
+    }
+
     const aValue = getNestedValue(a, orderBy);
     const bValue = getNestedValue(b, orderBy);
 
-    if (orderBy === "contract_emission_date") {
+    if (
+      orderBy === "contract_emission_date" ||
+      orderBy === "receipt_date" ||
+      orderBy === "payment_date" ||
+      orderBy === "charge_date" ||
+      orderBy === "expected_receipt_date"
+    ) {
       const aDate = parseBrazilianDate(aValue);
       const bDate = parseBrazilianDate(bValue);
 
-      return order === "asc" ? aDate - bDate : bDate - aDate;
+      if (aDate !== bDate) {
+        return order === "asc" ? aDate - bDate : bDate - aDate;
+      }
+
+      const aSigla = String(getNestedValue(a, "product") ?? "");
+      const bSigla = String(getNestedValue(b, "product") ?? "");
+
+      return compareValues(aSigla, bSigla, "asc");
     }
 
     if (orderBy === "number_contract") {
       const aContractNumber = extractNumberFromContract(aValue);
       const bContractNumber = extractNumberFromContract(bValue);
-      return compareValues(aContractNumber, bContractNumber, order);
+      const contractComparison = compareValues(
+        aContractNumber,
+        bContractNumber,
+        order,
+      );
+
+      if (contractComparison !== 0) {
+        return contractComparison;
+      }
+
+      const aReceiptDate = parseBrazilianDate(getNestedValue(a, "receipt_date"));
+      const bReceiptDate = parseBrazilianDate(getNestedValue(b, "receipt_date"));
+
+      return order === "asc"
+        ? aReceiptDate - bReceiptDate
+        : bReceiptDate - aReceiptDate;
     }
 
     if (orderBy === "rps_number" || orderBy === "nfs_number") {
