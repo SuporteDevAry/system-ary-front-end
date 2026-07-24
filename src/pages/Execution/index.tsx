@@ -4,8 +4,11 @@ import { SContainer, SCard, SCardIcon, SContent, STitle } from "./styles";
 import { IoFileTrayStackedOutline } from "react-icons/io5";
 import { RiMailSendLine } from "react-icons/ri";
 import { IoClipboardOutline } from "react-icons/io5";
+import { useUserPermissions } from "../../hooks";
 
 export function Execution() {
+    const { canViewContractControl } = useUserPermissions();
+
     const cardLinks = [
         {
             label: "Enviar Contratos",
@@ -17,11 +20,15 @@ export function Execution() {
             icon: <IoFileTrayStackedOutline size={64} />,
             to: "/execucao/historico",
         },
-        {
-            label: "Controle de Contratos",
-            icon: <IoClipboardOutline size={64} />,
-            to: "/execucao/controle",
-        },
+        ...(canViewContractControl
+            ? [
+                  {
+                      label: "Controle de Contratos",
+                      icon: <IoClipboardOutline size={64} />,
+                      to: "/execucao/controle",
+                  },
+              ]
+            : []),
     ];
     return (
         <>

@@ -14,8 +14,10 @@ import { TbFilter, TbFilterOff, TbInfinity } from "react-icons/tb";
 import { PiScroll } from "react-icons/pi";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
+import { useUserPermissions } from "../../../../hooks";
 
 export function ControlContracts() {
+  const { canViewContractControl } = useUserPermissions();
   const contractContext = ContractContext();
   const [isSelectionModal, setSelectionModal] = useState<boolean>(false);
   const getInitialSelectData = (): SelectState => ({
@@ -368,8 +370,10 @@ export function ControlContracts() {
   }, [contractContext]);
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    if (canViewContractControl) {
+      fetchData();
+    }
+  }, [fetchData, canViewContractControl]);
 
   const handlePrint = (): void => {
     const printWindow = window.open("", "_blank");
@@ -511,6 +515,15 @@ export function ControlContracts() {
     link.click();
     document.body.removeChild(link);
   };
+
+  if (!canViewContractControl) {
+    return (
+      <SContainer>
+        <STitle>Acesso restrito</STitle>
+        <SCard>Você não tem permissão para acessar o Controle de Contratos.</SCard>
+      </SContainer>
+    );
+  }
 
   return (
     <SContainer>
