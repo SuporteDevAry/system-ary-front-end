@@ -41,7 +41,7 @@ export function Billing() {
     ];
     const cardLinks2 = [
         {
-            label: "Recebimentos do Contrato",
+            label: "Contratos Recebidos",
             icon: <TbReceipt2 size={64} />,
             to: "/cobranca/contratos-receb",
         },

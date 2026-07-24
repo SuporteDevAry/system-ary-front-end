@@ -213,7 +213,11 @@ const CustomTable: React.FC<ICustomTableProps> = ({
     if (column.field === "cellphone") return insertMaskInCelular(value);
 
     if (column.field === "quantity") {
-      let auxQtd = Math.round(value) || 0;
+      let auxQtd =
+        typeof value === "number"
+          ? value
+          : Number(String(value ?? "0").replace(".", "").replace(",", ".")) ||
+            0;
       return auxQtd.toLocaleString("pt-BR", {
         minimumFractionDigits: 3,
       });
@@ -402,6 +406,23 @@ const CustomTable: React.FC<ICustomTableProps> = ({
             tableData.map((row) => (
               <React.Fragment key={row.id}>
                 <TableRow
+                  sx={
+                    row?.is_grand_total
+                      ? {
+                          "& td": {
+                            backgroundColor: "#c6e0b4",
+                            fontWeight: 700,
+                          },
+                        }
+                      : row?.is_sigla_total
+                      ? {
+                          "& td": {
+                            backgroundColor: "#e2f0d9",
+                            fontWeight: 700,
+                          },
+                        }
+                      : undefined
+                  }
                   onClick={() => {
                     if (onRowClick && !collapsible) {
                       onRowClick(row);

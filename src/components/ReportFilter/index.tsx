@@ -11,10 +11,14 @@ const DEFAULT_VISIBLE_FIELDS: ReportFilterField[] = [
   "product_types", // Usar product_types como campo do filtro
   "date_start",
   "date_end",
+  "charge_date_start",
+  "charge_date_end",
   "month",
   "year",
   "product",
   "name_product",
+  "number_contract",
+  "mesa",
 ];
 export const ReportFilter: React.FC<IReportFilterProps> = ({
   open,
@@ -26,6 +30,7 @@ export const ReportFilter: React.FC<IReportFilterProps> = ({
   confirmText = "OK",
   cancelText = "Fechar",
   visibleFields,
+  fieldLabels,
   defaultMesaName,
   allowEmptyMesa = true,
 }) => {
@@ -83,7 +88,12 @@ export const ReportFilter: React.FC<IReportFilterProps> = ({
 
   const [dateStartFocused, setDateStartFocused] = useState(false);
   const [dateEndFocused, setDateEndFocused] = useState(false);
+  const [chargeDateStartFocused, setChargeDateStartFocused] = useState(false);
+  const [chargeDateEndFocused, setChargeDateEndFocused] = useState(false);
   const enabledFields = new Set(visibleFields ?? DEFAULT_VISIBLE_FIELDS);
+
+  const getFieldLabel = (field: string, fallback: string) =>
+    fieldLabels?.[field] ?? fallback;
 
   const normalizeDateToIso = (dateValue?: string) => {
     if (!dateValue || typeof dateValue !== "string") {
@@ -113,12 +123,28 @@ export const ReportFilter: React.FC<IReportFilterProps> = ({
           (norm as any)[k] = v.toUpperCase();
         }
       });
+      ["number_contract", "mesa"].forEach((k) => {
+        const v = (norm as any)[k];
+        if (typeof v === "string") {
+          (norm as any)[k] = v.toUpperCase();
+        }
+      });
       norm.date = normalizeDateToIso(norm.date);
       norm.date_start = normalizeDateToIso(norm.date_start || norm.date);
       norm.date_end = normalizeDateToIso(norm.date_end);
+      norm.charge_date_start = normalizeDateToIso(norm.charge_date_start);
+      norm.charge_date_end = normalizeDateToIso(norm.charge_date_end);
 
       if (norm.date_start && norm.date_end && norm.date_end < norm.date_start) {
         norm.date_end = norm.date_start;
+      }
+
+      if (
+        norm.charge_date_start &&
+        norm.charge_date_end &&
+        norm.charge_date_end < norm.charge_date_start
+      ) {
+        norm.charge_date_end = norm.charge_date_start;
       }
 
       setFilters(norm);
@@ -178,24 +204,35 @@ export const ReportFilter: React.FC<IReportFilterProps> = ({
       }
     }
 
-    if (name === "date_start") {
-      const next = {
-        ...filters,
-        date_start: val,
-        date:
-          typeof val === "string" && val !== ""
-            ? val
-            : (filters.date as string) || "",
-      };
+    if (name === "date_start" || name === "date_end") {
+      const next = { ...filters, [name]: val };
 
       if (
-        next.date_start &&
         typeof next.date_start === "string" &&
-        next.date_end &&
         typeof next.date_end === "string" &&
+        next.date_start !== "" &&
+        next.date_end !== "" &&
         next.date_end < next.date_start
       ) {
         next.date_end = next.date_start;
+      }
+
+      setFilters(next);
+      onChange && onChange(next);
+      return;
+    }
+
+    if (name === "charge_date_start" || name === "charge_date_end") {
+      const next = { ...filters, [name]: val };
+
+      if (
+        typeof next.charge_date_start === "string" &&
+        typeof next.charge_date_end === "string" &&
+        next.charge_date_start !== "" &&
+        next.charge_date_end !== "" &&
+        next.charge_date_end < next.charge_date_start
+      ) {
+        next.charge_date_end = next.charge_date_start;
       }
 
       setFilters(next);
@@ -213,7 +250,9 @@ export const ReportFilter: React.FC<IReportFilterProps> = ({
     }
 
     if (
-      ["seller", "buyer", "product", "name_product"].includes(name) &&
+      ["seller", "buyer", "product", "name_product", "number_contract", "mesa"].includes(
+        name,
+      ) &&
       typeof val === "string" &&
       val !== ""
     ) {
@@ -247,7 +286,10 @@ export const ReportFilter: React.FC<IReportFilterProps> = ({
 
     const hasDateRange =
       (typeof out.date_start === "string" && out.date_start !== "") ||
-      (typeof out.date_end === "string" && out.date_end !== "");
+      (typeof out.date_end === "string" && out.date_end !== "") ||
+      (typeof out.charge_date_start === "string" &&
+        out.charge_date_start !== "") ||
+      (typeof out.charge_date_end === "string" && out.charge_date_end !== "");
 
     const referenceDate =
       (typeof out.date_start === "string" && out.date_start) ||
@@ -307,6 +349,14 @@ export const ReportFilter: React.FC<IReportFilterProps> = ({
       out.date_end = normalizeDateToIso(out.date_end);
     }
 
+    if (typeof out.charge_date_start === "string") {
+      out.charge_date_start = normalizeDateToIso(out.charge_date_start);
+    }
+
+    if (typeof out.charge_date_end === "string") {
+      out.charge_date_end = normalizeDateToIso(out.charge_date_end);
+    }
+
     if (
       out.date_start &&
       out.date_end &&
@@ -315,6 +365,16 @@ export const ReportFilter: React.FC<IReportFilterProps> = ({
       out.date_end < out.date_start
     ) {
       out.date_end = out.date_start;
+    }
+
+    if (
+      out.charge_date_start &&
+      out.charge_date_end &&
+      typeof out.charge_date_start === "string" &&
+      typeof out.charge_date_end === "string" &&
+      out.charge_date_end < out.charge_date_start
+    ) {
+      out.charge_date_end = out.charge_date_start;
     }
 
     if (out.date_start) {
@@ -330,7 +390,7 @@ export const ReportFilter: React.FC<IReportFilterProps> = ({
       }
     }
 
-    ["seller", "buyer", "product", "name_product"].forEach((k) => {
+    ["seller", "buyer", "product", "name_product", "number_contract", "mesa"].forEach((k) => {
       const v = (out as any)[k];
       if (typeof v === "string" && v !== "") {
         (out as any)[k] = v.toUpperCase();
@@ -395,7 +455,7 @@ export const ReportFilter: React.FC<IReportFilterProps> = ({
 
         {enabledFields.has("date_start") && (
           <STextField
-            label="Data início"
+            label={getFieldLabel("date_start", "Data início")}
             type={dateStartFocused || !!filters.date_start ? "date" : "text"}
             variant="outlined"
             size="small"
@@ -414,7 +474,7 @@ export const ReportFilter: React.FC<IReportFilterProps> = ({
 
         {enabledFields.has("date_end") && (
           <STextField
-            label="Data fim"
+            label={getFieldLabel("date_end", "Data fim")}
             type={dateEndFocused || !!filters.date_end ? "date" : "text"}
             variant="outlined"
             size="small"
@@ -427,6 +487,56 @@ export const ReportFilter: React.FC<IReportFilterProps> = ({
             sx={{ width: "100%" }}
             InputLabelProps={{ shrink: dateEndFocused || !!filters.date_end }}
             inputProps={{ min: filters.date_start || undefined }}
+          />
+        )}
+
+        {enabledFields.has("charge_date_start") && (
+          <STextField
+            label={getFieldLabel(
+              "charge_date_start",
+              "Data cobrança inicial",
+            )}
+            type={
+              chargeDateStartFocused || !!filters.charge_date_start
+                ? "date"
+                : "text"
+            }
+            variant="outlined"
+            size="small"
+            name="charge_date_start"
+            value={filters.charge_date_start ?? ""}
+            onChange={handleChange}
+            onFocus={() => setChargeDateStartFocused(true)}
+            onBlur={() => setChargeDateStartFocused(false)}
+            placeholder="Data cobrança inicial"
+            sx={{ width: "100%" }}
+            InputLabelProps={{
+              shrink: chargeDateStartFocused || !!filters.charge_date_start,
+            }}
+          />
+        )}
+
+        {enabledFields.has("charge_date_end") && (
+          <STextField
+            label={getFieldLabel("charge_date_end", "Data cobrança final")}
+            type={
+              chargeDateEndFocused || !!filters.charge_date_end
+                ? "date"
+                : "text"
+            }
+            variant="outlined"
+            size="small"
+            name="charge_date_end"
+            value={filters.charge_date_end ?? ""}
+            onChange={handleChange}
+            onFocus={() => setChargeDateEndFocused(true)}
+            onBlur={() => setChargeDateEndFocused(false)}
+            placeholder="Data cobrança final"
+            sx={{ width: "100%" }}
+            InputLabelProps={{
+              shrink: chargeDateEndFocused || !!filters.charge_date_end,
+            }}
+            inputProps={{ min: filters.charge_date_start || undefined }}
           />
         )}
 
@@ -504,6 +614,32 @@ export const ReportFilter: React.FC<IReportFilterProps> = ({
             size="small"
             name="name_product"
             value={filters.name_product ?? ""}
+            onChange={handleChange}
+            sx={{ width: "100%" }}
+          />
+        )}
+
+        {enabledFields.has("number_contract") && (
+          <STextField
+            label="Contrato"
+            type="text"
+            variant="outlined"
+            size="small"
+            name="number_contract"
+            value={filters.number_contract ?? ""}
+            onChange={handleChange}
+            sx={{ width: "100%" }}
+          />
+        )}
+
+        {enabledFields.has("mesa") && (
+          <STextField
+            label="Mesa"
+            type="text"
+            variant="outlined"
+            size="small"
+            name="mesa"
+            value={filters.mesa ?? ""}
             onChange={handleChange}
             sx={{ width: "100%" }}
           />
