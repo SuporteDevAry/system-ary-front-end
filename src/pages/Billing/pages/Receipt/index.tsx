@@ -14,143 +14,144 @@ import { CustomTimeline } from "../../../Contracts/pages/HistoryContracts/compon
 // import FormControlLabel from "@mui/material/FormControlLabel";
 
 export function Receipt() {
-  const contractContext = ContractContext();
-  const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [listcontracts, setListContracts] = useState<IContractData[]>([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [page, setPage] = useState(0);
-  const [order, setOrder] = useState<"asc" | "desc">("desc");
-  const [orderBy, setOrderBy] = useState<string>("payment_date");
+    const contractContext = ContractContext();
+    const navigate = useNavigate();
+    const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [listcontracts, setListContracts] = useState<IContractData[]>([]);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [page, setPage] = useState(0);
+    const [order, setOrder] = useState<"asc" | "desc">("desc");
+    const [orderBy, setOrderBy] = useState<string>("payment_date");
 
-  const fetchData = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      const response = await contractContext.listContracts();
+    const fetchData = useCallback(async () => {
+        try {
+            setIsLoading(true);
+            const response = await contractContext.listContracts();
 
-      const filteredContracts = response.data.filter(
-        (contract: { status: { status_current: string } }) =>
-          contract.status.status_current === "COBRANÇA" ||
-          contract.status.status_current === "LIQUIDADO",
-      );
+            const filteredContracts = response.data.filter(
+                (contract: { status: { status_current: string } }) =>
+                    contract.status.status_current === "ENVIADO" ||
+                    contract.status.status_current === "COBRANÇA" ||
+                    contract.status.status_current === "LIQUIDADO",
+            );
 
-      setListContracts(filteredContracts);
-    } catch (error) {
-      toast.error(
-        `Erro ao tentar ler contratos, contacte o administrador do sistema: ${error}`,
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  }, [contractContext]);
+            setListContracts(filteredContracts);
+        } catch (error) {
+            toast.error(
+                `Erro ao tentar ler contratos, contacte o administrador do sistema: ${error}`,
+            );
+        } finally {
+            setIsLoading(false);
+        }
+    }, [contractContext]);
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    useEffect(() => {
+        fetchData();
+    }, [fetchData]);
 
-  const { filteredData } = useTableSearch({
-    data: listcontracts,
-    searchTerm,
-    searchableFields: [
-      "number_contract",
-      "buyer.name",
-      "seller.name",
-      "payment_date",
-    ],
-  });
-
-  const handleViewContract = (contract: IContractData) => {
-    navigate("/cobranca/visualizar-recebimento", {
-      state: { contractForView: contract },
+    const { filteredData } = useTableSearch({
+        data: listcontracts,
+        searchTerm,
+        searchableFields: [
+            "number_contract",
+            "buyer.name",
+            "seller.name",
+            "payment_date",
+        ],
     });
-  };
 
-  const nameColumns: IColumn[] = useMemo(
-    () => [
-      {
-        field: "status.status_current",
-        header: "Status",
-        width: "130px",
-      },
-      {
-        field: "contract_emission_datetime",
-        header: "Data",
-        width: "100px",
-      },
-      {
-        field: "number_contract",
-        header: "Nº Contrato",
-        width: "100px",
-      },
-      {
-        field: "seller.name",
-        header: "Vendedor",
-        width: "160px",
-      },
-      {
-        field: "buyer.name",
-        header: "Comprador",
-        width: "160px",
-      },
-      {
-        field: "payment_date",
-        header: "Dt.Pagto.",
-        width: "150px",
-      },
-      {
-        field: "expected_receipt_date",
-        header: "Prev.Recbto.",
-        width: "150px",
-      },
-    ],
-    [],
-  );
+    const handleViewContract = (contract: IContractData) => {
+        navigate("/cobranca/visualizar-recebimento", {
+            state: { contractForView: contract },
+        });
+    };
 
-  const renderActionButtons = (row: any) => (
-    <CustomButton
-      $variant="secondary"
-      width="75px"
-      onClick={() => handleViewContract(row)}
-    >
-      Receber
-    </CustomButton>
-  );
+    const nameColumns: IColumn[] = useMemo(
+        () => [
+            {
+                field: "status.status_current",
+                header: "Status",
+                width: "130px",
+            },
+            {
+                field: "contract_emission_datetime",
+                header: "Data",
+                width: "100px",
+            },
+            {
+                field: "number_contract",
+                header: "Nº Contrato",
+                width: "100px",
+            },
+            {
+                field: "seller.name",
+                header: "Vendedor",
+                width: "160px",
+            },
+            {
+                field: "buyer.name",
+                header: "Comprador",
+                width: "160px",
+            },
+            {
+                field: "payment_date",
+                header: "Dt.Pagto.",
+                width: "150px",
+            },
+            {
+                field: "expected_receipt_date",
+                header: "Prev.Recbto.",
+                width: "150px",
+            },
+        ],
+        [],
+    );
 
-  return (
-    <SContainer>
-      <STitle>Recebimento</STitle>
+    const renderActionButtons = (row: any) => (
+        <CustomButton
+            $variant="secondary"
+            width="75px"
+            onClick={() => handleViewContract(row)}
+        >
+            Receber
+        </CustomButton>
+    );
 
-      <SContainerSearchAndButton>
-        <CustomSearch
-          width="450px"
-          placeholder="Digite Nº Contrato,Vendedor,Comprador ou Dt.Pagto"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-        {/* <FormControlLabel
+    return (
+        <SContainer>
+            <STitle>Recebimento</STitle>
+
+            <SContainerSearchAndButton>
+                <CustomSearch
+                    width="450px"
+                    placeholder="Digite Nº Contrato,Vendedor,Comprador ou Dt.Pagto"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                {/* <FormControlLabel
                     control={<Checkbox defaultChecked />}
                     label="Somente Pagamento no mês corrente"
                 /> */}
-      </SContainerSearchAndButton>
-      <CustomTable
-        isLoading={isLoading}
-        data={filteredData}
-        columns={nameColumns}
-        hasPagination
-        dateFields={["contract_emission_datetime"]}
-        actionButtons={renderActionButtons}
-        collapsible
-        renderChildren={(row) => (
-          <CustomTimeline events={row.status.history || []} />
-        )}
-        maxChars={15}
-        page={page}
-        setPage={setPage}
-        order={order}
-        orderBy={orderBy}
-        setOrder={setOrder}
-        setOrderBy={setOrderBy}
-      />
-    </SContainer>
-  );
+            </SContainerSearchAndButton>
+            <CustomTable
+                isLoading={isLoading}
+                data={filteredData}
+                columns={nameColumns}
+                hasPagination
+                dateFields={["contract_emission_datetime"]}
+                actionButtons={renderActionButtons}
+                collapsible
+                renderChildren={(row) => (
+                    <CustomTimeline events={row.status.history || []} />
+                )}
+                maxChars={15}
+                page={page}
+                setPage={setPage}
+                order={order}
+                orderBy={orderBy}
+                setOrder={setOrder}
+                setOrderBy={setOrderBy}
+            />
+        </SContainer>
+    );
 }

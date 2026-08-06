@@ -59,6 +59,7 @@ const CustomTable: React.FC<ICustomTableProps> = ({
   setOrderBy,
   searchTerm = "",
   searchableFields,
+  disableSorting = false,
 }) => {
   const [openRows, setOpenRows] = useState<string[]>([]);
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
@@ -184,8 +185,12 @@ const CustomTable: React.FC<ICustomTableProps> = ({
   let typeCommission = "";
   const formatCellValue = (
     row: any,
-    column: { field: string },
+    column: { field: string; renderCell?: (row: any) => React.ReactNode },
   ): React.ReactNode => {
+    if (column.renderCell) {
+      return column.renderCell(row);
+    }
+
     const value = getNestedValue(row, column.field);
 
     if (column.field === "cnpj_cpf") {
@@ -310,8 +315,12 @@ const CustomTable: React.FC<ICustomTableProps> = ({
 
   // Onde fazemos o sort nos dados da tabela
   const sortedData = useMemo(() => {
+    if (disableSorting) {
+      return filteredData;
+    }
+
     return sortTableData(filteredData, orderBy, order);
-  }, [filteredData, order, orderBy]);
+  }, [disableSorting, filteredData, order, orderBy]);
 
   // TODO []: SERÁ REMOVIDO POR SUPORTE
   // Onde fazemos a paginação nos dados da tabela
@@ -415,6 +424,13 @@ const CustomTable: React.FC<ICustomTableProps> = ({
                           },
                         }
                       : row?.is_sigla_total
+                      ? {
+                          "& td": {
+                            backgroundColor: "#c6e0b4",
+                            fontWeight: 700,
+                          },
+                        }
+                      : row?.is_month_total
                       ? {
                           "& td": {
                             backgroundColor: "#e2f0d9",
