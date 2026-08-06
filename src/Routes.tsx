@@ -38,6 +38,7 @@ import { ViewBilling } from "./pages/Billing/pages/Receipt/components/ViewBillin
 
 import { RPS } from "./pages/Billing/pages/RPS";
 import { ListInvoices } from "./pages/Billing/pages/ListInvoices";
+import { LookupInvoices } from "./pages/Billing/pages/LookupInvoices";
 
 export function RoutesForPages() {
     return (
@@ -209,6 +210,16 @@ export function RoutesForPages() {
                     <ProtectedLayout>
                         <Layout>
                             <Invoice />
+                        </Layout>
+                    </ProtectedLayout>
+                }
+            />
+            <Route
+                path="/cobranca/consulta-nfse"
+                element={
+                    <ProtectedLayout>
+                        <Layout>
+                            <LookupInvoices />
                         </Layout>
                     </ProtectedLayout>
                 }

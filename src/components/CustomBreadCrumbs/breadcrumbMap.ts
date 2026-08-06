@@ -31,6 +31,7 @@ export const breadcrumbMap: Record<string, string> = {
   "contrato-vencto": "Contratos por Vencimento",
   "contratos-receb": "Contratos Recebidos",
   "listagem-nfse": "Listagem de NFSe",
+  "consulta-nfse": "Consulta NFSe",
 
   // Relatórios
   relatorios: "Relatórios",
