@@ -2,33 +2,38 @@ import { Link } from "react-router-dom";
 import { SContainer, SCard, SCardIcon, SContent, STitle } from "./styles";
 
 import { IoCashOutline } from "react-icons/io5";
-import { IoReceiptOutline } from "react-icons/io5";
-import { TbMapDollar } from "react-icons/tb";
+import {
+    TbFileInvoice,
+    TbFileSearch,
+    TbMapDollar,
+    TbReceipt,
+} from "react-icons/tb";
 import { IoTodayOutline } from "react-icons/io5";
 import { TbReceipt2 } from "react-icons/tb";
+import { FaFileInvoiceDollar } from "react-icons/fa";
 
 export function Billing() {
     const cardLinks1 = [
         {
-            label: "Contratos por Vencimento",
-            icon: <IoTodayOutline size={64} />,
-            to: "/cobranca/contrato-vencto",
-        },
-        {
             label: "Cadastro RPS",
-            icon: <IoReceiptOutline size={64} />,
+            icon: <TbFileInvoice size={64} />,
             to: "/cobranca/RPS",
             disabled: false,
         },
         {
             label: "Emissão NFSe",
-            icon: <IoReceiptOutline size={64} />,
+            icon: <FaFileInvoiceDollar size={64} />,
             to: "/cobranca/notafiscal",
             disabled: false,
         },
         {
+            label: "Consulta NFSe",
+            icon: <TbFileSearch size={64} />,
+            to: "/cobranca/consulta-nfse",
+        },
+        {
             label: "Listagem NFSe",
-            icon: <IoReceiptOutline size={64} />,
+            icon: <TbReceipt size={64} />,
             to: "/cobranca/listagem-nfse",
             disabled: false,
         },
@@ -40,6 +45,11 @@ export function Billing() {
         // },
     ];
     const cardLinks2 = [
+        {
+            label: "Contratos por Vencimento",
+            icon: <IoTodayOutline size={64} />,
+            to: "/cobranca/contrato-vencto",
+        },
         {
             label: "Contratos Recebidos",
             icon: <TbReceipt2 size={64} />,

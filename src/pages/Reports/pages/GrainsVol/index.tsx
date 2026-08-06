@@ -14,7 +14,6 @@ import { PiScroll } from "react-icons/pi";
 import ReportFilter from "../../../../components/ReportFilter";
 import { SelectState } from "../../../../components/ReportFilter/types";
 import CustomTooltipLabel from "../../../../components/CustomTooltipLabel";
-import { sortTableData } from "../../../../components/CustomTable/helpers";
 import * as XLSX from "xlsx-js-style";
 
 const parseLocaleNumber = (value: number | string | null | undefined) => {
@@ -52,6 +51,37 @@ const formatMoneyBR = (value: number) =>
         maximumFractionDigits: 2,
     });
 
+const parseBrDateToTimestamp = (date?: string) => {
+    if (!date) return 0;
+
+    const [day, month, year] = date.split("/").map(Number);
+    if (!day || !month || !year) return 0;
+
+    return new Date(year, month - 1, day).getTime();
+};
+
+const compareText = (a?: string, b?: string) =>
+    String(a ?? "").localeCompare(String(b ?? ""), "pt-BR", {
+        numeric: true,
+        sensitivity: "base",
+    });
+
+const parseBrDateParts = (date?: string) => {
+    if (!date) return null;
+
+    const [day, month, year] = date.split("/").map(Number);
+    if (!day || !month || !year) return null;
+
+    return { day, month, year };
+};
+
+const getMonthKeyFromBrDate = (date?: string) => {
+    const parts = parseBrDateParts(date);
+    if (!parts) return "";
+
+    return `${parts.year}-${String(parts.month).padStart(2, "0")}`;
+};
+
 type GrainsVolRow = Partial<IContractData> & {
     id: string;
     quantity?: number | string;
@@ -62,6 +92,7 @@ type GrainsVolRow = Partial<IContractData> & {
     commission?: string | number;
     total_contract_real?: string;
     commission_value?: string;
+    is_month_total?: boolean;
     is_sigla_total?: boolean;
     is_grand_total?: boolean;
 };
@@ -427,7 +458,6 @@ export function GrainsVol() {
                 field: "contract_emission_date",
                 header: "DATA",
                 width: "100px",
-                sortable: true,
             },
             {
                 field: "product",
@@ -438,7 +468,6 @@ export function GrainsVol() {
                 field: "number_contract",
                 header: "CONTRATO",
                 width: "180px",
-                sortable: true,
             },
             {
                 field: "seller.name",
@@ -454,7 +483,6 @@ export function GrainsVol() {
                 field: "quantity",
                 header: "QUANTIDADE (TON)",
                 width: "150px",
-                sortable: true,
             },
             {
                 field: "price_real",
@@ -500,13 +528,29 @@ export function GrainsVol() {
         [],
     );
 
-    const displayedData = useMemo(
-        () => sortTableData(filteredData, orderBy, order) as GrainsVolRow[],
-        [filteredData, orderBy, order],
-    );
-
     const reportRows = useMemo(() => {
+        const sortedRows = [...filteredData].sort((a, b) => {
+            const siglaDiff = compareText(a.product, b.product);
+            if (siglaDiff !== 0) return siglaDiff;
+
+            const dateDiff =
+                parseBrDateToTimestamp(a.contract_emission_date) -
+                parseBrDateToTimestamp(b.contract_emission_date);
+
+            if (dateDiff !== 0) return dateDiff;
+
+            return compareText(a.number_contract, b.number_contract);
+        }) as GrainsVolRow[];
+
         const totalsBySigla = new Map<
+            string,
+            {
+                quantity: number;
+                total_contract_real: number;
+                commission_value: number;
+            }
+        >();
+        const totalsBySiglaAndMonth = new Map<
             string,
             {
                 quantity: number;
@@ -520,22 +564,24 @@ export function GrainsVol() {
             commission_value: 0,
         };
 
-        displayedData.forEach((row) => {
+        sortedRows.forEach((row) => {
             const sigla = String(row.product ?? "").trim();
-            if (!sigla || row.is_sigla_total) return;
+            if (!sigla) return;
 
-            const current = totalsBySigla.get(sigla) ?? {
+            const monthKey = getMonthKeyFromBrDate(row.contract_emission_date);
+            const siglaTotals = totalsBySigla.get(sigla) ?? {
+                quantity: 0,
+                total_contract_real: 0,
+                commission_value: 0,
+            };
+            const monthTotalsKey = `${sigla}::${monthKey}`;
+            const monthTotals = totalsBySiglaAndMonth.get(monthTotalsKey) ?? {
                 quantity: 0,
                 total_contract_real: 0,
                 commission_value: 0,
             };
 
             const quantityValue = Number(row.quantity ?? 0) || 0;
-            current.total_contract_real += parseLocaleNumber(
-                row.total_contract_real,
-            );
-            current.commission_value += parseLocaleNumber(row.commission_value);
-            current.quantity += quantityValue;
             grandTotals.quantity += quantityValue;
             grandTotals.total_contract_real += parseLocaleNumber(
                 row.total_contract_real,
@@ -543,40 +589,94 @@ export function GrainsVol() {
             grandTotals.commission_value += parseLocaleNumber(
                 row.commission_value,
             );
-            totalsBySigla.set(sigla, current);
+            siglaTotals.total_contract_real += parseLocaleNumber(
+                row.total_contract_real,
+            );
+            siglaTotals.commission_value += parseLocaleNumber(
+                row.commission_value,
+            );
+            siglaTotals.quantity += quantityValue;
+            monthTotals.total_contract_real += parseLocaleNumber(
+                row.total_contract_real,
+            );
+            monthTotals.commission_value += parseLocaleNumber(
+                row.commission_value,
+            );
+            monthTotals.quantity += quantityValue;
+            totalsBySigla.set(sigla, siglaTotals);
+            totalsBySiglaAndMonth.set(monthTotalsKey, monthTotals);
         });
 
-        const totalRows = Array.from(totalsBySigla.entries())
-            .sort(([a], [b]) => a.localeCompare(b))
-            .map(
-                ([sigla, totals]) =>
-                    ({
-                        id: `sigla-total-${sigla}`,
-                        product: `TOTAL ${sigla}`,
-                        contract_emission_date: "",
-                        number_contract: "",
-                        seller: { name: "" },
-                        buyer: { name: "" },
-                        quantity: totals.quantity,
-                        price_real: "",
-                        type_currency: "",
-                        day_exchange_formatted: "",
-                        total_contract_real: formatMoneyBR(
-                            totals.total_contract_real,
-                        ),
-                        type_commission: "",
-                        resp_commission: "",
-                        commission: "",
-                        commission_value: formatMoneyBR(
-                            totals.commission_value,
-                        ),
-                        is_sigla_total: true,
-                    }) as unknown as GrainsVolRow,
-            );
+        const rowsWithTotals: GrainsVolRow[] = [];
 
-        const grandTotalRow: GrainsVolRow = {
+        sortedRows.forEach((row, index) => {
+            const sigla = String(row.product ?? "").trim();
+            const monthKey = getMonthKeyFromBrDate(row.contract_emission_date);
+            rowsWithTotals.push(row);
+
+            if (!sigla) return;
+
+            const nextRow = sortedRows[index + 1];
+            const nextSigla = String(nextRow?.product ?? "").trim();
+            const nextMonthKey = getMonthKeyFromBrDate(
+                nextRow?.contract_emission_date,
+            );
+            const isLastRowInMonth =
+                sigla !== nextSigla || monthKey !== nextMonthKey;
+
+            if (!isLastRowInMonth) return;
+
+            const totals = totalsBySiglaAndMonth.get(`${sigla}::${monthKey}`);
+            if (!totals) return;
+
+            rowsWithTotals.push({
+                id: `month-total-${sigla}-${monthKey}`,
+                product: `Total mês ${sigla}`,
+                contract_emission_date: "",
+                number_contract: "",
+                seller: { name: "" },
+                buyer: { name: "" },
+                quantity: totals.quantity,
+                price_real: "",
+                type_currency: "",
+                day_exchange_formatted: "",
+                total_contract_real: formatMoneyBR(totals.total_contract_real),
+                type_commission: "",
+                resp_commission: "",
+                commission: "",
+                commission_value: formatMoneyBR(totals.commission_value),
+                is_month_total: true,
+            } as GrainsVolRow);
+        });
+
+        Array.from(totalsBySigla.entries())
+            .sort(([a], [b]) => compareText(a, b))
+            .forEach(([sigla, totals]) => {
+                rowsWithTotals.push({
+                    id: `sigla-total-${sigla}`,
+                    product: `Total ${sigla}`,
+                    contract_emission_date: "",
+                    number_contract: "",
+                    seller: { name: "" },
+                    buyer: { name: "" },
+                    quantity: totals.quantity,
+                    price_real: "",
+                    type_currency: "",
+                    day_exchange_formatted: "",
+                    total_contract_real: formatMoneyBR(
+                        totals.total_contract_real,
+                    ),
+                    type_commission: "",
+                    resp_commission: "",
+                    commission: "",
+                    commission_value: formatMoneyBR(totals.commission_value),
+                    is_sigla_total: true,
+                } as GrainsVolRow);
+            });
+
+        rowsWithTotals.push({
             id: "grand-total",
-            product: "TOTAL GERAL",
+            product: "Total",
             contract_emission_date: "",
             number_contract: "",
             seller: { name: "" },
@@ -591,10 +691,10 @@ export function GrainsVol() {
             commission: "",
             commission_value: formatMoneyBR(grandTotals.commission_value),
             is_grand_total: true,
-        };
+        } as GrainsVolRow);
 
-        return [...displayedData, ...totalRows, grandTotalRow];
-    }, [displayedData]);
+        return rowsWithTotals;
+    }, [filteredData]);
 
     const buildReportTitle = () => "Grãos Volume - Produto";
 
@@ -693,7 +793,7 @@ export function GrainsVol() {
 
             pageRows.forEach((row) => {
                 printWindow.document.write(
-                    `<tr class="${row.is_grand_total ? "grand-total-row" : row.is_sigla_total ? "total-row" : ""}">`,
+                    `<tr class="${row.is_grand_total ? "grand-total-row" : row.is_sigla_total || row.is_month_total ? "total-row" : ""}">`,
                 );
                 nameColumns.forEach((col) => {
                     const fields = col.field.split(".");
@@ -813,7 +913,9 @@ export function GrainsVol() {
             for (let row = 4; row < exportRows.length; row += 1) {
                 const currentRow = reportRows[row - 4];
                 const isTotalRow = Boolean(
-                    currentRow?.is_sigla_total || currentRow?.is_grand_total,
+                    currentRow?.is_sigla_total ||
+                        currentRow?.is_month_total ||
+                        currentRow?.is_grand_total,
                 );
                 for (let col = 0; col < columnCount; col += 1) {
                     const baseStyle =
@@ -832,6 +934,8 @@ export function GrainsVol() {
                                   patternType: "solid",
                                   fgColor: {
                                       rgb: currentRow?.is_grand_total
+                                          ? "C6E0B4"
+                                          : currentRow?.is_sigla_total
                                           ? "C6E0B4"
                                           : "E2F0D9",
                                   },
@@ -944,6 +1048,7 @@ export function GrainsVol() {
                     columns={nameColumns}
                     hasInfiniteScroll={!useInfiniteScroll}
                     hasPagination={useInfiniteScroll}
+                    disableSorting
                     //maxChars={15}
                     page={page}
                     setPage={setPage}

@@ -6,6 +6,7 @@ export interface IColumn {
   field: string;
   width?: string;
   sortable?: boolean;
+  renderCell?: (row: TableDataProps) => ReactNode;
 }
 
 export interface TableDataProps {
@@ -38,4 +39,5 @@ export interface ICustomTableProps {
   setOrderBy: Dispatch<SetStateAction<string>>;
   searchTerm?: string;
   searchableFields?: string[];
+  disableSorting?: boolean;
 }
