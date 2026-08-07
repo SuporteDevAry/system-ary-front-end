@@ -1,0 +1,533 @@
+import { formatCurrency } from "../helpers/currencyFormat";
+import { Extenso } from "../helpers/Extenso";
+import { insertMaskInCnpj } from "../helpers/front-end/insertMaskInCnpj";
+import logoContrato from "../assets/img/Logo_Ary_Completo.jpg";
+import { formatDateWithLongMonth } from "../helpers/dateFormat";
+import {
+  parseQuantityToNumber,
+  numberToQuantityString,
+} from "../helpers/quantityFormat";
+
+interface ContratoTemplateProps {
+  formData: any;
+  nomeArquivo: string;
+  modeSave?: boolean;
+}
+
+const ContratoPriceFixationTemplate: React.FC<ContratoTemplateProps> = ({
+  formData,
+}) => {
+  const today = new Date();
+  const currentYear = today.getFullYear().toString().substr(-2);
+
+  const quantityValue =
+    typeof formData.quantity === "number"
+      ? formData.quantity
+      : parseQuantityToNumber(formData.quantity);
+
+  const formattedQtd = numberToQuantityString(quantityValue);
+
+  // montar extenso dependendo do tipo de quantidade
+  let formattedExtenso = "";
+
+  if (formData.type_quantity === "toneladas métricas") {
+    // tratar como toneladas métricas: parte inteira = toneladas, parte decimal = quilos (3 casas decimais)
+    const raw = String(formData.quantity)
+      .trim()
+      .replace(/\./g, "")
+      .replace(/,/g, ".");
+    const parts = raw.split(".");
+    const inteiro = Number(parts[0]) || 0;
+    const decimais = parts[1] ? parts[1].padEnd(3, "0").slice(0, 3) : ""; // gramas/quilos em 3 dígitos
+
+    const toneladasText =
+      inteiro > 0
+        ? Extenso(inteiro, "F") +
+          (inteiro === 1 ? " tonelada métrica" : " toneladas métricas")
+        : "";
+    const kilosFromDecimals = decimais ? Number(decimais) : 0;
+    const kilosText =
+      kilosFromDecimals > 0
+        ? Extenso(kilosFromDecimals, "M") +
+          (kilosFromDecimals === 1 ? " quilo" : " quilos")
+        : "";
+
+    const combined = [toneladasText, kilosText].filter(Boolean).join(" e ");
+    formattedExtenso = combined ? `(${combined})` : "";
+  } else {
+    // tratar como quilos (masculino)
+    const inteiro = Math.round(quantityValue);
+    const ext = Extenso(inteiro, "M");
+    formattedExtenso = `(${ext})`;
+  }
+
+  let formattedSellerCNPJ = formData.seller.cnpj_cpf
+    ? insertMaskInCnpj(formData.seller.cnpj_cpf)
+    : "";
+  let formattedBuyerCNPJ = formData.buyer.cnpj_cpf
+    ? insertMaskInCnpj(formData.buyer.cnpj_cpf)
+    : "";
+
+  // Formatação da comissão do vendedor
+  let formattedCSeller = "";
+  if (formData.commission_seller) {
+    if (formData.type_commission_seller === "Percentual") {
+      formattedCSeller = `${formData.commission_seller}%`;
+    } else if (formData.type_commission_seller === "Fixo") {
+      const sellerCurrency =
+        formData.type_commission_seller_currency === "Dólar" ? "Dólar" : "Real";
+      formattedCSeller = formatCurrency(
+        String(formData.commission_seller),
+        sellerCurrency,
+        true,
+      );
+    } else if (formData.type_commission_seller === "Por Saca") {
+      const sellerCurrency =
+        formData.type_commission_seller_currency === "Dólar" ? "Dólar" : "Real";
+      formattedCSeller = `${formatCurrency(
+        String(formData.commission_seller),
+        sellerCurrency,
+        true,
+      )} por saca`;
+    } else if (formData.type_commission_seller === "Por TM") {
+      const sellerCurrency =
+        formData.type_commission_seller_currency === "Dólar" ? "Dólar" : "Real";
+      formattedCSeller = `${formatCurrency(
+        String(formData.commission_seller),
+        sellerCurrency,
+        true,
+      )} por tonelada métrica`;
+    }
+  }
+
+  // Formatação da comissão do comprador
+  let formattedCBuyer = "";
+  if (formData.commission_buyer) {
+    if (formData.type_commission_buyer === "Percentual") {
+      formattedCBuyer = `${formData.commission_buyer}%`;
+    } else if (formData.type_commission_buyer === "Fixo") {
+      const buyerCurrency =
+        formData.type_commission_buyer_currency === "Dólar" ? "Dólar" : "Real";
+      formattedCBuyer = formatCurrency(
+        String(formData.commission_buyer),
+        buyerCurrency,
+        true,
+      );
+    } else if (formData.type_commission_buyer === "Por Saca") {
+      const buyerCurrency =
+        formData.type_commission_buyer_currency === "Dólar" ? "Dólar" : "Real";
+      formattedCBuyer = `${formatCurrency(
+        String(formData.commission_buyer),
+        buyerCurrency,
+        true,
+      )} por saca`;
+    } else if (formData.type_commission_buyer === "Por TM") {
+      const buyerCurrency =
+        formData.type_commission_buyer_currency === "Dólar" ? "Dólar" : "Real";
+      formattedCBuyer = `${formatCurrency(
+        String(formData.commission_buyer),
+        buyerCurrency,
+        true,
+      )} por tonelada métrica`;
+    }
+  }
+  // Só iremos remover essa regra das siglas, caso o cliente aceite a sugestão da reunião do dia 09/04/2025
+  const listProducts = ["O", "OC", "OA", "SB", "EP"];
+  const validProducts = listProducts.includes(formData.product);
+  const siglaProduct = validProducts ? "O" : formData.product;
+
+  const numberContract = formData?.number_contract
+    ? formData.number_contract
+    : `${siglaProduct}.${formData.number_broker}-NNN/${currentYear}`;
+
+  function formatObservationText(observation: string) {
+    if (!observation) {
+      return "";
+    }
+
+    const lines = observation.split("\n");
+    const hasMultipleLines = lines.length > 1;
+
+    const formattedLines = lines.map((line) => {
+      // Trim para remover espaços em branco no início/fim da linha
+      const trimmedLine = line.trim();
+
+      // Se a linha começar com um número seguido de hífen...
+      if (/^\d+-/.test(trimmedLine)) {
+        // ... não adicione margem.
+        return `<div style="margin-left: 0;">${line}</div>`;
+      } else if (hasMultipleLines) {
+        // ... caso contrário, se houver múltiplas linhas, adicione margem para indentar.
+        return `<div style="margin-left: 20px;">${line}</div>`;
+      } else {
+        // ... se houver apenas uma linha, não adicione margem.
+        return `<div>${line}</div>`;
+      }
+    });
+
+    return formattedLines.join("");
+  }
+  const listProductsForMetricTon = ["O", "F", "OC", "OA", "SB", "EP"];
+  const validProductsForMetricTon = listProductsForMetricTon.includes(
+    formData.product,
+  );
+
+  let formattedSafra = validProductsForMetricTon
+    ? ` `
+    : ` - Safra: ${formData.crop}`;
+
+  let formattedMetrica =
+    formData.type_quantity === "toneladas métricas" ? `.` : ` quilos.`;
+
+  let Dot =
+    formData.destination === "Nenhum" ||
+    (formData.destination === "" &&
+      formData.complement_destination?.length === 0)
+      ? "."
+      : ", ";
+
+  let formattedPreco =
+    formData.type_quantity === "toneladas métricas"
+      ? ` por tonelada métrica${Dot}`
+      : ` por saca de 60(sessenta) quilos${Dot}`;
+
+  let formattedComplementSeller = formData.seller.complement
+    ? `${" - "} ${formData.seller.complement} `
+    : "";
+
+  let formattedComplementBuyer = formData.buyer.complement
+    ? `${" - "} ${formData.buyer.complement} `
+    : "";
+
+  return (
+    <>
+      <div id="contrato">
+        <div style={{ margin: 0, textAlign: "center" }}>
+          <img src={logoContrato} alt="logo ary completo jpg" width={330} />
+        </div>
+        <br />
+        <div>
+          <p style={{ paddingLeft: "280px" }}>
+            São Paulo,{" "}
+            <span>
+              {formatDateWithLongMonth(formData.contract_emission_date)}
+            </span>
+          </p>
+          <p style={{ paddingLeft: "280px" }}>
+            Confirmação de negociação
+            <span> {numberContract} </span>
+          </p>
+        </div>
+        <br />
+        <div
+          style={{
+            textAlign: "left",
+            margin: "0",
+          }}
+        >
+          <div>
+            <strong>VENDEDOR:</strong>
+            <span style={{ paddingLeft: "50px" }}>{formData.seller.name}</span>
+            <br></br>
+            <span style={{ paddingLeft: "140px" }}>
+              {formData.seller.address}
+              {","}
+              {formData.seller.number}
+              {formattedComplementSeller}
+              {" - "}
+              {formData.seller.district}
+            </span>
+            <br></br>
+            <span style={{ paddingLeft: "140px" }}>
+              <strong>
+                {formData.seller.city}
+                {" - "}
+                {formData.seller.state}
+              </strong>
+            </span>
+            <br></br>
+            <span style={{ paddingLeft: "140px" }}>
+              CNPJ: {formattedSellerCNPJ}
+            </span>
+            <span style={{ paddingLeft: "30px" }}>
+              {"Inscr.Est.: "}
+              {formData.seller.ins_est}
+            </span>
+            <br></br>
+          </div>
+        </div>
+        <br></br>
+        <div
+          style={{
+            textAlign: "left",
+            margin: "0",
+          }}
+        >
+          <div>
+            <strong>COMPRADOR:</strong>
+            <span style={{ paddingLeft: "30px" }}>{formData.buyer.name}</span>
+            <br></br>
+            <span style={{ paddingLeft: "140px" }}>
+              {formData.buyer.address}
+              {","}
+              {formData.buyer.number}
+              {formattedComplementBuyer}
+              {" - "}
+              {formData.buyer.district}
+            </span>
+            <br></br>
+            <span style={{ paddingLeft: "140px" }}>
+              <strong>
+                {formData.buyer.city}
+                {" - "}
+                {formData.buyer.state}
+              </strong>
+            </span>
+            <br></br>
+            <span style={{ paddingLeft: "140px" }}>
+              CNPJ: {formattedBuyerCNPJ}
+            </span>
+            <span style={{ paddingLeft: "30px" }}>
+              {"Inscr.Est.: "}
+              {formData.buyer.ins_est}
+            </span>
+            <br></br>
+          </div>
+        </div>
+
+        <br />
+        <div style={{ textAlign: "left", margin: "0" }}>
+          <strong>Mercadoria:</strong>
+          <div style={{ textAlign: "left" }}>
+            <span>{formData.name_product}</span>
+            <span>
+              <strong>
+                {/* {" - "}
+                                Safra: <span>{formData.crop}</span> */}
+                <span>{formattedSafra}</span>
+              </strong>
+            </span>
+          </div>
+        </div>
+        <br />
+
+        <p style={{ textAlign: "left" }}>
+          <strong>Qualidade:</strong>
+        </p>
+        <p style={{ textAlign: "left", whiteSpace: "pre-line" }}>
+          {formData.quality}
+        </p>
+        <br />
+
+        <p style={{ textAlign: "left" }}>
+          <strong>Quantidade:</strong>
+        </p>
+        <p style={{ textAlign: "justify" }}>
+          <strong>
+            {formattedQtd} {formattedExtenso}{" "}
+          </strong>
+          {formattedMetrica}
+        </p>
+        <br />
+
+        <p style={{ textAlign: "left" }}>
+          <strong>Pre&ccedil;o:</strong>
+        </p>
+        <p style={{ textAlign: "justify" }}>
+          {formData.average_fixed_price || formData.price ? (
+            <>
+              <strong>
+                {formData.average_fixed_price
+                  ? formatCurrency(String(formData.average_fixed_price), "Real")
+                  : formData.type_currency === "Dólar"
+                    ? formatCurrency(String(formData.price), formData.type_currency, true).replace(
+                        "$",
+                        "US$ ",
+                      )
+                    : formatCurrency(String(formData.price), formData.type_currency, true)}
+              </strong>{" "}
+              {formData.average_fixed_price
+                ? "(preço médio ponderado das fixações realizadas até o momento) "
+                : "(preço de referência, sujeito a alteração até a primeira fixação de mercado) "}
+              {formattedPreco}
+              {(formData.destination && formData.destination !== "Nenhum") ||
+              formData.complement_destination ? (
+                <span>
+                  <strong>
+                    (
+                    {[
+                      formData.destination !== "Nenhum"
+                        ? formData.destination
+                        : "",
+                      formData.complement_destination,
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
+                    )
+                  </strong>
+                  .
+                </span>
+              ) : null}
+            </>
+          ) : (
+            <strong>A FIXAR</strong>
+          )}
+        </p>
+        {formData.fixation_items && formData.fixation_items.length > 0 && (
+          <>
+            <p style={{ textAlign: "left" }}>
+              <strong>Fixa&ccedil;&otilde;es realizadas:</strong>
+            </p>
+            {formData.fixation_items.map((item: any, index: number) => (
+              <p
+                key={item.id || index}
+                style={{ textAlign: "justify", margin: 0 }}
+              >
+                <strong>{item.number_contract}</strong> — {item.fixation_date}{" "}
+                — {numberToQuantityString(item.quantity)}{" "}
+                {formData.type_quantity === "toneladas métricas"
+                  ? "toneladas métricas"
+                  : "quilos"}{" "}
+                a {formatCurrency(String(item.price ?? 0), "Real")} p/ saca
+                {item.cbot_code ? ` (CBOT ${item.cbot_code} = ${item.cbot_value})` : ""}
+              </p>
+            ))}
+          </>
+        )}
+        <br />
+
+        <p style={{ textAlign: "left" }}>
+          <strong>ICMS:</strong>
+        </p>
+        <p style={{ textAlign: "justify" }}>{formData.icms}</p>
+        <br />
+
+        <p style={{ textAlign: "left" }}>
+          <strong>Pagamento:</strong>
+        </p>
+        <p style={{ textAlign: "justify" }}>{formData.payment}</p>
+        <br />
+
+        <p style={{ textAlign: "left" }}>
+          <strong>{formData.type_pickup}:</strong>
+        </p>
+        <p style={{ textAlign: "justify" }}>{formData.pickup}</p>
+        <br />
+
+        <p style={{ textAlign: "left" }}>
+          <strong>Local de {formData.type_pickup}:</strong>
+        </p>
+        <p style={{ textAlign: "justify" }}>{formData.pickup_location}</p>
+        <br />
+
+        <p style={{ textAlign: "left" }}>
+          <strong>Conferência:</strong>
+        </p>
+        <p style={{ textAlign: "justify" }}>{formData.inspection}</p>
+        <br />
+
+        {formData.observation && (
+          <p style={{ textAlign: "left" }}>
+            <strong>Observações:</strong>
+          </p>
+        )}
+        <div
+          style={{ textAlign: "justify", whiteSpace: "pre-line" }}
+          dangerouslySetInnerHTML={{
+            __html: formatObservationText(formData.observation),
+          }}
+        />
+
+        <br />
+
+        <p style={{ textAlign: "justify" }}>
+          <strong>
+            "Favor comunicar qualquer discrepância em 01 (um) dia útil do
+            recebimento da confirmação por escrito. Se não houver discrepâncias
+            relatadas, presume-se que todas as partes envolvidas aceitam e
+            concordam com todos os termos conforme descrito na confirmação de
+            negócio acima."
+          </strong>
+        </p>
+        <br />
+
+        {formattedCSeller ? (
+          <p style={{ textAlign: "justify" }}>
+            <strong>===</strong>
+            <br></br>
+
+            <strong>
+              Comissão de <span>{formattedCSeller.replace(".", ",")}</span>
+              {"  "}
+              por conta do vendedor.
+            </strong>
+
+            <br></br>
+            <strong>===</strong>
+          </p>
+        ) : (
+          ""
+        )}
+
+        {formattedCBuyer ? (
+          <p style={{ textAlign: "justify" }}>
+            <strong>===</strong>
+            <br></br>
+            <strong>
+              Comissão de <span>{formattedCBuyer.replace(".", ",")}</span>
+              {"  "}
+              por conta do comprador.
+            </strong>
+            <br></br>
+            <strong>===</strong>
+          </p>
+        ) : (
+          ""
+        )}
+
+        <br />
+        <br />
+
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              textAlign: "center",
+            }}
+          >
+            <div style={{ flex: "1" }}>
+              ______________________________________
+            </div>
+            <div style={{ flex: "1" }}>
+              _____________________________________
+            </div>
+          </div>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              textAlign: "center",
+            }}
+          >
+            <div style={{ flex: "1" }}>
+              <strong>VENDEDOR</strong>
+              {/* <strong>{formData.seller}</strong> */}
+            </div>
+            <div style={{ flex: "1" }}>
+              <strong>COMPRADOR</strong>
+              {/* <strong>{formData.buyer}</strong> */}
+            </div>
+          </div>
+        </div>
+        <br />
+        {/* <div style={{ flex: "1" }}>
+                        <p style={{ textAlign: "center" }}>
+                            Gerado automaticamente pelo sistema AryOleofar.
+                        </p>
+                    </div> */}
+      </div>
+    </>
+  );
+};
+export default ContratoPriceFixationTemplate;

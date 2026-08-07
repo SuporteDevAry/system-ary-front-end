@@ -17,10 +17,12 @@ import { SendEmailContext } from "../../../../contexts/SendEmailContext";
 import { ITemplates } from "../../../../templates";
 import { formattedDate, formattedTime } from "../../../../helpers/dateFormat";
 import { ContractContext } from "../../../../contexts/ContractContext";
+import { PriceFixationContractContext } from "../../../../contexts/PriceFixationContractContext";
 
 export const SendContracts: React.FC = () => {
   const navigate = useNavigate();
   const { updateContract } = ContractContext();
+  const priceFixationContractContext = PriceFixationContractContext();
   const sendEmailContext = SendEmailContext();
   const { dataUserInfo } = useInfo();
   const { canConsult } = useUserPermissions();
@@ -186,7 +188,42 @@ export const SendContracts: React.FC = () => {
   //   const handleChangeTemplate = (templateName: ITemplates["template"]) => {
   //     setTemplateName(templateName);
   //   };
+  const handleSendFixationEmail = async () => {
+    setIsEmailSending(true);
+    try {
+      const response = await priceFixationContractContext.sendFixationEmail(
+        formData.fixation_contract_id || "",
+        formData.id || "",
+        {
+          sender: userEmail,
+          list_email_seller: formData.list_email_seller,
+          list_email_buyer: formData.list_email_buyer,
+        },
+      );
+
+      if (response) {
+        toast.success(
+          <div>
+            Fixação de Número:
+            <strong>{formData.number_contract}</strong> enviada com sucesso!
+          </div>
+        );
+        setDeleteModal(false);
+      }
+    } catch (error) {
+      console.error("Erro ao enviar e-mail da fixação:", error);
+      toast.error("Erro ao enviar o e-mail da fixação.");
+    } finally {
+      setIsEmailSending(false);
+    }
+  };
+
   const handleSendEmails = async () => {
+    if (formData.type_contract === "AF") {
+      await handleSendFixationEmail();
+      return;
+    }
+
     setTemplateName("contrato");
     setIsEmailSending(true);
     try {

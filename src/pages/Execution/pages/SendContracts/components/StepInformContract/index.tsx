@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { CustomSearch } from "../../../../../../components/CustomSearch";
 import CustomTable from "../../../../../../components/CustomTable";
 import { ContractContext } from "../../../../../../contexts/ContractContext";
+import { PriceFixationContractContext } from "../../../../../../contexts/PriceFixationContractContext";
 import { StepProps } from "../../types";
 import { SContainer, SContainerSearchAndButton } from "./styles";
 import { IContractData } from "../../../../../../contexts/ContractContext/types";
@@ -14,8 +15,12 @@ export const StepInformContract: React.FC<StepProps> = ({
   updateFormData,
 }) => {
   const contractContext = ContractContext();
+  const priceFixationContractContext = PriceFixationContractContext();
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [listcontracts, setListContracts] = useState<IContractData[]>([]);
+  // "any[]": mistura contratos MI (IContractData, status VALIDADO) e itens de
+  // fixação "a fixar" pendentes de envio (IPendingFixationItem), diferenciados
+  // pelo campo type_contract.
+  const [listcontracts, setListContracts] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(0);
   const [order, setOrder] = useState<"asc" | "desc">("desc");
@@ -24,14 +29,37 @@ export const StepInformContract: React.FC<StepProps> = ({
   const fetchData = useCallback(async () => {
     try {
       setIsLoading(true);
-      const response = await contractContext.listContracts();
+      const [miResponse, pendingFixationResponse] = await Promise.all([
+        contractContext.listContracts(),
+        priceFixationContractContext.listPendingFixationItems(),
+      ]);
 
-      setListContracts(
-        response.data.filter(
+      const miContracts = miResponse.data
+        .filter(
           (contract: IContractData) =>
             contract.status.status_current === "VALIDADO",
-        ),
-      );
+        )
+        .map((contract: IContractData) => ({
+          ...contract,
+          type_contract_label: "Mercado Interno",
+        }));
+
+      const fixationRows = pendingFixationResponse.data.map((item) => ({
+        id: item.id,
+        type_contract: "AF",
+        type_contract_label: "A Fixar",
+        fixation_contract_id: item.fixation_contract_id,
+        number_contract: item.number_contract,
+        created_at: item.created_at,
+        seller: item.seller,
+        buyer: item.buyer,
+        list_email_seller: item.list_email_seller,
+        list_email_buyer: item.list_email_buyer,
+        contract_emission_date: item.contract_emission_date,
+        status: { status_current: "A Enviar", history: [] },
+      }));
+
+      setListContracts([...miContracts, ...fixationRows]);
     } catch (error) {
       toast.error(
         `Erro ao tentar ler contratos, contacte o administrador do sistema: ${error}`,
@@ -39,7 +67,7 @@ export const StepInformContract: React.FC<StepProps> = ({
     } finally {
       setIsLoading(false);
     }
-  }, [contractContext]);
+  }, [contractContext, priceFixationContractContext]);
 
   useEffect(() => {
     fetchData();
@@ -51,9 +79,40 @@ export const StepInformContract: React.FC<StepProps> = ({
     searchableFields: ["number_contract"],
   });
 
-  const handleViewContract = (contract: IContractData) => {
+  const handleViewFixationItem = (row: any) => {
+    updateFormData?.({
+      id: row.id,
+      fixation_contract_id: row.fixation_contract_id,
+      type_contract: "AF",
+      number_contract: row.number_contract,
+      contract_emission_date: row.contract_emission_date,
+      seller: row.seller,
+      buyer: row.buyer,
+      list_email_seller: row.list_email_seller,
+      list_email_buyer: row.list_email_buyer,
+      status: { status_current: "A Enviar", history: [] },
+    });
+
+    toast.success(
+      <div>
+        Fixação de Número:
+        <pre>
+          <strong>{row.number_contract}</strong>
+        </pre>
+        foi selecionada, agora avance para a próxima etapa!
+      </div>,
+    );
+  };
+
+  const handleViewContract = (contract: IContractData & { type_contract?: string; fixation_contract_id?: string }) => {
+    if (contract.type_contract === "AF") {
+      handleViewFixationItem(contract);
+      return;
+    }
+
     updateFormData?.({
       id: contract.id,
+      type_contract: "MI",
       contract_emission_date: contract.contract_emission_date,
       number_contract: contract.number_contract,
       number_broker: contract.number_broker,
@@ -141,6 +200,12 @@ export const StepInformContract: React.FC<StepProps> = ({
       {
         field: "status.status_current",
         header: "Status",
+        width: "90px",
+        sortable: true,
+      },
+      {
+        field: "type_contract_label",
+        header: "Tipo",
         width: "90px",
         sortable: true,
       },

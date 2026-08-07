@@ -1,0 +1,414 @@
+import React, { useEffect, useState } from "react";
+import { toast } from "react-toastify";
+import { useLocation, useNavigate } from "react-router-dom";
+
+import { Step1 } from "./components/Step1";
+import { Step2 } from "./components/Step2";
+import { Step3 } from "./components/Step3";
+import { Step4 } from "./components/Step4";
+import { Review } from "./components/Review";
+
+import Step from "@mui/material/Step";
+import StepLabel from "@mui/material/StepLabel";
+import CircularProgress from "@mui/material/CircularProgress";
+import { SButtonContainer, SContainer, SContent, SStepper } from "./styles";
+import CustomButton from "../../../../components/CustomButton";
+import { PriceFixationContractContext } from "../../../../contexts/PriceFixationContractContext";
+import { FormDataToIPriceFixationContractDataDTO } from "../../../../helpers/DTO/FormDataToIPriceFixationContractDataDTO";
+import { formattedDate, formattedTime } from "../../../../helpers/dateFormat";
+import { IPriceFixationContractData } from "../../../../contexts/PriceFixationContractContext/types";
+import { FormDataContract, StepType } from "./types";
+import { IPriceFixationContractDataToFormDataDTO } from "../../../../helpers/DTO/IPriceFixationContractDataToFormDataDTO";
+import { useInfo, useUserPermissions } from "../../../../hooks";
+
+export const CreatePriceFixationContract: React.FC = () => {
+  const { createFixationContract, updateFixationContract } =
+    PriceFixationContractContext();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [activeStep, setActiveStep] = useState<number>(0);
+  const { dataUserInfo } = useInfo();
+  const [isEditMode, setIsEditMode] = useState<boolean>(false);
+  const [formData, setFormData] = React.useState<FormDataContract>({
+    id: "",
+    contract_emission_date: "",
+    number_contract: "",
+    number_broker: "",
+    seller: {
+      address: "",
+      city: "",
+      cnpj_cpf: "",
+      district: "",
+      ins_est: "",
+      name: "",
+      number: "",
+      state: "",
+      complement: "",
+      account: [],
+      nickname: "",
+    },
+    buyer: {
+      address: "",
+      city: "",
+      cnpj_cpf: "",
+      district: "",
+      ins_est: "",
+      name: "",
+      number: "",
+      state: "",
+      complement: "",
+      account: [],
+      nickname: "",
+    },
+    list_email_seller: [],
+    list_email_buyer: [],
+    product: "",
+    name_product: "",
+    crop: "",
+    quality: "",
+    quantity: "",
+    type_currency: "",
+    price: "",
+    day_exchange_rate: "",
+    type_icms: "",
+    icms: "",
+    payment_date: "",
+    payment: "",
+    type_commission_seller: "",
+    commission_seller: "",
+    type_commission_buyer: "",
+    commission_buyer: "",
+    type_pickup: "",
+    pickup: "",
+    pickup_location: "",
+    inspection: "",
+    observation: "",
+    owner_contract: "",
+    quantity_bag: 0,
+    quantity_kg: 0,
+    status: {
+      status_current: "",
+      history: [],
+    },
+    destination: "",
+    complement_destination: "",
+    number_external_contract_seller: "",
+    number_external_contract_buyer: "",
+    farm_direct: "",
+    initial_pickup_date: "",
+    final_pickup_date: "",
+    internal_communication: "",
+    type_quantity: "",
+    table_id: "",
+    final_quantity: "",
+    status_received: "",
+    commission_contract: 0,
+    charge_date: "",
+    commission_receipt_date: "",
+    expected_receipt_date: "",
+    total_received: 0,
+  });
+  const { canConsult } = useUserPermissions();
+
+  useEffect(() => {
+    if (location.state?.isEditMode || location.state?.isDuplicateMode) {
+      if (location.state?.isEditMode) {
+        setIsEditMode(true);
+      }
+      const contractData = location.state
+        .contractData as IPriceFixationContractData;
+      if (contractData) {
+        const dataForm = IPriceFixationContractDataToFormDataDTO(contractData);
+        setFormData({
+          ...dataForm,
+        });
+      }
+    }
+  }, [location.state]);
+
+  useEffect(() => {
+    if (dataUserInfo && !isEditMode) {
+      updateStatus("A CONFERIR");
+    }
+    if (isEditMode) {
+      updateStatus("EDITADO");
+    }
+  }, [dataUserInfo]);
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      [name]: value,
+    }));
+  };
+
+  const updateFormData = (data: Partial<FormDataContract>) => {
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      ...data,
+    }));
+  };
+
+  const updateStatus = (newStatus: string) => {
+    const newDate = formattedDate();
+    const newTime = formattedTime();
+
+    const newStatusEntry = {
+      date: newDate,
+      time: newTime,
+      status: newStatus,
+      owner_change: {
+        name: dataUserInfo?.name || "",
+        email: dataUserInfo?.email || "",
+      },
+    };
+
+    const updatedStatus = {
+      status_current: newStatus,
+      history: [...formData.status.history, newStatusEntry],
+    };
+
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      status: updatedStatus,
+    }));
+  };
+
+  const validateStep3ExchangeRate = () => {
+    // "price" aqui é só um preço de referência opcional — só exige câmbio se
+    // o usuário realmente preencheu um preço de referência em Dólar.
+    const hasDollarPriceWithoutExchangeRate =
+      formData.type_currency === "Dólar" &&
+      !!formData.price?.trim() &&
+      !formData.day_exchange_rate?.trim();
+
+    const hasSellerCommissionInDollarWithoutExchangeRate =
+      (formData.type_commission_seller === "Fixo" ||
+        formData.type_commission_seller === "Por Saca") &&
+      formData.type_commission_seller_currency === "Dólar" &&
+      !formData.commission_seller_exchange_rate?.trim();
+
+    const hasBuyerCommissionInDollarWithoutExchangeRate =
+      (formData.type_commission_buyer === "Fixo" ||
+        formData.type_commission_buyer === "Por Saca") &&
+      formData.type_commission_buyer_currency === "Dólar" &&
+      !formData.commission_buyer_exchange_rate?.trim();
+
+    if (
+      hasDollarPriceWithoutExchangeRate ||
+      hasSellerCommissionInDollarWithoutExchangeRate ||
+      hasBuyerCommissionInDollarWithoutExchangeRate
+    ) {
+      toast.info("Por favor, insira a taxa de câmbio.");
+      return false;
+    }
+
+    return true;
+  };
+
+  const validateRequiredDates = () => {
+    if (activeStep === 0 && !formData.contract_emission_date?.trim()) {
+      toast.info("Por favor, preencha a data de emissão do contrato.");
+      return false;
+    }
+
+    if (activeStep === 2) {
+      if (!formData.quantity?.trim()) {
+        toast.info("Por favor, preencha a quantidade.");
+        return false;
+      }
+
+      if (!formData.payment_date?.trim()) {
+        toast.info("Por favor, preencha a data do pagamento.");
+        return false;
+      }
+
+      if (
+        !formData.initial_pickup_date?.trim() ||
+        !formData.final_pickup_date?.trim()
+      ) {
+        toast.info("Por favor, preencha as datas de retirada (De e Até).");
+        return false;
+      }
+    }
+
+    return true;
+  };
+
+  const handleNext = async () => {
+    if (!validateRequiredDates()) {
+      return;
+    }
+
+    if (activeStep === 2 && !validateStep3ExchangeRate()) {
+      return;
+    }
+
+    if (activeStep === steps.length - 1) {
+      // Se for o último step, cria o contrato
+
+      setIsLoading(true);
+      try {
+        const contractData = FormDataToIPriceFixationContractDataDTO(formData);
+
+        if (isEditMode && formData?.id) {
+          const response = await updateFixationContract(
+            formData.id,
+            contractData,
+          );
+
+          toast.success(
+            <div>
+              Contrato a Fixar de Número:
+              <strong>{response?.data?.number_contract}</strong>
+              atualizado com sucesso!
+            </div>,
+          );
+        }
+        if (!isEditMode) {
+          const { id: _, ...contractToCreate } = contractData;
+
+          if (!contractToCreate.quantity) {
+            toast.error(`Obrigatório informar quantidade!`);
+            return;
+          }
+
+          const response = await createFixationContract(contractToCreate);
+
+          toast.success(
+            <div>
+              Contrato a Fixar de Número:
+              <strong>{response?.data?.number_contract}</strong>
+              criado com sucesso!
+            </div>,
+          );
+        }
+
+        navigate("/contratos/historico-a-fixar");
+      } catch (error) {
+        toast.error(
+          `Erro ao tentar ${
+            isEditMode ? "atualizar" : "criar"
+          } contrato a fixar, contacte o administrador do sistema ${error}`,
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    } else {
+      // Se não for o último step, avança para o próximo
+      setActiveStep((prevActiveStep) => prevActiveStep + 1);
+    }
+  };
+
+  const handleBack = () => {
+    setActiveStep((prevActiveStep) => prevActiveStep - 1);
+  };
+
+  const steps: StepType[] = [
+    {
+      label: "Identificação",
+      elements: [
+        <Step1
+          key="step1"
+          id="step1"
+          formData={formData}
+          handleChange={handleChange}
+          updateFormData={updateFormData}
+          isEditMode={isEditMode}
+        />,
+      ],
+    },
+    {
+      label: "Produto",
+      elements: [
+        <Step2
+          key="step2"
+          id="step2"
+          formData={formData}
+          handleChange={handleChange}
+          updateFormData={updateFormData}
+          isEditMode={isEditMode}
+        />,
+      ],
+    },
+    {
+      label: "Info. de Venda",
+      elements: [
+        <Step3
+          key="step3"
+          id="step3"
+          formData={formData}
+          handleChange={handleChange}
+          updateFormData={updateFormData}
+          isEditMode={isEditMode}
+        />,
+      ],
+    },
+    {
+      label: "Observação",
+      elements: [
+        <Step4
+          key="step4"
+          id="step4"
+          formData={formData}
+          handleChange={handleChange}
+        />,
+      ],
+    },
+    {
+      label: "Review",
+      elements: [
+        <Review
+          key="review"
+          id="review"
+          formData={formData}
+          isEditMode={isEditMode}
+        />,
+      ],
+    },
+  ];
+
+  const currentStep = steps[activeStep] || { elements: [] };
+
+  return (
+    <SContainer>
+      <SStepper activeStep={activeStep}>
+        {steps.map((item, index) => (
+          <Step key={`${index}-${item.label}`}>
+            <StepLabel>{item.label}</StepLabel>
+          </Step>
+        ))}
+      </SStepper>
+
+      <SContent key={currentStep.label}>{currentStep.elements}</SContent>
+
+      <SButtonContainer>
+        {activeStep !== 0 && (
+          <CustomButton onClick={handleBack} $variant={"primary"}>
+            Voltar
+          </CustomButton>
+        )}
+
+        {isLoading ? (
+          <CircularProgress size={24} />
+        ) : activeStep === steps.length - 1 ? (
+          <CustomButton
+            onClick={handleNext}
+            $variant={"success"}
+            disabled={canConsult}
+          >
+            Salvar
+          </CustomButton>
+        ) : (
+          <CustomButton onClick={handleNext} $variant={"success"}>
+            Avançar
+          </CustomButton>
+        )}
+      </SButtonContainer>
+    </SContainer>
+  );
+};

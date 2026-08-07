@@ -38,6 +38,7 @@ export type ContractStatus = {
 
 export interface IContractData {
   id?: string;
+  type_contract?: string;
   number_broker: string;
   seller: CustomerInfo;
   buyer: CustomerInfo;

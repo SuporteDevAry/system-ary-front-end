@@ -13,6 +13,8 @@ import { EditarCliente } from "./pages/Clientes/components/EditarCliente";
 import { Contract } from "./pages/Contracts";
 import { HistoryContracts } from "./pages/Contracts/pages/HistoryContracts";
 import { CreateNewContract } from "./pages/Contracts/pages/CreateNewContract";
+import { CreatePriceFixationContract } from "./pages/Contracts/pages/CreatePriceFixationContract";
+import { ViewPriceFixationContract } from "./pages/Contracts/pages/PriceFixationContractsHistory/components/ViewPriceFixationContract";
 import { MyAccount } from "./pages/MyAccount";
 import { ViewCustomer } from "./pages/Clientes/components/ViewCustomer";
 import { ViewContract } from "./pages/Contracts/pages/HistoryContracts/components/ViewContract";
@@ -96,6 +98,46 @@ export function RoutesForPages() {
                     <ProtectedLayout>
                         <Layout>
                             <ViewContract />
+                        </Layout>
+                    </ProtectedLayout>
+                }
+            />
+            <Route
+                path="/contratos/novo-contrato-a-fixar"
+                element={
+                    <ProtectedLayout>
+                        <Layout>
+                            <CreatePriceFixationContract />
+                        </Layout>
+                    </ProtectedLayout>
+                }
+            />
+            <Route
+                path="/contratos/editar-contrato-a-fixar"
+                element={
+                    <ProtectedLayout>
+                        <Layout>
+                            <CreatePriceFixationContract />
+                        </Layout>
+                    </ProtectedLayout>
+                }
+            />
+            <Route
+                path="/contratos/historico-a-fixar"
+                element={
+                    <ProtectedLayout>
+                        <Layout>
+                            <HistoryContracts />
+                        </Layout>
+                    </ProtectedLayout>
+                }
+            />
+            <Route
+                path="/contratos/historico-a-fixar/visualizar-contrato"
+                element={
+                    <ProtectedLayout>
+                        <Layout>
+                            <ViewPriceFixationContract />
                         </Layout>
                     </ProtectedLayout>
                 }

@@ -6,6 +6,7 @@ import { SContainer, SContainerSearchAndButton, STitle } from "./styles";
 import { IColumn } from "../../../../components/CustomTable/types";
 import { CustomTimeline } from "./components/CustomTimeline";
 import { ContractContext } from "../../../../contexts/ContractContext";
+import { PriceFixationContractContext } from "../../../../contexts/PriceFixationContractContext";
 import { toast } from "react-toastify";
 import { IContractData } from "../../../../contexts/ContractContext/types";
 import { useNavigate } from "react-router-dom";
@@ -18,10 +19,13 @@ import { PiScroll } from "react-icons/pi";
 
 export function HistoryContracts() {
   const contractContext = ContractContext();
+  const priceFixationContractContext = PriceFixationContractContext();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [allContracts, setAllContracts] = useState<IContractData[]>([]);
-  const [listcontracts, setListContracts] = useState<IContractData[]>([]);
+  // "any[]": a lista mistura contratos MI (IContractData) e "a fixar"
+  // (IPriceFixationContractData), diferenciados pelo campo type_contract.
+  const [allContracts, setAllContracts] = useState<any[]>([]);
+  const [listcontracts, setListContracts] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(0);
   const [order, setOrder] = useState<"asc" | "desc">("desc");
@@ -53,10 +57,25 @@ export function HistoryContracts() {
   const fetchData = useCallback(async () => {
     try {
       setIsLoading(true);
-      const response = await contractContext.listContracts();
+      const [miResponse, fixationResponse] = await Promise.all([
+        contractContext.listContracts(),
+        priceFixationContractContext.listFixationContracts(),
+      ]);
 
-      setAllContracts(response.data);
-      setListContracts(response.data);
+      const withTypeLabel = (contracts: any[]) =>
+        contracts.map((contract) => ({
+          ...contract,
+          type_contract_label:
+            contract.type_contract === "AF" ? "A Fixar" : "MI",
+        }));
+
+      const merged = [
+        ...withTypeLabel(miResponse.data),
+        ...withTypeLabel(fixationResponse.data),
+      ];
+
+      setAllContracts(merged);
+      setListContracts(merged);
     } catch (error) {
       toast.error(
         `Erro ao tentar ler contratos, contacte o administrador do sistema: ${error}`,
@@ -64,7 +83,7 @@ export function HistoryContracts() {
     } finally {
       setIsLoading(false);
     }
-  }, [contractContext]);
+  }, [contractContext, priceFixationContractContext]);
 
   useEffect(() => {
     fetchData();
@@ -123,6 +142,8 @@ export function HistoryContracts() {
         resp_commission: resp_commission,
         commission: commission,
         commission_value: formattedCommission,
+        type_contract_label:
+          contract.type_contract === "AF" ? "A Fixar" : "Mercado Interno",
       } as IContractData;
     });
   };
@@ -244,10 +265,18 @@ export function HistoryContracts() {
       "status.status_current",
       "buyer.name",
       "seller.name",
+      "type_contract_label",
     ],
   });
 
   const handleViewContract = (contract: IContractData) => {
+    if (contract.type_contract === "AF") {
+      navigate("/contratos/historico-a-fixar/visualizar-contrato", {
+        state: { contractForView: contract },
+      });
+      return;
+    }
+
     navigate("/contratos/historico/visualizar-contrato", {
       state: { contractForView: contract },
     });
@@ -294,6 +323,12 @@ export function HistoryContracts() {
         field: "status.status_current",
         header: "Status",
         width: "90px",
+        sortable: true,
+      },
+      {
+        field: "type_contract_label",
+        header: "Tipo",
+        width: "110px",
         sortable: true,
       },
       {

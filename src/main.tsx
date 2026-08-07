@@ -7,6 +7,7 @@ import { ClientesProvider } from "./contexts/ClienteContext/index.tsx";
 import { ContatosProvider } from "./contexts/ContatoContext/index.tsx";
 import { NotificationsProvider } from "./contexts/NotificationContext/index.tsx";
 import { ContractProvider } from "./contexts/ContractContext/index.tsx";
+import { PriceFixationContractProvider } from "./contexts/PriceFixationContractContext/index.tsx";
 import { SendEmailProvider } from "./contexts/SendEmailContext/index.tsx";
 import { ProductProvider } from "./contexts/Products/index.tsx";
 import { TableProductsProvider } from "./contexts/TablesProducts/index.tsx";
@@ -23,17 +24,19 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
             <ContatosProvider>
               <NotificationsProvider>
                 <ContractProvider>
-                  <ProductProvider>
-                    <TableProductsProvider>
-                      <InvoicesProvider>
-                        <BillingsProvider>
-                          <NfseProvider>
-                            <App />
-                          </NfseProvider>
-                        </BillingsProvider>
-                      </InvoicesProvider>
-                    </TableProductsProvider>
-                  </ProductProvider>
+                  <PriceFixationContractProvider>
+                    <ProductProvider>
+                      <TableProductsProvider>
+                        <InvoicesProvider>
+                          <BillingsProvider>
+                            <NfseProvider>
+                              <App />
+                            </NfseProvider>
+                          </BillingsProvider>
+                        </InvoicesProvider>
+                      </TableProductsProvider>
+                    </ProductProvider>
+                  </PriceFixationContractProvider>
                 </ContractProvider>
               </NotificationsProvider>
             </ContatosProvider>

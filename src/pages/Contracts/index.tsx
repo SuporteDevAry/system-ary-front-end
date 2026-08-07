@@ -16,6 +16,11 @@ export function Contract() {
       icon: <IoFileTrayStackedOutline size={64} />,
       to: "/contratos/historico",
     },
+    {
+      label: "Novo Contrato a Fixar",
+      icon: <RxFileText size={64} />,
+      to: "/contratos/novo-contrato-a-fixar",
+    },
   ];
   return (
     <>
