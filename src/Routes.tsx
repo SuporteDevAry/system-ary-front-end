@@ -39,6 +39,7 @@ import { ViewBilling } from "./pages/Billing/pages/Receipt/components/ViewBillin
 import { RPS } from "./pages/Billing/pages/RPS";
 import { ListInvoices } from "./pages/Billing/pages/ListInvoices";
 import { LookupInvoices } from "./pages/Billing/pages/LookupInvoices";
+import { DevPanel } from "./pages/DevPanel";
 
 export function RoutesForPages() {
     return (
@@ -401,6 +402,16 @@ export function RoutesForPages() {
                     <ProtectedLayout>
                         <Layout>
                             <TableProducts />
+                        </Layout>
+                    </ProtectedLayout>
+                }
+            />
+            <Route
+                path="/admin/dev-panel"
+                element={
+                    <ProtectedLayout>
+                        <Layout>
+                            <DevPanel />
                         </Layout>
                     </ProtectedLayout>
                 }

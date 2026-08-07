@@ -7,6 +7,13 @@ const CONTRACT_CONTROL_ALLOWED_EMAILS = (
   .map((email) => email.trim().toLowerCase())
   .filter(Boolean);
 
+const DEV_PANEL_ALLOWED_EMAILS = (
+  process.env.DEV_PANEL_ALLOWED_EMAILS ?? ""
+)
+  .split(",")
+  .map((email) => email.trim().toLowerCase())
+  .filter(Boolean);
+
 const useUserPermissions = () => {
   const { dataUserInfo } = useInfo();
 
@@ -25,6 +32,11 @@ const useUserPermissions = () => {
     (dataUserInfo?.email ?? "").toLowerCase(),
   );
 
+  // Restringe o Painel de Devs aos e-mails definidos em .env
+  const canViewDevPanel = DEV_PANEL_ALLOWED_EMAILS.includes(
+    (dataUserInfo?.email ?? "").toLowerCase(),
+  );
+
   // Pode ser implementado no futuro!
   //   const canWrite = hasPermission("ESCREVER");
   //   const canDelete = hasPermission("DELETAR");
@@ -35,6 +47,7 @@ const useUserPermissions = () => {
     canDashFinance,
     canDevelop,
     canViewContractControl,
+    canViewDevPanel,
     hasPermission, // Também pode retornar a função geral para verificar outras permissões caso necessário
   };
 };
