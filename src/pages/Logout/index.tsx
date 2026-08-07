@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { useAuth } from "../../contexts/AuthProvider";
 import { toast } from "react-toastify";
+import { Api } from "../../services/api";
 
 export function Logout() {
   const auth = useAuth();
@@ -10,6 +11,7 @@ export function Logout() {
   useEffect(() => {
     const handleLogout = async () => {
       try {
+        await Api.delete("/heartbeat").catch(() => {});
         await auth.logout();
         navigate("/login");
       } catch (error) {

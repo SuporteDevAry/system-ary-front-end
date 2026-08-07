@@ -13,6 +13,7 @@ import { TableProductsProvider } from "./contexts/TablesProducts/index.tsx";
 import { InvoicesProvider } from "./contexts/InvoiceContext/index.tsx";
 import { BillingsProvider } from "./contexts/BillingContext/index.tsx";
 import { NfseProvider } from "./contexts/NfseContext/index.tsx";
+import { DevPanelProvider } from "./contexts/DevPanelContext/index.tsx";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
@@ -28,7 +29,9 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
                       <InvoicesProvider>
                         <BillingsProvider>
                           <NfseProvider>
-                            <App />
+                            <DevPanelProvider>
+                              <App />
+                            </DevPanelProvider>
                           </NfseProvider>
                         </BillingsProvider>
                       </InvoicesProvider>
