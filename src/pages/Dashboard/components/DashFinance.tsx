@@ -1,11 +1,11 @@
 import React, { useCallback, useEffect, useState } from "react";
 import {
-    Tooltip,
-    ResponsiveContainer,
-    Legend,
-    PieChart,
-    Pie,
-    Cell,
+  Tooltip,
+  ResponsiveContainer,
+  Legend,
+  PieChart,
+  Pie,
+  Cell,
 } from "recharts";
 import Card from "@mui/material/Card";
 import Typography from "@mui/material/Typography";
@@ -27,434 +27,372 @@ import { SChartContainer, SContainer, SDashboardContainer } from "./styles";
 // ];
 
 const COLORS: Record<string, string> = {
-    SOJA: "#00A335",
-    MILHO: "#413ea0",
-    TRIGO: "#D72735",
-    SORGO: "#ff7300",
-    ÓLEO: "#8884d8",
-    "SEBO BOVINO": "#A349A4",
-    FARELO: "#B97A57",
+  SOJA: "#00A335",
+  MILHO: "#413ea0",
+  TRIGO: "#D72735",
+  SORGO: "#ff7300",
+  ÓLEO: "#8884d8",
+  "SEBO BOVINO": "#A349A4",
+  FARELO: "#B97A57",
 };
 
 export function DashFinance() {
-    const contractContext = ContractContext();
-    const [listcontracts, setListContracts] = useState<IContractData[]>([]);
+  const contractContext = ContractContext();
+  const [listcontracts, setListContracts] = useState<IContractData[]>([]);
 
-    const fetchData = useCallback(async () => {
-        try {
-            const response = await contractContext.listContracts();
+  const fetchData = useCallback(async () => {
+    try {
+      const response = await contractContext.listContracts();
 
-            setListContracts(response.data);
-        } catch (error) {
-            toast.error(
-                `Erro ao tentar ler contratos, contacte o administrador do sistema: ${error}`
-            );
-        } finally {
-        }
-    }, [contractContext]);
+      setListContracts(response.data);
+    } catch (error) {
+      toast.error(
+        `Erro ao tentar ler contratos, contacte o administrador do sistema: ${error}`,
+      );
+    } finally {
+    }
+  }, [contractContext]);
 
-    useEffect(() => {
-        fetchData();
-    }, [fetchData]);
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
-    const nameMonth = [
-        "",
-        "Janeiro",
-        "Fevereiro",
-        "Março",
-        "Abril",
-        "Maio",
-        "Junho",
-        "Julho",
-        "Agosto",
-        "Setembro",
-        "Outubro",
-        "Novembro",
-        "Dezembro",
-    ];
+  const nameMonth = [
+    "",
+    "Janeiro",
+    "Fevereiro",
+    "Março",
+    "Abril",
+    "Maio",
+    "Junho",
+    "Julho",
+    "Agosto",
+    "Setembro",
+    "Outubro",
+    "Novembro",
+    "Dezembro",
+  ];
 
-    // let data = produtos.filter(produto => produto.name_product === "SOJA em Grãos");
+  // let data = produtos.filter(produto => produto.name_product === "SOJA em Grãos");
 
-    // let totalSoja = produtos
-    // .filter(produto => produto.name_product === "SOJA em Grãos") // Filtra apenas os produtos desejados
-    // .reduce((acc, produto) => acc + produto.quantidade, 0); // Soma as quantidades
+  // let totalSoja = produtos
+  // .filter(produto => produto.name_product === "SOJA em Grãos") // Filtra apenas os produtos desejados
+  // .reduce((acc, produto) => acc + produto.quantidade, 0); // Soma as quantidades
 
-    const currentDate = new Date(); // Obtém a data atual
-    const currentMonth = currentDate.getMonth() + 1; // Mês atual (0 = Janeiro, 1 = Fevereiro, ..., 11 = Dezembro)
-    const currentYear = currentDate.getFullYear(); // Ano atual
+  const currentDate = new Date(); // Obtém a data atual
+  const currentMonth = currentDate.getMonth() + 1; // Mês atual (0 = Janeiro, 1 = Fevereiro, ..., 11 = Dezembro)
+  const currentYear = currentDate.getFullYear(); // Ano atual
 
-    // const contractYear = listcontracts.filter((contract) => {
-    //     return (
-    //         new Date(contract.contract_emission_date).getFullYear() ===
-    //         currentYear
-    //     );
-    // });
+  // const contractYear = listcontracts.filter((contract) => {
+  //     return (
+  //         new Date(contract.contract_emission_date).getFullYear() ===
+  //         currentYear
+  //     );
+  // });
 
-    const contractYear = listcontracts.filter((contract) => {
-        const partes = contract.contract_emission_date.split("/");
-        const anoEmissao = parseInt(partes[2], 10);
+  const contractYear = listcontracts.filter((contract) => {
+    const partes = contract.contract_emission_date.split("/");
+    const anoEmissao = parseInt(partes[2], 10);
 
-        return anoEmissao === currentYear;
-    });
+    return anoEmissao === currentYear;
+  });
 
-    const contractMonth = listcontracts.filter((contract) => {
-        const partes = contract.contract_emission_date.split("/");
-        const mesEmissao = parseInt(partes[1], 10);
-        const anoEmissao = parseInt(partes[2], 10);
+  const contractMonth = listcontracts.filter((contract) => {
+    const partes = contract.contract_emission_date.split("/");
+    const mesEmissao = parseInt(partes[1], 10);
+    const anoEmissao = parseInt(partes[2], 10);
 
-        return mesEmissao === currentMonth && anoEmissao === currentYear;
-    });
+    return mesEmissao === currentMonth && anoEmissao === currentYear;
+  });
 
-    const validProducts = ["O", "F", "OC", "OA", "SB", "EP"];
+  const validProducts = ["O", "F", "OC", "OA", "SB", "EP", "OX"];
 
-    let totalYear = contractYear.reduce((acc, contract) => {
-        const quantity = validProducts.includes(contract.product)
-            ? Number(contract.quantity)
-            : Number(contract.quantity) / 1000;
-        return acc + quantity;
+  let totalYear = contractYear.reduce((acc, contract) => {
+    const quantity = validProducts.includes(contract.product)
+      ? Number(contract.quantity)
+      : Number(contract.quantity) / 1000;
+    return acc + quantity;
+  }, 0);
+
+  let totalMes =
+    /*Math.round(*/
+    contractMonth.reduce((acc, contract) => {
+      const quantity = validProducts.includes(contract.product)
+        ? Number(contract.quantity)
+        : Number(contract.quantity) / 1000;
+      return acc + quantity;
     }, 0);
+  3;
+  /*)*/
 
-    let totalMes =
-        /*Math.round(*/
-        contractMonth.reduce((acc, contract) => {
-            const quantity = validProducts.includes(contract.product)
-                ? Number(contract.quantity)
-                : Number(contract.quantity) / 1000;
-            return acc + quantity;
-        }, 0);
-    3;
-    /*)*/
+  // Total Gráfico Mês
+  let monthSoja = Math.round(
+    contractMonth
+      .filter(
+        (contract) => contract.name_product.toUpperCase() === "SOJA EM GRÃOS",
+      )
+      .reduce((acc, contract) => acc + Number(contract.quantity) / 1000, 0),
+  );
+  let monthMilho = Math.round(
+    contractMonth
+      .filter(
+        (contract) => contract.name_product.toUpperCase() === "MILHO EM GRÃOS",
+      )
+      .reduce((acc, contract) => acc + Number(contract.quantity) / 1000, 0),
+  );
+  let monthTrigo = Math.round(
+    contractMonth
+      .filter((contract) => contract.name_product.toUpperCase() === "TRIGO")
+      .reduce((acc, contract) => acc + Number(contract.quantity) / 1000, 0),
+  );
+  let monthSorgo = Math.round(
+    contractMonth
+      .filter((contract) => contract.name_product.toUpperCase() === "SORGO")
+      .reduce((acc, contract) => acc + Number(contract.quantity) / 1000, 0),
+  );
+  let monthOleo = Math.round(
+    contractMonth
+      .filter(
+        (contract) =>
+          contract.name_product.toUpperCase() === "ÓLEO DE SOJA A GRANEL" ||
+          contract.name_product.toUpperCase() === "ÓLEO DE ALGODÃO A GRANEL",
+      )
+      .reduce((acc, contract) => acc + Number(contract.quantity), 0),
+  );
+  let monthSebo = Math.round(
+    contractMonth
+      .filter(
+        (contract) => contract.name_product.toUpperCase() === "SEBO BOVINO",
+      )
+      .reduce((acc, contract) => acc + Number(contract.quantity), 0),
+  );
+  let monthFarelo = Math.round(
+    contractMonth
+      .filter(
+        (contract) =>
+          contract.name_product.toUpperCase() === "FARELO DE SOJA A GRANEL",
+      )
+      .reduce((acc, contract) => acc + Number(contract.quantity), 0),
+  );
 
-    // Total Gráfico Mês
-    let monthSoja = Math.round(
-        contractMonth
-            .filter(
-                (contract) =>
-                    contract.name_product.toUpperCase() === "SOJA EM GRÃOS"
-            )
-            .reduce(
-                (acc, contract) => acc + Number(contract.quantity) / 1000,
-                0
-            )
-    );
-    let monthMilho = Math.round(
-        contractMonth
-            .filter(
-                (contract) =>
-                    contract.name_product.toUpperCase() === "MILHO EM GRÃOS"
-            )
-            .reduce(
-                (acc, contract) => acc + Number(contract.quantity) / 1000,
-                0
-            )
-    );
-    let monthTrigo = Math.round(
-        contractMonth
-            .filter(
-                (contract) => contract.name_product.toUpperCase() === "TRIGO"
-            )
-            .reduce(
-                (acc, contract) => acc + Number(contract.quantity) / 1000,
-                0
-            )
-    );
-    let monthSorgo = Math.round(
-        contractMonth
-            .filter(
-                (contract) => contract.name_product.toUpperCase() === "SORGO"
-            )
-            .reduce(
-                (acc, contract) => acc + Number(contract.quantity) / 1000,
-                0
-            )
-    );
-    let monthOleo = Math.round(
-        contractMonth
-            .filter(
-                (contract) =>
-                    contract.name_product.toUpperCase() ===
-                        "ÓLEO DE SOJA A GRANEL" ||
-                    contract.name_product.toUpperCase() ===
-                        "ÓLEO DE ALGODÃO A GRANEL"
-            )
-            .reduce((acc, contract) => acc + Number(contract.quantity), 0)
-    );
-    let monthSebo = Math.round(
-        contractMonth
-            .filter(
-                (contract) =>
-                    contract.name_product.toUpperCase() === "SEBO BOVINO"
-            )
-            .reduce((acc, contract) => acc + Number(contract.quantity), 0)
-    );
-    let monthFarelo = Math.round(
-        contractMonth
-            .filter(
-                (contract) =>
-                    contract.name_product.toUpperCase() ===
-                    "FARELO DE SOJA A GRANEL"
-            )
-            .reduce((acc, contract) => acc + Number(contract.quantity), 0)
-    );
+  // Total Gráfico ANO
+  let totalSoja = Math.round(
+    contractYear
+      .filter(
+        (contract) => contract.name_product.toUpperCase() === "SOJA EM GRÃOS",
+      )
+      .reduce((acc, contract) => acc + Number(contract.quantity) / 1000, 0),
+  );
+  let totalMilho = Math.round(
+    contractYear
+      .filter(
+        (contract) => contract.name_product.toUpperCase() === "MILHO EM GRÃOS",
+      )
+      .reduce((acc, contract) => acc + Number(contract.quantity) / 1000, 0),
+  );
+  let totalTrigo = Math.round(
+    contractYear
+      .filter((contract) => contract.name_product.toUpperCase() === "TRIGO")
+      .reduce((acc, contract) => acc + Number(contract.quantity) / 1000, 0),
+  );
+  let totalSorgo = Math.round(
+    contractYear
+      .filter((contract) => contract.name_product.toUpperCase() === "SORGO")
+      .reduce((acc, contract) => acc + Number(contract.quantity) / 1000, 0),
+  );
+  let totalOleo = Math.round(
+    contractYear
+      .filter(
+        (contract) =>
+          contract.name_product.toUpperCase() === "ÓLEO DE SOJA A GRANEL" ||
+          contract.name_product.toUpperCase() === "ÓLEO DE ALGODÃO A GRANEL",
+      )
+      .reduce((acc, contract) => acc + Number(contract.quantity), 0),
+  );
+  let totalSebo = Math.round(
+    contractYear
+      .filter(
+        (contract) => contract.name_product.toUpperCase() === "SEBO BOVINO",
+      )
+      .reduce((acc, contract) => acc + Number(contract.quantity), 0),
+  );
+  let totalFarelo = Math.round(
+    contractYear
+      .filter(
+        (contract) =>
+          contract.name_product.toUpperCase() === "FARELO DE SOJA A GRANEL",
+      )
+      .reduce((acc, contract) => acc + Number(contract.quantity), 0),
+  );
 
-    // Total Gráfico ANO
-    let totalSoja = Math.round(
-        contractYear
-            .filter(
-                (contract) =>
-                    contract.name_product.toUpperCase() === "SOJA EM GRÃOS"
-            )
-            .reduce(
-                (acc, contract) => acc + Number(contract.quantity) / 1000,
-                0
-            )
-    );
-    let totalMilho = Math.round(
-        contractYear
-            .filter(
-                (contract) =>
-                    contract.name_product.toUpperCase() === "MILHO EM GRÃOS"
-            )
-            .reduce(
-                (acc, contract) => acc + Number(contract.quantity) / 1000,
-                0
-            )
-    );
-    let totalTrigo = Math.round(
-        contractYear
-            .filter(
-                (contract) => contract.name_product.toUpperCase() === "TRIGO"
-            )
-            .reduce(
-                (acc, contract) => acc + Number(contract.quantity) / 1000,
-                0
-            )
-    );
-    let totalSorgo = Math.round(
-        contractYear
-            .filter(
-                (contract) => contract.name_product.toUpperCase() === "SORGO"
-            )
-            .reduce(
-                (acc, contract) => acc + Number(contract.quantity) / 1000,
-                0
-            )
-    );
-    let totalOleo = Math.round(
-        contractYear
-            .filter(
-                (contract) =>
-                    contract.name_product.toUpperCase() ===
-                        "ÓLEO DE SOJA A GRANEL" ||
-                    contract.name_product.toUpperCase() ===
-                        "ÓLEO DE ALGODÃO A GRANEL"
-            )
-            .reduce((acc, contract) => acc + Number(contract.quantity), 0)
-    );
-    let totalSebo = Math.round(
-        contractYear
-            .filter(
-                (contract) =>
-                    contract.name_product.toUpperCase() === "SEBO BOVINO"
-            )
-            .reduce((acc, contract) => acc + Number(contract.quantity), 0)
-    );
-    let totalFarelo = Math.round(
-        contractYear
-            .filter(
-                (contract) =>
-                    contract.name_product.toUpperCase() ===
-                    "FARELO DE SOJA A GRANEL"
-            )
-            .reduce((acc, contract) => acc + Number(contract.quantity), 0)
-    );
+  const dataYear = [
+    { name: "Soja", value: totalSoja },
+    { name: "Milho", value: totalMilho },
+    { name: "Trigo", value: totalTrigo },
+    { name: "Sorgo", value: totalSorgo },
+    { name: "Óleo", value: totalOleo },
+    { name: "Sebo Bovino", value: totalSebo },
+    { name: "Farelo", value: totalFarelo },
+  ];
+  const dataMonth = [
+    { name: "Soja", value: monthSoja },
+    { name: "Milho", value: monthMilho },
+    { name: "Trigo", value: monthTrigo },
+    { name: "Sorgo", value: monthSorgo },
+    { name: "Óleo", value: monthOleo },
+    { name: "Sebo Bovino", value: monthSebo },
+    { name: "Farelo", value: monthFarelo },
+  ];
 
-    const dataYear = [
-        { name: "Soja", value: totalSoja },
-        { name: "Milho", value: totalMilho },
-        { name: "Trigo", value: totalTrigo },
-        { name: "Sorgo", value: totalSorgo },
-        { name: "Óleo", value: totalOleo },
-        { name: "Sebo Bovino", value: totalSebo },
-        { name: "Farelo", value: totalFarelo },
-    ];
-    const dataMonth = [
-        { name: "Soja", value: monthSoja },
-        { name: "Milho", value: monthMilho },
-        { name: "Trigo", value: monthTrigo },
-        { name: "Sorgo", value: monthSorgo },
-        { name: "Óleo", value: monthOleo },
-        { name: "Sebo Bovino", value: monthSebo },
-        { name: "Farelo", value: monthFarelo },
-    ];
-
-    const YearPieChart: React.FC = () => {
-        return (
-            <SChartContainer>
-                {/* <Typography variant="h6" align="center">
+  const YearPieChart: React.FC = () => {
+    return (
+      <SChartContainer>
+        {/* <Typography variant="h6" align="center">
                     Acumulado por Produtos
                 </Typography> */}
-                <ResponsiveContainer width="100%" height={300}>
-                    <PieChart width={200} height={100}>
-                        <Pie
-                            data={dataYear}
-                            //cx={50}
-                            //cy={100}
-                            innerRadius={70}
-                            outerRadius={100}
-                            fill="#8884d8"
-                            paddingAngle={1}
-                            dataKey="value"
-                        >
-                            {dataYear.map((_entry, index) => (
-                                <Cell
-                                    key={`cell-${index}`}
-                                    // fill={COLORS[index % COLORS.length]}
-                                    fill={
-                                        COLORS[_entry.name?.toUpperCase()] ||
-                                        "#CCCCCC"
-                                    }
-                                />
-                            ))}
-                        </Pie>
-                        <text
-                            x="39%"
-                            y="50%"
-                            textAnchor="middle"
-                            dominantBaseline="middle"
-                            fontSize={20}
-                            fontWeight="bold"
-                            fill="#333"
-                        >
-                            {currentYear}
-                        </text>
-                        <Tooltip />
-                        {/* <Legend verticalAlign="bottom" height={50} /> */}
-                        <Legend
-                            layout="vertical"
-                            align="right"
-                            verticalAlign="middle"
-                        />
-                    </PieChart>
-                </ResponsiveContainer>
-            </SChartContainer>
-        );
-    };
+        <ResponsiveContainer width="100%" height={300}>
+          <PieChart width={200} height={100}>
+            <Pie
+              data={dataYear}
+              //cx={50}
+              //cy={100}
+              innerRadius={70}
+              outerRadius={100}
+              fill="#8884d8"
+              paddingAngle={1}
+              dataKey="value"
+            >
+              {dataYear.map((_entry, index) => (
+                <Cell
+                  key={`cell-${index}`}
+                  // fill={COLORS[index % COLORS.length]}
+                  fill={COLORS[_entry.name?.toUpperCase()] || "#CCCCCC"}
+                />
+              ))}
+            </Pie>
+            <text
+              x="39%"
+              y="50%"
+              textAnchor="middle"
+              dominantBaseline="middle"
+              fontSize={20}
+              fontWeight="bold"
+              fill="#333"
+            >
+              {currentYear}
+            </text>
+            <Tooltip />
+            {/* <Legend verticalAlign="bottom" height={50} /> */}
+            <Legend layout="vertical" align="right" verticalAlign="middle" />
+          </PieChart>
+        </ResponsiveContainer>
+      </SChartContainer>
+    );
+  };
 
-    const MonthPieChart: React.FC = () => {
-        return (
-            <SChartContainer>
-                {/* <Typography variant="h6" align="center">
+  const MonthPieChart: React.FC = () => {
+    return (
+      <SChartContainer>
+        {/* <Typography variant="h6" align="center">
                     Mesa SOJA
                 </Typography> */}
-                <ResponsiveContainer width="100%" height={300}>
-                    <PieChart width={200} height={100}>
-                        <Pie
-                            data={dataMonth}
-                            //cx={50}
-                            //cy={100}
-                            innerRadius={70}
-                            outerRadius={100}
-                            fill="#8884d8"
-                            paddingAngle={1}
-                            dataKey="value"
-                        >
-                            {dataMonth.map((_entry, index) => (
-                                <Cell
-                                    key={`cell-${index}`}
-                                    //fill={COLORS[index % COLORS.length]}
-                                    fill={
-                                        COLORS[_entry.name?.toUpperCase()] ||
-                                        "#CCCCCC"
-                                    }
-                                />
-                            ))}
-                        </Pie>
-                        <text
-                            x="39%"
-                            y="50%"
-                            textAnchor="middle"
-                            dominantBaseline="middle"
-                            fontSize={20}
-                            fontWeight="bold"
-                            fill="#333"
-                        >
-                            {nameMonth[currentMonth]}
-                        </text>
-                        <Tooltip />
-                        {/* <Legend verticalAlign="bottom" height={50} /> */}
-                        <Legend
-                            layout="vertical"
-                            align="right"
-                            verticalAlign="middle"
-                        />
-                    </PieChart>
-                </ResponsiveContainer>
-            </SChartContainer>
-        );
-    };
-
-    const DashFinance: React.FC = () => {
-        return (
-            <>
-                <SContainer>
-                    <SDashboardContainer>
-                        <Typography variant="h4" align="center" gutterBottom>
-                            Estatísticas de Contratos - MI
-                        </Typography>
-                        <Typography variant="h6" align="center" gutterBottom>
-                            (Em toneladas métricas)
-                        </Typography>
-                        <Grid container spacing={3}>
-                            {/* Seção de contratos acumulados */}
-                            <Grid item xs={6} sm={6}>
-                                <Card>
-                                    <CardContent>
-                                        <Typography variant="h6">
-                                            Quantidade acumulada em{" "}
-                                            {currentYear}
-                                        </Typography>
-                                        <Typography variant="h4">
-                                            {" "}
-                                            {totalYear.toLocaleString(
-                                                "pt-BR"
-                                            )}{" "}
-                                        </Typography>
-                                    </CardContent>
-                                </Card>
-                            </Grid>
-                            <Grid item xs={6} sm={6}>
-                                <Card>
-                                    <CardContent>
-                                        <Typography variant="h6">
-                                            Quantidade acumulada em{" "}
-                                            {nameMonth[currentMonth]}
-                                        </Typography>
-                                        <Typography variant="h4">
-                                            {totalMes.toLocaleString("pt-BR")}
-                                        </Typography>
-                                    </CardContent>
-                                </Card>
-                            </Grid>
-
-                            {/* Gráfico PieChart */}
-                            <Grid item xs={12} md={6}>
-                                <YearPieChart />
-                            </Grid>
-                            {/* Gráfico BarChart */}
-                            <Grid item xs={12} md={6}>
-                                <MonthPieChart />
-                            </Grid>
-                        </Grid>
-                    </SDashboardContainer>
-                </SContainer>
-            </>
-        );
-    };
-
-    return (
-        <>
-            <DashFinance />
-        </>
+        <ResponsiveContainer width="100%" height={300}>
+          <PieChart width={200} height={100}>
+            <Pie
+              data={dataMonth}
+              //cx={50}
+              //cy={100}
+              innerRadius={70}
+              outerRadius={100}
+              fill="#8884d8"
+              paddingAngle={1}
+              dataKey="value"
+            >
+              {dataMonth.map((_entry, index) => (
+                <Cell
+                  key={`cell-${index}`}
+                  //fill={COLORS[index % COLORS.length]}
+                  fill={COLORS[_entry.name?.toUpperCase()] || "#CCCCCC"}
+                />
+              ))}
+            </Pie>
+            <text
+              x="39%"
+              y="50%"
+              textAnchor="middle"
+              dominantBaseline="middle"
+              fontSize={20}
+              fontWeight="bold"
+              fill="#333"
+            >
+              {nameMonth[currentMonth]}
+            </text>
+            <Tooltip />
+            {/* <Legend verticalAlign="bottom" height={50} /> */}
+            <Legend layout="vertical" align="right" verticalAlign="middle" />
+          </PieChart>
+        </ResponsiveContainer>
+      </SChartContainer>
     );
+  };
+
+  const DashFinance: React.FC = () => {
+    return (
+      <>
+        <SContainer>
+          <SDashboardContainer>
+            <Typography variant="h4" align="center" gutterBottom>
+              Estatísticas de Contratos - MI
+            </Typography>
+            <Typography variant="h6" align="center" gutterBottom>
+              (Em toneladas métricas)
+            </Typography>
+            <Grid container spacing={3}>
+              {/* Seção de contratos acumulados */}
+              <Grid item xs={6} sm={6}>
+                <Card>
+                  <CardContent>
+                    <Typography variant="h6">
+                      Quantidade acumulada em {currentYear}
+                    </Typography>
+                    <Typography variant="h4">
+                      {" "}
+                      {totalYear.toLocaleString("pt-BR")}{" "}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+              <Grid item xs={6} sm={6}>
+                <Card>
+                  <CardContent>
+                    <Typography variant="h6">
+                      Quantidade acumulada em {nameMonth[currentMonth]}
+                    </Typography>
+                    <Typography variant="h4">
+                      {totalMes.toLocaleString("pt-BR")}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+
+              {/* Gráfico PieChart */}
+              <Grid item xs={12} md={6}>
+                <YearPieChart />
+              </Grid>
+              {/* Gráfico BarChart */}
+              <Grid item xs={12} md={6}>
+                <MonthPieChart />
+              </Grid>
+            </Grid>
+          </SDashboardContainer>
+        </SContainer>
+      </>
+    );
+  };
+
+  return (
+    <>
+      <DashFinance />
+    </>
+  );
 }
