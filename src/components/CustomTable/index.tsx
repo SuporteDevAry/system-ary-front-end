@@ -24,10 +24,7 @@ import { insertMaskInCnpj } from "../../helpers/front-end/insertMaskInCnpj";
 import Loading from "../Loading";
 import { insertMaskInTelefone } from "../../helpers/front-end/insertMaskInFone";
 import { insertMaskInCelular } from "../../helpers/front-end/insertMaskInCelular";
-import {
-  getNestedValue,
-  sortTableData,
-} from "./helpers";
+import { getNestedValue, sortTableData } from "./helpers";
 import { CustomTruncateText } from "../CustomTruncateText";
 import useTableSearch from "../../hooks/useTableSearch";
 import { CustomStatusIndicator } from "../CustomStatusIndicator";
@@ -113,7 +110,9 @@ const CustomTable: React.FC<ICustomTableProps> = ({
       let newSelectedIds: string[];
 
       if (isSelected) {
-        newSelectedIds = selectedRowIds.filter((currentId) => currentId !== rowId);
+        newSelectedIds = selectedRowIds.filter(
+          (currentId) => currentId !== rowId,
+        );
       } else {
         newSelectedIds = [...selectedRowIds, rowId];
       }
@@ -129,15 +128,13 @@ const CustomTable: React.FC<ICustomTableProps> = ({
       }
     } else {
       // Modo de seleção única
-        if (selectedRowId === rowId) {
-          setSelectedRowId(null);
-          setOpenRows(
-            openRows.filter((currentRowId) => currentRowId !== rowId),
-          );
-          if (onSelectionChange) {
-            onSelectionChange([]);
-          }
-        } else {
+      if (selectedRowId === rowId) {
+        setSelectedRowId(null);
+        setOpenRows(openRows.filter((currentRowId) => currentRowId !== rowId));
+        if (onSelectionChange) {
+          onSelectionChange([]);
+        }
+      } else {
         setSelectedRowId(rowId);
         if (collapsible) {
           setOpenRows((prevOpenRows) => [...prevOpenRows, rowId]);
@@ -221,8 +218,11 @@ const CustomTable: React.FC<ICustomTableProps> = ({
       let auxQtd =
         typeof value === "number"
           ? value
-          : Number(String(value ?? "0").replace(".", "").replace(",", ".")) ||
-            0;
+          : Number(
+              String(value ?? "0")
+                .replace(".", "")
+                .replace(",", "."),
+            ) || 0;
       return auxQtd.toLocaleString("pt-BR", {
         minimumFractionDigits: 3,
       });
@@ -256,7 +256,7 @@ const CustomTable: React.FC<ICustomTableProps> = ({
         minimumFractionDigits: 3,
       });
     }
-    const validProducts = ["S", "CN", "O", "F", "OC", "OA", "SB", "EP"];
+    const validProducts = ["S", "CN", "O", "F", "OC", "OA", "SB", "EP", "OX"];
     if (validProducts.includes(column.field)) {
       let auxQtd = value || 0;
       return auxQtd.toLocaleString("pt-BR", {
@@ -424,20 +424,20 @@ const CustomTable: React.FC<ICustomTableProps> = ({
                           },
                         }
                       : row?.is_sigla_total
-                      ? {
-                          "& td": {
-                            backgroundColor: "#c6e0b4",
-                            fontWeight: 700,
-                          },
-                        }
-                      : row?.is_month_total
-                      ? {
-                          "& td": {
-                            backgroundColor: "#e2f0d9",
-                            fontWeight: 700,
-                          },
-                        }
-                      : undefined
+                        ? {
+                            "& td": {
+                              backgroundColor: "#c6e0b4",
+                              fontWeight: 700,
+                            },
+                          }
+                        : row?.is_month_total
+                          ? {
+                              "& td": {
+                                backgroundColor: "#e2f0d9",
+                                fontWeight: 700,
+                              },
+                            }
+                          : undefined
                   }
                   onClick={() => {
                     if (onRowClick && !collapsible) {

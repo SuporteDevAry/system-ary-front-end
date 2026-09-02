@@ -133,7 +133,7 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
     }
   }
   // Só iremos remover essa regra das siglas, caso o cliente aceite a sugestão da reunião do dia 09/04/2025
-  const listProducts = ["O", "OC", "OA", "SB", "EP"];
+  const listProducts = ["O", "OC", "OA", "SB", "EP", "OX"];
   const validProducts = listProducts.includes(formData.product);
   const siglaProduct = validProducts ? "O" : formData.product;
 
@@ -168,7 +168,7 @@ const ContratoTemplate: React.FC<ContratoTemplateProps> = ({
 
     return formattedLines.join("");
   }
-  const listProductsForMetricTon = ["O", "F", "OC", "OA", "SB", "EP"];
+  const listProductsForMetricTon = ["O", "F", "OC", "OA", "SB", "EP", "OX"];
   const validProductsForMetricTon = listProductsForMetricTon.includes(
     formData.product,
   );
