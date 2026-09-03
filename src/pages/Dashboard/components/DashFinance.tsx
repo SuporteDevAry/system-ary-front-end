@@ -155,7 +155,9 @@ export function DashFinance() {
       .filter(
         (contract) =>
           contract.name_product.toUpperCase() === "ÓLEO DE SOJA A GRANEL" ||
-          contract.name_product.toUpperCase() === "ÓLEO DE ALGODÃO A GRANEL",
+          contract.name_product.toUpperCase() === "ÓLEO DE ALGODÃO A GRANEL" ||
+          contract.name_product.toUpperCase().startsWith("ÓLEO MIX") ||
+          contract.product === "OX",
       )
       .reduce((acc, contract) => acc + Number(contract.quantity), 0),
   );
@@ -205,7 +207,9 @@ export function DashFinance() {
       .filter(
         (contract) =>
           contract.name_product.toUpperCase() === "ÓLEO DE SOJA A GRANEL" ||
-          contract.name_product.toUpperCase() === "ÓLEO DE ALGODÃO A GRANEL",
+          contract.name_product.toUpperCase() === "ÓLEO DE ALGODÃO A GRANEL" ||
+          contract.name_product.toUpperCase().startsWith("ÓLEO MIX") ||
+          contract.product === "OX",
       )
       .reduce((acc, contract) => acc + Number(contract.quantity), 0),
   );
