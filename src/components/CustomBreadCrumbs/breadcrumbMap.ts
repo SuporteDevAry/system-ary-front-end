@@ -20,6 +20,11 @@ export const breadcrumbMap: Record<string, string> = {
   controle: "Controle",
   "enviar-contratos": "Enviar Contratos",
 
+  // Comissão
+  commission: "Comissão",
+  broker: "Brokers",
+  report: "Relatório de Comissão",
+
   // Cobrança
   cobranca: "Cobrança",
   notafiscal: "Emissão NFSe",
@@ -31,6 +36,7 @@ export const breadcrumbMap: Record<string, string> = {
   "contrato-vencto": "Contratos por Vencimento",
   "contratos-receb": "Contratos Recebidos",
   "listagem-nfse": "Listagem de NFSe",
+  "listagem-nfse-recebida": "Listagem NFSe Recebida",
   "consulta-nfse": "Consulta NFSe",
 
   // Relatórios

@@ -11,6 +11,7 @@ import {
 import { IoTodayOutline } from "react-icons/io5";
 import { TbReceipt2 } from "react-icons/tb";
 import { FaFileInvoiceDollar } from "react-icons/fa";
+import { MdOutlineReceiptLong } from "react-icons/md";
 
 export function Billing() {
     const cardLinks1 = [
@@ -35,6 +36,12 @@ export function Billing() {
             label: "Listagem NFSe",
             icon: <TbReceipt size={64} />,
             to: "/cobranca/listagem-nfse",
+            disabled: false,
+        },
+        {
+            label: "Listagem NFSe Recebida",
+            icon: <MdOutlineReceiptLong size={64} />,
+            to: "/cobranca/listagem-nfse-recebida",
             disabled: false,
         },
         // {
