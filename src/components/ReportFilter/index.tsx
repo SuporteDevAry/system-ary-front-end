@@ -33,6 +33,7 @@ export const ReportFilter: React.FC<IReportFilterProps> = ({
   fieldLabels,
   defaultMesaName,
   allowEmptyMesa = true,
+  mesaOptions,
 }) => {
   const [filters, setFilters] = useState<SelectState>(initialFilters || {});
   // Estado auxiliar para mesa selecionada (table_id)
@@ -632,9 +633,30 @@ export const ReportFilter: React.FC<IReportFilterProps> = ({
           />
         )}
 
-        {enabledFields.has("mesa") && (
+        {enabledFields.has("mesa") && mesaOptions && (
           <STextField
-            label="Mesa"
+            select
+            label={getFieldLabel("mesa", "Mesa")}
+            variant="outlined"
+            size="small"
+            name="mesa"
+            value={filters.mesa ?? ""}
+            onChange={handleChange}
+            sx={{ width: "100%" }}
+            SelectProps={{ native: true }}
+          >
+            <option value=""></option>
+            {mesaOptions.map((mesa) => (
+              <option key={mesa} value={mesa}>
+                {mesa}
+              </option>
+            ))}
+          </STextField>
+        )}
+
+        {enabledFields.has("mesa") && !mesaOptions && (
+          <STextField
+            label={getFieldLabel("mesa", "Mesa")}
             type="text"
             variant="outlined"
             size="small"

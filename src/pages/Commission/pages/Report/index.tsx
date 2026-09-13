@@ -13,6 +13,8 @@ import CustomButton from "../../../../components/CustomButton";
 import { BillingContext } from "../../../../contexts/BillingContext";
 import { IBillingData } from "../../../../contexts/BillingContext/types";
 import { ContractContext } from "../../../../contexts/ContractContext";
+import { BrokerContext } from "../../../../contexts/BrokerContext";
+import { IBroker } from "../../../../contexts/BrokerContext/types";
 import { TableProductContext } from "../../../../contexts/TablesProducts";
 import { ITableProductsData } from "../../../../contexts/TablesProducts/types";
 import ReportFilter from "../../../../components/ReportFilter";
@@ -24,9 +26,84 @@ import { PiScroll } from "react-icons/pi";
 import { sortTableData } from "../../../../components/CustomTable/helpers";
 import * as XLSX from "xlsx-js-style";
 
-export function ReceiptMap() {
+function parseFlexibleDate(value?: string) {
+    const normalizedValue = String(value ?? "").trim();
+    if (!normalizedValue) return null;
+
+    const dateText = normalizedValue.split(/[T ]/)[0];
+    const parts = dateText.split(/[\/.-]/).filter(Boolean);
+    if (parts.length !== 3) return null;
+
+    const numbers = parts.map(Number);
+    if (numbers.some((part) => !Number.isInteger(part))) return null;
+
+    const [first, second, third] = numbers;
+    const year = parts[0].length === 4 ? first : third;
+    const month = second;
+    const day = parts[0].length === 4 ? third : first;
+    if (year < 1000 || month < 1 || month > 12 || day < 1 || day > 31)
+        return null;
+
+    const date = new Date(year, month - 1, day);
+    if (
+        date.getFullYear() !== year ||
+        date.getMonth() !== month - 1 ||
+        date.getDate() !== day
+    )
+        return null;
+
+    date.setHours(0, 0, 0, 0);
+    return date;
+}
+
+function parseContractCode(numberContract?: string) {
+    const raw = String(numberContract ?? "").trim();
+    if (!raw) return { letter: "", brokerNumber: "" };
+
+    const letter = (raw.match(/^[a-z]+/i)?.[0] ?? "").toUpperCase();
+    const dotIndex = raw.indexOf(".");
+    if (dotIndex === -1) return { letter, brokerNumber: "" };
+
+    const afterDot = raw.slice(dotIndex + 1);
+    const digitsMatch = afterDot.match(/^\d+/);
+
+    return { letter, brokerNumber: digitsMatch ? digitsMatch[0] : "" };
+}
+
+function findMatchingBrokers(
+    brokers: IBroker[],
+    letter: string,
+    brokerNumber: string,
+    contractEmissionDate?: string,
+) {
+    if (!letter || !brokerNumber) return [];
+
+    const emissionDate = parseFlexibleDate(contractEmissionDate);
+    if (!emissionDate) return [];
+
+    return brokers.filter((broker) => {
+        const brokerCode = String(broker.broker ?? "")
+            .trim()
+            .toUpperCase();
+        const brokerProduct = String(broker.product ?? "")
+            .trim()
+            .toUpperCase();
+
+        if (brokerCode !== brokerNumber.toUpperCase()) return false;
+        if (brokerProduct !== letter) return false;
+
+        const startDate = parseFlexibleDate(broker.date_ini);
+        const endDate = parseFlexibleDate(broker.date_fin);
+        if (!startDate || !endDate) return false;
+
+        return emissionDate >= startDate && emissionDate <= endDate;
+    });
+}
+
+export function CommissionReport() {
     const contractContext = ContractContext();
     const billingContext = BillingContext();
+    const brokerContext = BrokerContext();
     const tableProductContext = TableProductContext();
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [allBillings, setAllBillings] = useState<IBillingData[]>([]);
@@ -37,6 +114,7 @@ export function ReceiptMap() {
     const [orderBy, setOrderBy] = useState("receipt_date");
     const [isSelectionModal, setSelectionModal] = useState<boolean>(false);
     const [useInfiniteScroll, setUseInfiniteScroll] = useState<boolean>(false);
+    const [maxBrokerColumns, setMaxBrokerColumns] = useState<number>(1);
 
     const getInitialSelectData = (): SelectState => {
         const today = new Date();
@@ -161,11 +239,11 @@ export function ReceiptMap() {
                     if (filtered.length > 0) {
                         toast.success(
                             `${filtered.length} contrato(s) encontrado(s)`,
-                            { toastId: "receipt-map-filter" },
+                            { toastId: "commission-report-filter" },
                         );
                     } else {
                         toast.info("Nenhum contrato encontrado", {
-                            toastId: "receipt-map-filter",
+                            toastId: "commission-report-filter",
                         });
                     }
                 }
@@ -226,9 +304,12 @@ export function ReceiptMap() {
 
             const responseContract = await contractContext.listContracts();
             const response = await billingContext.listBillings();
+            const responseBrokers = await brokerContext.listBrokers();
 
             const contractList =
                 responseContract?.data || responseContract || [];
+            const brokerList: IBroker[] =
+                responseBrokers?.data || responseBrokers || [];
 
             const updatedBilling = response.data.map((billing: any) => {
                 const contract = contractList.find(
@@ -282,10 +363,24 @@ export function ReceiptMap() {
                     iss -
                     piscofins -
                     csll_value;
+
+                const contractEmissionDate =
+                    contract?.contract_emission_date || "";
+
+                const { letter, brokerNumber } = parseContractCode(
+                    billing.number_contract,
+                );
+                const matchedBrokers = findMatchingBrokers(
+                    brokerList,
+                    letter,
+                    brokerNumber,
+                    contractEmissionDate,
+                );
+
                 const formatValue = (num: number) =>
                     num.toFixed(2).replace(".", ",");
 
-                return {
+                const baseRow = {
                     ...billing,
                     total_service_value: formatValue(total_service),
                     liquid_value: formatValue(liquid),
@@ -295,29 +390,81 @@ export function ReceiptMap() {
                     pis_cofins: formatValue(piscofins),
                     csll: formatValue(csll_value),
                     value_base: formatValue(tot_base),
-                    contract_emission_date:
-                        contract?.contract_emission_date || "",
+                    commission: "0,00",
+                    commission_ary: formatValue(tot_base),
+                    contract_emission_date: contractEmissionDate,
                     seller_name: contract?.seller.name || "",
                     buyer_name: contract?.buyer.name || "",
                     product: contract?.product || "",
                 };
+
+                const brokers = matchedBrokers.map((matchedBroker) => {
+                    const commissionPercent =
+                        Number(matchedBroker.commision) || 0;
+                    const commission_value =
+                        tot_base * (commissionPercent / 100);
+
+                    return {
+                        nick: matchedBroker.broker_nick || "",
+                        commission: formatValue(commission_value),
+                    };
+                });
+
+                const totalCommission = brokers.reduce(
+                    (sum, broker) =>
+                        sum + parseFloat(broker.commission.replace(",", ".")),
+                    0,
+                );
+
+                return {
+                    ...baseRow,
+                    commission: formatValue(totalCommission),
+                    commission_ary: formatValue(tot_base - totalCommission),
+                    brokers,
+                };
             });
 
-            setAllBillings(updatedBilling);
-            setListBillings(updatedBilling);
+            // Cada broker vinculado ao contrato é exibido em colunas próprias
+            // (Broker N / Comissão N) subsequentes ao Valor Base, sem agrupar.
+            const resolvedMaxBrokers = Math.max(
+                1,
+                updatedBilling.reduce(
+                    (max: number, row: any) =>
+                        Math.max(max, row.brokers.length),
+                    0,
+                ),
+            );
+
+            const flattenedBilling = updatedBilling.map((row: any) => {
+                const { brokers, ...rest } = row;
+                const brokerFields: Record<string, string> = {};
+
+                for (let index = 0; index < resolvedMaxBrokers; index += 1) {
+                    const position = index + 1;
+                    brokerFields[`broker_nick_${position}`] =
+                        brokers[index]?.nick ?? "";
+                    brokerFields[`broker_commission_${position}`] =
+                        brokers[index]?.commission ?? "0,00";
+                }
+
+                return { ...rest, ...brokerFields };
+            });
+
+            setMaxBrokerColumns(resolvedMaxBrokers);
+            setAllBillings(flattenedBilling);
+            setListBillings(flattenedBilling);
         } catch (error) {
             toast.error(`Erro ao tentar ler recebimentos: ${error}`);
         } finally {
             setIsLoading(false);
         }
-    }, [billingContext, contractContext]);
+    }, [billingContext, contractContext, brokerContext]);
 
     useEffect(() => {
         fetchData();
     }, [fetchData]);
 
     // Aplica o filtro inicial automaticamente ao carregar os dados
-    // TODO []: Validar com o Carlos!
     useEffect(() => {
         if (allBillings.length > 0 && isInitialFilter) {
             fetchSelectData(selectData, false);
@@ -417,6 +564,20 @@ export function ReceiptMap() {
                 width: "150px",
                 align: "right",
             },
+            {
+                field: "commission",
+                header: "Comissão",
+                headerTooltip: "Soma da comissão dos brokers",
+                width: "150px",
+                align: "right",
+            },
+            {
+                field: "commission_ary",
+                header: "Comissão Ary",
+                headerTooltip: "Valor Base menos a Comissão",
+                width: "150px",
+                align: "right",
+            },
         ],
         [],
     );
@@ -474,12 +635,6 @@ export function ReceiptMap() {
         [sortedData, orderBy, order],
     );
 
-    // const sortedData = [...filteredData].sort((a, b) => {
-    //     const qA = Number(a.quantity) || 0;
-    //     const qB = Number(b.quantity) || 0;
-    //     return qA - qB;
-    // });
-
     const handlePrint = async (): Promise<void> => {
         const printWindow = window.open("", "_blank");
         if (!printWindow) return;
@@ -511,16 +666,9 @@ export function ReceiptMap() {
             });
         };
 
-        const monetaryFields = [
-            "total_service_value",
-            "liquid_value",
-            "adjustment_value",
-            "irrf_value",
-            "iss",
-            "pis_cofins",
-            "csll",
-            "value_base",
-        ];
+        const monetaryFields = nameColumns
+            .filter((col) => (col as any).align === "right")
+            .map((col) => col.field);
 
         const parseMoney = (value: unknown) => {
             if (typeof value === "number") return value;
@@ -553,16 +701,9 @@ export function ReceiptMap() {
             ),
         );
 
-        const emptyTotals = {
-            total_service_value: 0,
-            liquid_value: 0,
-            adjustment_value: 0,
-            irrf_value: 0,
-            iss: 0,
-            pis_cofins: 0,
-            csll: 0,
-            value_base: 0,
-        };
+        const emptyTotals: Record<string, number> = Object.fromEntries(
+            monetaryFields.map((field) => [field, 0]),
+        );
 
         const groupedByMesa = dataToPrint.reduce((acc, billing) => {
             const sigla = normalizeText((billing as any).product);
@@ -574,48 +715,47 @@ export function ReceiptMap() {
 
             current.items.push(billing);
             monetaryFields.forEach((field) => {
-                current.totals[field as keyof typeof current.totals] +=
-                    parseMoney((billing as any)[field]);
+                current.totals[field] += parseMoney((billing as any)[field]);
             });
 
             acc.set(mesa, current);
             return acc;
-        }, new Map<string, { items: any[]; totals: typeof emptyTotals }>());
+        }, new Map<string, { items: any[]; totals: Record<string, number> }>());
 
         const generalTotals = dataToPrint.reduce(
             (acc, billing) => {
                 monetaryFields.forEach((field) => {
-                    acc[field as keyof typeof acc] += parseMoney(
-                        (billing as any)[field],
-                    );
+                    acc[field] += parseMoney((billing as any)[field]);
                 });
                 return acc;
             },
             { ...emptyTotals },
         );
 
-        const columns = [
-            "Dt.Recebto.",
-            "Dt.Contrato",
-            "Contrato",
-            "Vendedor",
-            "Valor Bruto",
-            "Valor Recebido",
-            "Valor Corretora",
-            "IRRF",
-            "ISS",
-            "PIS+COFINS",
-            "CSLL",
-            "Valor Base",
-        ];
+        const columns = nameColumns.map((col) => col.header);
 
-        const colWidths = [
-            "110px",
-            "110px",
-            "140px",
-            "220px",
-            ...Array(8).fill("110px"),
-        ];
+        const numericColumnIndexes = new Set(
+            nameColumns.reduce<number[]>((acc, col, index) => {
+                if ((col as any).align === "right") acc.push(index);
+                return acc;
+            }, []),
+        );
+
+        const colWidths = nameColumns.map((col) => col.width || "120px");
+
+        const buildTotalsRowHtml = (
+            label: string,
+            totals: Record<string, number>,
+        ) =>
+            nameColumns
+                .map((col, index) => {
+                    if (index === 0) return `<td>${label}</td>`;
+                    if (monetaryFields.includes(col.field)) {
+                        return `<td class="num">${formatMoney(totals[col.field] ?? 0)}</td>`;
+                    }
+                    return "<td></td>";
+                })
+                .join("");
 
         const mesaOrder = Array.from(groupedByMesa.entries()).sort(([a], [b]) =>
             a.localeCompare(b, "pt-BR"),
@@ -656,7 +796,7 @@ export function ReceiptMap() {
             </head>
             <body>
                 <h3>Ary Oleofar</h3>
-                <h4>Mapa de Recebimento</h4>
+                <h4>Relatório de Comissão</h4>
                 <h6>DE: ${startDateFormatted} ATÉ ${endDateFormatted}</h6>
                 <table class="report-table">
                     <colgroup>
@@ -667,7 +807,7 @@ export function ReceiptMap() {
                             ${columns
                                 .map(
                                     (header, index) =>
-                                        `<th class="${index >= 4 ? "num" : ""}">${header}</th>`,
+                                        `<th class="${numericColumnIndexes.has(index) ? "num" : ""}">${header}</th>`,
                                 )
                                 .join("")}
                         </tr>
@@ -677,27 +817,20 @@ export function ReceiptMap() {
 
         mesaOrder.forEach(([mesa, data]) => {
             data.items.forEach((row) => {
-                const values = [
-                    row.receipt_date ?? "",
-                    row.contract_emission_date ?? "",
-                    String(row.number_contract ?? ""),
-                    row.seller_name ?? "",
-                    formatMoney(row.total_service_value),
-                    formatMoney(row.liquid_value),
-                    formatMoney(row.adjustment_value),
-                    formatMoney(row.irrf_value),
-                    formatMoney(row.iss),
-                    formatMoney(row.pis_cofins),
-                    formatMoney(row.csll),
-                    formatMoney(row.value_base),
-                ];
+                const values = nameColumns.map((col) => {
+                    const raw = (row as any)[col.field];
+                    if (monetaryFields.includes(col.field)) {
+                        return formatMoney(raw);
+                    }
+                    return raw !== undefined && raw !== null ? String(raw) : "";
+                });
 
                 printWindow.document.write(`
                     <tr>
                         ${values
                             .map(
                                 (value, index) =>
-                                    `<td class="${index >= 4 ? "num" : ""}">${value}</td>`,
+                                    `<td class="${numericColumnIndexes.has(index) ? "num" : ""}">${value}</td>`,
                             )
                             .join("")}
                     </tr>
@@ -706,36 +839,14 @@ export function ReceiptMap() {
 
             printWindow.document.write(`
                 <tr class="mesa-total">
-                    <td>Mesa ${mesa}</td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td class="num">${formatMoney(data.totals.total_service_value)}</td>
-                    <td class="num">${formatMoney(data.totals.liquid_value)}</td>
-                    <td class="num">${formatMoney(data.totals.adjustment_value)}</td>
-                    <td class="num">${formatMoney(data.totals.irrf_value)}</td>
-                    <td class="num">${formatMoney(data.totals.iss)}</td>
-                    <td class="num">${formatMoney(data.totals.pis_cofins)}</td>
-                    <td class="num">${formatMoney(data.totals.csll)}</td>
-                    <td class="num">${formatMoney(data.totals.value_base)}</td>
+                    ${buildTotalsRowHtml(`Mesa ${mesa}`, data.totals)}
                 </tr>
             `);
         });
 
         printWindow.document.write(`
             <tr class="total-geral">
-                <td>Total Geral</td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td class="num">${formatMoney(generalTotals.total_service_value)}</td>
-                <td class="num">${formatMoney(generalTotals.liquid_value)}</td>
-                <td class="num">${formatMoney(generalTotals.adjustment_value)}</td>
-                <td class="num">${formatMoney(generalTotals.irrf_value)}</td>
-                <td class="num">${formatMoney(generalTotals.iss)}</td>
-                <td class="num">${formatMoney(generalTotals.pis_cofins)}</td>
-                <td class="num">${formatMoney(generalTotals.csll)}</td>
-                <td class="num">${formatMoney(generalTotals.value_base)}</td>
+                ${buildTotalsRowHtml("Total Geral", generalTotals)}
             </tr>
             <tr>
                 <td colspan="${columns.length}">&nbsp;</td>
@@ -777,7 +888,9 @@ export function ReceiptMap() {
         const dateEnd = selectData.date_end || selectData.date_start || "";
         const [year, month] = dateEnd.split("-").map((part) => part.trim());
         const mm = String(Number(month || 0)).padStart(2, "0");
-        const yy = String(year || "").slice(-2).padStart(2, "0");
+        const yy = String(year || "")
+            .slice(-2)
+            .padStart(2, "0");
 
         const selectedProductTypes = Array.isArray(selectData.product_types)
             ? selectData.product_types
@@ -797,8 +910,10 @@ export function ReceiptMap() {
         const mesa =
             tableProducts.find(
                 (item) =>
-                    normalizeList(item.product_types || []) === selectedTypesKey,
-            ) || tableProducts.find((item) => {
+                    normalizeList(item.product_types || []) ===
+                    selectedTypesKey,
+            ) ||
+            tableProducts.find((item) => {
                 const itemTypes = normalizeList(item.product_types || []);
                 return (
                     selectedProductTypes.length > 0 &&
@@ -819,23 +934,16 @@ export function ReceiptMap() {
             sigla = "S";
         }
 
-        return `MR${sigla}${mm}${yy}`;
+        return `RC${sigla}${mm}${yy}`;
     };
 
     const handleExportExcel = async () => {
         try {
             const startDateFormatted = formatIsoYMDToBR(selectData.date_start);
             const endDateFormatted = formatIsoYMDToBR(selectData.date_end);
-            const monetaryFields = [
-                "total_service_value",
-                "liquid_value",
-                "adjustment_value",
-                "irrf_value",
-                "iss",
-                "pis_cofins",
-                "csll",
-                "value_base",
-            ];
+            const monetaryFields = nameColumns
+                .filter((col) => (col as any).align === "right")
+                .map((col) => col.field);
 
             const parseMoney = (value: unknown) => {
                 if (typeof value === "number") {
@@ -871,16 +979,9 @@ export function ReceiptMap() {
                 ),
             );
 
-            const emptyTotals = {
-                total_service_value: 0,
-                liquid_value: 0,
-                adjustment_value: 0,
-                irrf_value: 0,
-                iss: 0,
-                pis_cofins: 0,
-                csll: 0,
-                value_base: 0,
-            };
+            const emptyTotals: Record<string, number> = Object.fromEntries(
+                monetaryFields.map((field) => [field, 0]),
+            );
 
             const groupedByMesa = dataToExport.reduce((acc, billing) => {
                 const sigla = normalizeText((billing as any).product);
@@ -892,109 +993,40 @@ export function ReceiptMap() {
 
                 current.items.push(billing);
                 monetaryFields.forEach((field) => {
-                    current.totals[field as keyof typeof current.totals] +=
-                        parseMoney((billing as any)[field]);
+                    current.totals[field] += parseMoney(
+                        (billing as any)[field],
+                    );
                 });
 
                 acc.set(mesa, current);
                 return acc;
-            }, new Map<string, { items: any[]; totals: typeof emptyTotals }>());
+            }, new Map<string, { items: any[]; totals: Record<string, number> }>());
 
             const generalTotals = dataToExport.reduce(
                 (acc, billing) => {
                     monetaryFields.forEach((field) => {
-                        acc[field as keyof typeof acc] += parseMoney(
-                            (billing as any)[field],
-                        );
+                        acc[field] += parseMoney((billing as any)[field]);
                     });
                     return acc;
                 },
                 { ...emptyTotals },
             );
 
-            const exportRows: any[][] = [
-                ["MAPA DE RECEBIMENTOS"],
-                [`PERÍODO: DE ${startDateFormatted} ATÉ ${endDateFormatted}`],
-                [],
-                nameColumns.map((col) => col.header),
-            ];
+            const buildTotalsRow = (
+                label: string,
+                totals: Record<string, number>,
+            ) =>
+                nameColumns.map((col, index) => {
+                    if (index === 0) return label;
+                    if (monetaryFields.includes(col.field)) {
+                        return totals[col.field] ?? 0;
+                    }
+                    return "";
+                });
 
             const mesaOrder = Array.from(groupedByMesa.entries()).sort(
                 ([a], [b]) => a.localeCompare(b, "pt-BR"),
             );
-
-            mesaOrder.forEach(([mesa, data]) => {
-                data.items.forEach((row) => {
-                    exportRows.push(
-                        nameColumns.map((col) => {
-                            const fields = col.field.split(".");
-                            let value: any = row;
-
-                            for (const field of fields) {
-                                value = value?.[field];
-                            }
-
-                            if (monetaryFields.includes(col.field)) {
-                                return parseMoney(value);
-                            }
-
-                            return value ?? "";
-                        }),
-                    );
-                });
-
-                exportRows.push([
-                    `Mesa ${mesa}`,
-                    "",
-                    "",
-                    "",
-                    data.totals.total_service_value,
-                    data.totals.liquid_value,
-                    data.totals.adjustment_value,
-                    data.totals.irrf_value,
-                    data.totals.iss,
-                    data.totals.pis_cofins,
-                    data.totals.csll,
-                    data.totals.value_base,
-                ]);
-            });
-
-            exportRows.push([
-                "Total Geral",
-                "",
-                "",
-                "",
-                generalTotals.total_service_value,
-                generalTotals.liquid_value,
-                generalTotals.adjustment_value,
-                generalTotals.irrf_value,
-                generalTotals.iss,
-                generalTotals.pis_cofins,
-                generalTotals.csll,
-                generalTotals.value_base,
-            ]);
-
-            const worksheet = XLSX.utils.aoa_to_sheet(exportRows);
-            const columnCount = nameColumns.length;
-            const totalColumns = Math.max(columnCount, 10);
-            const totalGeneralRow = exportRows.length - 1;
-
-            worksheet["!merges"] = [
-                { s: { r: 0, c: 0 }, e: { r: 0, c: columnCount - 1 } },
-                { s: { r: 1, c: 0 }, e: { r: 1, c: columnCount - 1 } },
-            ];
-
-            worksheet["!cols"] = [
-                ...nameColumns.map((col) => ({
-                    wch: Math.max(
-                        12,
-                        Math.round(Number.parseInt(col.width || "120", 10) / 8),
-                    ),
-                })),
-                ...Array.from({ length: totalColumns - columnCount }, () => ({
-                    wch: 15,
-                })),
-            ];
 
             const titleStyle = {
                 font: { bold: true, sz: 14, color: { rgb: "1F1F1F" } },
@@ -1035,60 +1067,320 @@ export function ReceiptMap() {
                 numFmt: "#,##0.00",
             };
 
-            const applyStyle = (cellRef: string, style: any) => {
-                if (worksheet[cellRef]) {
-                    worksheet[cellRef].s = style;
-                }
-            };
+            const buildContractsSheet = () => {
+                const exportRows: any[][] = [
+                    ["RELATÓRIO DE COMISSÃO"],
+                    [
+                        `PERÍODO: DE ${startDateFormatted} ATÉ ${endDateFormatted}`,
+                    ],
+                    [],
+                    nameColumns.map((col) => col.header),
+                ];
 
-            for (let col = 0; col < columnCount; col += 1) {
-                applyStyle(
-                    XLSX.utils.encode_cell({ r: 0, c: col }),
-                    titleStyle,
-                );
-                applyStyle(
-                    XLSX.utils.encode_cell({ r: 1, c: col }),
-                    periodStyle,
-                );
-                applyStyle(
-                    XLSX.utils.encode_cell({ r: 3, c: col }),
-                    headerStyle,
-                );
-            }
+                mesaOrder.forEach(([mesa, data]) => {
+                    data.items.forEach((row) => {
+                        exportRows.push(
+                            nameColumns.map((col) => {
+                                const fields = col.field.split(".");
+                                let value: any = row;
 
-            for (let row = 4; row < totalGeneralRow; row += 1) {
-                for (let col = 4; col < columnCount; col += 1) {
-                    applyStyle(
-                        XLSX.utils.encode_cell({ r: row, c: col }),
-                        moneyDetailStyle,
+                                for (const field of fields) {
+                                    value = value?.[field];
+                                }
+
+                                if (monetaryFields.includes(col.field)) {
+                                    return parseMoney(value);
+                                }
+
+                                return value ?? "";
+                            }),
+                        );
+                    });
+
+                    exportRows.push(
+                        buildTotalsRow(`Mesa ${mesa}`, data.totals),
+                    );
+                });
+
+                exportRows.push(buildTotalsRow("Total Geral", generalTotals));
+
+                const worksheet = XLSX.utils.aoa_to_sheet(exportRows);
+                const columnCount = nameColumns.length;
+                const totalColumns = Math.max(columnCount, 10);
+                const totalGeneralRow = exportRows.length - 1;
+
+                worksheet["!merges"] = [
+                    { s: { r: 0, c: 0 }, e: { r: 0, c: columnCount - 1 } },
+                    { s: { r: 1, c: 0 }, e: { r: 1, c: columnCount - 1 } },
+                ];
+
+                worksheet["!cols"] = [
+                    ...nameColumns.map((col) => ({
+                        wch: Math.max(
+                            12,
+                            Math.round(
+                                Number.parseInt(col.width || "120", 10) / 8,
+                            ),
+                        ),
+                    })),
+                    ...Array.from(
+                        { length: totalColumns - columnCount },
+                        () => ({
+                            wch: 15,
+                        }),
+                    ),
+                ];
+
+                const currentWorkbookSheet = worksheet;
+                const applyStyleToContracts = (cellRef: string, style: any) => {
+                    if (currentWorkbookSheet[cellRef]) {
+                        currentWorkbookSheet[cellRef].s = style;
+                    }
+                };
+
+                for (let col = 0; col < columnCount; col += 1) {
+                    applyStyleToContracts(
+                        XLSX.utils.encode_cell({ r: 0, c: col }),
+                        titleStyle,
+                    );
+                    applyStyleToContracts(
+                        XLSX.utils.encode_cell({ r: 1, c: col }),
+                        periodStyle,
+                    );
+                    applyStyleToContracts(
+                        XLSX.utils.encode_cell({ r: 3, c: col }),
+                        headerStyle,
                     );
                 }
-            }
 
-            let currentRow = 4;
-            mesaOrder.forEach(([, data]) => {
-                currentRow += data.items.length;
+                for (let row = 4; row < totalGeneralRow; row += 1) {
+                    for (let col = 4; col < columnCount; col += 1) {
+                        if (!monetaryFields.includes(nameColumns[col].field))
+                            continue;
+                        applyStyleToContracts(
+                            XLSX.utils.encode_cell({ r: row, c: col }),
+                            moneyDetailStyle,
+                        );
+                    }
+                }
+
+                let currentRow = 4;
+                mesaOrder.forEach(([, data]) => {
+                    currentRow += data.items.length;
+                    for (let col = 0; col < totalColumns; col += 1) {
+                        applyStyleToContracts(
+                            XLSX.utils.encode_cell({ r: currentRow, c: col }),
+                            col === 0 ? totalLabelStyle : moneyTotalStyle,
+                        );
+                    }
+                    currentRow += 1;
+                });
+
                 for (let col = 0; col < totalColumns; col += 1) {
-                    applyStyle(
-                        XLSX.utils.encode_cell({ r: currentRow, c: col }),
+                    applyStyleToContracts(
+                        XLSX.utils.encode_cell({ r: totalGeneralRow, c: col }),
                         col === 0 ? totalLabelStyle : moneyTotalStyle,
                     );
                 }
-                currentRow += 1;
-            });
 
-            for (let col = 0; col < totalColumns; col += 1) {
-                applyStyle(
-                    XLSX.utils.encode_cell({ r: totalGeneralRow, c: col }),
-                    col === 0 ? totalLabelStyle : moneyTotalStyle,
+                return worksheet;
+            };
+
+            const buildCommissionSheet = () => {
+                const commissionNickMap = new Map<string, string>();
+
+                dataToExport.forEach((row: any) => {
+                    for (let index = 1; index <= maxBrokerColumns; index += 1) {
+                        const nick = String(
+                            row[`broker_nick_${index}`] ?? "",
+                        ).trim();
+                        if (!nick) continue;
+
+                        const key = normalizeText(nick);
+                        if (!commissionNickMap.has(key)) {
+                            commissionNickMap.set(key, nick);
+                        }
+                    }
+                });
+
+                const commissionHeaders = Array.from(
+                    commissionNickMap.entries(),
+                )
+                    .map(([key, nick]) => ({ key, nick }))
+                    .sort((a, b) =>
+                        a.nick.localeCompare(b.nick, "pt-BR", {
+                            numeric: true,
+                            sensitivity: "base",
+                        }),
+                    );
+
+                const commissionRows = dataToExport.map((row: any) => {
+                    const commissionsByBroker = new Map<string, number>();
+
+                    for (let index = 1; index <= maxBrokerColumns; index += 1) {
+                        const nick = String(
+                            row[`broker_nick_${index}`] ?? "",
+                        ).trim();
+                        if (!nick) continue;
+
+                        const commissionValue = parseMoney(
+                            row[`broker_commission_${index}`],
+                        );
+                        commissionsByBroker.set(
+                            normalizeText(nick),
+                            commissionValue,
+                        );
+                    }
+
+                    return {
+                        receipt_date: row.receipt_date ?? "",
+                        contract_emission_date:
+                            row.contract_emission_date ?? "",
+                        number_contract: row.number_contract ?? "",
+                        commissionsByBroker,
+                    };
+                });
+
+                const commissionTotals = new Map<string, number>();
+                const commissionTotalSum = commissionRows.reduce((sum, row) => {
+                    commissionHeaders.forEach((broker) => {
+                        const brokerValue =
+                            row.commissionsByBroker.get(broker.key) ?? 0;
+                        commissionTotals.set(
+                            broker.key,
+                            (commissionTotals.get(broker.key) ?? 0) +
+                                brokerValue,
+                        );
+                        sum += brokerValue;
+                    });
+
+                    return sum;
+                }, 0);
+
+                const exportRows: any[][] = [
+                    [
+                        "Dt.Recebto",
+                        "Dt.Contrato",
+                        "Contrato",
+                        ...commissionHeaders.map((broker) => broker.nick),
+                        "Total Comissão",
+                    ],
+                    ...commissionRows.map((row) => [
+                        row.receipt_date,
+                        row.contract_emission_date,
+                        row.number_contract,
+                        ...commissionHeaders.map(
+                            (broker) =>
+                                row.commissionsByBroker.get(broker.key) ?? "",
+                        ),
+                        commissionHeaders.reduce(
+                            (sum, broker) =>
+                                sum +
+                                (row.commissionsByBroker.get(broker.key) ?? 0),
+                            0,
+                        ),
+                    ]),
+                    [
+                        "Total",
+                        "",
+                        "",
+                        ...commissionHeaders.map(
+                            (broker) => commissionTotals.get(broker.key) ?? 0,
+                        ),
+                        commissionTotalSum,
+                    ],
+                ];
+
+                const worksheet = XLSX.utils.aoa_to_sheet(exportRows);
+                const columnCount = 4 + commissionHeaders.length;
+
+                worksheet["!cols"] = [
+                    { wch: 14 },
+                    { wch: 14 },
+                    { wch: 20 },
+                    ...commissionHeaders.map((broker) => ({
+                        wch: Math.max(14, broker.nick.length + 2),
+                    })),
+                    { wch: 16 },
+                ];
+
+                const commissionHeaderStyle = {
+                    font: { bold: true, color: { rgb: "1F1F1F" } },
+                    fill: { patternType: "solid", fgColor: { rgb: "E7B10A" } },
+                    border: {
+                        top: { style: "thin", color: { rgb: "FFFFFF" } },
+                        bottom: { style: "thin", color: { rgb: "FFFFFF" } },
+                        left: { style: "thin", color: { rgb: "FFFFFF" } },
+                        right: { style: "thin", color: { rgb: "FFFFFF" } },
+                    },
+                    alignment: { horizontal: "center", vertical: "center" },
+                };
+
+                const commissionTextStyle = {
+                    alignment: { horizontal: "left", vertical: "center" },
+                };
+
+                const commissionMoneyStyle = {
+                    alignment: { horizontal: "right", vertical: "center" },
+                    numFmt: "#,##0.00",
+                };
+
+                const applyStyleToCommission = (
+                    cellRef: string,
+                    style: any,
+                ) => {
+                    if (worksheet[cellRef]) {
+                        worksheet[cellRef].s = style;
+                    }
+                };
+
+                for (let col = 0; col < columnCount; col += 1) {
+                    applyStyleToCommission(
+                        XLSX.utils.encode_cell({ r: 0, c: col }),
+                        commissionHeaderStyle,
+                    );
+                }
+
+                for (let row = 1; row < exportRows.length; row += 1) {
+                    for (let col = 0; col < 3; col += 1) {
+                        applyStyleToCommission(
+                            XLSX.utils.encode_cell({ r: row, c: col }),
+                            commissionTextStyle,
+                        );
+                    }
+
+                    for (let col = 3; col < columnCount; col += 1) {
+                        applyStyleToCommission(
+                            XLSX.utils.encode_cell({ r: row, c: col }),
+                            commissionMoneyStyle,
+                        );
+                    }
+                }
+
+                const totalRowIndex = exportRows.length - 1;
+                applyStyleToCommission(
+                    XLSX.utils.encode_cell({ r: totalRowIndex, c: 0 }),
+                    totalLabelStyle,
                 );
-            }
+                for (let col = 1; col < columnCount; col += 1) {
+                    applyStyleToCommission(
+                        XLSX.utils.encode_cell({ r: totalRowIndex, c: col }),
+                        moneyTotalStyle,
+                    );
+                }
+
+                return worksheet;
+            };
+
+            const worksheet = buildContractsSheet();
+            const commissionWorksheet = buildCommissionSheet();
 
             const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Contratos");
             XLSX.utils.book_append_sheet(
                 workbook,
-                worksheet,
-                "Mapa de Recebimentos",
+                commissionWorksheet,
+                "Comissão",
             );
             XLSX.writeFile(workbook, `${reportFileBase}.xlsx`, {
                 bookType: "xlsx",
@@ -1100,7 +1392,7 @@ export function ReceiptMap() {
 
     return (
         <>
-            <STitle>Mapa de Recebimento</STitle>
+            <STitle>Relatório de Comissão</STitle>
             <SContainerSearchAndButton>
                 <CustomSearch
                     width="450px"
@@ -1132,7 +1424,7 @@ export function ReceiptMap() {
                 </Tooltip>
 
                 <ReportFilter
-                    titleText="Filtros - Mapa de Recebimento"
+                    titleText="Filtros - Relatório de Comissão"
                     open={isSelectionModal}
                     initialFilters={selectData}
                     onClose={handleCloseModal}

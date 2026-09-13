@@ -87,6 +87,11 @@ export function Permissions() {
         key: "COBRANCA",
       },
       {
+        label: "Comissão",
+        icon: <AiOutlineDollar size={40} />,
+        key: "COMMISSION",
+      },
+      {
         label: "Relatórios",
         icon: <AiOutlineIdcard size={40} />,
         key: "RELATORIOS",

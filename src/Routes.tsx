@@ -35,9 +35,15 @@ import { ReceiptMap } from "./pages/Billing/pages/ReceiptMap";
 import { PaymentContract } from "./pages/Billing/pages/PaymentContract";
 import { BillingsContract } from "./pages/Billing/pages/BillingsContract";
 import { ViewBilling } from "./pages/Billing/pages/Receipt/components/ViewBilling";
+import { Commission } from "./pages/Commission";
+import { Broker } from "./pages/Commission/pages/Broker";
+import { CadastrarBroker } from "./pages/Commission/pages/Broker/components/CadastrarBroker";
+import { EditarBroker } from "./pages/Commission/pages/Broker/components/EditarBroker";
+import { CommissionReport } from "./pages/Commission/pages/Report";
 
 import { RPS } from "./pages/Billing/pages/RPS";
 import { ListInvoices } from "./pages/Billing/pages/ListInvoices";
+import { ListNfseReceipt } from "./pages/Billing/pages/ListNfseReceipt";
 import { LookupInvoices } from "./pages/Billing/pages/LookupInvoices";
 import { DevPanel } from "./pages/DevPanel";
 
@@ -196,6 +202,56 @@ export function RoutesForPages() {
                 }
             />
             <Route
+                path="/commission"
+                element={
+                    <ProtectedLayout>
+                        <Layout>
+                            <Commission />
+                        </Layout>
+                    </ProtectedLayout>
+                }
+            />
+            <Route
+                path="/commission/broker"
+                element={
+                    <ProtectedLayout>
+                        <Layout>
+                            <Broker />
+                        </Layout>
+                    </ProtectedLayout>
+                }
+            />
+            <Route
+                path="/commission/broker/cadastrar"
+                element={
+                    <ProtectedLayout>
+                        <Layout>
+                            <CadastrarBroker />
+                        </Layout>
+                    </ProtectedLayout>
+                }
+            />
+            <Route
+                path="/commission/broker/editar"
+                element={
+                    <ProtectedLayout>
+                        <Layout>
+                            <EditarBroker />
+                        </Layout>
+                    </ProtectedLayout>
+                }
+            />
+            <Route
+                path="/commission/report"
+                element={
+                    <ProtectedLayout>
+                        <Layout>
+                            <CommissionReport />
+                        </Layout>
+                    </ProtectedLayout>
+                }
+            />
+            <Route
                 path="/cobranca/RPS"
                 element={
                     <ProtectedLayout>
@@ -231,6 +287,16 @@ export function RoutesForPages() {
                     <ProtectedLayout>
                         <Layout>
                             <ListInvoices />
+                        </Layout>
+                    </ProtectedLayout>
+                }
+            />
+            <Route
+                path="/cobranca/listagem-nfse-recebida"
+                element={
+                    <ProtectedLayout>
+                        <Layout>
+                            <ListNfseReceipt />
                         </Layout>
                     </ProtectedLayout>
                 }

@@ -51,6 +51,13 @@ const formatMoneyBR = (value: number) =>
         maximumFractionDigits: 2,
     });
 
+const VALUE_FIELDS = [
+    "quantity",
+    "price_real",
+    "total_contract_real",
+    "commission_value",
+];
+
 const parseBrDateToTimestamp = (date?: string) => {
     if (!date) return 0;
 
@@ -444,12 +451,7 @@ export function GrainsVol() {
     const { filteredData } = useTableSearch({
         data: listcontracts,
         searchTerm,
-        searchableFields: [
-            "contract_emission_date",
-            "number_contract",
-            "product",
-            "quantity",
-        ],
+        searchableFields: ["contract_emission_date", "number_contract"],
     });
 
     const nameColumns: IColumn[] = useMemo(
@@ -458,11 +460,6 @@ export function GrainsVol() {
                 field: "contract_emission_date",
                 header: "DATA",
                 width: "100px",
-            },
-            {
-                field: "product",
-                header: "SIGLA",
-                width: "80px",
             },
             {
                 field: "number_contract",
@@ -483,46 +480,46 @@ export function GrainsVol() {
                 field: "quantity",
                 header: "QUANTIDADE (TON)",
                 width: "150px",
+                renderCell: (row) => (
+                    <div style={{ width: "100%", textAlign: "right" }}>
+                        {parseLocaleNumber(row.quantity).toLocaleString(
+                            "pt-BR",
+                            {
+                                minimumFractionDigits: 3,
+                            },
+                        )}
+                    </div>
+                ),
             },
             {
                 field: "price_real",
                 header: "PREÇO R$",
                 width: "150px",
-            },
-            {
-                field: "type_currency",
-                header: "MOEDA",
-                width: "20px",
-            },
-            {
-                field: "day_exchange_formatted",
-                header: "TAXA",
-                width: "20px",
+                renderCell: (row) => (
+                    <div style={{ width: "100%", textAlign: "right" }}>
+                        {row.price_real ?? ""}
+                    </div>
+                ),
             },
             {
                 field: "total_contract_real",
                 header: "VALOR CONTRATO R$",
                 width: "20px",
-            },
-            {
-                field: "type_commission",
-                header: "TIPO COMISSÃO",
-                width: "20px",
-            },
-            {
-                field: "resp_commission",
-                header: "C/V",
-                width: "20px",
-            },
-            {
-                field: "commission",
-                header: "COMISSÃO",
-                width: "100px",
+                renderCell: (row) => (
+                    <div style={{ width: "100%", textAlign: "right" }}>
+                        {row.total_contract_real ?? ""}
+                    </div>
+                ),
             },
             {
                 field: "commission_value",
                 header: "COMISSÃO R$",
                 width: "130px",
+                renderCell: (row) => (
+                    <div style={{ width: "100%", textAlign: "right" }}>
+                        {row.commission_value ?? ""}
+                    </div>
+                ),
             },
         ],
         [],
@@ -633,7 +630,7 @@ export function GrainsVol() {
                 id: `month-total-${sigla}-${monthKey}`,
                 product: `Total mês ${sigla}`,
                 contract_emission_date: "",
-                number_contract: "",
+                number_contract: `Total mês ${sigla}`,
                 seller: { name: "" },
                 buyer: { name: "" },
                 quantity: totals.quantity,
@@ -656,7 +653,7 @@ export function GrainsVol() {
                     id: `sigla-total-${sigla}`,
                     product: `Total ${sigla}`,
                     contract_emission_date: "",
-                    number_contract: "",
+                    number_contract: `Total ${sigla}`,
                     seller: { name: "" },
                     buyer: { name: "" },
                     quantity: totals.quantity,
@@ -678,7 +675,7 @@ export function GrainsVol() {
             id: "grand-total",
             product: "Total",
             contract_emission_date: "",
-            number_contract: "",
+            number_contract: "Total",
             seller: { name: "" },
             buyer: { name: "" },
             quantity: grandTotals.quantity,
@@ -801,7 +798,13 @@ export function GrainsVol() {
                     for (const f of fields) {
                         value = value?.[f];
                     }
-                    printWindow.document.write(`<td>${value ?? ""}</td>`);
+                    printWindow.document.write(
+                        `<td style="${
+                            VALUE_FIELDS.includes(col.field)
+                                ? "text-align:right;"
+                                : ""
+                        }">${value ?? ""}</td>`,
+                    );
                 });
                 printWindow.document.write(`</tr>`);
             });
@@ -914,15 +917,15 @@ export function GrainsVol() {
                 const currentRow = reportRows[row - 4];
                 const isTotalRow = Boolean(
                     currentRow?.is_sigla_total ||
-                        currentRow?.is_month_total ||
-                        currentRow?.is_grand_total,
+                    currentRow?.is_month_total ||
+                    currentRow?.is_grand_total,
                 );
                 for (let col = 0; col < columnCount; col += 1) {
-                    const baseStyle =
-                        col === 0 ||
-                        nameColumns[col].field === "contract_emission_date"
-                            ? textStyle
-                            : numberStyle;
+                    const baseStyle = VALUE_FIELDS.includes(
+                        nameColumns[col].field,
+                    )
+                        ? numberStyle
+                        : textStyle;
                     const style = isTotalRow
                         ? {
                               ...baseStyle,
@@ -936,8 +939,8 @@ export function GrainsVol() {
                                       rgb: currentRow?.is_grand_total
                                           ? "C6E0B4"
                                           : currentRow?.is_sigla_total
-                                          ? "C6E0B4"
-                                          : "E2F0D9",
+                                            ? "C6E0B4"
+                                            : "E2F0D9",
                                   },
                               },
                           }
@@ -965,7 +968,7 @@ export function GrainsVol() {
             <SContainerSearchAndButton>
                 <CustomSearch
                     width="450px"
-                    placeholder="Filtre por Data, Sigla ou Contrato"
+                    placeholder="Pesquise por Data ou Contrato"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
