@@ -192,7 +192,15 @@ export function GrainsVol() {
                 }) => {
                     // 02/01/2025 - Carlos - Farelo e Ã“leo nÃ£o divide por 60
                     // SÃ³ iremos remover essa regra das siglas, caso o cliente aceite a sugestÃ£o da reuniÃ£o do dia 09/04/2025
-                    const validProducts = ["O", "F", "OC", "OA", "SB", "EP"];
+                    const validProducts = [
+                        "O",
+                        "F",
+                        "OC",
+                        "OA",
+                        "SB",
+                        "EP",
+                        "OX",
+                    ];
                     const quantityTon = validProducts.includes(contract.product)
                         ? Number(contract.quantity) / 1
                         : Number(contract.quantity) / 1000;

@@ -71,7 +71,7 @@ export function HistoryContracts() {
   }, [fetchData]);
   const formatContracts = (contracts: any[]): IContractData[] => {
     return contracts.map((contract: any) => {
-      const validProducts = ["O", "F", "OC", "OA", "SB", "EP"];
+      const validProducts = ["O", "F", "OC", "OA", "SB", "EP", "OX"];
       const quantityTon = validProducts.includes(contract.product)
         ? Number(contract.quantity) / 1
         : Number(contract.quantity) / 1000;
