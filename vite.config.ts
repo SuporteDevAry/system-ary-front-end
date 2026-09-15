@@ -15,7 +15,7 @@ export default defineConfig(({ mode }) => {
       port: PORT,
       host: "0.0.0.0",
       strictPort: true,
-      allowedHosts: ["sistema.prod.dev.br"],
+      allowedHosts: ["sistema.prod.dev.br", "sistemas.aryoleofar.com"],
     },
     assetsInclude: ["**/*.jpg", "**/*.png"],
   };

@@ -4,6 +4,7 @@ import { App } from "./App.tsx";
 import { AuthProvider } from "./contexts/AuthProvider/index.tsx";
 import { UserProvider } from "./contexts/UserContext/index.tsx";
 import { ClientesProvider } from "./contexts/ClienteContext/index.tsx";
+import { BrokerProvider } from "./contexts/BrokerContext/index.tsx";
 import { ContatosProvider } from "./contexts/ContatoContext/index.tsx";
 import { NotificationsProvider } from "./contexts/NotificationContext/index.tsx";
 import { ContractProvider } from "./contexts/ContractContext/index.tsx";
@@ -21,25 +22,27 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
       <SendEmailProvider>
         <UserProvider>
           <ClientesProvider>
-            <ContatosProvider>
-              <NotificationsProvider>
-                <ContractProvider>
-                  <ProductProvider>
-                    <TableProductsProvider>
-                      <InvoicesProvider>
-                        <BillingsProvider>
-                          <NfseProvider>
-                            <DevPanelProvider>
-                              <App />
-                            </DevPanelProvider>
-                          </NfseProvider>
-                        </BillingsProvider>
-                      </InvoicesProvider>
-                    </TableProductsProvider>
-                  </ProductProvider>
-                </ContractProvider>
-              </NotificationsProvider>
-            </ContatosProvider>
+            <BrokerProvider>
+              <ContatosProvider>
+                <NotificationsProvider>
+                  <ContractProvider>
+                    <ProductProvider>
+                      <TableProductsProvider>
+                        <InvoicesProvider>
+                          <BillingsProvider>
+                            <NfseProvider>
+                              <DevPanelProvider>
+                                <App />
+                              </DevPanelProvider>
+                            </NfseProvider>
+                          </BillingsProvider>
+                        </InvoicesProvider>
+                      </TableProductsProvider>
+                    </ProductProvider>
+                  </ContractProvider>
+                </NotificationsProvider>
+              </ContatosProvider>
+            </BrokerProvider>
           </ClientesProvider>
         </UserProvider>
       </SendEmailProvider>

@@ -44,4 +44,6 @@ export interface IReportFilterProps {
   fieldLabels?: Partial<Record<string, string>>;
   defaultMesaName?: string;
   allowEmptyMesa?: boolean;
+  /** When provided, renders the "mesa" field as a select list with these options instead of free text. */
+  mesaOptions?: string[];
 }

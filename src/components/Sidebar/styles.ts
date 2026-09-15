@@ -78,7 +78,18 @@ export const SLink = styled(Link)`
   text-decoration: none;
   color: inherit;
   font-size: 16px;
+  flex: 1;
   padding: calc(${V.smSpacing} - 2px) 0;
+`;
+
+export const SMenuToggle = styled(BUTTONBASE)`
+  ${btnReset};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: ${V.smSpacing} ${V.mdSpacing};
+  cursor: pointer;
+  color: inherit;
 `;
 
 export const SLinkIcon = styled.div`
@@ -91,6 +102,41 @@ export const SLinkIcon = styled.div`
 `;
 
 export const SLinkLabel = styled.span`
+  display: block;
+  flex: 1;
+  margin-left: ${V.smSpacing};
+`;
+
+export const SSubLinkContainer = styled(DIVBASE)<isActiveProps>`
+  background: ${({ theme, $isActive }) =>
+    !$isActive ? `transparent` : theme["gray-200"]};
+  border-radius: ${V.borderRadius};
+  margin: 4px 0 4px 24px;
+
+  &:hover {
+    box-shadow: inset 0 0 0 1px ${({ theme }) => theme["gray-300"]};
+  }
+`;
+
+export const SSubLink = styled(Link)`
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+  font-size: 14px;
+  padding: calc(${V.smSpacing} - 4px) 0;
+`;
+
+export const SSubLinkIcon = styled.div`
+  padding: ${V.smSpacing} ${V.mdSpacing};
+  display: flex;
+
+  svg {
+    font-size: 18px;
+  }
+`;
+
+export const SSubLinkLabel = styled.span`
   display: block;
   flex: 1;
   margin-left: ${V.smSpacing};
